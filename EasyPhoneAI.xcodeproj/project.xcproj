@@ -8,6 +8,7 @@
     "development": "vi",
     "supported": [
       "Base",
+      "vi",
     ],
   },
   "files": [

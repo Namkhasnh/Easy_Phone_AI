@@ -58,13 +58,13 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 
 | Key | Value |
 |---|---|
-| Last updated | 2026-11-08 |
-| Current phase | **Phase 0 — Skeleton** (0.1 – 0.3 done) |
+| Last updated | 2026-11-09 |
+| Current phase | **Phase 0 — Skeleton** (0.1 – 0.4 done) |
 | Working on | — |
-| Last commit | `[0] folder layout …` on branch `demo_git` (no remote yet) |
+| Last commit | `[0] string catalogs …` on branch `demo_git` (no remote yet) |
 | Build status | ✅ `xcodebuild … iPhone 18 Pro build` succeeds |
 | Test status | n/a — no test target yet (added in Phase 1A); `xcodebuild test` is expected to fail until then |
-| Next action | Item 0.4: `Resources/Localizable.xcstrings` (vi source) + `InfoPlist.xcstrings`. Optional first: owner creates a private GitHub repo and pushes, to work from the phone (cloud sessions see only pushed commits; no Xcode there) |
+| Next action | Item 0.5: `AppEnvironment.live()` / `.mock()`, `AppState`, `Router` (empty routes) per ARCHITECTURE §2.2, §3 |
 | Owner decisions needed now | none. Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
@@ -175,7 +175,7 @@ Exit: **sign in with Google (Simulator + owner's iPhone, free Apple ID), backend
 - [x] 0.1 git repo, `.gitignore` (`.env`, `*.p8`, `Secrets.xcconfig`, D-207), `CLAUDE.md` at root — Verify: `git check-ignore .env` (716adcd)
 - [x] 0.2 Xcode project: iOS 18.0, iPhone only, Swift 6 strict concurrency, SPM — Docs: D-010–D-018 (9022272) — bundle id `vn.namkhanh.easyphone`, display name "EasyPhone", development language `vi`, default MainActor isolation removed (ARCHITECTURE §8), App Groups off (D-284)
 - [x] 0.3 Folder layout `App/ Core/{Models,Engine,Services,Networking,Persistence,Permissions,UI} Features/ Intents/ Widgets/ Resources/` — Docs: ARCHITECTURE §2, D-258 (4653af9) — D-286: empty app folders are on disk only (no `.gitkeep` inside the synchronized folder); `Widgets/` at repo root
-- [ ] 0.4 `Localizable.xcstrings` (vi source) + `InfoPlist.xcstrings` created — Docs: UI_SCREENS §0, §6 S18
+- [x] 0.4 `Localizable.xcstrings` (vi source) + `InfoPlist.xcstrings` created — Docs: UI_SCREENS §0, §6 S18 (this commit) — seeded `common.*` (§5) + 8 usage descriptions (S18), `extractionState: manual`; `vi` added to project localizations; Info.plist keys themselves come in 1G.5
 - [ ] 0.5 `AppEnvironment.live()` / `.mock()`, `AppState`, `Router` (empty routes) — Docs: ARCHITECTURE §2.2, §3
 - [ ] 0.6 SwiftData `ModelContainer` with `VersionedSchema` v1 (empty models ok) — Docs: DATA_MODEL §12
 - [ ] 0.7 `Config.xcconfig` (Debug/Release `API_BASE_URL`, Supabase URL + anon key only) — Docs: D-207, D-208
@@ -344,6 +344,12 @@ Template:
 - Decisions asked / answered: <D-xxx / P-xx>
 - Next: <one concrete next step>
 ```
+
+### 2026-11-09 — Phase 0 — String catalogs
+- Done: 0.4 (this commit) `Resources/Localizable.xcstrings` (29 `common.*` keys, vi) + `InfoPlist.xcstrings`
+  (8 usage descriptions, S18); `vi` added to project `localizations.supported`
+- Verify: build succeeded on iPhone 18 Pro simulator; app bundle has `vi.lproj/Localizable.strings` + `InfoPlist.strings`
+- Bugs: none. TODOs added: none. Next: 0.5
 
 ### 2026-11-09 — Phase 0 — Folder layout
 - Done: 0.3 (4653af9) `App/ Core/… Features/ Intents/ Resources/` in `EasyPhoneAI/`, `Widgets/` at root;

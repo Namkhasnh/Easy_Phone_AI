@@ -1,0 +1,354 @@
+{
+  "sourceLanguage": "vi",
+  "strings": {
+    "common.cancel": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hủy"
+          }
+        }
+      }
+    },
+    "common.checkAgain": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kiểm tra lại"
+          }
+        }
+      }
+    },
+    "common.choose": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chọn"
+          }
+        }
+      }
+    },
+    "common.close": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đóng"
+          }
+        }
+      }
+    },
+    "common.confirm": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xác nhận"
+          }
+        }
+      }
+    },
+    "common.continue": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiếp tục"
+          }
+        }
+      }
+    },
+    "common.copied": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã sao chép"
+          }
+        }
+      }
+    },
+    "common.copy": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sao chép"
+          }
+        }
+      }
+    },
+    "common.dateTimeFormat": {
+      "comment": "UI_SCREENS §5 — {weekday}, {dd/MM} lúc {HH:mm}, e.g. Thứ Hai, 09/11 lúc 14:00 (24 h)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, %2$@ lúc %3$@"
+          }
+        }
+      }
+    },
+    "common.demoData": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dữ liệu mẫu"
+          }
+        }
+      }
+    },
+    "common.done": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xong"
+          }
+        }
+      }
+    },
+    "common.edit": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sửa"
+          }
+        }
+      }
+    },
+    "common.empty": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chưa có"
+          }
+        }
+      }
+    },
+    "common.later": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Để sau"
+          }
+        }
+      }
+    },
+    "common.loading": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đang xử lý…"
+          }
+        }
+      }
+    },
+    "common.notYet": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chưa"
+          }
+        }
+      }
+    },
+    "common.openSettings": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mở Cài đặt"
+          }
+        }
+      }
+    },
+    "common.readAloud": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đọc to"
+          }
+        }
+      }
+    },
+    "common.retry": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thử lại"
+          }
+        }
+      }
+    },
+    "common.save": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lưu"
+          }
+        }
+      }
+    },
+    "common.saved": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã lưu"
+          }
+        }
+      }
+    },
+    "common.seeAll": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xem tất cả"
+          }
+        }
+      }
+    },
+    "common.stopReading": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dừng đọc"
+          }
+        }
+      }
+    },
+    "common.today": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hôm nay"
+          }
+        }
+      }
+    },
+    "common.tomorrow": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ngày mai"
+          }
+        }
+      }
+    },
+    "common.undo": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoàn tác"
+          }
+        }
+      }
+    },
+    "common.unsupported": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chưa hỗ trợ"
+          }
+        }
+      }
+    },
+    "common.viewSourceImage": {
+      "comment": "UI_SCREENS §5",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xem ảnh gốc"
+          }
+        }
+      }
+    },
+    "common.yesDone": {
+      "comment": "UI_SCREENS §5 — only in S07/S08, never next to common.done (D-250)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã xong"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
