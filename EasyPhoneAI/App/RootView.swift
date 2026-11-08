@@ -4,6 +4,8 @@ import SwiftUI
 /// Root navigation (ARCHITECTURE §2.2): one `NavigationStack` bound to `Router.path`.
 struct RootView: View {
     @Environment(Router.self) private var router
+    @Environment(AppState.self) private var appState
+    @Environment(\.appEnv) private var env
 
     var body: some View {
         @Bindable var router = router
@@ -13,6 +15,11 @@ struct RootView: View {
                 .navigationDestination(for: Route.self) { route in
                     destination(route)
                 }
+        }
+        .task {
+            for await session in env.auth.sessionUpdates {
+                appState.session = session
+            }
         }
     }
 

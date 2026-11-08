@@ -10,6 +10,15 @@
       "Base",
     ],
   },
+  "packages": [
+    {
+      "kind": "remote",
+      "repository": "https://github.com/supabase/supabase-swift",
+      "version": {
+        "up-to-next-major-version": "2.5.1",
+      },
+    },
+  ],
   "files": [
     { "kind": "folder", "path": "EasyPhoneAI", "target-membership": [ "EasyPhoneAI" ] },
     { "kind": "folder", "path": "Config" },
@@ -37,6 +46,13 @@
         "compile-sources",
         "frameworks",
         "resources",
+      ],
+      "package-product-members": [
+        {
+          "package": "supabase-swift",
+          "product-name": "Auth",
+          "build-phase": { "build-phase": "frameworks" },
+        },
       ],
       "build-settings": {
         "CODE_SIGN_STYLE": "Automatic",
