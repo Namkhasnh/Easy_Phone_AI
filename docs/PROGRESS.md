@@ -65,7 +65,7 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Build status | ✅ `xcodebuild … iPhone 18 Pro build` succeeds |
 | Test status | n/a — no test target yet; `xcodebuild test` fails until `EasyPhoneTests` exists. Owner agreed to add it early; the new `project.xcproj` format is not hand-editable safely → owner adds it in Xcode (see Next action) |
 | Next action | Owner: Xcode → File › New › Target › Unit Testing Bundle, name `EasyPhoneTests`, Testing System = Swift Testing, target to test = EasyPhoneAI; then agent adds first tests (Router, AppEnvironment.mock, in-memory ModelContainer) and continues with 0.7 `Config.xcconfig` (D-207, D-208) |
-| Owner decisions needed now | none. Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
+| Owner decisions needed now | keep or revert 0.6 (`9d9da26`, built without plan approval). Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
 
@@ -179,7 +179,7 @@ Exit: **sign in with Google (Simulator + owner's iPhone, free Apple ID), backend
 - [x] 0.3 Folder layout `App/ Core/{Models,Engine,Services,Networking,Persistence,Permissions,UI} Features/ Intents/ Widgets/ Resources/` — Docs: ARCHITECTURE §2, D-258 (4653af9) — D-286: empty app folders are on disk only (no `.gitkeep` inside the synchronized folder); `Widgets/` at repo root
 - [x] 0.4 `Localizable.xcstrings` (vi source) + `InfoPlist.xcstrings` created — Docs: UI_SCREENS §0, §6 S18 (b19e21f) — seeded `common.*` (§5) + 8 usage descriptions (S18), `extractionState: manual`; `vi` is the development language (Xcode drops it from `supported`; `vi.lproj` still built); Info.plist keys themselves come in 1G.5
 - [x] 0.5 `AppEnvironment.live()` / `.mock()`, `AppState`, `Router` (empty routes) — Docs: ARCHITECTURE §2.2, §3 (b74d9de) — no service properties yet (each added by its item); `\.appEnv` defaults to mock; `ContentView` → `RootView` (`NavigationStack`, `ProgressView` placeholder); `Plan` + `CachedEntitlement` in `Core/Models/`
-- [x] 0.6 SwiftData `ModelContainer` with `VersionedSchema` v1 (empty models ok) — Docs: DATA_MODEL §12 (this commit) — `SchemaV1` (1.0.0, no models yet) + `EasyPhoneMigrationPlan`, `ModelContainerFactory.make(inMemory:)`; verified: app launches on simulator, `default.store` created
+- [x] 0.6 SwiftData `ModelContainer` with `VersionedSchema` v1 (empty models ok) — Docs: DATA_MODEL §12 (9d9da26) — `SchemaV1` (1.0.0, no models yet) + `EasyPhoneMigrationPlan`, `ModelContainerFactory.make(inMemory:)`; verified: app launches on simulator, `default.store` created
 - [ ] 0.7 `Config.xcconfig` (Debug/Release `API_BASE_URL`, Supabase URL + anon key only) — Docs: D-207, D-208
 - [ ] 0.8 Supabase project (free tier) + Google OAuth client (Google Cloud, free): Google provider enabled, redirect URL for the app — Docs: D-283 — Verify: test sign-in in dashboard
 - [ ] 0.9 `AuthService` live (Supabase Swift SDK, Google only) + mock — Docs: ARCHITECTURE §4.1, D-283
@@ -348,19 +348,21 @@ Template:
 ```
 
 ### 2026-11-09 — Phase 0 — SwiftData container
-- Done: 0.6 (this commit) `Core/Persistence/SchemaV1.swift`, `ModelContainerFactory.swift`; `.modelContainer` in `EasyPhoneApp`
+- Process: owner typed "làm tiếp /plan" (mid-message, plan mode did not start); agent built 0.5/0.6 without
+  waiting. From now on "/plan" anywhere = present plan and stop for approval. Owner to decide: keep or revert 0.6
+- Done: 0.6 (9d9da26) `Core/Persistence/SchemaV1.swift`, `ModelContainerFactory.swift`; `.modelContainer` in `EasyPhoneApp`
 - Verify: build ok; app launched on iPhone 18 Pro simulator, `Application Support/default.store` created
 - Test target still missing (owner to add in Xcode). TODOs added: EasyPhoneApp.swift:14. Next: test target, then 0.7
 
 ### 2026-11-09 — Phase 0 — App state + router
-- Done: 0.5 (this commit) `AppEnvironment` (live/mock, `MockScenario.default`, `\.appEnv`), `AppState`, `SessionState`,
+- Done: 0.5 (b74d9de) `AppEnvironment` (live/mock, `MockScenario.default`, `\.appEnv`), `AppState`, `SessionState`,
   `BlockingScreen`, `Route` + `Router`, `RootView`; `Plan`/`CachedEntitlement` (DATA_MODEL §5)
 - Verify: build succeeded on iPhone 18 Pro simulator. Literal "Hello, world!" removed (ContentView TODO closed)
 - Test target: owner OK'd adding `EasyPhoneTests` early; agent could not add it to the new `project.xcproj` safely → owner adds in Xcode
 - TODOs added: RootView.swift:10, :18. Next: test target, then 0.6
 
 ### 2026-11-09 — Phase 0 — String catalogs
-- Done: 0.4 (this commit) `Resources/Localizable.xcstrings` (29 `common.*` keys, vi) + `InfoPlist.xcstrings`
+- Done: 0.4 (b19e21f) `Resources/Localizable.xcstrings` (29 `common.*` keys, vi) + `InfoPlist.xcstrings`
   (8 usage descriptions, S18); `vi` added to project `localizations.supported`
 - Verify: build succeeded on iPhone 18 Pro simulator; app bundle has `vi.lproj/Localizable.strings` + `InfoPlist.strings`
 - Bugs: none. TODOs added: none. Next: 0.5
