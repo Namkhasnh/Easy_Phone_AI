@@ -67,8 +67,7 @@
         "SWIFT_VERSION": "6.0",
         "TARGETED_DEVICE_FAMILY": "1",
       },
-    },
-    {
+    }, {
       "name": "EasyPhoneTests",
       "id": "000000000000000200000000",
       "product": "Products/EasyPhoneTests.xctest",
