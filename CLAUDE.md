@@ -74,6 +74,9 @@ to `PROGRESS.md` §5.2. Never resolve a conflict silently.
 12. Out-of-scope request → show **"Chưa hỗ trợ"**; never partially implement it (DECISIONS §9.4).
 
 ## 6. iOS conventions
+**Folders (D-286):** app code lives in `EasyPhoneAI/{App, Core/{Models,Engine,Services/{Live,Mock},Networking,Persistence,Permissions,UI/Components}, Features/<Screen>, Intents, Resources}`.
+It is a synchronized Xcode folder: every file inside joins the target — no `.gitkeep`/README there, and Swift file
+names must be unique. `Widgets/` and `backend/` are at the repo root.
 **Layers (dependencies point down only):** View → ViewModel → `TaskEngine` / use case → Service protocol → framework.
 - Views and ViewModels **never import** EventKit, Contacts, MessageUI, Speech, Vision, StoreKit or Supabase.
   They see only protocols from `Core/Services/` (D-015).

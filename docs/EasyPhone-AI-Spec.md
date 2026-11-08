@@ -77,6 +77,8 @@ Simulator and the owner's iPhone (free Apple ID). Sign-in = Google only. Subscri
 
 ### 3.2 Xcode project layout (D-258)
 
+> Repo reality (D-286): `EasyPhone/` below = the `EasyPhoneAI/` app folder; `Widgets/` and `backend/` sit at the repo root.
+
 ```
 EasyPhone/
   App/                 EasyPhoneApp.swift, AppState, Router, AppEnvironment

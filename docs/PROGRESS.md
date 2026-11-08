@@ -59,12 +59,12 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Key | Value |
 |---|---|
 | Last updated | 2026-11-08 |
-| Current phase | **Phase 0 — Skeleton** (0.1, 0.2 done) |
+| Current phase | **Phase 0 — Skeleton** (0.1 – 0.3 done) |
 | Working on | — |
-| Last commit | `[0] project settings …` on branch `demo_git` (no remote yet) |
+| Last commit | `[0] folder layout …` on branch `demo_git` (no remote yet) |
 | Build status | ✅ `xcodebuild … iPhone 18 Pro build` succeeds |
 | Test status | n/a — no test target yet (added in Phase 1A); `xcodebuild test` is expected to fail until then |
-| Next action | Item 0.3: folder layout — first ask the owner about DOC-19 (keep `EasyPhoneAI/` folder name) |
+| Next action | Item 0.4: `Resources/Localizable.xcstrings` (vi source) + `InfoPlist.xcstrings` |
 | Owner decisions needed now | none. Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
@@ -146,14 +146,14 @@ Format: `BUG-xxx | phase | severity (P1 crash/data loss, P2 wrong behavior, P3 c
 | DOC-16 | "Việc chưa xong" and `currentStep` (when no step qualifies) undefined | UI S02/S08/§7, DATA_MODEL §3.2 | D-244 | fixed |
 | DOC-17 | `/v1/extract` has no `title`, so OCR → calendarEvent always needs a follow-up for `title` | API_CONTRACT §7.2, AI_PROMPTS §4, DATA_MODEL §4 | owner: add `title` to extract (e.g. clinic/appointment name) or keep editor-only; until then the user types it in S05 (no AI call) | fixed (D-276) |
 | DOC-18 | Phase 0/1A items depend on pending proposals (P-23 layout vs LOCKED D-019, P-30, P-32, P-33, P-38) | PROGRESS §4, §6 | owner approves P-17 – P-40 as a batch (P-23 as a superseding D-id) before 0.3 | fixed (D-252 – D-275) |
-| DOC-19 | Spec §3.2 layout root is `EasyPhone/`; the repo's app folder, target and scheme are `EasyPhoneAI` (CLAUDE.md §8 uses `EasyPhoneAI`) | Spec §3.2 vs repo | keep `EasyPhoneAI/` as the app root (no project rename); confirm with owner in 0.3 | open |
+| DOC-19 | Spec §3.2 layout root is `EasyPhone/`; the repo's app folder, target and scheme are `EasyPhoneAI` (CLAUDE.md §8 uses `EasyPhoneAI`) | Spec §3.2 vs repo | keep `EasyPhoneAI/` as the app root (no project rename) | fixed (D-286) |
 
 ### 5.3 Code TODOs left in source
 List every `// TODO(spec):` and `// TODO(decision):` with file + line. Remove when resolved.
 
 | File:line | Tag | Note |
 |---|---|---|
-| `EasyPhoneAI/ContentView.swift:3` | TODO(spec) | placeholder view with a literal string; replaced in 0.3/0.5 |
+| `EasyPhoneAI/App/ContentView.swift:3` | TODO(spec) | placeholder view with a literal string; replaced in 0.3/0.5 |
 
 ### 5.4 Closed (append-only)
 | ID | Closed on | Commit | Note |
@@ -161,6 +161,7 @@ List every `// TODO(spec):` and `// TODO(decision):` with file + line. Remove wh
 | DOC-8 – DOC-16 | 2026-11-08 | docs only | resolved by D-243 – D-251 |
 | DOC-3, DOC-4, DOC-17, DOC-18 | 2026-11-08 | docs only | resolved by D-266, D-253, D-276, D-252 – D-275 |
 | DOC-1, DOC-2, DOC-5, DOC-6, DOC-7 | 2026-11-08 | docs only | resolved by D-277 – D-281 |
+| DOC-19 | 2026-11-09 | 0.3 commit | resolved by D-286 (keep `EasyPhoneAI/`) |
 
 ---
 
@@ -172,8 +173,8 @@ before the next phase starts. Architecture order per ARCHITECTURE §13.1.
 ### Phase 0 — Skeleton
 Exit: **sign in with Google (Simulator + owner's iPhone, free Apple ID), backend returns the user id** (`GET /v1/me`, D-283).
 - [x] 0.1 git repo, `.gitignore` (`.env`, `*.p8`, `Secrets.xcconfig`, D-207), `CLAUDE.md` at root — Verify: `git check-ignore .env` (716adcd)
-- [x] 0.2 Xcode project: iOS 18.0, iPhone only, Swift 6 strict concurrency, SPM — Docs: D-010–D-018 (this commit) — bundle id `vn.namkhanh.easyphone`, display name "EasyPhone", development language `vi`, default MainActor isolation removed (ARCHITECTURE §8), App Groups off (D-284)
-- [ ] 0.3 Folder layout `App/ Core/{Models,Engine,Services,Networking,Persistence,Permissions,UI} Features/ Intents/ Widgets/ Resources/` — Docs: ARCHITECTURE §2, D-258
+- [x] 0.2 Xcode project: iOS 18.0, iPhone only, Swift 6 strict concurrency, SPM — Docs: D-010–D-018 (9022272) — bundle id `vn.namkhanh.easyphone`, display name "EasyPhone", development language `vi`, default MainActor isolation removed (ARCHITECTURE §8), App Groups off (D-284)
+- [x] 0.3 Folder layout `App/ Core/{Models,Engine,Services,Networking,Persistence,Permissions,UI} Features/ Intents/ Widgets/ Resources/` — Docs: ARCHITECTURE §2, D-258 (this commit) — D-286: empty app folders are on disk only (no `.gitkeep` inside the synchronized folder); `Widgets/` at repo root
 - [ ] 0.4 `Localizable.xcstrings` (vi source) + `InfoPlist.xcstrings` created — Docs: UI_SCREENS §0, §6 S18
 - [ ] 0.5 `AppEnvironment.live()` / `.mock()`, `AppState`, `Router` (empty routes) — Docs: ARCHITECTURE §2.2, §3
 - [ ] 0.6 SwiftData `ModelContainer` with `VersionedSchema` v1 (empty models ok) — Docs: DATA_MODEL §12
@@ -343,6 +344,12 @@ Template:
 - Decisions asked / answered: <D-xxx / P-xx>
 - Next: <one concrete next step>
 ```
+
+### 2026-11-09 — Phase 0 — Folder layout
+- Done: 0.3 (this commit) `App/ Core/… Features/ Intents/ Resources/` in `EasyPhoneAI/`, `Widgets/` at root;
+  `MyApp.swift` → `App/EasyPhoneApp.swift` (`EasyPhoneApp`), `ContentView.swift` → `App/`
+- Found: `.gitkeep` inside the synchronized app folder breaks the build ("Multiple commands produce …/.gitkeep") → D-286
+- Verify: build succeeded on iPhone 18 Pro simulator. DOC-19 closed (D-286). Next: 0.4
 
 ### 2026-11-08 — Phase 0 — Repo + project settings
 - Done: 0.1 (716adcd) `.gitignore`, docs/CLAUDE.md/skills committed, xcuserdata untracked; 0.2 (this commit)
