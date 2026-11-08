@@ -1,0 +1,102 @@
+{
+  "sourceLanguage": "vi",
+  "strings": {
+    "NSCalendarsFullAccessUsageDescription": {
+      "comment": "UI_SCREENS S18, D-186",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EasyPhone xem và tạo lịch hẹn theo yêu cầu của bạn. Lịch chỉ được xử lý trên điện thoại."
+          }
+        }
+      }
+    },
+    "NSCameraUsageDescription": {
+      "comment": "UI_SCREENS S18, D-186",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EasyPhone dùng camera để chụp giấy tờ và đọc chữ giúp bạn."
+          }
+        }
+      }
+    },
+    "NSContactsUsageDescription": {
+      "comment": "UI_SCREENS S18, D-186",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EasyPhone tìm người trong danh bạ để gọi hoặc nhắn tin. Danh bạ không được gửi lên máy chủ."
+          }
+        }
+      }
+    },
+    "NSLocationWhenInUseUsageDescription": {
+      "comment": "UI_SCREENS S18, D-186",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EasyPhone dùng vị trí để tìm địa điểm gần bạn."
+          }
+        }
+      }
+    },
+    "NSMicrophoneUsageDescription": {
+      "comment": "UI_SCREENS S18, D-186",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EasyPhone dùng micro để nghe yêu cầu bạn nói."
+          }
+        }
+      }
+    },
+    "NSPhotoLibraryUsageDescription": {
+      "comment": "UI_SCREENS S18, D-186",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EasyPhone đọc ảnh bạn chọn để lấy thông tin như ngày hẹn, địa chỉ."
+          }
+        }
+      }
+    },
+    "NSRemindersFullAccessUsageDescription": {
+      "comment": "UI_SCREENS S18, D-186",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EasyPhone tạo và quản lý lời nhắc theo yêu cầu của bạn."
+          }
+        }
+      }
+    },
+    "NSSpeechRecognitionUsageDescription": {
+      "comment": "UI_SCREENS S18, D-186",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EasyPhone chuyển lời bạn nói thành chữ để hiểu yêu cầu."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
