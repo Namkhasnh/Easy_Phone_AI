@@ -1,0 +1,7 @@
+// Release → production backend (D-208).
+// TODO(decision): D-036 — no production hosting in thesis scope (D-284); same backend as Debug for now.
+#include "Base.xcconfig"
+
+API_BASE_URL = http:/$()/127.0.0.1:8000
+
+#include? "Secrets.xcconfig"
