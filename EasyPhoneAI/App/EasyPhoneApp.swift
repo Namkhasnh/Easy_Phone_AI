@@ -1,9 +1,20 @@
+import SwiftData
 import SwiftUI
 
 @main struct EasyPhoneApp: App {
     @State private var appState = AppState()
     @State private var router = Router()
     private let env = AppEnvironment.live()
+    private let modelContainer: ModelContainer
+
+    init() {
+        do {
+            modelContainer = try ModelContainerFactory.make()
+        } catch {
+            // TODO(spec): store open failure (corrupt / migration) has no screen; drafts must never be lost (D-104).
+            fatalError("SwiftData container failed: \(error)")
+        }
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -12,5 +23,6 @@ import SwiftUI
                 .environment(router)
                 .environment(\.appEnv, env)
         }
+        .modelContainer(modelContainer)
     }
 }
