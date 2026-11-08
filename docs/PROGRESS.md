@@ -61,7 +61,7 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Last updated | 2026-11-09 |
 | Current phase | **Phase 0 — Skeleton** (0.1 – 0.9 done) |
 | Working on | — |
-| Last commit | `[0] AuthService live (Supabase Auth) + mock, 0.9 done …` on branch `demo_git` (no remote yet) |
+| Last commit | `[0] AuthService live (Supabase Auth) + mock, 0.9 done …` on branch `demo_git`, pushed to `origin` (github.com/Namkhasnh/Easy_Phone_AI) |
 | Build status | ✅ `xcodebuild … iPhone 18 Pro build` succeeds |
 | Test status | ✅ `xcodebuild … test` — 19/19 green (`EasyPhoneTests`: AppConfig, AppEnvironment.mock, ModelContainer, Router, AuthService) |
 | Next action | 0.10 S01 Sign-in screen (`Features/SignIn/`: `SignInViewModel` calls `env.auth.signInWithGoogle()`, `CancellationError` = silent, `auth.signInFailed` → `error.auth.signInFailed` key; RootView shows S01 when `.signedOut`) + `#Preview`; then sign in for real on Simulator (UI_SCREENS S01) |
@@ -354,6 +354,7 @@ Template:
 - Owner step: added the SPM package in Xcode (agent could not hand-edit package keys safely)
 - Verify: build ok, 19/19 tests, app launches on simulator. Bugs: none. TODOs added: none
 - Next: 0.10 S01 sign-in screen, then real Google sign-in on Simulator
+- Later: Xcode re-formatted `InfoPlist.xcstrings` + auto-extracted `CFBundleDisplayName`/`CFBundleName` (8 S18 keys intact) → committed; `demo_git` pushed to GitHub. ⌘R still shows only a `ProgressView` until 0.10
 
 ### 2026-11-09 — Phase 0 — 0.7 config files
 - Done: owner kept 0.6 (`9d9da26`); `/plan` slash command unavailable in the mobile app — put "/plan" at the end of a message instead
