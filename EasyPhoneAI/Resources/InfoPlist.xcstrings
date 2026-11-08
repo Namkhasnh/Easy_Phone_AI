@@ -1,102 +1,126 @@
 {
-  "sourceLanguage": "vi",
-  "strings": {
-    "NSCalendarsFullAccessUsageDescription": {
-      "comment": "UI_SCREENS S18, D-186",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EasyPhone xem và tạo lịch hẹn theo yêu cầu của bạn. Lịch chỉ được xử lý trên điện thoại."
+  "sourceLanguage" : "vi",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "Bundle display name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "EasyPhone"
           }
         }
       }
     },
-    "NSCameraUsageDescription": {
-      "comment": "UI_SCREENS S18, D-186",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EasyPhone dùng camera để chụp giấy tờ và đọc chữ giúp bạn."
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "EasyPhoneAI"
           }
         }
       }
     },
-    "NSContactsUsageDescription": {
-      "comment": "UI_SCREENS S18, D-186",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EasyPhone tìm người trong danh bạ để gọi hoặc nhắn tin. Danh bạ không được gửi lên máy chủ."
+    "NSCalendarsFullAccessUsageDescription" : {
+      "comment" : "UI_SCREENS S18, D-186",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EasyPhone xem và tạo lịch hẹn theo yêu cầu của bạn. Lịch chỉ được xử lý trên điện thoại."
           }
         }
       }
     },
-    "NSLocationWhenInUseUsageDescription": {
-      "comment": "UI_SCREENS S18, D-186",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EasyPhone dùng vị trí để tìm địa điểm gần bạn."
+    "NSCameraUsageDescription" : {
+      "comment" : "UI_SCREENS S18, D-186",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EasyPhone dùng camera để chụp giấy tờ và đọc chữ giúp bạn."
           }
         }
       }
     },
-    "NSMicrophoneUsageDescription": {
-      "comment": "UI_SCREENS S18, D-186",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EasyPhone dùng micro để nghe yêu cầu bạn nói."
+    "NSContactsUsageDescription" : {
+      "comment" : "UI_SCREENS S18, D-186",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EasyPhone tìm người trong danh bạ để gọi hoặc nhắn tin. Danh bạ không được gửi lên máy chủ."
           }
         }
       }
     },
-    "NSPhotoLibraryUsageDescription": {
-      "comment": "UI_SCREENS S18, D-186",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EasyPhone đọc ảnh bạn chọn để lấy thông tin như ngày hẹn, địa chỉ."
+    "NSLocationWhenInUseUsageDescription" : {
+      "comment" : "UI_SCREENS S18, D-186",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EasyPhone dùng vị trí để tìm địa điểm gần bạn."
           }
         }
       }
     },
-    "NSRemindersFullAccessUsageDescription": {
-      "comment": "UI_SCREENS S18, D-186",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EasyPhone tạo và quản lý lời nhắc theo yêu cầu của bạn."
+    "NSMicrophoneUsageDescription" : {
+      "comment" : "UI_SCREENS S18, D-186",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EasyPhone dùng micro để nghe yêu cầu bạn nói."
           }
         }
       }
     },
-    "NSSpeechRecognitionUsageDescription": {
-      "comment": "UI_SCREENS S18, D-186",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EasyPhone chuyển lời bạn nói thành chữ để hiểu yêu cầu."
+    "NSPhotoLibraryUsageDescription" : {
+      "comment" : "UI_SCREENS S18, D-186",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EasyPhone đọc ảnh bạn chọn để lấy thông tin như ngày hẹn, địa chỉ."
+          }
+        }
+      }
+    },
+    "NSRemindersFullAccessUsageDescription" : {
+      "comment" : "UI_SCREENS S18, D-186",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EasyPhone tạo và quản lý lời nhắc theo yêu cầu của bạn."
+          }
+        }
+      }
+    },
+    "NSSpeechRecognitionUsageDescription" : {
+      "comment" : "UI_SCREENS S18, D-186",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EasyPhone chuyển lời bạn nói thành chữ để hiểu yêu cầu."
           }
         }
       }
     }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }
