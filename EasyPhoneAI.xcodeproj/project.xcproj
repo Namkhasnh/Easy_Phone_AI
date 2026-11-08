@@ -12,6 +12,7 @@
   },
   "files": [
     { "kind": "folder", "path": "EasyPhoneAI", "target-membership": [ "EasyPhoneAI" ] },
+    { "kind": "folder", "path": "Config" },
     {
       "kind": "group",
       "name": "Products",
@@ -26,6 +27,10 @@
       "id": "000000000000000100000000",
       "product": "Products/EasyPhoneAI.app",
       "product-type": "application",
+      "specialized-configurations": [
+        { "name": "Debug", "file": { "anchor": "Config", "relative-path": "Debug.xcconfig" } },
+        { "name": "Release", "file": { "anchor": "Config", "relative-path": "Release.xcconfig" } },
+      ],
       "build-phases": [
         "compile-sources",
         "frameworks",
@@ -36,6 +41,7 @@
         "CURRENT_PROJECT_VERSION": "1",
         "ENABLE_PREVIEWS": "YES",
         "GENERATE_INFOPLIST_FILE": "YES",
+        "INFOPLIST_FILE": "Config/Info.plist",
         "INFOPLIST_KEY_CFBundleDisplayName": "EasyPhone",
         "INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]": "YES",
         "INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]": "YES",
