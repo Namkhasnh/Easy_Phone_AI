@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 /// Root navigation (ARCHITECTURE §2.2): one `NavigationStack` bound to `Router.path`.
@@ -26,4 +27,5 @@ struct RootView: View {
         .environment(AppState())
         .environment(Router())
         .environment(\.appEnv, .mock())
+        .modelContainer(try! ModelContainerFactory.make(inMemory: true))   // preview only
 }
