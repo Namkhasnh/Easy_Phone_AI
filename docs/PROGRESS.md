@@ -59,12 +59,12 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Key | Value |
 |---|---|
 | Last updated | 2026-11-09 |
-| Current phase | **Phase 0 — Skeleton** (0.1 – 0.4 done) |
+| Current phase | **Phase 0 — Skeleton** (0.1 – 0.5 done) |
 | Working on | — |
-| Last commit | `[0] string catalogs …` on branch `demo_git` (no remote yet) |
+| Last commit | `[0] AppEnvironment, AppState, Router …` on branch `demo_git` (no remote yet) |
 | Build status | ✅ `xcodebuild … iPhone 18 Pro build` succeeds |
-| Test status | n/a — no test target yet (added in Phase 1A); `xcodebuild test` is expected to fail until then |
-| Next action | Item 0.5: `AppEnvironment.live()` / `.mock()`, `AppState`, `Router` (empty routes) per ARCHITECTURE §2.2, §3 |
+| Test status | n/a — no test target yet; `xcodebuild test` fails until `EasyPhoneTests` exists. Owner agreed to add it early; the new `project.xcproj` format is not hand-editable safely → owner adds it in Xcode (see Next action) |
+| Next action | Owner: Xcode → File › New › Target › Unit Testing Bundle, name `EasyPhoneTests`, Testing System = Swift Testing, target to test = EasyPhoneAI; then agent adds first tests (Router, AppEnvironment.mock) and continues with 0.6 SwiftData `ModelContainer` (DATA_MODEL §12) |
 | Owner decisions needed now | none. Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
@@ -153,7 +153,8 @@ List every `// TODO(spec):` and `// TODO(decision):` with file + line. Remove wh
 
 | File:line | Tag | Note |
 |---|---|---|
-| `EasyPhoneAI/App/ContentView.swift:3` | TODO(spec) | placeholder view with a literal string; replaced in 0.3/0.5 |
+| `EasyPhoneAI/App/RootView.swift:10` | TODO(spec) | root screen by `AppState.session` (S01 in 0.10, S02 in 1B.1) |
+| `EasyPhoneAI/App/RootView.swift:18` | TODO(spec) | route destinations are `EmptyView` until each screen's item |
 
 ### 5.4 Closed (append-only)
 | ID | Closed on | Commit | Note |
@@ -175,8 +176,8 @@ Exit: **sign in with Google (Simulator + owner's iPhone, free Apple ID), backend
 - [x] 0.1 git repo, `.gitignore` (`.env`, `*.p8`, `Secrets.xcconfig`, D-207), `CLAUDE.md` at root — Verify: `git check-ignore .env` (716adcd)
 - [x] 0.2 Xcode project: iOS 18.0, iPhone only, Swift 6 strict concurrency, SPM — Docs: D-010–D-018 (9022272) — bundle id `vn.namkhanh.easyphone`, display name "EasyPhone", development language `vi`, default MainActor isolation removed (ARCHITECTURE §8), App Groups off (D-284)
 - [x] 0.3 Folder layout `App/ Core/{Models,Engine,Services,Networking,Persistence,Permissions,UI} Features/ Intents/ Widgets/ Resources/` — Docs: ARCHITECTURE §2, D-258 (4653af9) — D-286: empty app folders are on disk only (no `.gitkeep` inside the synchronized folder); `Widgets/` at repo root
-- [x] 0.4 `Localizable.xcstrings` (vi source) + `InfoPlist.xcstrings` created — Docs: UI_SCREENS §0, §6 S18 (this commit) — seeded `common.*` (§5) + 8 usage descriptions (S18), `extractionState: manual`; `vi` added to project localizations; Info.plist keys themselves come in 1G.5
-- [ ] 0.5 `AppEnvironment.live()` / `.mock()`, `AppState`, `Router` (empty routes) — Docs: ARCHITECTURE §2.2, §3
+- [x] 0.4 `Localizable.xcstrings` (vi source) + `InfoPlist.xcstrings` created — Docs: UI_SCREENS §0, §6 S18 (b19e21f) — seeded `common.*` (§5) + 8 usage descriptions (S18), `extractionState: manual`; `vi` added to project localizations; Info.plist keys themselves come in 1G.5
+- [x] 0.5 `AppEnvironment.live()` / `.mock()`, `AppState`, `Router` (empty routes) — Docs: ARCHITECTURE §2.2, §3 (this commit) — no service properties yet (each added by its item); `\.appEnv` defaults to mock; `ContentView` → `RootView` (`NavigationStack`, `ProgressView` placeholder); `Plan` + `CachedEntitlement` in `Core/Models/`
 - [ ] 0.6 SwiftData `ModelContainer` with `VersionedSchema` v1 (empty models ok) — Docs: DATA_MODEL §12
 - [ ] 0.7 `Config.xcconfig` (Debug/Release `API_BASE_URL`, Supabase URL + anon key only) — Docs: D-207, D-208
 - [ ] 0.8 Supabase project (free tier) + Google OAuth client (Google Cloud, free): Google provider enabled, redirect URL for the app — Docs: D-283 — Verify: test sign-in in dashboard
@@ -344,6 +345,13 @@ Template:
 - Decisions asked / answered: <D-xxx / P-xx>
 - Next: <one concrete next step>
 ```
+
+### 2026-11-09 — Phase 0 — App state + router
+- Done: 0.5 (this commit) `AppEnvironment` (live/mock, `MockScenario.default`, `\.appEnv`), `AppState`, `SessionState`,
+  `BlockingScreen`, `Route` + `Router`, `RootView`; `Plan`/`CachedEntitlement` (DATA_MODEL §5)
+- Verify: build succeeded on iPhone 18 Pro simulator. Literal "Hello, world!" removed (ContentView TODO closed)
+- Test target: owner OK'd adding `EasyPhoneTests` early; agent could not add it to the new `project.xcproj` safely → owner adds in Xcode
+- TODOs added: RootView.swift:10, :18. Next: test target, then 0.6
 
 ### 2026-11-09 — Phase 0 — String catalogs
 - Done: 0.4 (this commit) `Resources/Localizable.xcstrings` (29 `common.*` keys, vi) + `InfoPlist.xcstrings`
