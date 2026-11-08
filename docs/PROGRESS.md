@@ -59,12 +59,12 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Key | Value |
 |---|---|
 | Last updated | 2026-11-09 |
-| Current phase | **Phase 0 — Skeleton** (0.1 – 0.8 done) |
+| Current phase | **Phase 0 — Skeleton** (0.1 – 0.9 done) |
 | Working on | — |
-| Last commit | `[0] SwiftData container …` on branch `demo_git` (no remote yet) |
+| Last commit | `[0] AuthService live (Supabase Auth) + mock, 0.9 done …` on branch `demo_git` (no remote yet) |
 | Build status | ✅ `xcodebuild … iPhone 18 Pro build` succeeds |
-| Test status | ✅ `xcodebuild … test` — 12/12 green (`EasyPhoneTests`: AppConfig, AppEnvironment.mock, in-memory ModelContainer, Router) |
-| Next action | 0.9 `AuthService` protocol + `LiveAuthService` (Supabase Swift SDK via SPM — first package, D-017 allows it) + `MockAuthService`; Google via `signInWithOAuth(provider: .google, redirectTo: vn.namkhanh.easyphone://login-callback)` + URL scheme in Info.plist (ARCHITECTURE §4.1, D-283) |
+| Test status | ✅ `xcodebuild … test` — 19/19 green (`EasyPhoneTests`: AppConfig, AppEnvironment.mock, ModelContainer, Router, AuthService) |
+| Next action | 0.10 S01 Sign-in screen (`Features/SignIn/`: `SignInViewModel` calls `env.auth.signInWithGoogle()`, `CancellationError` = silent, `auth.signInFailed` → `error.auth.signInFailed` key; RootView shows S01 when `.signedOut`) + `#Preview`; then sign in for real on Simulator (UI_SCREENS S01) |
 | Owner decisions needed now | none (0.6 kept by owner 2026-11-09). Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
@@ -154,8 +154,8 @@ List every `// TODO(spec):` and `// TODO(decision):` with file + line. Remove wh
 | File:line | Tag | Note |
 |---|---|---|
 | `EasyPhoneAI/App/EasyPhoneApp.swift:14` | TODO(spec) | SwiftData store open failure → `fatalError`; no recovery screen specified (D-104) |
-| `EasyPhoneAI/App/RootView.swift:11` | TODO(spec) | root screen by `AppState.session` (S01 in 0.10, S02 in 1B.1) |
-| `EasyPhoneAI/App/RootView.swift:19` | TODO(spec) | route destinations are `EmptyView` until each screen's item |
+| `EasyPhoneAI/App/RootView.swift:13` | TODO(spec) | root screen by `AppState.session` (S01 in 0.10, S02 in 1B.1) |
+| `EasyPhoneAI/App/RootView.swift:26` | TODO(spec) | route destinations are `EmptyView` until each screen's item |
 | `Config/Release.xcconfig:2` | TODO(decision) | D-036: no production backend in thesis scope (D-284); Release uses the Debug backend URL |
 
 ### 5.4 Closed (append-only)
@@ -183,7 +183,7 @@ Exit: **sign in with Google (Simulator + owner's iPhone, free Apple ID), backend
 - [x] 0.6 SwiftData `ModelContainer` with `VersionedSchema` v1 (empty models ok) — Docs: DATA_MODEL §12 (9d9da26) — `SchemaV1` (1.0.0, no models yet) + `EasyPhoneMigrationPlan`, `ModelContainerFactory.make(inMemory:)`; verified: app launches on simulator, `default.store` created
 - [x] 0.7 `Config.xcconfig` (Debug/Release `API_BASE_URL`, Supabase URL + anon key only) — Docs: D-207, D-208 (1af55a3 + project wiring commit after it) — `Config/{Base,Debug,Release,Secrets.example}.xcconfig` + partial `Config/Info.plist` at repo root (non-target folder ref in project), `Core/Networking/AppConfig.swift`, `AppEnvironment.config`; target base configs = `specialized-configurations` in `project.xcproj` (new Xcode format, hand-editable), `INFOPLIST_FILE = Config/Info.plist`. Verified: Debug + Release build, built Info.plist `APIBaseURL = http://127.0.0.1:8000`, Supabase keys empty until 0.8, app launches on simulator
 - [x] 0.8 Supabase project (free tier) + Google OAuth client (Google Cloud, free): Google provider enabled, redirect URL for the app — Docs: D-283 — Verify: test sign-in in dashboard (commit after a556285) — project `ssbppiwuzuxptyzqxlcq` (Singapore, Free); Google Cloud project `EasyPhone`, consent External + Testing (owner's Gmail = test user), OAuth client type Web, redirect `https://<ref>.supabase.co/auth/v1/callback`; Supabase: Google on, Email off, signups allowed, redirect URL `vn.namkhanh.easyphone://login-callback`; app uses the **publishable** key (`sb_publishable_…`, replaces legacy anon, D-207) in git-ignored `Config/Secrets.xcconfig`. Verified: `/auth/v1/settings` google=true email=false; browser sign-in via `/auth/v1/authorize?provider=google` → owner's user in Auth › Users; built Info.plist has Supabase URL + key
-- [ ] 0.9 `AuthService` live (Supabase Swift SDK, Google only) + mock — Docs: ARCHITECTURE §4.1, D-283
+- [x] 0.9 `AuthService` live (Supabase Swift SDK, Google only) + mock — Docs: ARCHITECTURE §4.1, D-283 (this commit) — SPM `supabase-swift` 2.55.6, product `Auth` only (owner added in Xcode; new format keys `packages` + `package-product-members`); `Core/Services/{AuthService,ServiceError}.swift`, `Live/LiveAuthService.swift` (PKCE, Keychain, `signOut` falls back to `.local`), `Mock/MockAuthService.swift` (`Mutex`); `AppEnvironment.auth`; RootView streams `sessionUpdates` → `AppState.session`; `CFBundleURLTypes` scheme `vn.namkhanh.easyphone`. Verified: build, 19 tests, app launches on simulator. Real Google sign-in exercised in 0.10 (needs the S01 button)
 - [ ] 0.10 S01 Sign-in screen (Google button, legal text) + `#Preview` — Docs: UI_SCREENS S01
 - [ ] 0.11 Backend skeleton: FastAPI, `config.py` (pydantic-settings), `deps.py`, request-id middleware, error envelope handler — Docs: ARCHITECTURE §7, §9.3; API_CONTRACT §3
 - [ ] 0.12 `GET /v1/health` (no auth) — Verify: pytest + curl
@@ -347,6 +347,13 @@ Template:
 - Decisions asked / answered: <D-xxx / P-xx>
 - Next: <one concrete next step>
 ```
+
+### 2026-11-09 — Phase 0 — AuthService
+- Process: "làm tiếp /plan" → EnterPlanMode, plan approved by owner, then built
+- Done: 0.9 AuthService protocol + Live (Supabase `Auth` 2.55.6) + Mock, wired into `AppEnvironment` / RootView
+- Owner step: added the SPM package in Xcode (agent could not hand-edit package keys safely)
+- Verify: build ok, 19/19 tests, app launches on simulator. Bugs: none. TODOs added: none
+- Next: 0.10 S01 sign-in screen, then real Google sign-in on Simulator
 
 ### 2026-11-09 — Phase 0 — 0.7 config files
 - Done: owner kept 0.6 (`9d9da26`); `/plan` slash command unavailable in the mobile app — put "/plan" at the end of a message instead
