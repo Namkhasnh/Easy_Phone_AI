@@ -60,12 +60,12 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 |---|---|
 | Last updated | 2026-11-09 |
 | Current phase | **Phase 0 — Skeleton** (0.1 – 0.6 done) |
-| Working on | — |
+| Working on | 0.7 `Config.xcconfig` — waiting for the owner's Xcode step |
 | Last commit | `[0] SwiftData container …` on branch `demo_git` (no remote yet) |
 | Build status | ✅ `xcodebuild … iPhone 18 Pro build` succeeds |
 | Test status | n/a — no test target yet; `xcodebuild test` fails until `EasyPhoneTests` exists. Owner agreed to add it early; the new `project.xcproj` format is not hand-editable safely → owner adds it in Xcode (see Next action) |
-| Next action | Owner: Xcode → File › New › Target › Unit Testing Bundle, name `EasyPhoneTests`, Testing System = Swift Testing, target to test = EasyPhoneAI; then agent adds first tests (Router, AppEnvironment.mock, in-memory ModelContainer) and continues with 0.7 `Config.xcconfig` (D-207, D-208) |
-| Owner decisions needed now | keep or revert 0.6 (`9d9da26`, built without plan approval). Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
+| Next action | Owner, in Xcode: (1) Project EasyPhoneAI › Info › Configurations → Debug = `Config/Debug.xcconfig`, Release = `Config/Release.xcconfig` (target row); (2) target › Build Settings › Info.plist File = `Config/Info.plist`; (3) File › New › Target › Unit Testing Bundle `EasyPhoneTests` (Swift Testing). Then agent verifies 0.7 and adds first tests (AppConfig parsing, Router, in-memory ModelContainer) |
+| Owner decisions needed now | none (0.6 kept by owner 2026-11-09). Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
 
@@ -156,6 +156,7 @@ List every `// TODO(spec):` and `// TODO(decision):` with file + line. Remove wh
 | `EasyPhoneAI/App/EasyPhoneApp.swift:14` | TODO(spec) | SwiftData store open failure → `fatalError`; no recovery screen specified (D-104) |
 | `EasyPhoneAI/App/RootView.swift:11` | TODO(spec) | root screen by `AppState.session` (S01 in 0.10, S02 in 1B.1) |
 | `EasyPhoneAI/App/RootView.swift:19` | TODO(spec) | route destinations are `EmptyView` until each screen's item |
+| `Config/Release.xcconfig:2` | TODO(decision) | D-036: no production backend in thesis scope (D-284); Release uses the Debug backend URL |
 
 ### 5.4 Closed (append-only)
 | ID | Closed on | Commit | Note |
@@ -180,7 +181,7 @@ Exit: **sign in with Google (Simulator + owner's iPhone, free Apple ID), backend
 - [x] 0.4 `Localizable.xcstrings` (vi source) + `InfoPlist.xcstrings` created — Docs: UI_SCREENS §0, §6 S18 (b19e21f) — seeded `common.*` (§5) + 8 usage descriptions (S18), `extractionState: manual`; `vi` is the development language (Xcode drops it from `supported`; `vi.lproj` still built); Info.plist keys themselves come in 1G.5
 - [x] 0.5 `AppEnvironment.live()` / `.mock()`, `AppState`, `Router` (empty routes) — Docs: ARCHITECTURE §2.2, §3 (b74d9de) — no service properties yet (each added by its item); `\.appEnv` defaults to mock; `ContentView` → `RootView` (`NavigationStack`, `ProgressView` placeholder); `Plan` + `CachedEntitlement` in `Core/Models/`
 - [x] 0.6 SwiftData `ModelContainer` with `VersionedSchema` v1 (empty models ok) — Docs: DATA_MODEL §12 (9d9da26) — `SchemaV1` (1.0.0, no models yet) + `EasyPhoneMigrationPlan`, `ModelContainerFactory.make(inMemory:)`; verified: app launches on simulator, `default.store` created
-- [ ] 0.7 `Config.xcconfig` (Debug/Release `API_BASE_URL`, Supabase URL + anon key only) — Docs: D-207, D-208
+- [~] 0.7 `Config.xcconfig` (Debug/Release `API_BASE_URL`, Supabase URL + anon key only) — Docs: D-207, D-208 — `Config/{Base,Debug,Release,Secrets.example}.xcconfig` + partial `Config/Info.plist` (repo root, outside the synchronized folder), `Core/Networking/AppConfig.swift`, `AppEnvironment.config`; checked with `xcodebuild -xcconfig Config/Debug.xcconfig INFOPLIST_FILE=Config/Info.plist` → built Info.plist has `APIBaseURL = http://127.0.0.1:8000`. **left:** owner sets Project › Info › Configurations (Debug/Release → `Config/Debug|Release.xcconfig`) and target Build Settings › Info.plist File = `Config/Info.plist`; then agent re-runs plain build + `plutil -p` and launches the app (live `AppConfig` stops the app if unset)
 - [ ] 0.8 Supabase project (free tier) + Google OAuth client (Google Cloud, free): Google provider enabled, redirect URL for the app — Docs: D-283 — Verify: test sign-in in dashboard
 - [ ] 0.9 `AuthService` live (Supabase Swift SDK, Google only) + mock — Docs: ARCHITECTURE §4.1, D-283
 - [ ] 0.10 S01 Sign-in screen (Google button, legal text) + `#Preview` — Docs: UI_SCREENS S01
@@ -346,6 +347,13 @@ Template:
 - Decisions asked / answered: <D-xxx / P-xx>
 - Next: <one concrete next step>
 ```
+
+### 2026-11-09 — Phase 0 — 0.7 config files
+- Done: owner kept 0.6 (`9d9da26`); `/plan` slash command unavailable in the mobile app — put "/plan" at the end of a message instead
+- In progress: 0.7 — left: owner assigns xcconfig + Info.plist File in Xcode, then plain build + `plutil -p` + launch
+- TODOs added: `Config/Release.xcconfig:2` TODO(decision) D-036
+- Decisions: Release = Debug URL for now; anon key in git-ignored `Secrets.xcconfig` (owner OK'd plan)
+- Next: owner's Xcode step (Snapshot), then verify 0.7
 
 ### 2026-11-09 — Phase 0 — SwiftData container
 - Process: owner typed "làm tiếp /plan" (mid-message, plan mode did not start); agent built 0.5/0.6 without

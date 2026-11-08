@@ -1,0 +1,9 @@
+// Debug → local/dev backend + StoreKit config file (D-208).
+#include "Base.xcconfig"
+
+// Local FastAPI server (`uvicorn app.main:app`). For the owner's iPhone, override with the tunnel URL
+// in Secrets.xcconfig (D-037, item 0.19).
+API_BASE_URL = http:/$()/127.0.0.1:8000
+
+// Last, so a developer's local values override the defaults above.
+#include? "Secrets.xcconfig"

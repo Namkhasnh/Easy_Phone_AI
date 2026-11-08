@@ -1,0 +1,8 @@
+// Shared build settings for every configuration (D-207, D-208).
+// In .xcconfig files `//` starts a comment, so URLs are written as `https:/$()/host`.
+//
+// Only these values may ship in the app (D-051, D-207): API base URL, Supabase URL, Supabase anon key.
+// Real Supabase values live in Config/Secrets.xcconfig (git-ignored); copy Secrets.example.xcconfig.
+
+SUPABASE_URL =
+SUPABASE_ANON_KEY =

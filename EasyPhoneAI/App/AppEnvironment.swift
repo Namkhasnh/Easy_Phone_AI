@@ -5,12 +5,15 @@ import SwiftUI
 /// `auth` (0.9), `api` (0.16), `drafts`/`localData` (1A.9), device services (1C), `speech`/`tts` (1B),
 /// `ocr` (1D), `purchases` (1F). Debug vs Release never changes the wiring (D-208).
 struct AppEnvironment: Sendable {
+    /// Build configuration from `Config/*.xcconfig` (0.7, D-207).
+    let config: AppConfig
+
     static func live() -> AppEnvironment {
-        AppEnvironment()
+        AppEnvironment(config: .fromMainBundle())
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
-        AppEnvironment()
+        AppEnvironment(config: .mock)
     }
 }
 
