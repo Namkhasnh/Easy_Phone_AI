@@ -432,6 +432,42 @@
           }
         }
       }
+    },
+    "update.body": {
+      "comment": "UI_SCREENS S19; %@ = {minVersion}",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Phiên bản này đã cũ. Hãy cập nhật EasyPhone (tối thiểu %@) để tiếp tục dùng."
+          }
+        }
+      }
+    },
+    "update.cta": {
+      "comment": "UI_SCREENS S19",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mở App Store"
+          }
+        }
+      }
+    },
+    "update.title": {
+      "comment": "UI_SCREENS S19",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cần cập nhật ứng dụng"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
