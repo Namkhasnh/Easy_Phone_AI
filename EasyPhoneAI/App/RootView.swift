@@ -28,9 +28,10 @@ struct RootView: View {
         }
         .task {
             for await screen in env.api.blockingUpdates {
-                appState.blockingScreen = screen   // S19 is shown in 0.17
+                appState.blockingScreen = screen
             }
         }
+        .fullScreenCover(isPresented: isBlocked) { blockingCover }
         .task(id: appState.session) {
             await loadAccount()
         }
@@ -64,6 +65,20 @@ struct RootView: View {
             Text(verbatim: userId.uuidString)
                 .font(Tokens.Fonts.body)
                 .textSelection(.enabled)
+        }
+    }
+
+    /// UI_SCREENS §4: any 426 → S19, blocking. Never cleared by the user; only a newer build removes it.
+    private var isBlocked: Binding<Bool> {
+        Binding(get: { appState.blockingScreen != nil }, set: { _ in })
+    }
+
+    @ViewBuilder private var blockingCover: some View {
+        switch appState.blockingScreen {
+        case .clientOutdated(let minVersion):
+            UpdateRequiredView(viewModel: UpdateRequiredViewModel(minVersion: minVersion))
+        case nil:
+            EmptyView()
         }
     }
 
