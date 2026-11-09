@@ -3,23 +3,110 @@ import os
 
 /// ARCHITECTURE §5 — the **only** writer of `TaskStep` (D-123). Every state change goes through
 /// `TaskStateMachine.transition`; every mutation is saved immediately (D-104).
-/// `confirm()` + executors (ARCHITECTURE §5.1, §5.3) come with 1A.8b.
 @MainActor final class TaskEngine {
     static let historyCap = 50
 
     private let repository: any TaskRepository
+    private let executors: [TaskKind: any StepExecutor]
     private let now: @MainActor () -> Date
     private let serviceIds: Set<String>
     private let logger = Logger(subsystem: "vn.namkhanh.easyphone", category: "taskEngine")
 
     init(
         repository: any TaskRepository,
-        serviceIds: Set<String> = [],                 // SupportedServices.json ids (1C.12)
+        executors: [TaskKind: any StepExecutor] = [:],   // one per kind, added in 1C / 1D
+        serviceIds: Set<String> = [],                   // SupportedServices.json ids (1C.12)
         now: @escaping @MainActor () -> Date = { .now }
     ) {
         self.repository = repository
+        self.executors = executors
         self.serviceIds = serviceIds
         self.now = now
+    }
+
+    // MARK: - Confirm & execute (ARCHITECTURE §5.1)
+
+    /// "Xác nhận" (D-100). Step 0 (permission explainer, D-185) is done by the ViewModel before calling this.
+    func confirm(stepId: UUID, in draft: TaskDraft) async -> ConfirmResult {
+        guard let index = draft.steps.firstIndex(where: { $0.id == stepId }) else { return .notAllowed }
+        // 1. awaitingApproval + no validation issue (incl. ambiguity, D-106).
+        // TODO(spec): linked-step rule (previous step final / handedOff / prepared, DATA_MODEL §3.3) is 1C.14.
+        let current = draft.steps[index]
+        guard current.state == .awaitingApproval,
+              Validator.validate(current, now: now(), serviceIds: serviceIds).isEmpty else {
+            return .notAllowed
+        }
+        // 2. Store hash, attempt += 1, → processing, save before executing (applyInPlace + apply).
+        guard apply(.userConfirmed, stepId: stepId, in: draft) else { return .notAllowed }
+        let step = draft.steps[index]
+
+        // 3. Recompute the hash right before executing (DATA_MODEL §3.4).
+        guard ApprovalHash.matches(step) else {
+            return finish(.failed(code: "approval.mismatch"), stepId: stepId, in: draft)
+        }
+        guard let executor = executors[step.kind] else {
+            // TODO(spec): no executor for a kind (ride/food before Phase 3, or not built yet) has no error code.
+            logger.warning("no executor for \(step.kind.rawValue, privacy: .public)")
+            return finish(.failed(code: "unsupported"), stepId: stepId, in: draft)
+        }
+        // 4–6. Permission, idempotency and verification happen inside the executor.
+        let outcome = await executor.execute(step, draft: draft)
+        return finish(outcome, stepId: stepId, in: draft)
+    }
+
+    /// SMS composer result (ARCHITECTURE §5.3, D-222). Only meaningful while the step is `processing`.
+    @discardableResult
+    func composerFinished(stepId: UUID, result: ComposerResult, in draft: TaskDraft) -> ConfirmResult {
+        switch result {
+        case .sent:
+            return finish(.verified(evidence: "msg:sent:\(isoString(now(), timeZoneId: draft.timeZoneId))"),
+                          stepId: stepId, in: draft)
+        case .failed:
+            // TODO(spec): no stable code for MessageUI `.failed`; `messages.sendFailed` used.
+            return finish(.failed(code: "messages.sendFailed"), stepId: stepId, in: draft)
+        case .cancelled:
+            guard apply(.userCancelled, stepId: stepId, in: draft, context: .init(composerDismissed: true)),
+                  let step = draft.steps.first(where: { $0.id == stepId }) else { return .notAllowed }
+            return .finished(step.state)
+        }
+    }
+
+    /// Maps an outcome to its event (§5.1) and writes the related fields.
+    private func finish(_ outcome: ExecutionOutcome, stepId: UUID, in draft: TaskDraft) -> ConfirmResult {
+        guard let index = draft.steps.firstIndex(where: { $0.id == stepId }) else { return .notAllowed }
+        var step = draft.steps[index]
+        let event: TaskEvent
+        switch outcome {
+        case let .verified(evidence):
+            guard !evidence.isEmpty else {                                 // D-124: never succeeded without evidence
+                // TODO(spec): no code for "executor returned empty evidence"; `evidence.missing` used.
+                return finish(.failed(code: "evidence.missing"), stepId: stepId, in: draft)
+            }
+            step.resultEvidence = evidence
+            event = .actionVerified
+        case let .handedOff(note):
+            step.handoffNote = note
+            step.handoffPromptShown = false                                // D-242: ask once per hand-off
+            event = .outcomeUnknownHandoff
+        case .prepared:
+            event = .dataPrepared
+        case let .needsUI(effect):
+            return .needsUI(effect)                                        // stays processing
+        case let .failed(code):
+            step.errorCode = code                                          // UI text = `error.<code>` (D-249)
+            event = .actionFailed
+        }
+        guard applyInPlace(event, to: &step) else { return .notAllowed }
+        draft.steps[index] = step
+        save(draft)
+        return .finished(step.state)
+    }
+
+    private func isoString(_ date: Date, timeZoneId: String) -> String {
+        let f = ISO8601DateFormatter()
+        f.timeZone = TimeZone(identifier: timeZoneId) ?? .current
+        f.formatOptions = [.withInternetDateTime]
+        return f.string(from: date)
     }
 
     // MARK: - Events
@@ -124,6 +211,8 @@ import os
         }
         if to == .processing {
             step.attempt += 1                                         // each processing entry (idempotency, D-105)
+            step.errorCode = nil                                      // a new attempt starts without the old error
+            step.errorMessage = nil
         }
         step.state = to
         step.stateChangedAt = at

@@ -61,11 +61,11 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 |---|---|
 | Last updated | 2026-11-10 |
 | Current phase | **Phase 1A — Core engine** (Phase 0 exit ✅ 2026-11-09) |
-| Working on | 1A.8 `TaskEngine` — 8a core done, 8b `confirm()` + executors left |
-| Last commit | `[1A] TaskEngine core + tests` on branch `demo_git` (not pushed) |
+| Working on | — |
+| Last commit | `[1A] TaskEngine confirm + executors` on branch `demo_git` (not pushed) |
 | Build status | ✅ Simulator build; ✅ device build signed with the free Personal Team (`DEVELOPMENT_TEAM` in git-ignored `Secrets.xcconfig`) |
-| Test status | ✅ iOS `test` green (incl. `ContractFixtureTests`, `TaskEnumsTests`, `TaskModelTests`, `FieldCatalogTests`, `TaskStateMachineTests`, `ApprovalHashTests`, `ValidatorTests`, `TaskEngineTests`); ✅ backend `uv run pytest -q` 113/113; ✅ `run_db_tests.sh` 6/6 (earlier session) |
-| Next action | 1A.8b: `StepExecutor` protocol + `ExecutionOutcome` (incl. `needsUI(UIEffect)`), `TaskEngine.confirm()` steps 1–3 + 5 (precondition, hash recheck → `approval.mismatch`, outcome → event, `errorCode`), `composerFinished` (D-222) with a `MockStepExecutor` + tests — ARCHITECTURE §5.1, §5.3 |
+| Test status | ✅ iOS `test` green (incl. `ContractFixtureTests`, `TaskEnumsTests`, `TaskModelTests`, `FieldCatalogTests`, `TaskStateMachineTests`, `ApprovalHashTests`, `ValidatorTests`, `TaskEngineTests`, `TaskEngineConfirmTests`); ✅ backend `uv run pytest -q` 113/113; ✅ `run_db_tests.sh` 6/6 (earlier session) |
+| Next action | 1A.9: `LiveTaskRepository` (SwiftData main context) completing `TaskRepository` (ARCHITECTURE §4.4: `steps(in:)`, `history(group:)`, `deleteClosed()`, `wipeAll()`) + `TaskDraft.currentStep` / `isClosed` / `overallStatus` (D-244, DATA_MODEL §3.2, §8) + `LocalDataRepository` + tests |
 | Owner decisions needed now | none (0.6 kept by owner 2026-11-09). Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
@@ -180,7 +180,11 @@ List every `// TODO(spec):` and `// TODO(decision):` with file + line. Remove wh
 | `EasyPhoneAI/Core/Engine/Validator.swift:87` | TODO(spec) | §7.1 checks encoding of required fields only; optional values (e.g. a malformed `endDate`) are not flagged |
 | `EasyPhoneAI/Core/Engine/Validator.swift:191` | TODO(spec) | D-253 phone check is a minimal §7.3 matcher; replace with the 1C.8 normalizer |
 | `EasyPhoneAI/Core/Services/TaskRepository.swift:5` | TODO(spec) | protocol has only `draft`/`save`; rest of ARCHITECTURE §4.4 + live SwiftData repo in 1A.9 |
-| `EasyPhoneAI/Core/Engine/TaskEngine.swift:59` | TODO(spec) | no `userEdited` row for processing/prepared/handedOff/failed/unknown/closed → edits refused there |
+| `EasyPhoneAI/Core/Engine/TaskEngine.swift:146` | TODO(spec) | no `userEdited` row for processing/prepared/handedOff/failed/unknown/closed → edits refused there |
+| `EasyPhoneAI/Core/Engine/TaskEngine.swift:33` | TODO(spec) | linked-step confirm rule not enforced yet (1C.14) |
+| `EasyPhoneAI/Core/Engine/TaskEngine.swift:48` | TODO(spec) | no executor for a kind → `failed("unsupported")`; no code specified |
+| `EasyPhoneAI/Core/Engine/TaskEngine.swift:65` | TODO(spec) | MessageUI `.failed` → `messages.sendFailed` (not in ARCHITECTURE §9) |
+| `EasyPhoneAI/Core/Engine/TaskEngine.swift:82` | TODO(spec) | empty evidence → `failed("evidence.missing")`; no code specified |
 | `Config/Release.xcconfig:2` | TODO(decision) | D-036: no production backend in thesis scope (D-284); Release uses the Debug backend URL |
 
 ### 5.4 Closed (append-only)
@@ -232,7 +236,7 @@ Exit: **unit tests pass for all state transitions.**
 - [x] 1A.5 Tests: every table row passes; every other pair → `nil` (incl. D-222, D-242, D-243 rows) — Docs: DATA_MODEL §13 (83d905a) — `TaskStateMachineTests`: independent `expectedTable` copied from §1.5 (29 pairs × `composerDismissed` false/true = 58 entries), loop over all 11 states × 13 events × 2 contexts = 286 cases, closed states never leave except `succeeded + userEdited`. Verified: suite green twice in a row
 - [x] 1A.6 Approval hash (CryptoKit SHA256, canonical form) + tests (order-stable, changes on edit) — Docs: DATA_MODEL §3.4 (a56a2a3) — `Core/Engine/ApprovalHash.swift`: `canonical(_:)` verbatim §3.4 (ids sorted by UTF-8 bytes, all fields incl. 🔒), `hash(_:)` lowercase hex, `matches(_:)` (no stored hash → false, for the executor check). Storing/clearing the hash on `userConfirmed`/`awaitingApproval` = `TaskEngine` (1A.8). Verified: `EasyPhoneTests/ApprovalHashTests.swift` (9 tests incl. a `shasum -a 256` vector, field order, every field edit, 🔒 field, `targetRef`, ignores state/source/confidence) + full suite green
 - [x] 1A.7 `Validator.validate(step)` per §4.1 incl. cross-field rules, `channel` rule (D-247) + tests — Docs: DATA_MODEL §7.1 (733fbc5) — `Core/Engine/Validator.swift`: `validate(_:now:serviceIds:catalog:)` → `[ValidationIssue]` (`fieldId?` + `Reason`: `missingTargetRef`, `missing`, `invalidEncoding`, `ambiguous`, `endBeforeStart`, `inPast`, `unknownOption`, `unsupportedOperation`), order = `targetRef` then catalog order (follow-up = first issue); `requiredFieldIds` / `applyRequired` (conditional rules: `channel = sms` D-247, `notPhoneNumber` D-253, `label = custom`); encodings per §1.6 (dateTime needs seconds + offset); past check (5 min) and end > start only on required fields of the op (delete hints skipped); `serviceIds` injected until `SupportedServices.json` (1C.12); `now` passed in (no Clock yet). D-281 follow-up wording = 1B.14. Verified: `EasyPhoneTests/ValidatorTests.swift` (17 tests, 13 §4.1 rows × complete/empty + coverage of every catalog pair, sms vs zalo, phone recipient, customLabel, ambiguity, encodings, 5-min boundary) + full suite green
-- [~] 1A.8 `TaskEngine` (@MainActor, only writer, history cap 50, autosave) — Docs: ARCHITECTURE §5 — split into 8a / 8b: **8a done** (08890ed): `Core/Engine/TaskEngine.swift` (`apply`, `revalidate`, `edit`, `cancel`/`retry`/`markDone`; one private writer `applyInPlace`: hash stored on `userConfirmed`, cleared on entering `awaitingApproval`, `attempt += 1` on entering `processing`, history cap 50, `updatedAt` + `repository.save` after every mutation; edits refused outside `draft`/`needsInfo`/`awaitingApproval`/`succeeded`), `Core/Services/TaskRepository.swift` (`draft`/`save` only) + `Mock/MockTaskRepository.swift`; `now` injected. Verified: `EasyPhoneTests/TaskEngineTests.swift` (14 tests) + full suite green. **left: 8b** — `StepExecutor`/`ExecutionOutcome`, `TaskEngine.confirm()`, `composerFinished`, `TaskEngine.swift`
+- [x] 1A.8 `TaskEngine` (@MainActor, only writer, history cap 50, autosave) — Docs: ARCHITECTURE §5 — split into 8a / 8b: **8a done** (08890ed): `Core/Engine/TaskEngine.swift` (`apply`, `revalidate`, `edit`, `cancel`/`retry`/`markDone`; one private writer `applyInPlace`: hash stored on `userConfirmed`, cleared on entering `awaitingApproval`, `attempt += 1` on entering `processing`, history cap 50, `updatedAt` + `repository.save` after every mutation; edits refused outside `draft`/`needsInfo`/`awaitingApproval`/`succeeded`), `Core/Services/TaskRepository.swift` (`draft`/`save` only) + `Mock/MockTaskRepository.swift`; `now` injected. Verified: `EasyPhoneTests/TaskEngineTests.swift` (14 tests) + full suite green. **8b done** (this commit): `Core/Engine/StepExecutor.swift` (`UIEffect.composer`, `ExecutionOutcome`, `@MainActor StepExecutor`, `ComposerResult`, `ConfirmResult`), `Mock/MockStepExecutor.swift`; `TaskEngine(executors:)`, `confirm()` (§5.1 steps 1–3: awaitingApproval + `validate()` empty → `userConfirmed` saved before executing → hash recheck → executor; steps 4–6 belong to executors), `finish` maps outcome → event (`verified` needs non-empty evidence D-124, `handedOff` sets note + `handoffPromptShown = false` D-242, `failed` stores `errorCode`, `needsUI` stays `processing`), `composerFinished` (`.sent` → `msg:sent:<ISO in draft tz>`, `.failed`, `.cancelled` + `composerDismissed` D-222); error fields cleared on each `processing` entry. Verified: `EasyPhoneTests/TaskEngineConfirmTests.swift` (11 tests) + full suite green. Linked-step rule = 1C.14
 - [ ] 1A.9 `TaskRepository` + `LocalDataRepository` (SwiftData), `currentStep`/closed rules (D-244) — Docs: ARCHITECTURE §4.4, DATA_MODEL §3.2
 - [ ] 1A.10 Design tokens + shared components (`PrimaryButton`, `FieldRow`, `StateBadge`, `Banner`, `Toast`, `ConfirmSheet`…) + contrast test — Docs: UI_SCREENS §1–2, §11
 - [ ] 1A.11 S04 Review (fields, buttons, disabled reasons, result card per D-250) with mock draft — Docs: UI_SCREENS S04, spec §5.3
@@ -375,6 +379,11 @@ Template:
 - Decisions asked / answered: <D-xxx / P-xx>
 - Next: <one concrete next step>
 ```
+
+### 2026-11-10 — Phase 1A — 1A.8b confirm + executors
+- Done: 1A.8 complete (8b: `StepExecutor`, `confirm`, `composerFinished`, 11 tests); iOS suite green
+- TODOs added: `TaskEngine.swift:33`, `:48`, `:65`, `:82` TODO(spec)
+- Next: 1A.9 repositories
 
 ### 2026-11-10 — Phase 1A — D-290 edit after success
 - Decisions answered: DOC-22 → D-290 (owner "ok"); DATA_MODEL §1.5 row note, DECISIONS §12.8 + §14
