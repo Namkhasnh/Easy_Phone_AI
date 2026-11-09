@@ -24,7 +24,6 @@ struct FieldRow: View {
                 .buttonStyle(.plain)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text(verbatim: accessibilityText))
-                // TODO(spec): key `a11y.field.hint` is not named in UI_SCREENS §9 (DOC-23).
                 .accessibilityHint(Text("a11y.field.hint"))
 
             if field.source.isOCR {

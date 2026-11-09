@@ -1070,7 +1070,7 @@
       }
     },
     "stepIndicator.label": {
-      "comment": "UI_SCREENS §2 StepIndicator; key name not in docs (DOC-23)",
+      "comment": "UI_SCREENS §2 StepIndicator (DOC-23)",
       "extractionState": "manual",
       "localizations": {
         "vi": {
@@ -1082,7 +1082,7 @@
       }
     },
     "a11y.state": {
-      "comment": "UI_SCREENS §9 StateBadge; key name not in docs (DOC-23)",
+      "comment": "UI_SCREENS §9 StateBadge (DOC-23)",
       "extractionState": "manual",
       "localizations": {
         "vi": {
@@ -1094,7 +1094,7 @@
       }
     },
     "a11y.field.needsReview": {
-      "comment": "UI_SCREENS §9 FieldRow; key name not in docs (DOC-23)",
+      "comment": "UI_SCREENS §9 FieldRow (DOC-23)",
       "extractionState": "manual",
       "localizations": {
         "vi": {
@@ -1106,7 +1106,7 @@
       }
     },
     "a11y.field.hint": {
-      "comment": "UI_SCREENS §9 FieldRow; key name not in docs (DOC-23)",
+      "comment": "UI_SCREENS §9 FieldRow (DOC-23)",
       "extractionState": "manual",
       "localizations": {
         "vi": {

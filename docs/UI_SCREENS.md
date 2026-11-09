@@ -73,7 +73,7 @@ Grid = 4pt. Buttons stack vertically at the bottom of the screen (primary first,
 | `StateBadge(state, args)` | SF Symbol + `state.<raw>` text, `label` font; color per §1.1 (`success`, `danger`, else `textSecondary`). |
 | `Banner(UserMessage, action?)` | top of content, `surface` + 4pt left bar (`danger` / `warning`), icon + `body` + optional `SecondaryButton`. |
 | `Toast(key, undo?)` | bottom, 4 s (8 s with VoiceOver on), announced via `AccessibilityNotification.Announcement`; optional "Hoàn tác". |
-| `StepIndicator(current,total)` | "Bước {n}/{total}" + dots; dots decorative (`accessibilityHidden`). |
+| `StepIndicator(current,total)` | `stepIndicator.label` = "Bước {n}/{total}" + dots; dots decorative (`accessibilityHidden`). |
 | `ListeningMic` | circle `primary`, `mic.fill` 56pt; listening → `stop.fill`, `honey` ring pulse (light: plus a 2pt `primary` outline, honey alone is 1.5:1 on `bg`, D-291), label changes. |
 | `EmptyState(icon, titleKey, bodyKey)` | centered, `icon.hero` (default `pawprint.fill`, D-291) on an 88pt `honey` circle, `title` + `body`. |
 | `ConfirmSheet` | `.presentationDetents([.medium, .large])`, title, body, primary + secondary. Used for every destructive confirm. |
@@ -415,8 +415,8 @@ Explainer (shown before "Xác nhận" executes when status is `notDetermined`): 
 `<capability>` ∈ `calendar, reminders, contacts, microphone, speech, camera, photos, location` (one key each).
 ## 9. Accessibility checklist per screen (D-180 – D-183)
 - Every icon-only control has `accessibilityLabel` from the `*.a11y` key or its visible text; decorative images hidden.
-- `FieldRow` VoiceOver = "{label}, {value or Chưa có}{, cần kiểm tra lại}" + hint "Bấm hai lần để sửa".
-- `StateBadge` is one element: "Trạng thái: {state label}". Picker rows: "{title}, {subtitle}".
+- `FieldRow` VoiceOver = "{label}, {value or Chưa có}{, `a11y.field.needsReview` = cần kiểm tra lại}" + hint `a11y.field.hint` = "Bấm hai lần để sửa" (DOC-23).
+- `StateBadge` is one element: `a11y.state` = "Trạng thái: {state label}". Picker rows: "{title}, {subtitle}".
 - Mic: label `home.mic.a11y`, value "Đang nghe" while listening, `.startsMediaSession` trait.
 - After navigation to S04 and after each result card, move focus to the title (`@AccessibilityFocusState`).
 - Test at AX5 + VoiceOver + Increase Contrast + Reduce Motion + Dark mode for S02, S03, S04, S06, S08, S16.
