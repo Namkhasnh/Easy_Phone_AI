@@ -23,7 +23,7 @@
 
 | ID | Decision | Status |
 |---|---|---|
-| D-001 | App name: **EasyPhone AI** (bundle display name "EasyPhone"). URL scheme `easyphone://`. | LOCKED |
+| D-001 | App name: **EasyPhone AI** (bundle display name "EasyPhone"). URL scheme `easyphone://`. | LOCKED — display name superseded by D-287 |
 | D-002 | Target users: **everyone, including elderly and non-technical users**. Design for the weakest user first. | LOCKED |
 | D-003 | Primary language **Vietnamese (`vi`)**; secondary **English (`en`)**. All UI strings in `Localizable.xcstrings`. | LOCKED |
 | D-004 | Core loop: input (voice / text / photo) → AI **editable task draft** → user **Review & Confirm** → execute as far as iOS allows → guide the rest. | LOCKED |
@@ -242,7 +242,7 @@ If a user asks for an out-of-scope feature, show **"Chưa hỗ trợ"** — do n
 | ID | Decision | Status |
 |---|---|---|
 | D-170 | Entry points: app icon, **App Shortcuts / Siri phrase**, **Action Button**, **Control Center control**, Home & Lock Screen **widgets**. All open the app in **listening mode**. | LOCKED |
-| D-171 | Siri phrases must contain the app name, e.g. "EasyPhone ơi", "Mở EasyPhone" (+ English equivalents). | LOCKED |
+| D-171 | Siri phrases must contain the app name, e.g. "EasyPhone ơi", "Mở EasyPhone" (+ English equivalents). | LOCKED — phrases refined by D-288 |
 | D-172 | One shared intent: `StartListeningIntent`; widgets use deep link `easyphone://listen`. | LOCKED |
 | D-173 | No always-listening wake word (iOS does not allow it for third-party apps). | LOCKED |
 
@@ -376,6 +376,13 @@ everything else (safety rules, engine, data model, API, accessibility) is unchan
 | D-286 | **Repo layout (DOC-19):** the app root folder is `EasyPhoneAI/` (target + scheme `EasyPhoneAI`); read spec §3.2 `EasyPhone/` as `EasyPhoneAI/`. The folder is an Xcode synchronized folder: every file inside joins the app target, so **never put `.gitkeep`, README or other non-code placeholders in it** (duplicate resource names break the build). Empty layout folders exist on disk only and enter git with their first real file. `Widgets/` lives at the repo root (its own extension target, 1E); `backend/` too. | DEFAULT |
 | D-285 | **Cost guard:** `MONTHLY_SPEND_CAP_USD` default **5** for the thesis backend (D-087). Live evals (`pytest -m live`) only when the owner asks. | DEFAULT |
 
+### 12.7 Owner branding (2026-11-09)
+
+| ID | Decision | Status |
+|---|---|---|
+| D-287 | **Supersedes the display-name part of D-001:** every user-visible name is **EasyPhoneK** (one word): `CFBundleDisplayName`, usage descriptions, S01 title, S16 "EasyPhoneK Premium", S19, entry-point strings. Unchanged (not user-visible, or changing breaks sign-in/signing): bundle id `vn.namkhanh.easyphone`, login callback, `easyphone://`, target/scheme/folder `EasyPhoneAI`, `CFBundleName`, doc titles "EasyPhone AI", backend prompt text and `FastAPI(title=…)`. | LOCKED |
+| D-288 | **Refines D-171:** voice call phrases are **"Ê Khoai"** and **"Khoai"**. "Khoai" is declared as an alternative app name (`INAlternativeAppNames` with a pronunciation hint, added in 1E.2) and phrases use `\(.applicationName)`, so D-171 still holds. Fallbacks "Mở EasyPhoneK", "Nói với EasyPhoneK" + English. Verified on the owner's iPhone in 1E.2; a phrase Xcode or Siri rejects / mishears is dropped and noted in PROGRESS §5. | DEFAULT |
+
 ---
 
 ## 13. Open decisions summary (owner must lock)
@@ -410,5 +417,6 @@ building on top of the default in a way that is hard to undo (e.g. App Store pro
 
 | 2026-11-08 | D-282 – D-285 | Owner: project is a thesis at near-zero cost — no App Store/TestFlight, free Apple ID, Google-only sign-in (supersede D-005, D-071), `.storekit`-only billing, spend cap 5 USD | Owner + Claude |
 | 2026-11-09 | D-286 | Owner kept the `EasyPhoneAI/` folder name (DOC-19); no placeholder files inside the synchronized app folder | Owner + Claude |
+| 2026-11-09 | D-287, D-288 | Owner: display name EasyPhoneK (supersedes D-001 display name), voice call "Ê Khoai" / "Khoai" via alternative app name (refines D-171) | Owner + Claude |
 
 <!-- Append new rows below. To change a LOCKED decision, add a new ID that "supersedes D-xxx". -->

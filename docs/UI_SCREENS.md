@@ -147,7 +147,7 @@ Layout: app icon (96pt) · `display` title · tagline · reason text · spacer �
 
 | Key | vi | Key | vi |
 |---|---|---|---|
-| `signIn.title` | EasyPhone | `signIn.tagline` | Trợ lý giúp bạn dùng điện thoại dễ hơn |
+| `signIn.title` | EasyPhoneK | `signIn.tagline` | Trợ lý giúp bạn dùng điện thoại dễ hơn |
 | `signIn.reason` | Bạn cần đăng nhập để dùng trợ lý AI. Lịch, danh bạ và lời nhắc vẫn nằm trên điện thoại của bạn. | `signIn.google` | Tiếp tục với Google |
 | `signIn.legal` | Khi tiếp tục, bạn đồng ý với {Điều khoản sử dụng} và {Chính sách quyền riêng tư}. | `signIn.failed` | Đăng nhập không thành công. Bạn thử lại nhé. |
 | `signIn.sessionExpired` | Phiên đăng nhập đã hết. Bạn đăng nhập lại nhé. Bản nháp vẫn được giữ. |  |  |
@@ -315,7 +315,7 @@ Grouped list, fixed order (spec §6.10 AC1): "Cần bạn làm tiếp", "Đang c
 | Section | Rows |
 |---|---|
 | `settings.account` = Tài khoản | `settings.plan.free` / `.premium` = Gói: Miễn phí / Gói: Premium (`/v1/me`) · `settings.quota` = Lượt AI còn lại hôm nay: {remaining}/{limit} (AC7) · `settings.quota.reset` = Lượt mới có lúc {time} · `settings.upgrade` = Nâng cấp Premium (→ S16) / `settings.manageSub` = Quản lý gói (`showManageSubscriptions`) |
-| `settings.voice` = Giọng nói | `settings.voice.enabled` = Đọc to câu trả lời (toggle) · `settings.voice.rate` = Tốc độ đọc (slider, ends `.slow` = Chậm / `.fast` = Nhanh) · `settings.voice.test` = Nghe thử (speaks `settings.voice.sample` = Xin chào, mình là EasyPhone.) |
+| `settings.voice` = Giọng nói | `settings.voice.enabled` = Đọc to câu trả lời (toggle) · `settings.voice.rate` = Tốc độ đọc (slider, ends `.slow` = Chậm / `.fast` = Nhanh) · `settings.voice.test` = Nghe thử (speaks `settings.voice.sample` = Xin chào, mình là EasyPhoneK.) |
 | `settings.display` = Hiển thị | `settings.textSize` = Cỡ chữ (live preview + `settings.textSize.note` = Đổi cỡ chữ trong Cài đặt iPhone > Màn hình & Độ sáng > Cỡ chữ.) · `settings.simpleMode` = Chế độ đơn giản (toggle; footer `settings.simpleMode.note` = Ẩn bớt các tùy chọn nâng cao.) |
 | `settings.memory` = Ghi nhớ | `settings.nicknames` = Tên gọi thân mật (rows "mẹ → Nguyễn Thị Lan", swipe "Xóa"; `settings.nicknames.empty` = Chưa có tên gọi nào.) · `settings.savedPlaces` = Địa điểm đã lưu (→ S13) |
 | ★ `settings.advanced` = Nâng cao | `settings.snoozeHour` = Giờ của “sáng mai” (picker 5–11, "{hour} giờ") · `settings.mapsApp` = Mở chỉ đường bằng · `settings.permissions` = Quyền truy cập (one row per capability + status §10.4 + "Mở Cài đặt") |
@@ -328,7 +328,7 @@ Layout: close button "Để sau" · `display` title · subtitle · optional cont
 
 | Key | vi | Key | vi |
 |---|---|---|---|
-| `paywall.title` | EasyPhone Premium | `paywall.subtitle` | Dùng trợ lý AI thoải mái hơn mỗi ngày |
+| `paywall.title` | EasyPhoneK Premium | `paywall.subtitle` | Dùng trợ lý AI thoải mái hơn mỗi ngày |
 | `paywall.context.quota` | Bạn đã dùng hết {limit} lượt miễn phí hôm nay. Lượt mới có lúc {time}. | `paywall.benefit.quota` | Tới {premiumLimit} lượt AI mỗi ngày |
 | `paywall.benefit.all` | Dùng giọng nói, đọc chữ từ ảnh và soạn tin không lo hết lượt sớm | `paywall.benefit.same` | Dữ liệu của bạn vẫn được bảo vệ như gói miễn phí |
 | `paywall.plan.monthly` | Gói tháng — {price}/tháng | `paywall.plan.yearly` | Gói năm — {price}/năm |
@@ -367,14 +367,14 @@ Explainer (shown before "Xác nhận" executes when status is `notDetermined`): 
 
 | Key | vi | Key | vi |
 |---|---|---|---|
-| `NSMicrophoneUsageDescription` | EasyPhone dùng micro để nghe yêu cầu bạn nói. | `NSSpeechRecognitionUsageDescription` | EasyPhone chuyển lời bạn nói thành chữ để hiểu yêu cầu. |
-| `NSCameraUsageDescription` | EasyPhone dùng camera để chụp giấy tờ và đọc chữ giúp bạn. | `NSPhotoLibraryUsageDescription` | EasyPhone đọc ảnh bạn chọn để lấy thông tin như ngày hẹn, địa chỉ. |
-| `NSCalendarsFullAccessUsageDescription` | EasyPhone xem và tạo lịch hẹn theo yêu cầu của bạn. Lịch chỉ được xử lý trên điện thoại. | `NSRemindersFullAccessUsageDescription` | EasyPhone tạo và quản lý lời nhắc theo yêu cầu của bạn. |
-| `NSContactsUsageDescription` | EasyPhone tìm người trong danh bạ để gọi hoặc nhắn tin. Danh bạ không được gửi lên máy chủ. | `NSLocationWhenInUseUsageDescription` | EasyPhone dùng vị trí để tìm địa điểm gần bạn. |
+| `NSMicrophoneUsageDescription` | EasyPhoneK dùng micro để nghe yêu cầu bạn nói. | `NSSpeechRecognitionUsageDescription` | EasyPhoneK chuyển lời bạn nói thành chữ để hiểu yêu cầu. |
+| `NSCameraUsageDescription` | EasyPhoneK dùng camera để chụp giấy tờ và đọc chữ giúp bạn. | `NSPhotoLibraryUsageDescription` | EasyPhoneK đọc ảnh bạn chọn để lấy thông tin như ngày hẹn, địa chỉ. |
+| `NSCalendarsFullAccessUsageDescription` | EasyPhoneK xem và tạo lịch hẹn theo yêu cầu của bạn. Lịch chỉ được xử lý trên điện thoại. | `NSRemindersFullAccessUsageDescription` | EasyPhoneK tạo và quản lý lời nhắc theo yêu cầu của bạn. |
+| `NSContactsUsageDescription` | EasyPhoneK tìm người trong danh bạ để gọi hoặc nhắn tin. Danh bạ không được gửi lên máy chủ. | `NSLocationWhenInUseUsageDescription` | EasyPhoneK dùng vị trí để tìm địa điểm gần bạn. |
 ### S19 Update required (426, blocking)
 | Key | vi | Key | vi |
 |---|---|---|---|
-| `update.title` | Cần cập nhật ứng dụng | `update.body` | Phiên bản này đã cũ. Hãy cập nhật EasyPhone (tối thiểu {minVersion}) để tiếp tục dùng. |
+| `update.title` | Cần cập nhật ứng dụng | `update.body` | Phiên bản này đã cũ. Hãy cập nhật EasyPhoneK (tối thiểu {minVersion}) để tiếp tục dùng. |
 | `update.cta` | Mở App Store |  |  |
 ### S20 Destructive confirms (`ConfirmSheet`, primary = destructive)
 | Key | vi | Key | vi |
@@ -389,11 +389,11 @@ Explainer (shown before "Xác nhận" executes when status is `notDetermined`): 
 ## 7. Entry points (no screen of their own, D-170 – D-172)
 | Item | Key | vi |
 |---|---|---|
-| App Shortcut phrases (iOS 18.4+ vi; en fallback, D-012) | `shortcut.phrase.1/2/3` | “EasyPhone ơi”, “Mở EasyPhone”, “Nói với EasyPhone” · en: “Open EasyPhone”, “Talk to EasyPhone” |
-| `StartListeningIntent` title / description | `intent.listen.title` / `.desc` | Bắt đầu nghe / Mở EasyPhone và nghe yêu cầu của bạn |
-| Control Center control | `control.listen` | Nói với EasyPhone |
-| Home widget (small/medium) | `widget.title` / `widget.cta` | EasyPhone / Bấm để nói |
-| Lock Screen widget (circular) | `widget.lock.a11y` | Nói với EasyPhone |
+| App Shortcut phrases (iOS 18.4+ vi; en fallback, D-012) | `shortcut.phrase.1/2/3/4` | “Ê Khoai”, “Khoai”, “Mở EasyPhoneK”, “Nói với EasyPhoneK” · en: “Open EasyPhoneK”, “Talk to EasyPhoneK” — “Khoai” = `INAlternativeAppNames` entry, phrases written `"Ê \(.applicationName)"` / `"\(.applicationName)"` (D-288); bare “Khoai” kept only if Xcode/Siri accept it on device (1E.2) |
+| `StartListeningIntent` title / description | `intent.listen.title` / `.desc` | Bắt đầu nghe / Mở EasyPhoneK và nghe yêu cầu của bạn |
+| Control Center control | `control.listen` | Nói với EasyPhoneK |
+| Home widget (small/medium) | `widget.title` / `widget.cta` | EasyPhoneK / Bấm để nói |
+| Lock Screen widget (circular) | `widget.lock.a11y` | Nói với EasyPhoneK |
 | Medium widget extra line | `widget.unfinished` | {count} việc chưa xong (count per D-244) |
 ## 8. Global banners, toasts, errors (`error.<code>`, ARCHITECTURE §9.2, code scheme D-249)
 | Key | vi | Shown as | Key | vi | Shown as |

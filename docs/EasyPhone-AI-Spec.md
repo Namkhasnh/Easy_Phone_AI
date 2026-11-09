@@ -230,7 +230,7 @@ Format: **US-x** As a user, I want…, so that…  → acceptance criteria (AC).
 
 **US-1** I want to start the assistant with one tap or one phrase, so that I don't hunt through menus.
 - AC1 Home shows one large mic button (≥ 120pt), a text field, and up to 3 recent unfinished tasks.
-- AC2 App Shortcut phrases (Vietnamese + English) open the app directly in listening mode. Phrases must contain the app name, e.g. "EasyPhone ơi", "Mở EasyPhone".
+- AC2 App Shortcut phrases (Vietnamese + English) open the app directly in listening mode. Phrases must contain the app name, e.g. "Ê Khoai" ("Khoai" = alternative app name), "Mở EasyPhoneK" (D-287, D-288).
 - AC3 An App Intent `StartListeningIntent` is selectable for the Action Button and as a Control Center control.
 - AC4 Lock Screen + Home Screen widgets open listening mode via deep link `easyphone://listen`.
 - AC5 Unfinished tasks show their state in plain words ("Chờ bạn xác nhận", "Cần mở Grab để hoàn tất").

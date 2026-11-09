@@ -9,6 +9,8 @@ The user gives a task in **Vietnamese** (voice, text or one photo). The backend 
 **editable task draft**. The user reviews it and taps **"Xác nhận"**. The app then does what iOS allows
 (EventKit, Contacts, MessageUI, MapKit) and **guides** the rest honestly.
 
+- Shown to users as **EasyPhoneK**, called by voice "Ê Khoai"; guide mascot **Khoai** (D-287 – D-289). Internal names
+  (`EasyPhoneAI` target/folder, bundle id `vn.namkhanh.easyphone`, `easyphone://`) stay unchanged.
 - iOS app: Swift 6 (strict concurrency), SwiftUI, SwiftData, iOS 18.0+, SPM only.
 - Backend: Python 3.12 + FastAPI (one service), Supabase (Postgres + Auth: **Google only**, D-283), OpenAI via backend only.
 - Billing: StoreKit 2, verified server-side. Free = small daily quota, Premium = monthly/yearly.

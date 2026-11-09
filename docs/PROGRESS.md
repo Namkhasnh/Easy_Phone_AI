@@ -74,7 +74,7 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 
 | Doc | Status | Notes |
 |---|---|---|
-| `DECISIONS.md` | ✅ written | D-001 – D-285; thesis scope D-282 – D-285 (§12.6); no open DOC-x items |
+| `DECISIONS.md` | ✅ written | D-001 – D-289; thesis scope D-282 – D-285 (§12.6); branding EasyPhoneK / Khoai D-287 – D-289 (§12.7) |
 | `EasyPhone-AI-Spec.md` | ✅ updated | phases, user stories, DoD; layout (D-258), hierarchy (D-279), transitions (D-243) |
 | `DATA_MODEL.md` | ✅ updated | enums, transition table (+D-243), field catalog + §4.1 per-operation required, SQL (+`attempt`) |
 | `API_CONTRACT.md` | ✅ updated | endpoints, errors, quota, idempotency per endpoint call (D-245), time budget (D-246) |
@@ -288,7 +288,7 @@ Exit: **linked flow 1 starts from a photo.**
 ### Phase 1E — Entry points
 Exit: **app opens in listening mode from each entry.**
 - [ ] 1E.1 `StartListeningIntent` (`openAppWhenRun`) sets `startListeningRequested` — Docs: ARCHITECTURE §2.2
-- [ ] 1E.2 App Shortcuts phrases vi (18.4+) + en fallback (`#available`) — Docs: D-012, UI_SCREENS §7
+- [ ] 1E.2 App Shortcuts phrases vi (18.4+) + en fallback (`#available`); "Ê Khoai" / "Khoai" via `INAlternativeAppNames` (D-288), test on the owner's iPhone — Docs: D-012, D-288, UI_SCREENS §7
 - [ ] 1E.3 Deep link `easyphone://listen` (`onOpenURL`)
 - [ ] 1E.4 Control Center control (iOS 18 `ControlWidget`)
 - [ ] 1E.5 Home widgets small/medium (+ unfinished count, D-244) + Lock Screen circular — Docs: UI_SCREENS §7

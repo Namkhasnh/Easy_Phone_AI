@@ -428,7 +428,7 @@
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "EasyPhone"
+            "value": "EasyPhoneK"
           }
         }
       }
@@ -440,7 +440,7 @@
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Phiên bản này đã cũ. Hãy cập nhật EasyPhone (tối thiểu %@) để tiếp tục dùng."
+            "value": "Phiên bản này đã cũ. Hãy cập nhật EasyPhoneK (tối thiểu %@) để tiếp tục dùng."
           }
         }
       }
