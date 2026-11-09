@@ -3,7 +3,7 @@ import SwiftUI
 
 /// Dependency container (ARCHITECTURE §3). Built once in `EasyPhoneApp`, injected via `.environment(\.appEnv, …)`.
 /// Service properties are added by the item that builds each service (protocol + Live + Mock, D-206):
-/// `localData` (1A.9b), device services (1C), `speech`/`tts` (1B),
+/// device services (1C), `speech`/`tts` (1B),
 /// `ocr` (1D), `purchases` (1F). Debug vs Release never changes the wiring (D-208).
 struct AppEnvironment: Sendable {
     /// Build configuration from `Config/*.xcconfig` (0.7, D-207).
@@ -14,17 +14,21 @@ struct AppEnvironment: Sendable {
     let api: any APIClientProtocol
     /// `TaskDraft` persistence, SwiftData main context (1A.9, ARCHITECTURE §4.4).
     let drafts: any TaskRepository
+    /// Saved places, nicknames, settings (1A.9b, DATA_MODEL §5).
+    let localData: any LocalDataRepository
 
     @MainActor static func live(container: ModelContainer) -> AppEnvironment {
         let config = AppConfig.fromMainBundle()
         let auth = LiveAuthService(config: config)
         return AppEnvironment(config: config, auth: auth,
                               api: APIClient(config: config, auth: auth, client: .fromMainBundle()),
-                              drafts: LiveTaskRepository(container: container))
+                              drafts: LiveTaskRepository(container: container),
+                              localData: LiveLocalDataRepository(container: container))
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
-        AppEnvironment(config: .mock, auth: MockAuthService(), api: MockAPIClient(), drafts: MockTaskRepository())
+        AppEnvironment(config: .mock, auth: MockAuthService(), api: MockAPIClient(), drafts: MockTaskRepository(),
+                       localData: MockLocalDataRepository())
     }
 }
 
