@@ -84,7 +84,7 @@ step with `completed = "false"` (same `targetRef`).
 | `failed` | `retry` | `awaitingApproval` (run idempotency check first, D-105) |
 | `failed` | `userCancelled` | `cancelled` (D-243) |
 | `failed` | `userMarkedDone` | `userMarkedDone` (user finished it another way, e.g. copy fallback, D-243) |
-| `succeeded` | `userEdited` | `awaitingApproval` (edit = new `update` action) |
+| `succeeded` | `userEdited` | `awaitingApproval` (edit = new `update` action; evidence cleared, `create` → `update` + `targetRef` from evidence, D-290) |
 | any non-final | `userCancelled` | `cancelled` |
 | `processing` | `userCancelled` + `context.composerDismissed` | `awaitingApproval` (SMS composer `.cancelled`, D-222) |
 

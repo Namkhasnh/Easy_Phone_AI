@@ -384,6 +384,12 @@ everything else (safety rules, engine, data model, API, accessibility) is unchan
 | D-288 | **Refines D-171:** voice call phrases are **"Ê Khoai"** and **"Khoai"**. "Khoai" is declared as an alternative app name (`INAlternativeAppNames` with a pronunciation hint, added in 1E.2) and phrases use `\(.applicationName)`, so D-171 still holds. Fallbacks "Mở EasyPhoneK", "Nói với EasyPhoneK" + English. Verified on the owner's iPhone in 1E.2; a phrase Xcode or Siri rejects / mishears is dropped and noted in PROGRESS §5. | DEFAULT |
 | D-289 | **Guide mascot "Khoai"** = P-41 (UI_SCREENS §2, S02, S03, S15, §9, §12): owner-supplied art, decorative only (no text, no actions, VoiceOver skips it, Reduce Motion → static), toggle `settings.pet` (on by default); never signals success on its own (D-102, D-124). Built in 1B.16 after S02/S03 exist; no third-party animation library (D-017). | DEFAULT |
 
+### 12.8 Engine details (owner, 2026-11-10)
+
+| ID | Decision | Status |
+|---|---|---|
+| D-290 | **Edit after success (DOC-22):** `succeeded` + `userEdited` → `awaitingApproval` is a new action on the same item. `TaskEngine` sets `resultEvidence = nil`; for `calendarEvent`/`reminder` with `operation = create` it also sets `operation = update` and `targetRef` = the identifier from the evidence (`ek:event:<id>` / `ek:reminder:<id>`, DATA_MODEL §3.5), then re-validates. Other kinds keep their operation. | DEFAULT |
+
 ---
 
 ## 13. Open decisions summary (owner must lock)
@@ -420,5 +426,6 @@ building on top of the default in a way that is hard to undo (e.g. App Store pro
 | 2026-11-09 | D-286 | Owner kept the `EasyPhoneAI/` folder name (DOC-19); no placeholder files inside the synchronized app folder | Owner + Claude |
 | 2026-11-09 | D-287, D-288 | Owner: display name EasyPhoneK (supersedes D-001 display name), voice call "Ê Khoai" / "Khoai" via alternative app name (refines D-171) | Owner + Claude |
 | 2026-11-09 | D-289 | Owner approved P-41: guide mascot "Khoai" (art from owner), built in 1B.16 | Owner + Claude |
+| 2026-11-10 | D-290 | Owner approved the DOC-22 fix: edit after `succeeded` → `update` on the evidence item, evidence cleared | Owner + Claude |
 
 <!-- Append new rows below. To change a LOCKED decision, add a new ID that "supersedes D-xxx". -->

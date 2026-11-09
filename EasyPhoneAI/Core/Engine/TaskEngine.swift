@@ -72,9 +72,8 @@ import os
         step.fields[f].confidence = nil
         step.fields[f].ambiguity = nil
 
+        if step.state == .succeeded { Self.turnIntoUpdate(&step) }  // D-290
         if step.state != .draft {
-            // `succeeded` → `awaitingApproval` = a new update action (DATA_MODEL §1.5).
-            // TODO(spec): switching `operation` to `.update` (+ `targetRef` from evidence) is not specified; 1C executors.
             guard applyInPlace(.userEdited, to: &step) else { return false }
         }
         revalidateInPlace(&step)
@@ -92,6 +91,23 @@ import os
     // MARK: - Internals
 
     static let editableStates: Set<TaskState> = [.draft, .needsInfo, .awaitingApproval, .succeeded]
+
+    /// D-290: an edit after `succeeded` is a new action on the same item. Evidence is cleared; a calendar /
+    /// reminder `create` becomes `update` on the identifier from its evidence (DATA_MODEL §3.5).
+    static func turnIntoUpdate(_ step: inout TaskStep) {
+        let evidence = step.resultEvidence
+        step.resultEvidence = nil
+        guard step.operation == .create, let evidence else { return }
+        let prefix: String
+        switch step.kind {
+        case .calendarEvent: prefix = "ek:event:"
+        case .reminder: prefix = "ek:reminder:"
+        default: return
+        }
+        guard evidence.hasPrefix(prefix) else { return }
+        step.operation = .update
+        step.targetRef = String(evidence.dropFirst(prefix.count))
+    }
 
     /// The single place where `TaskStep.state` is written (D-123).
     private func applyInPlace(_ event: TaskEvent, to step: inout TaskStep,
