@@ -196,6 +196,33 @@ enum Validator {
             || stripped.wholeMatch(of: /\+[1-9][0-9]{6,14}/) != nil
     }
 
+    /// DATA_MODEL §7.3: strip spaces / dots / dashes; VN local `0xxxxxxxxx` → `+84xxxxxxxxx`.
+    /// Returns nil when the result is not E.164. (Masking + the full test set: 1C.8.)
+    static func normalizePhone(_ value: String) -> String? {
+        let stripped = value.filter { !" .-".contains($0) }
+        let e164 = stripped.wholeMatch(of: /0[0-9]{9}/) != nil ? "+84" + stripped.dropFirst() : stripped
+        return isEncoded(e164, as: .phone) ? e164 : nil
+    }
+
+    /// S05 inline check of one edited value (UI_SCREENS S05): encoding of any non-empty value (required or not)
+    /// plus the §7.1 cross-field rules for that field. Empty → nil (the Review row then shows "Chưa có").
+    static func check(fieldId: String, value: String?, in step: TaskStep, now: Date,
+                      catalog: FieldCatalog = .mvp) -> ValidationIssue.Reason? {
+        guard let value, !isEmpty(value),
+              let spec = catalog.fields(step.kind, step.operation).first(where: { $0.id == fieldId }) else { return nil }
+        if spec.type != .enumChoice, !isEncoded(value, as: spec.type) { return .invalidEncoding }
+        var copy = step
+        if let i = copy.fields.firstIndex(where: { $0.id == fieldId }) {
+            copy.fields[i].value = value
+            copy.fields[i].ambiguity = nil
+        } else {
+            copy.fields.append(Field(id: fieldId, type: spec.type, value: value))
+        }
+        let crossField: Set<ValidationIssue.Reason> = [.endBeforeStart, .inPast]
+        return validate(copy, now: now, catalog: catalog)
+            .first { $0.fieldId == fieldId && crossField.contains($0.reason) }?.reason
+    }
+
     private static func isEmpty(_ value: String?) -> Bool {
         value?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true
     }
