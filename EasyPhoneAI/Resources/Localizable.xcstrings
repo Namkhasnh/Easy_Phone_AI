@@ -504,6 +504,618 @@
           }
         }
       }
+    },
+    "state.draft": {
+      "comment": "DATA_MODEL §8",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bản nháp"
+          }
+        }
+      }
+    },
+    "state.needsInfo": {
+      "comment": "DATA_MODEL §8",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cần thêm thông tin"
+          }
+        }
+      }
+    },
+    "state.awaitingApproval": {
+      "comment": "DATA_MODEL §8",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chờ bạn xác nhận"
+          }
+        }
+      }
+    },
+    "state.processing": {
+      "comment": "DATA_MODEL §8",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đang thực hiện"
+          }
+        }
+      }
+    },
+    "state.prepared": {
+      "comment": "DATA_MODEL §8; %@ = {service}",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã chuẩn bị — cần mở %@"
+          }
+        }
+      }
+    },
+    "state.handedOff": {
+      "comment": "DATA_MODEL §8; %@ = {app}",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cần hoàn tất trong %@"
+          }
+        }
+      }
+    },
+    "state.unknown": {
+      "comment": "DATA_MODEL §8",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chưa rõ kết quả"
+          }
+        }
+      }
+    },
+    "state.succeeded": {
+      "comment": "DATA_MODEL §8",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã xong"
+          }
+        }
+      }
+    },
+    "state.userMarkedDone": {
+      "comment": "DATA_MODEL §8",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn đã làm xong"
+          }
+        }
+      }
+    },
+    "state.failed": {
+      "comment": "DATA_MODEL §8",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không thành công"
+          }
+        }
+      }
+    },
+    "state.cancelled": {
+      "comment": "DATA_MODEL §8",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã hủy"
+          }
+        }
+      }
+    },
+    "field.calendarEvent.title": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tên lịch hẹn"
+          }
+        }
+      }
+    },
+    "field.calendarEvent.startDate": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bắt đầu"
+          }
+        }
+      }
+    },
+    "field.calendarEvent.endDate": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kết thúc"
+          }
+        }
+      }
+    },
+    "field.calendarEvent.allDay": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cả ngày"
+          }
+        }
+      }
+    },
+    "field.calendarEvent.location": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Địa điểm"
+          }
+        }
+      }
+    },
+    "field.calendarEvent.notes": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ghi chú"
+          }
+        }
+      }
+    },
+    "field.calendarEvent.alertMinutesBefore": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nhắc trước"
+          }
+        }
+      }
+    },
+    "field.calendarEvent.calendarId": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lịch"
+          }
+        }
+      }
+    },
+    "field.reminder.title": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Việc cần nhắc"
+          }
+        }
+      }
+    },
+    "field.reminder.dueDate": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thời gian nhắc"
+          }
+        }
+      }
+    },
+    "field.reminder.notes": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ghi chú"
+          }
+        }
+      }
+    },
+    "field.reminder.snoozeOption": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nhắc lại lúc"
+          }
+        }
+      }
+    },
+    "field.reminder.completed": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã xong"
+          }
+        }
+      }
+    },
+    "field.call.recipientName": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gọi cho"
+          }
+        }
+      }
+    },
+    "field.call.contactId": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Người trong danh bạ"
+          }
+        }
+      }
+    },
+    "field.call.phoneNumber": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Số điện thoại"
+          }
+        }
+      }
+    },
+    "field.sms.recipientName": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gửi cho"
+          }
+        }
+      }
+    },
+    "field.sms.contactId": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Người trong danh bạ"
+          }
+        }
+      }
+    },
+    "field.sms.phoneNumber": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Số điện thoại"
+          }
+        }
+      }
+    },
+    "field.sms.body": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nội dung tin nhắn"
+          }
+        }
+      }
+    },
+    "field.sms.channel": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gửi qua"
+          }
+        }
+      }
+    },
+    "field.place.query": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tìm địa điểm"
+          }
+        }
+      }
+    },
+    "field.place.name": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tên địa điểm"
+          }
+        }
+      }
+    },
+    "field.place.address": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Địa chỉ"
+          }
+        }
+      }
+    },
+    "field.place.coordinate": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vị trí trên bản đồ"
+          }
+        }
+      }
+    },
+    "field.place.label": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lưu là"
+          }
+        }
+      }
+    },
+    "field.place.customLabel": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tên gọi riêng"
+          }
+        }
+      }
+    },
+    "field.place.mapsApp": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mở bằng"
+          }
+        }
+      }
+    },
+    "field.ocr.extractedText": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chữ đọc được"
+          }
+        }
+      }
+    },
+    "field.ocr.title": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tên lịch hẹn"
+          }
+        }
+      }
+    },
+    "field.ocr.dateTime": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ngày giờ"
+          }
+        }
+      }
+    },
+    "field.ocr.address": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Địa chỉ"
+          }
+        }
+      }
+    },
+    "field.ocr.personName": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Người liên hệ"
+          }
+        }
+      }
+    },
+    "field.ocr.phoneNumber": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Số điện thoại"
+          }
+        }
+      }
+    },
+    "field.ocr.nextAction": {
+      "comment": "UI_SCREENS §10.2",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bước tiếp theo"
+          }
+        }
+      }
+    },
+    "history.empty": {
+      "comment": "UI_SCREENS S14",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chưa có việc nào."
+          }
+        }
+      }
+    },
+    "stepIndicator.label": {
+      "comment": "UI_SCREENS §2 StepIndicator; key name not in docs (DOC-23)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bước %1$@/%2$@"
+          }
+        }
+      }
+    },
+    "a11y.state": {
+      "comment": "UI_SCREENS §9 StateBadge; key name not in docs (DOC-23)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trạng thái: %@"
+          }
+        }
+      }
+    },
+    "a11y.field.needsReview": {
+      "comment": "UI_SCREENS §9 FieldRow; key name not in docs (DOC-23)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "cần kiểm tra lại"
+          }
+        }
+      }
+    },
+    "a11y.field.hint": {
+      "comment": "UI_SCREENS §9 FieldRow; key name not in docs (DOC-23)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bấm hai lần để sửa"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
