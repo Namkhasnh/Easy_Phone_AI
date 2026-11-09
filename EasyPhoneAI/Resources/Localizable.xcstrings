@@ -468,6 +468,42 @@
           }
         }
       }
+    },
+    "confirm.delete": {
+      "comment": "UI_SCREENS S20",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xóa"
+          }
+        }
+      }
+    },
+    "review.disabled.missing": {
+      "comment": "UI_SCREENS S04",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cần điền ô có dấu “Chưa có” trước khi xác nhận."
+          }
+        }
+      }
+    },
+    "home.camera": {
+      "comment": "UI_SCREENS S02",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chụp ảnh giấy tờ"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
