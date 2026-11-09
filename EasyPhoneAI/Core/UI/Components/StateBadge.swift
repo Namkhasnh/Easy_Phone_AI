@@ -26,7 +26,6 @@ struct StateBadge: View {
         .font(Tokens.Fonts.label)
         .foregroundStyle(color)
         .accessibilityElement(children: .ignore)
-        // TODO(spec): key `a11y.state` is not named in UI_SCREENS §9 (DOC-23).
         .accessibilityLabel(Text(verbatim: UserMessage(key: "a11y.state", args: [label]).text))
     }
 }

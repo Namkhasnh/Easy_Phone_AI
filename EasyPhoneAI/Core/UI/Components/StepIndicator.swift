@@ -8,7 +8,6 @@ struct StepIndicator: View {
 
     var body: some View {
         HStack(spacing: Tokens.Space.m) {
-            // TODO(spec): key `stepIndicator.label` is not named in UI_SCREENS §2 (DOC-23).
             Text(verbatim: UserMessage(key: "stepIndicator.label", args: ["\(current)", "\(total)"]).text)
                 .font(Tokens.Fonts.label)
                 .foregroundStyle(Tokens.Colors.textSecondary)
