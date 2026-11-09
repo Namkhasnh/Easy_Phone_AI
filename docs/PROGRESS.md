@@ -60,12 +60,12 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Key | Value |
 |---|---|
 | Last updated | 2026-11-09 |
-| Current phase | **Phase 0 — Skeleton** (0.1 – 0.15 done) |
+| Current phase | **Phase 0 — Skeleton** (0.1 – 0.16 done) |
 | Working on | — |
-| Last commit | `[0] 0.15 done: /v1/me verified on Supabase` on branch `demo_git` (not pushed) |
-| Build status | ✅ `xcodebuild … iPhone 18 Pro build` succeeds (iOS untouched this session) |
-| Test status | ✅ iOS 23/23 (last session); ✅ backend `uv run pytest -q` 54/54; ✅ `run_db_tests.sh` 6/6; ✅ migration check |
-| Next action | 0.16 `APIClient` actor (headers, 20 s timeout, `RetryPolicy`, 401 refresh-once, 426 → S19) + Swift `MeResponse` DTO — Docs: API_CONTRACT §1, §10; ARCHITECTURE §10 |
+| Last commit | `[0] APIClient actor + RetryPolicy + MeResponse DTO` on branch `demo_git` (not pushed) |
+| Build status | ✅ `xcodebuild … iPhone 18 Pro build` succeeds, no warnings |
+| Test status | ✅ iOS `test` green (70 test cases incl. parameterized); ✅ backend `uv run pytest -q` 54/54; ✅ `run_db_tests.sh` 6/6 (last session) |
+| Next action | 0.17 S19 "Cập nhật ứng dụng" screen shown from `AppState.blockingScreen` (already set by `APIClient` on 426) — Docs: UI_SCREENS S19, §4 |
 | Owner decisions needed now | none (0.6 kept by owner 2026-11-09). Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
@@ -147,6 +147,7 @@ Format: `BUG-xxx | phase | severity (P1 crash/data loss, P2 wrong behavior, P3 c
 | DOC-16 | "Việc chưa xong" and `currentStep` (when no step qualifies) undefined | UI S02/S08/§7, DATA_MODEL §3.2 | D-244 | fixed |
 | DOC-17 | `/v1/extract` has no `title`, so OCR → calendarEvent always needs a follow-up for `title` | API_CONTRACT §7.2, AI_PROMPTS §4, DATA_MODEL §4 | owner: add `title` to extract (e.g. clinic/appointment name) or keep editor-only; until then the user types it in S05 (no AI call) | fixed (D-276) |
 | DOC-18 | Phase 0/1A items depend on pending proposals (P-23 layout vs LOCKED D-019, P-30, P-32, P-33, P-38) | PROGRESS §4, §6 | owner approves P-17 – P-40 as a batch (P-23 as a superseding D-id) before 0.3 | fixed (D-252 – D-275) |
+| DOC-20 | `APIClientProtocol.blockingUpdates` (426 → `AppState.blockingScreen`) is not in ARCHITECTURE §4.1 | ARCHITECTURE §4.1 vs UI_SCREENS §4 | add `blockingUpdates` to §4.1 | open |
 | DOC-19 | Spec §3.2 layout root is `EasyPhone/`; the repo's app folder, target and scheme are `EasyPhoneAI` (CLAUDE.md §8 uses `EasyPhoneAI`) | Spec §3.2 vs repo | keep `EasyPhoneAI/` as the app root (no project rename) | fixed (D-286) |
 
 ### 5.3 Code TODOs left in source
@@ -162,6 +163,12 @@ List every `// TODO(spec):` and `// TODO(decision):` with file + line. Remove wh
 | `EasyPhoneAI/Features/SignIn/SignInView.swift:67` | TODO(spec) | Google "G" mark missing (no licensed asset) |
 | `EasyPhoneAI/Features/SignIn/SignInView.swift:79` | TODO(spec) | legal links no-op until in-app Terms/Privacy (1G.6, D-284) |
 | `backend/app/errors.py:118` | TODO(spec) | framework HTTP errors other than 404/405 have no §3.2 code → rendered as `500 internal` |
+| `EasyPhoneAI/Core/Networking/APIClientProtocol.swift:11` | TODO(spec) | `blockingUpdates` not in ARCHITECTURE §4.1 (DOC-20) |
+| `EasyPhoneAI/Core/Networking/RetryPolicy.swift:19` | TODO(spec) | jitter size unspecified; 0–0.5 s |
+| `EasyPhoneAI/Core/Networking/RetryPolicy.swift:23` | TODO(spec) | no `Retry-After` upper bound; clamped to 30 s |
+| `EasyPhoneAI/Core/Networking/APIClient.swift:105` | TODO(spec) | 426 without `details.minVersion` → empty version on S19 |
+| `EasyPhoneAI/Core/Services/Mock/MockAPIClient.swift:4` | TODO(spec) | switch mock to contract fixtures in 0.18 |
+| `EasyPhoneAI/Core/Models/CachedEntitlement.swift:15` | TODO(spec) | unknown `plan` → `free` (display only) |
 | `Config/Release.xcconfig:2` | TODO(decision) | D-036: no production backend in thesis scope (D-284); Release uses the Debug backend URL |
 
 ### 5.4 Closed (append-only)
@@ -196,7 +203,7 @@ Exit: **sign in with Google (Simulator + owner's iPhone, free Apple ID), backend
 - [x] 0.13 JWT verification (`sub`, `exp`, `aud`) — Verify: pytest 401 cases (this commit) — `app/auth.py` (`verify_token`, `CurrentUser`), `deps.current_user`; ES256/RS256 via project JWKS (project uses ES256), HS256 fallback with `SUPABASE_JWT_SECRET`; `JWT_AUDIENCE` in config; JWKS unreachable → 500 `internal`; `pyjwt[crypto]` added. Verified: pytest 35/35 (fake JWKS), real project JWKS loads. **Profile upsert (D-236) moved to 0.15** (needs the 0.14 table + DB connection; owner OK'd plan)
 - [x] 0.14 SQL migration: `profiles`, `subscriptions`, `usage_events` (incl. `attempt`, D-246) + RLS (no `gmail_accounts`) — Docs: DATA_MODEL §9 — `backend/migrations/0001_init.sql` (tables verbatim §9, select-own policies `to authenticated`, `revoke` client writes; folder choice not in docs), `checks/{supabase_stub,0001_check}.sql` + `run_local.sh` (Docker Postgres 16): all checks pass, negative test (no RLS) fails as expected. (de97acf + this commit) — owner ran the SQL in Supabase SQL Editor; REST anon → `200 []` for the 3 tables, `gmail_accounts` → `PGRST205`, anon insert → `42501`
 - [x] 0.15 `GET /v1/me` returning `MeResponse` + `X-Quota-*` headers + profile upsert (D-236, deleted auth user → 401, from 0.13) — Docs: API_CONTRACT §2, §6.2 — Built: `asyncpg` lazy pool (`app/db.py`, `statement_cache_size=0` for the Supabase pooler; `/v1/health` never opens it), `deps.{db,clock,authed_user}` (`AuthedUser` = JWT + upsert; `current_user` alone stays for `DELETE /v1/me`), `repositories/{profiles,subscriptions,usage}.py`, `services/accounts.py` (locale from `Accept-Language`, **set on create only** — owner 2026-11-09; FK violation → 401), `services/quota.py` (premium iff any row qualifies, local-day window `[midnight, next midnight)`), `schemas/me.py`, `routers/me.py`. Tests: `test_quota.py`, `test_me.py` (fakes), `test_db.py` (marker `db`, real Postgres via `migrations/checks/run_db_tests.sh`, also in CI). (ea9f3cc + this commit) — Verified on Supabase: owner's `backend/.env` (session pooler), real Google access token → `200` with own `userId`, `plan: free`, `X-Quota-*` 10/10, one `profiles` row created (`vi`); a 2nd call with `Accept-Language: en` → still `vi`, still one row; bad token → `401`. Swift `MeResponse` DTO comes with 0.16, contract fixture with 0.18
-- [ ] 0.16 `APIClient` actor: headers, 20 s timeout, `RetryPolicy`, 401 refresh-once, 426 → S19 — Docs: API_CONTRACT §10, ARCHITECTURE §10
+- [x] 0.16 `APIClient` actor: headers, 20 s timeout, `RetryPolicy`, 401 refresh-once, 426 → S19 — Docs: API_CONTRACT §10, ARCHITECTURE §10 (this commit) — Built: `Core/Networking/{APIClientProtocol,APIClient,RetryPolicy,HTTPTransport,IdempotencyKey,ClientInfo,Broadcast}.swift`, DTOs `Core/Networking/DTO/{HealthResponse,MeResponse,APIErrorEnvelope}.swift` (unknown enum → `.unknown`, unknown `plan` → `.free`), `Core/Models/AppError.swift` (ARCHITECTURE §9.1 + `code`), `MockAPIClient` (hard-coded until 0.18 fixtures), `AppEnvironment.api`, `AppState.apply(me:)/apply(quota:)` (memory only until 1A.9), RootView calls `/v1/me` on sign-in/launch and listens to `quotaUpdates` / `blockingUpdates`. Retry: timeout/other network, `500`, `503 upstream_error` → 1 s / 3 s + 0–0.5 s jitter; offline + TLS fail fast (ARCHITECTURE §11); `429` once (≤ 30 s); parallel 401s share one refresh; 2nd 401 or failed refresh → `auth.signOut()`. Tests: `RetryPolicyTests`, `APIClientTests` (stub transport), `DTODecodingTests`, `AppStateTests`. Verified: build + all tests green; Simulator (restored session) + local uvicorn → app log `GET /v1/me 200 attempt=1 req_…`, uvicorn `GET /v1/me 200` (no ATS change needed for `http://127.0.0.1`). 401/426/retry paths unit-tested only
 - [ ] 0.17 S19 Update required screen — Docs: UI_SCREENS S19
 - [ ] 0.18 Contract fixtures folder `backend/tests/fixtures/contract/` shared with iOS tests — Docs: API_CONTRACT §11
 - [ ] 0.19 Backend reachable from iPhone (tunnel, D-037)
@@ -354,6 +361,13 @@ Template:
 - Next: <one concrete next step>
 ```
 
+### 2026-11-09 — Phase 0 — `APIClient` (0.16)
+- Process: "làm tiếp /plan" → plan mode (Vietnamese), approved, then built
+- Done: 0.16 `APIClient` actor + `RetryPolicy` + DTOs + `AppError` + `MockAPIClient`; RootView loads `/v1/me` (this commit)
+- Verify: iOS build (no warnings) + tests green; Simulator → local backend `GET /v1/me 200` → `[x]`
+- Bugs: none. Opened DOC-20 (`blockingUpdates`). TODOs added: 6 (see §5.3)
+- Next: 0.17 S19 Update required
+
 ### 2026-11-09 — Phase 0 — `GET /v1/me` + profile upsert (0.15)
 - Done: code + tests for 0.15 (this commit); asyncpg added; `db` test suite on Docker Postgres, wired into CI
 - Verified on real Supabase with the owner's token: 200 + profile row created once → 0.15 `[x]`
@@ -421,65 +435,7 @@ Template:
 - Later same day: agent added `EasyPhoneTests` target (`bundle.unit-test`, `test-host-target`) in `project.xcproj` + shared scheme `xcshareddata/xcschemes/EasyPhoneAI.xcscheme` (autogenerated scheme had no test action); 12 tests green. `/plan` = real plan mode via EnterPlanMode tool
 - 0.8 done with owner on dashboards (Supabase Singapore, Google OAuth Web client, Testing mode); publishable key instead of legacy anon. Next: 0.9 AuthService
 
-### 2026-11-09 — Phase 0 — SwiftData container
-- Process: owner typed "làm tiếp /plan" (mid-message, plan mode did not start); agent built 0.5/0.6 without
-  waiting. From now on "/plan" anywhere = present plan and stop for approval. Owner to decide: keep or revert 0.6
-- Done: 0.6 (9d9da26) `Core/Persistence/SchemaV1.swift`, `ModelContainerFactory.swift`; `.modelContainer` in `EasyPhoneApp`
-- Verify: build ok; app launched on iPhone 18 Pro simulator, `Application Support/default.store` created
-- Test target still missing (owner to add in Xcode). TODOs added: EasyPhoneApp.swift:14. Next: test target, then 0.7
-
-### 2026-11-09 — Phase 0 — App state + router
-- Done: 0.5 (b74d9de) `AppEnvironment` (live/mock, `MockScenario.default`, `\.appEnv`), `AppState`, `SessionState`,
-  `BlockingScreen`, `Route` + `Router`, `RootView`; `Plan`/`CachedEntitlement` (DATA_MODEL §5)
-- Verify: build succeeded on iPhone 18 Pro simulator. Literal "Hello, world!" removed (ContentView TODO closed)
-- Test target: owner OK'd adding `EasyPhoneTests` early; agent could not add it to the new `project.xcproj` safely → owner adds in Xcode
-- TODOs added: RootView.swift:10, :18. Next: test target, then 0.6
-
-### 2026-11-09 — Phase 0 — String catalogs
-- Done: 0.4 (b19e21f) `Resources/Localizable.xcstrings` (29 `common.*` keys, vi) + `InfoPlist.xcstrings`
-  (8 usage descriptions, S18); `vi` added to project `localizations.supported`
-- Verify: build succeeded on iPhone 18 Pro simulator; app bundle has `vi.lproj/Localizable.strings` + `InfoPlist.strings`
-- Bugs: none. TODOs added: none. Next: 0.5
-
-### 2026-11-09 — Phase 0 — Folder layout
-- Done: 0.3 (4653af9) `App/ Core/… Features/ Intents/ Resources/` in `EasyPhoneAI/`, `Widgets/` at root;
-  `MyApp.swift` → `App/EasyPhoneApp.swift` (`EasyPhoneApp`), `ContentView.swift` → `App/`
-- Found: `.gitkeep` inside the synchronized app folder breaks the build ("Multiple commands produce …/.gitkeep") → D-286
-- Verify: build succeeded on iPhone 18 Pro simulator. DOC-19 closed (D-286). Next: 0.4
-
-### 2026-11-08 — Phase 0 — Repo + project settings
-- Done: 0.1 (716adcd) `.gitignore`, docs/CLAUDE.md/skills committed, xcuserdata untracked; 0.2 (9022272)
-  SDKROOT iphoneos, iPhone only, iOS 18.0, Swift 6, bundle `vn.namkhanh.easyphone`, `vi` dev language, Playgrounds removed
-- Verify: `git check-ignore .env` ok; build succeeded on iPhone 18 Pro simulator
-- Bugs: none. Opened DOC-19 (folder name). TODOs added: ContentView.swift:3
-- Next: 0.3 folder layout (ask DOC-19 first)
-
-### 2026-11-08 — Docs — Thesis scope
-- Done: D-282 – D-285 (thesis, free Apple ID, Google-only sign-in, `.storekit` billing, 5 USD cap); Spec, PROGRESS,
-  CLAUDE.md, UI_SCREENS S01, ARCHITECTURE, API_CONTRACT updated. Simulator in commands → iPhone 18 Pro
-- Found: Xcode build fails ("Supported platforms … is empty"); target settings differ from D-010 – D-013 → item 0.2
-- Next: Phase 0 item 0.1
-
-### 2026-11-08 — Docs — Doc set complete
-- Done: DOC-1, 2, 5, 6, 7 fixed (D-277 – D-281); Spec synced (layout, hierarchy, transitions, extract `title`)
-- Bugs: none. Open DOC-x items: none
-- Next: Phase 0 item 0.1
-
-### 2026-11-08 — Docs — Proposals approved
-- Done: P-17 – P-40 → D-252 – D-275 (D-258 supersedes D-019); `title` in `/v1/extract` (D-276); docs updated
-- Bugs: none. Closed DOC-3, DOC-4, DOC-17, DOC-18. Still open: DOC-1, DOC-2, DOC-5, DOC-6, DOC-7
-- Next: Phase 0 item 0.1
-
-### 2026-11-08 — Docs — CLAUDE.md + cross-doc review round 2
-- Done: `CLAUDE.md` written; DOC-8 – DOC-16 fixed in DECISIONS, DATA_MODEL, API_CONTRACT, ARCHITECTURE, UI_SCREENS
-- In progress: —
-- Bugs: none. New open: DOC-17 (extract `title`), DOC-18 (pending proposals block Phase 0/1A)
-- Decisions asked / answered: D-243 – D-251 added (owner asked to fix); P-17 – P-40 still pending
-- Next: owner approves P-17 – P-40, then Phase 0 item 0.1
-
-### 2026-11-08 — Docs — Planning complete
-- Done: all 7 planning docs written (DECISIONS, Spec, DATA_MODEL, API_CONTRACT, AI_PROMPTS, ARCHITECTURE, UI_SCREENS) + this file
-- In progress: —
-- Bugs: none. Doc conflicts recorded as DOC-1 – DOC-7 (§5.2)
-- Decisions asked / answered: D-242 answered (option A); P-17 – P-40 pending (§4)
-- Next: Phase 0 item 0.1 (git repo + Xcode project)
+### Summary of older sessions (compressed, §0.2 rule 8)
+- 2026-11-09 Phase 0: 0.3 folder layout (4653af9, D-286 `.gitkeep` breaks synchronized folder), 0.4 string catalogs (b19e21f), 0.5 app state + router (b74d9de), 0.6 SwiftData `SchemaV1` (9d9da26, built before owner approval → rule: "/plan" anywhere = plan mode and stop)
+- 2026-11-08 Phase 0: 0.1 repo (716adcd) + 0.2 project settings (9022272); opened/closed DOC-19
+- 2026-11-08 Docs: 7 planning docs + this file; CLAUDE.md; DOC-1 – DOC-18 fixed via D-243 – D-281; P-17 – P-40 → D-252 – D-275; thesis scope D-282 – D-285
