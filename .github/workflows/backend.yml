@@ -1,4 +1,4 @@
-# Backend CI (CLAUDE.md §8): mocked-LLM pytest suite + SQL migration check. No secrets needed;
+# Backend CI (CLAUDE.md §8): mocked-LLM pytest suite + SQL migration check + `db` tests. No secrets needed;
 # live model evals (`pytest -m live`) are excluded by default and never run here (cost, D-285).
 name: backend
 
@@ -34,3 +34,5 @@ jobs:
         run: uv run pytest -q
       - name: SQL migration check (throwaway Postgres in Docker)
         run: sh migrations/checks/run_local.sh
+      - name: DB tests (repositories + /v1/me on throwaway Postgres)
+        run: sh migrations/checks/run_db_tests.sh

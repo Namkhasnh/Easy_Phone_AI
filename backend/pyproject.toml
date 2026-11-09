@@ -8,6 +8,7 @@ dependencies = [
     "uvicorn[standard]>=0.30",
     "pydantic-settings>=2.4",
     "pyjwt[crypto]>=2.15.1",
+    "asyncpg>=0.30",
 ]
 
 [dependency-groups]
@@ -21,7 +22,8 @@ package = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-m 'not live'"
+addopts = "-m 'not live and not db'"
 markers = [
     "live: real model evals, cost money (run only when asked: uv run pytest -m live)",
+    "db: needs a Postgres with the migrations (sh migrations/checks/run_db_tests.sh)",
 ]

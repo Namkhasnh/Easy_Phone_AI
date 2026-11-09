@@ -60,12 +60,12 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Key | Value |
 |---|---|
 | Last updated | 2026-11-09 |
-| Current phase | **Phase 0 — Skeleton** (0.1 – 0.14 done) |
-| Working on | — |
-| Last commit | `[0] 0.14 done: migration applied in Supabase` on branch `demo_git` (not pushed) |
+| Current phase | **Phase 0 — Skeleton** (0.1 – 0.14 done, 0.15 code done) |
+| Working on | 0.15 — left: real check against Supabase (needs `backend/.env`) |
+| Last commit | `[0] GET /v1/me + profile upsert` on branch `demo_git` (not pushed) |
 | Build status | ✅ `xcodebuild … iPhone 18 Pro build` succeeds (iOS untouched this session) |
-| Test status | ✅ iOS 23/23 (last session); ✅ backend `uv run pytest -q` 35/35 |
-| Next action | 0.15 `GET /v1/me` + profile upsert (D-236) with asyncpg (D-261): owner first creates `backend/.env` with `SUPABASE_URL` + `DATABASE_URL` (Supabase → Connect → session pooler URI) |
+| Test status | ✅ iOS 23/23 (last session); ✅ backend `uv run pytest -q` 54/54; ✅ `run_db_tests.sh` 6/6; ✅ migration check |
+| Next action | Owner creates `backend/.env` (`SUPABASE_URL` + `DATABASE_URL` session pooler URI) → `uv run uvicorn app.main:app` → `curl -H "Authorization: Bearer <access token>" http://127.0.0.1:8000/v1/me` → 200 with own `userId` + a row in `profiles`; then tick 0.15 and start 0.16 |
 | Owner decisions needed now | none (0.6 kept by owner 2026-11-09). Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
@@ -195,7 +195,7 @@ Exit: **sign in with Google (Simulator + owner's iPhone, free Apple ID), backend
 - [x] 0.12 `GET /v1/health` (no auth) — Verify: pytest + curl (this commit) — `routers/health.py` + `schemas/health.py` (`HealthResponse`), version/schemaVersion from `Settings`; no client-version check (uptime monitor). Verified: pytest 14/14, curl → 200 `{"status":"ok","version":"0.1.0","schemaVersion":1}` + `X-Request-Id`
 - [x] 0.13 JWT verification (`sub`, `exp`, `aud`) — Verify: pytest 401 cases (this commit) — `app/auth.py` (`verify_token`, `CurrentUser`), `deps.current_user`; ES256/RS256 via project JWKS (project uses ES256), HS256 fallback with `SUPABASE_JWT_SECRET`; `JWT_AUDIENCE` in config; JWKS unreachable → 500 `internal`; `pyjwt[crypto]` added. Verified: pytest 35/35 (fake JWKS), real project JWKS loads. **Profile upsert (D-236) moved to 0.15** (needs the 0.14 table + DB connection; owner OK'd plan)
 - [x] 0.14 SQL migration: `profiles`, `subscriptions`, `usage_events` (incl. `attempt`, D-246) + RLS (no `gmail_accounts`) — Docs: DATA_MODEL §9 — `backend/migrations/0001_init.sql` (tables verbatim §9, select-own policies `to authenticated`, `revoke` client writes; folder choice not in docs), `checks/{supabase_stub,0001_check}.sql` + `run_local.sh` (Docker Postgres 16): all checks pass, negative test (no RLS) fails as expected. (de97acf + this commit) — owner ran the SQL in Supabase SQL Editor; REST anon → `200 []` for the 3 tables, `gmail_accounts` → `PGRST205`, anon insert → `42501`
-- [ ] 0.15 `GET /v1/me` returning `MeResponse` + `X-Quota-*` headers + profile upsert (D-236, deleted auth user → 401, from 0.13) — Docs: API_CONTRACT §2, §6.2
+- [~] 0.15 `GET /v1/me` returning `MeResponse` + `X-Quota-*` headers + profile upsert (D-236, deleted auth user → 401, from 0.13) — Docs: API_CONTRACT §2, §6.2 — Built: `asyncpg` lazy pool (`app/db.py`, `statement_cache_size=0` for the Supabase pooler; `/v1/health` never opens it), `deps.{db,clock,authed_user}` (`AuthedUser` = JWT + upsert; `current_user` alone stays for `DELETE /v1/me`), `repositories/{profiles,subscriptions,usage}.py`, `services/accounts.py` (locale from `Accept-Language`, **set on create only** — owner 2026-11-09; FK violation → 401), `services/quota.py` (premium iff any row qualifies, local-day window `[midnight, next midnight)`), `schemas/me.py`, `routers/me.py`. Tests: `test_quota.py`, `test_me.py` (fakes), `test_db.py` (marker `db`, real Postgres via `migrations/checks/run_db_tests.sh`, also in CI). **left:** real check on Supabase with owner's token (needs `backend/.env`); Swift `MeResponse` DTO comes with 0.16, contract fixture with 0.18
 - [ ] 0.16 `APIClient` actor: headers, 20 s timeout, `RetryPolicy`, 401 refresh-once, 426 → S19 — Docs: API_CONTRACT §10, ARCHITECTURE §10
 - [ ] 0.17 S19 Update required screen — Docs: UI_SCREENS S19
 - [ ] 0.18 Contract fixtures folder `backend/tests/fixtures/contract/` shared with iOS tests — Docs: API_CONTRACT §11
@@ -353,6 +353,13 @@ Template:
 - Decisions asked / answered: <D-xxx / P-xx>
 - Next: <one concrete next step>
 ```
+
+### 2026-11-09 — Phase 0 — `GET /v1/me` + profile upsert (0.15)
+- Done: code + tests for 0.15 (this commit); asyncpg added; `db` test suite on Docker Postgres, wired into CI
+- In progress: 0.15 — left: real Supabase check with the owner's access token (needs `backend/.env`)
+- Bugs: none. TODOs added: none
+- Decisions answered: owner — `locale` set only when the profile is created (D-236)
+- Next: owner creates `backend/.env`, then curl `/v1/me` with a real token
 
 ### 2026-11-09 — Infra — Backend CI
 - Done: pushed `demo_git`; `.github/workflows/backend.yml` (ubuntu, uv, `pytest -q`, `migrations/checks/run_local.sh`), owner OK'd

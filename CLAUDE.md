@@ -130,6 +130,7 @@ xcodebuild -scheme EasyPhoneAI -destination 'platform=iOS Simulator,name=iPhone 
 # Backend (uv manages Python 3.12 + .venv; first time: cd backend && uv sync)
 cd backend && uv run pytest -q            # CI suite, mocked LLM (live tests excluded by default)
 cd backend && uv run pytest -m live       # real model evals — costs money, run only when asked
+cd backend && sh migrations/checks/run_db_tests.sh   # `db` tests on throwaway Postgres (Docker)
 cd backend && uv run uvicorn app.main:app --reload   # local server (expose via tunnel for device tests, D-037)
 
 git status                          # must be clean at session start, else note it in PROGRESS §1

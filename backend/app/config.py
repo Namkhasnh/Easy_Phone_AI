@@ -51,7 +51,9 @@ class Settings(BaseSettings):
     SUPABASE_URL: str | None = None
     SUPABASE_JWT_SECRET: SecretStr | None = None
     SUPABASE_SERVICE_ROLE_KEY: SecretStr | None = None
-    DATABASE_URL: SecretStr | None = None
+    DATABASE_URL: SecretStr | None = None  # Supabase → Connect → Session pooler URI (D-261)
+    DB_POOL_MAX_SIZE: int = 5
+    DB_CONNECT_TIMEOUT_SECONDS: float = 5.0
 
     # Auth (API_CONTRACT §2): JWKS at {SUPABASE_URL}/auth/v1/.well-known/jwks.json; HS256 secret only as fallback
     JWT_AUDIENCE: str = "authenticated"
