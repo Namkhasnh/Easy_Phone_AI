@@ -62,10 +62,10 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Last updated | 2026-11-09 |
 | Current phase | **Phase 1A — Core engine** (Phase 0 exit ✅ 2026-11-09) |
 | Working on | — |
-| Last commit | `[1A] task enums + FieldSource discriminator` on branch `demo_git` (not pushed) |
+| Last commit | `[1A] Field, TaskStep, TaskDraft models` on branch `demo_git` (not pushed) |
 | Build status | ✅ Simulator build; ✅ device build signed with the free Personal Team (`DEVELOPMENT_TEAM` in git-ignored `Secrets.xcconfig`) |
-| Test status | ✅ iOS `test` green (incl. `ContractFixtureTests`, `TaskEnumsTests`, `FieldSourceTests`); ✅ backend `uv run pytest -q` 109/109; ✅ `run_db_tests.sh` 6/6 (earlier session) |
-| Next action | 1A.2: `Field`, `Ambiguity`, `Candidate`, `TaskStep`, `StateChange`, `TaskDraft @Model`, `InputMode` per DATA_MODEL §2–3 (uses the 1A.1 enums) |
+| Test status | ✅ iOS `test` green (incl. `ContractFixtureTests`, `TaskEnumsTests`, `TaskModelTests`); ✅ backend `uv run pytest -q` 109/109; ✅ `run_db_tests.sh` 6/6 (earlier session) |
+| Next action | 1A.3: `FieldCatalog.swift` (DATA_MODEL §4 + §4.1 per-operation required) + `backend/app/schemas/field_catalog.json` + equality test |
 | Owner decisions needed now | none (0.6 kept by owner 2026-11-09). Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
@@ -173,6 +173,7 @@ List every `// TODO(spec):` and `// TODO(decision):` with file + line. Remove wh
 | `EasyPhoneAI/Features/UpdateRequired/UpdateRequiredViewModel.swift:20` | TODO(decision) | S19 "Mở App Store" is a no-op: no App Store listing in thesis scope (D-282 vs UI_SCREENS S19, DOC-21) |
 | `EasyPhoneAI/Features/UpdateRequired/UpdateRequiredView.swift:14` | TODO(spec) | S19 icon unspecified; SF Symbol `arrow.down.app` |
 | `EasyPhoneAI/Core/Models/FieldSource.swift:67` | TODO(spec) | `NormalizedRect` undefined in DATA_MODEL §1.7; fields `x, y, width, height` (0–1, origin bottom-left) |
+| `EasyPhoneAI/Core/Models/Field.swift:40` | TODO(spec) | DATA_MODEL §2 `labelKey` has no args but `Field` has no kind → `labelKey(kind:)` |
 | `Config/Release.xcconfig:2` | TODO(decision) | D-036: no production backend in thesis scope (D-284); Release uses the Debug backend URL |
 
 ### 5.4 Closed (append-only)
@@ -215,8 +216,8 @@ Exit: **sign in with Google (Simulator + owner's iPhone, free Apple ID), backend
 
 ### Phase 1A — Core engine
 Exit: **unit tests pass for all state transitions.**
-- [x] 1A.1 Enums `TaskKind`, `TaskOperation`, `TaskState`, `TaskEvent`, `FieldType`, `FieldSource` (+ JSON `type` discriminator) — Docs: DATA_MODEL §1 — `Core/Models/{TaskEnums,FieldSource}.swift`: raw values verbatim, unknown raw value → decoding error (owner OK 2026-11-09), `TaskState.isFinal` (D-122) / `isClosed` (D-244), `TaskKind.allowedOperations` (§1.2 valid pairs, for 1A.7), `FieldSource` hand-written `Codable` with `type` key (+ `isOCR`), `SourceSpan`, `NormalizedRect`. Verified: `EasyPhoneTests/TaskEnumsTests.swift` (7 tests: raw lists, final/closed, every kind×operation pair, every `FieldSource` case exact JSON + round-trip, bad JSON throws) + full suite green
-- [ ] 1A.2 `Field`, `Ambiguity`, `Candidate`, `TaskStep`, `StateChange`, `TaskDraft @Model`, `InputMode` — Docs: DATA_MODEL §2–3
+- [x] 1A.1 Enums `TaskKind`, `TaskOperation`, `TaskState`, `TaskEvent`, `FieldType`, `FieldSource` (+ JSON `type` discriminator) — Docs: DATA_MODEL §1 — `Core/Models/{TaskEnums,FieldSource}.swift`: raw values verbatim, unknown raw value → decoding error (owner OK 2026-11-09), `TaskState.isFinal` (D-122) / `isClosed` (D-244), `TaskKind.allowedOperations` (§1.2 valid pairs, for 1A.7), `FieldSource` hand-written `Codable` with `type` key (+ `isOCR`), `SourceSpan`, `NormalizedRect`. Verified: `EasyPhoneTests/TaskEnumsTests.swift` (7 tests: raw lists, final/closed, every kind×operation pair, every `FieldSource` case exact JSON + round-trip, bad JSON throws) + full suite green (e7bc07c)
+- [x] 1A.2 `Field`, `Ambiguity`, `Candidate`, `TaskStep`, `StateChange`, `TaskDraft @Model`, `InputMode` — Docs: DATA_MODEL §2–3 (this commit) — `Core/Models/{Field,TaskStep,TaskDraft}.swift`, `TaskDraft` added to `SchemaV1` (still 1.0.0, nothing shipped); `AmbiguityKind` enum; `labelKey(kind:)` takes the step kind (TODO(spec)); `TaskStep.field(_:)` helper; `currentStep`/`isClosed`/`overallStatus` left for 1A.9. Verified: `EasyPhoneTests/TaskModelTests.swift` (6 tests: JSON keys, step round-trip, `needsReview` D-126, label key, raw values, SwiftData insert → fetch in a fresh context keeps `steps` equal) + full suite green
 - [ ] 1A.3 `FieldCatalog.swift` (incl. §4.1 per-operation required) + `backend/app/schemas/field_catalog.json`, equality test — Docs: DATA_MODEL §4, §4.1
 - [ ] 1A.4 `transition(state, event, context)` pure function — Docs: DATA_MODEL §1.5
 - [ ] 1A.5 Tests: every table row passes; every other pair → `nil` (incl. D-222, D-242, D-243 rows) — Docs: DATA_MODEL §13
@@ -365,6 +366,12 @@ Template:
 - Decisions asked / answered: <D-xxx / P-xx>
 - Next: <one concrete next step>
 ```
+
+### 2026-11-09 — Phase 1A — 1A.2 task models
+- Done: 1A.2 `Field`/`Ambiguity`/`Candidate`/`TaskStep`/`StateChange`/`TaskDraft`/`InputMode` + 6 tests; iOS suite green, backend 109/109
+- TODOs added: `Field.swift:40` TODO(spec) `labelKey(kind:)`
+- Note: again "cannot find type" in the test target after adding app files; a plain `build` then `test` fixed it (stale module)
+- Next: 1A.3 field catalog (Swift + JSON + equality test)
 
 ### 2026-11-09 — Phase 1A — 1A.1 task enums
 - Done: 1A.1 `TaskEnums.swift` + `FieldSource.swift` + 7 tests, full iOS suite green; backend 109/109 (health check)

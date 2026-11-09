@@ -5,7 +5,7 @@ import SwiftData
 /// Nothing has shipped yet, so adding models to v1 before the demo build is fine; after that, add `SchemaV2`.
 enum SchemaV1: VersionedSchema {
     static var versionIdentifier: Schema.Version { Schema.Version(1, 0, 0) }
-    static var models: [any PersistentModel.Type] { [] }
+    static var models: [any PersistentModel.Type] { [TaskDraft.self] }
 }
 
 enum EasyPhoneMigrationPlan: SchemaMigrationPlan {
