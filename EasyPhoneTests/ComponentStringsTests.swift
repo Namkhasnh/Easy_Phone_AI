@@ -45,4 +45,17 @@ struct ComponentStringsTests {
         }
         #expect(Self.localized("field.reminder.dueDate") == "Thời gian nhắc")
     }
+
+    @Test func noticeAndMicKeysResolve() {
+        let expected = [
+            "error.network.offline": "Không có mạng — bản nháp đã được lưu",
+            "error.approval.mismatch": "Thông tin đã thay đổi, vui lòng xác nhận lại",
+            "confirm.clearHistory.title": "Xóa lịch sử?",
+            "confirm.delete": "Xóa",
+            "common.undo": "Hoàn tác",
+            "home.mic.a11y": "Nói yêu cầu",
+            "home.mic.listening.a11y": "Đang nghe",
+        ]
+        for (key, value) in expected { #expect(Self.localized(key) == value, "\(key)") }
+    }
 }
