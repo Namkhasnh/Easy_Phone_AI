@@ -132,6 +132,8 @@ cd backend && uv run pytest -q            # CI suite, mocked LLM (live tests exc
 cd backend && uv run pytest -m live       # real model evals — costs money, run only when asked
 cd backend && sh migrations/checks/run_db_tests.sh   # `db` tests on throwaway Postgres (Docker)
 cd backend && uv run uvicorn app.main:app --reload   # local server (expose via tunnel for device tests, D-037)
+cloudflared tunnel --url http://127.0.0.1:8000       # free HTTPS quick tunnel for the iPhone; the URL changes every
+                                                     # run → put it in Config/Secrets.xcconfig `API_BASE_URL`, rebuild
 
 git status                          # must be clean at session start, else note it in PROGRESS §1
 ```
