@@ -1178,7 +1178,7 @@
       }
     },
     "home.mic.listening.a11y": {
-      "comment": "UI_SCREENS §9 mic value; key name not in docs (DOC-24)",
+      "comment": "UI_SCREENS §9 mic value (DOC-24)",
       "extractionState": "manual",
       "localizations": {
         "vi": {

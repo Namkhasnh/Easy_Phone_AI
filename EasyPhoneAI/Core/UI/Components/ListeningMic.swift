@@ -40,7 +40,6 @@ struct ListeningMic: View {
         .padding(Tokens.Space.l)                      // room for the ring
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.25), value: isListening)
         .accessibilityLabel(Text("home.mic.a11y"))
-        // TODO(spec): "Đang nghe" value has no key in UI_SCREENS §9 (DOC-24); `home.mic.listening.a11y` used.
         .accessibilityValue(isListening ? Text("home.mic.listening.a11y") : Text(verbatim: ""))
         .accessibilityAddTraits(.startsMediaSession)
         .onChange(of: isListening, initial: true) { _, listening in
