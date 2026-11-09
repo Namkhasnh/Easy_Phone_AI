@@ -53,6 +53,9 @@ class Settings(BaseSettings):
     SUPABASE_SERVICE_ROLE_KEY: SecretStr | None = None
     DATABASE_URL: SecretStr | None = None
 
+    # Auth (API_CONTRACT §2): JWKS at {SUPABASE_URL}/auth/v1/.well-known/jwks.json; HS256 secret only as fallback
+    JWT_AUDIENCE: str = "authenticated"
+
 
 @lru_cache
 def get_settings() -> Settings:
