@@ -1116,6 +1116,78 @@
           }
         }
       }
+    },
+    "error.network.offline": {
+      "comment": "UI_SCREENS §8",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không có mạng — bản nháp đã được lưu"
+          }
+        }
+      }
+    },
+    "error.approval.mismatch": {
+      "comment": "UI_SCREENS §8",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thông tin đã thay đổi, vui lòng xác nhận lại"
+          }
+        }
+      }
+    },
+    "confirm.clearHistory.title": {
+      "comment": "UI_SCREENS S20",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xóa lịch sử?"
+          }
+        }
+      }
+    },
+    "confirm.clearHistory.body": {
+      "comment": "UI_SCREENS S20",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Các việc đã xong và đã hủy sẽ bị xóa. Việc chưa xong vẫn được giữ."
+          }
+        }
+      }
+    },
+    "home.mic.a11y": {
+      "comment": "UI_SCREENS S02",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nói yêu cầu"
+          }
+        }
+      }
+    },
+    "home.mic.listening.a11y": {
+      "comment": "UI_SCREENS §9 mic value; key name not in docs (DOC-24)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đang nghe"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
