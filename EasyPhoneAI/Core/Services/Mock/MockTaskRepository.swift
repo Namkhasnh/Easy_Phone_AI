@@ -5,7 +5,11 @@ import Foundation
     private(set) var drafts: [UUID: TaskDraft] = [:]
     private(set) var saveCount = 0
 
-    init(drafts: [TaskDraft] = []) {
+    /// `nonisolated` so `AppEnvironment.mock()` (also the `@Entry` default) can build it off the main actor.
+    nonisolated init() {}
+
+    convenience init(drafts: [TaskDraft]) {
+        self.init()
         for d in drafts { self.drafts[d.id] = d }
     }
 
@@ -15,4 +19,16 @@ import Foundation
         drafts[draft.id] = draft
         saveCount += 1
     }
+
+    func steps(in states: Set<TaskState>) -> [(UUID, TaskStep)] {
+        drafts.values.flatMap { d in d.steps.filter { states.contains($0.state) }.map { (d.id, $0) } }
+    }
+
+    func history(group: HistoryGroup) -> [TaskDraft] {
+        drafts.values.filter { !$0.isArchived && $0.overallStatus == group }.sorted { $0.updatedAt > $1.updatedAt }
+    }
+
+    func deleteClosed() { drafts = drafts.filter { !$0.value.isClosed } }
+
+    func wipeAll() { drafts = [:] }
 }
