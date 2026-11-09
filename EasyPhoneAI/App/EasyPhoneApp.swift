@@ -4,7 +4,7 @@ import SwiftUI
 @main struct EasyPhoneApp: App {
     @State private var appState = AppState()
     @State private var router = Router()
-    private let env = AppEnvironment.live()
+    private let env: AppEnvironment
     private let modelContainer: ModelContainer
 
     init() {
@@ -14,6 +14,7 @@ import SwiftUI
             // TODO(spec): store open failure (corrupt / migration) has no screen; drafts must never be lost (D-104).
             fatalError("SwiftData container failed: \(error)")
         }
+        env = .live(container: modelContainer)
     }
 
     var body: some Scene {
