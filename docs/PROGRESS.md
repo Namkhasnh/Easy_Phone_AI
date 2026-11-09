@@ -59,12 +59,12 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Key | Value |
 |---|---|
 | Last updated | 2026-11-09 |
-| Current phase | **Phase 0 — Skeleton** (0.1 – 0.11 done) |
+| Current phase | **Phase 0 — Skeleton** (0.1 – 0.12 done) |
 | Working on | — |
-| Last commit | `[0] backend skeleton: config, request id, error envelope …` on branch `demo_git` (not pushed) |
+| Last commit | `[0] GET /v1/health (D-235)` on branch `demo_git` (not pushed) |
 | Build status | ✅ `xcodebuild … iPhone 18 Pro build` succeeds (iOS untouched this session) |
-| Test status | ✅ iOS 23/23 (last session); ✅ backend `uv run pytest -q` 11/11 |
-| Next action | 0.12 `GET /v1/health` (no auth): `backend/app/routers/health.py` → `{status, version, schemaVersion}` (API_CONTRACT §6.1), add to `ROUTERS` in `main.py`, pytest + curl |
+| Test status | ✅ iOS 23/23 (last session); ✅ backend `uv run pytest -q` 14/14 |
+| Next action | 0.13 JWT verification in `backend/app/deps.py` `current_user` (`sub`, `exp`, `aud`) + profile upsert (D-236), pytest 401 cases — read API_CONTRACT §2–3, ARCHITECTURE §7 first |
 | Owner decisions needed now | none (0.6 kept by owner 2026-11-09). Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
@@ -191,7 +191,7 @@ Exit: **sign in with Google (Simulator + owner's iPhone, free Apple ID), backend
 - [x] 0.9 `AuthService` live (Supabase Swift SDK, Google only) + mock — Docs: ARCHITECTURE §4.1, D-283 (this commit) — SPM `supabase-swift` 2.55.6, product `Auth` only (owner added in Xcode; new format keys `packages` + `package-product-members`); `Core/Services/{AuthService,ServiceError}.swift`, `Live/LiveAuthService.swift` (PKCE, Keychain, `signOut` falls back to `.local`), `Mock/MockAuthService.swift` (`Mutex`); `AppEnvironment.auth`; RootView streams `sessionUpdates` → `AppState.session`; `CFBundleURLTypes` scheme `vn.namkhanh.easyphone`. Verified: build, 19 tests, app launches on simulator. Real Google sign-in exercised in 0.10 (needs the S01 button)
 - [x] 0.10 S01 Sign-in screen (Google button, legal text) + `#Preview` — Docs: UI_SCREENS S01 (4e224e6 + this commit) — Built: `Features/SignIn/{SignInView,SignInViewModel}.swift`, `UserMessage` (D-265), RootView switches on `session` (signed in → user id placeholder until S02), 7 `signIn.*` keys, slice of 1A.10 (6 color assets, `Core/UI/Tokens.swift`, `PrimaryButton`, `DemoDataBadge`; `ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO` in Base.xcconfig because asset `primary` collides with `Color.primary`). Verified: build, 23 tests, S01 renders on Simulator; owner signed in with real Google account on Simulator (Google asked for a passkey → "Try another way") → user id shown; app relaunch keeps the session (Keychain). Cancel path covered by unit test only
 - [x] 0.11 Backend skeleton: FastAPI, `config.py` (pydantic-settings), `deps.py`, request-id middleware, error envelope handler — Docs: ARCHITECTURE §7, §9.3; API_CONTRACT §3 (this commit) — `uv` project (`pyproject.toml`, Python 3.12 pinned, `httpx2` for TestClient); `app/{main,config,deps,errors,request_id}.py` + empty `routers/ schemas/ services/ repositories/ prompts/`; `AppError` + handlers (AppError, validation → 422 `invalid_input` first field no values, 404/405 → `not_found`, unhandled → 500 `internal`), vi/en fallback messages = UI_SCREENS §8 texts; `X-Request-Id` `req_<ulid>` on every response (also 500); `.env.example` (`!.env.example` in `.gitignore`). Verified: `uv run pytest -q` 11/11, uvicorn + curl → 404 envelope + header, `Accept-Language: en` works
-- [ ] 0.12 `GET /v1/health` (no auth) — Verify: pytest + curl
+- [x] 0.12 `GET /v1/health` (no auth) — Verify: pytest + curl (this commit) — `routers/health.py` + `schemas/health.py` (`HealthResponse`), version/schemaVersion from `Settings`; no client-version check (uptime monitor). Verified: pytest 14/14, curl → 200 `{"status":"ok","version":"0.1.0","schemaVersion":1}` + `X-Request-Id`
 - [ ] 0.13 JWT verification (`sub`, `exp`, `aud`) + profile upsert (D-236) — Verify: pytest 401 cases
 - [ ] 0.14 SQL migration: `profiles`, `subscriptions`, `usage_events` (incl. `attempt`, D-246) + RLS (no `gmail_accounts`) — Docs: DATA_MODEL §9
 - [ ] 0.15 `GET /v1/me` returning `MeResponse` + `X-Quota-*` headers — Docs: API_CONTRACT §6.2
@@ -352,6 +352,12 @@ Template:
 - Decisions asked / answered: <D-xxx / P-xx>
 - Next: <one concrete next step>
 ```
+
+### 2026-11-09 — Phase 0 — Health endpoint
+- Process: "làm tiếp /plan" → plan mode (Vietnamese plan), approved, then built
+- Done: 0.12 `GET /v1/health` (`routers/health.py`, `schemas/health.py`, `ROUTERS` in `main.py`, `tests/test_health.py`)
+- Verify: `uv run pytest -q` 14/14; uvicorn + curl → 200 body per API_CONTRACT §6.1. Bugs: none. TODOs added: none
+- Next: 0.13 JWT verification + profile upsert
 
 ### 2026-11-09 — Phase 0 — Backend skeleton
 - Process: "làm tiếp /plan" → plan mode, plan approved; owner asked plans in Vietnamese from now on
