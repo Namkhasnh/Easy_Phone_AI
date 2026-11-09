@@ -417,7 +417,7 @@ Explainer (shown before "Xác nhận" executes when status is `notDetermined`): 
 - Every icon-only control has `accessibilityLabel` from the `*.a11y` key or its visible text; decorative images hidden.
 - `FieldRow` VoiceOver = "{label}, {value or Chưa có}{, `a11y.field.needsReview` = cần kiểm tra lại}" + hint `a11y.field.hint` = "Bấm hai lần để sửa" (DOC-23).
 - `StateBadge` is one element: `a11y.state` = "Trạng thái: {state label}". Picker rows: "{title}, {subtitle}".
-- Mic: label `home.mic.a11y`, value "Đang nghe" while listening, `.startsMediaSession` trait.
+- Mic: label `home.mic.a11y`, value `home.mic.listening.a11y` = "Đang nghe" while listening, `.startsMediaSession` trait (DOC-24).
 - After navigation to S04 and after each result card, move focus to the title (`@AccessibilityFocusState`).
 - Test at AX5 + VoiceOver + Increase Contrast + Reduce Motion + Dark mode for S02, S03, S04, S06, S08, S16.
 - Voice is never required: every S03 mode has a text path; S04/S08 work by taps alone.
