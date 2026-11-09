@@ -60,12 +60,12 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Key | Value |
 |---|---|
 | Last updated | 2026-11-09 |
-| Current phase | **Phase 0 — Skeleton** (0.1 – 0.18 done) |
-| Working on | 0.19 tunnel — left: owner opens `<tunnel>/v1/health` in iPhone Safari |
-| Last commit | `[0] tunnel docs for device testing` on branch `demo_git` (not pushed) |
+| Current phase | **Phase 0 — Skeleton** (0.1 – 0.19 done, EXIT 0 left) |
+| Working on | — |
+| Last commit | `[0] 0.19 done: iPhone reaches backend via tunnel` on branch `demo_git` (not pushed) |
 | Build status | ✅ `xcodebuild … iPhone 18 Pro build` succeeds, no warnings |
 | Test status | ✅ iOS `test` green (incl. `ContractFixtureTests`); ✅ backend `uv run pytest -q` 109/109; ✅ `run_db_tests.sh` 6/6 (earlier session) |
-| Next action | owner: iPhone Safari → `https://<current tunnel>/v1/health` shows `{"status":"ok"…}` → tick 0.19, then EXIT 0 (install on iPhone with free Apple ID, sign in, see `userId`) |
+| Next action | EXIT 0: install the app on the owner's iPhone from Xcode (free Apple ID, Personal Team, Developer Mode, trust profile), backend + tunnel running, sign in with Google → `userId` from `/v1/me` |
 | Owner decisions needed now | none (0.6 kept by owner 2026-11-09). Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
@@ -208,7 +208,7 @@ Exit: **sign in with Google (Simulator + owner's iPhone, free Apple ID), backend
 - [x] 0.16 `APIClient` actor: headers, 20 s timeout, `RetryPolicy`, 401 refresh-once, 426 → S19 — Docs: API_CONTRACT §10, ARCHITECTURE §10 (459aa23) — Built: `Core/Networking/{APIClientProtocol,APIClient,RetryPolicy,HTTPTransport,IdempotencyKey,ClientInfo,Broadcast}.swift`, DTOs `Core/Networking/DTO/{HealthResponse,MeResponse,APIErrorEnvelope}.swift` (unknown enum → `.unknown`, unknown `plan` → `.free`), `Core/Models/AppError.swift` (ARCHITECTURE §9.1 + `code`), `MockAPIClient` (hard-coded until 0.18 fixtures), `AppEnvironment.api`, `AppState.apply(me:)/apply(quota:)` (memory only until 1A.9), RootView calls `/v1/me` on sign-in/launch and listens to `quotaUpdates` / `blockingUpdates`. Retry: timeout/other network, `500`, `503 upstream_error` → 1 s / 3 s + 0–0.5 s jitter; offline + TLS fail fast (ARCHITECTURE §11); `429` once (≤ 30 s); parallel 401s share one refresh; 2nd 401 or failed refresh → `auth.signOut()`. Tests: `RetryPolicyTests`, `APIClientTests` (stub transport), `DTODecodingTests`, `AppStateTests`. Verified: build + all tests green; Simulator (restored session) + local uvicorn → app log `GET /v1/me 200 attempt=1 req_…`, uvicorn `GET /v1/me 200` (no ATS change needed for `http://127.0.0.1`). 401/426/retry paths unit-tested only
 - [x] 0.17 S19 Update required screen — Docs: UI_SCREENS S19 (a4d63b2) — `Features/UpdateRequired/{UpdateRequiredView,UpdateRequiredViewModel}.swift` (3 previews incl. AX5/dark), `update.title/body/cta` keys (`{minVersion}` → `%@`), RootView `.fullScreenCover` bound to `AppState.blockingScreen` (no close, `interactiveDismissDisabled`); CTA no-op per owner (DOC-21). Verified: build + 74 tests green (`UpdateRequiredViewModelTests`); Simulator with a scratch 426 stub on :8000 → restored session calls `/v1/me` → S19 shows "tối thiểu 1.2.0"; AX5 readable, body scrolls, button pinned
 - [x] 0.18 Contract fixtures folder `backend/tests/fixtures/contract/` shared with iOS tests — Docs: API_CONTRACT §11 (ccff97e) — 16 files named per §11 (`health.ok`, `me.free`, `me.premium`, `error.<code>` × 13 §3.2 codes, `.response.json`); backend `schemas/error.py` (`ErrorEnvelope`, `extra=forbid`) + `tests/test_contract_fixtures.py` (validate + byte round-trip, every code has a fixture = `errors.MESSAGES`, vi fallback text, no 🔒 keys, rendered errors match the model); folder added to `EasyPhoneTests` as a synchronized folder in `project.xcproj` (test bundle only, not in the app) + `EasyPhoneTests/ContractFixtureTests.swift` (decode → re-encode keeps keys, `details`, `apiError` code). Owner chose option A: `MeResponse.mock` / `HealthResponse.mock` stay in code, test asserts equal to fixtures (`MockAuthService.userId` = contract UUID). Verified: both suites green; changing `"plan"` in `me.free` made pytest **and** Swift fail, restored. Request fixtures + parse/extract/billing fixtures come with 1B/1D/1F; `error.<code>` string keys still missing → 1G.9
-- [~] 0.19 Backend reachable from iPhone (tunnel, D-037) — Cloudflare quick tunnel (`cloudflared`, no account, HTTPS → no ATS change); command in CLAUDE.md §8, `Secrets.example.xcconfig` explains `API_BASE_URL`; owner's git-ignored `Secrets.xcconfig` points at the tunnel. Verified on Mac: tunnel `/v1/health` 200 + `X-Request-Id`, `/v1/me` no token 401; Simulator app built with the tunnel URL → uvicorn `GET /v1/me 200`, `userId` shown. **left:** owner opens `/v1/health` in iPhone Safari. Quick tunnel URL changes every run (stable URL → 1G.7)
+- [x] 0.19 Backend reachable from iPhone (tunnel, D-037) (eda3fdb) — Cloudflare quick tunnel (`cloudflared`, no account, HTTPS → no ATS change); command in CLAUDE.md §8, `Secrets.example.xcconfig` explains `API_BASE_URL`; owner's git-ignored `Secrets.xcconfig` points at the tunnel. Verified on Mac: tunnel `/v1/health` 200 + `X-Request-Id`, `/v1/me` no token 401; Simulator app built with the tunnel URL → uvicorn `GET /v1/me 200`, `userId` shown. Owner: iPhone Safari → `/v1/health` → `{"status":"ok"…}` (2026-11-09). Quick tunnel URL changes every run (stable URL → 1G.7)
 - [ ] **EXIT 0** Simulator **and** owner's iPhone (installed from Xcode, free Apple ID): sign in with Google → app shows `userId` from `/v1/me`
 
 ### Phase 1A — Core engine
@@ -365,9 +365,10 @@ Template:
 
 ### 2026-11-09 — Phase 0 — Tunnel (0.19)
 - Process: "làm tiếp /plan" → plan (Vietnamese), owner "duyệt" (Cloudflare quick tunnel)
-- In progress: 0.19 — Mac + Simulator verified through the tunnel; left: iPhone Safari check by owner
+- Done: 0.19 (eda3fdb) — Mac + Simulator through the tunnel; owner confirmed iPhone Safari `/v1/health` → `[x]`
+- Note: background uvicorn/tunnel were stopped at the 30 min limit and restarted (new URL) → restart = new URL
 - Bugs: none. TODOs: none. Note: quick tunnel URL changes per run → edit `Secrets.xcconfig` + rebuild
-- Next: owner confirms on iPhone → 0.19 `[x]`, then EXIT 0
+- Next: EXIT 0 on the owner's iPhone
 
 ### 2026-11-09 — Phase 0 — Contract fixtures (0.18)
 - Process: "làm tiếp /plan" → plan (Vietnamese), owner "duyệt và chọn A" (mocks in code + equality test)
