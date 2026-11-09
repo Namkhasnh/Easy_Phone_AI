@@ -89,11 +89,31 @@ struct TaskEngineTests {
         #expect(d.steps[0].state == .needsInfo)
     }
 
-    @Test func editAfterSuccessReturnsToAwaiting() {
+    @Test func editAfterSuccessBecomesUpdateOnSameItem() {         // D-290
         let (d, id) = reminderDraft()
         d.steps[0].state = .succeeded                           // test setup only
+        d.steps[0].resultEvidence = "ek:reminder:R-42"
         engine.edit(fieldId: "title", value: "Khác", stepId: id, in: d)
-        #expect(d.steps[0].state == .awaitingApproval)
+        let s = d.steps[0]
+        #expect(s.state == .awaitingApproval)
+        #expect(s.operation == .update)
+        #expect(s.targetRef == "R-42")
+        #expect(s.resultEvidence == nil)
+    }
+
+    @Test func turnIntoUpdateOnlyForCalendarAndReminderCreate() {
+        var event = TaskStep(order: 0, kind: .calendarEvent, operation: .create, resultEvidence: "ek:event:E-1")
+        TaskEngine.turnIntoUpdate(&event)
+        #expect(event.operation == .update && event.targetRef == "E-1" && event.resultEvidence == nil)
+
+        var sms = TaskStep(order: 0, kind: .sms, operation: .open, resultEvidence: "msg:sent:2026-11-09T10:00:00+07:00")
+        TaskEngine.turnIntoUpdate(&sms)
+        #expect(sms.operation == .open && sms.targetRef == nil && sms.resultEvidence == nil)
+
+        var update = TaskStep(order: 0, kind: .calendarEvent, operation: .update, targetRef: "E-1",
+                              resultEvidence: "ek:event:E-1")
+        TaskEngine.turnIntoUpdate(&update)
+        #expect(update.operation == .update && update.targetRef == "E-1" && update.resultEvidence == nil)
     }
 
     @Test(arguments: [TaskState.processing, .prepared, .handedOff, .failed, .unknown, .cancelled, .userMarkedDone])
