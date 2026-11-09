@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "spend_cap",
+    "message": "Dịch vụ AI tạm dừng. Các tính năng khác vẫn dùng được.",
+    "retryable": false,
+    "requestId": "req_01JC0000000000000000000000"
+  }
+}

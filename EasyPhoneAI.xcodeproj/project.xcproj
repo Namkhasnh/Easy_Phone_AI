@@ -23,6 +23,7 @@
     { "kind": "folder", "path": "EasyPhoneAI", "target-membership": [ "EasyPhoneAI" ] },
     { "kind": "folder", "path": "Config" },
     { "kind": "folder", "path": "EasyPhoneTests", "target-membership": [ "EasyPhoneTests" ] },
+    { "kind": "folder", "path": "backend/tests/fixtures/contract", "target-membership": [ "EasyPhoneTests" ] },
     {
       "kind": "group",
       "name": "Products",

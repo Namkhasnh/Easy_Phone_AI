@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "billing_account_mismatch",
+    "message": "Giao dịch thuộc tài khoản khác.",
+    "retryable": false,
+    "requestId": "req_01JC0000000000000000000000"
+  }
+}

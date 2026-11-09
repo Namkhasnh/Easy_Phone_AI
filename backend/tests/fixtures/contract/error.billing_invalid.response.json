@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "billing_invalid",
+    "message": "Không xác minh được giao dịch.",
+    "retryable": false,
+    "requestId": "req_01JC0000000000000000000000"
+  }
+}
