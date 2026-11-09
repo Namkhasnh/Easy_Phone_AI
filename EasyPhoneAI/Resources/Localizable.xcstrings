@@ -1980,6 +1980,138 @@
           }
         }
       }
+    },
+    "history.title": {
+      "comment": "UI_SCREENS S14",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lịch sử"
+          }
+        }
+      }
+    },
+    "history.group.needsYou": {
+      "comment": "UI_SCREENS S14",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cần bạn làm tiếp"
+          }
+        }
+      }
+    },
+    "history.group.waiting": {
+      "comment": "UI_SCREENS S14",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đang chờ"
+          }
+        }
+      }
+    },
+    "history.group.done": {
+      "comment": "UI_SCREENS S14",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã xong"
+          }
+        }
+      }
+    },
+    "history.group.cancelled": {
+      "comment": "UI_SCREENS S14",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã hủy"
+          }
+        }
+      }
+    },
+    "history.hide": {
+      "comment": "UI_SCREENS S14",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ẩn"
+          }
+        }
+      }
+    },
+    "history.steps": {
+      "comment": "UI_SCREENS S14; {done}/{total}",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@/%2$@ bước"
+          }
+        }
+      }
+    },
+    "history.time.today": {
+      "comment": "UI_SCREENS S14; %@ = {HH:mm}",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hôm nay %@"
+          }
+        }
+      }
+    },
+    "history.time.yesterday": {
+      "comment": "UI_SCREENS S14; %@ = {HH:mm}",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hôm qua %@"
+          }
+        }
+      }
+    },
+    "history.summary": {
+      "comment": "UI_SCREENS §10.1; {stepTitle}: {mainValue}",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: %2$@"
+          }
+        }
+      }
+    },
+    "app.phone": {
+      "comment": "Phone app name for state.handedOff {app}; key not in docs (DOC-26)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Điện thoại"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
