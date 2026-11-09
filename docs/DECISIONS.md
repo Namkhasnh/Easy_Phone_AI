@@ -382,6 +382,7 @@ everything else (safety rules, engine, data model, API, accessibility) is unchan
 |---|---|---|
 | D-287 | **Supersedes the display-name part of D-001:** every user-visible name is **EasyPhoneK** (one word): `CFBundleDisplayName`, usage descriptions, S01 title, S16 "EasyPhoneK Premium", S19, entry-point strings. Unchanged (not user-visible, or changing breaks sign-in/signing): bundle id `vn.namkhanh.easyphone`, login callback, `easyphone://`, target/scheme/folder `EasyPhoneAI`, `CFBundleName`, doc titles "EasyPhone AI", backend prompt text and `FastAPI(title=…)`. | LOCKED |
 | D-288 | **Refines D-171:** voice call phrases are **"Ê Khoai"** and **"Khoai"**. "Khoai" is declared as an alternative app name (`INAlternativeAppNames` with a pronunciation hint, added in 1E.2) and phrases use `\(.applicationName)`, so D-171 still holds. Fallbacks "Mở EasyPhoneK", "Nói với EasyPhoneK" + English. Verified on the owner's iPhone in 1E.2; a phrase Xcode or Siri rejects / mishears is dropped and noted in PROGRESS §5. | DEFAULT |
+| D-289 | **Guide mascot "Khoai"** = P-41 (UI_SCREENS §2, S02, S03, S15, §9, §12): owner-supplied art, decorative only (no text, no actions, VoiceOver skips it, Reduce Motion → static), toggle `settings.pet` (on by default); never signals success on its own (D-102, D-124). Built in 1B.16 after S02/S03 exist; no third-party animation library (D-017). | DEFAULT |
 
 ---
 
@@ -418,5 +419,6 @@ building on top of the default in a way that is hard to undo (e.g. App Store pro
 | 2026-11-08 | D-282 – D-285 | Owner: project is a thesis at near-zero cost — no App Store/TestFlight, free Apple ID, Google-only sign-in (supersede D-005, D-071), `.storekit`-only billing, spend cap 5 USD | Owner + Claude |
 | 2026-11-09 | D-286 | Owner kept the `EasyPhoneAI/` folder name (DOC-19); no placeholder files inside the synchronized app folder | Owner + Claude |
 | 2026-11-09 | D-287, D-288 | Owner: display name EasyPhoneK (supersedes D-001 display name), voice call "Ê Khoai" / "Khoai" via alternative app name (refines D-171) | Owner + Claude |
+| 2026-11-09 | D-289 | Owner approved P-41: guide mascot "Khoai" (art from owner), built in 1B.16 | Owner + Claude |
 
 <!-- Append new rows below. To change a LOCKED decision, add a new ID that "supersedes D-xxx". -->

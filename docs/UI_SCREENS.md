@@ -74,6 +74,7 @@ Grid = 4pt. Buttons stack vertically at the bottom of the screen (primary first,
 | `ListeningMic` | circle `primary`, `mic.fill` 56pt; listening → `stop.fill`, ring pulse, label changes. |
 | `EmptyState(icon, titleKey, bodyKey)` | centered, `icon.hero`, `title` + `body`. |
 | `ConfirmSheet` | `.presentationDetents([.medium, .large])`, title, body, primary + secondary. Used for every destructive confirm. |
+| `MascotView(pose, size)` | Guide mascot **Khoai** (P-41, D-289). Owner-supplied art, asset `mascot.<pose>`: `greeting`, `listening`, `thinking`, `asking`, `happy`, `sorry`. Decorative (`accessibilityHidden`), not a button, no tap action, no text of its own. Idle breathe/bounce, tilt on `thinking`, small hop on `happy` (`PhaseAnimator`); Reduce Motion → static. Hidden everywhere when `settings.pet` is off. |
 ## 3. Screen inventory
 | ID | Screen | Presentation | Route / trigger (ARCHITECTURE §2.2) | Phase |
 |---|---|---|---|---|
@@ -152,7 +153,7 @@ Layout: app icon (96pt) · `display` title · tagline · reason text · spacer �
 | `signIn.legal` | Khi tiếp tục, bạn đồng ý với {Điều khoản sử dụng} và {Chính sách quyền riêng tư}. | `signIn.failed` | Đăng nhập không thành công. Bạn thử lại nhé. |
 | `signIn.sessionExpired` | Phiên đăng nhập đã hết. Bạn đăng nhập lại nhé. Bản nháp vẫn được giữ. |  |  |
 ### S02 Home
-Layout: toolbar (leading "Lịch sử" `clock.arrow.circlepath`, trailing "Cài đặt" `gearshape`, both icon + text label in simple mode) · `display` greeting · `ListeningMic` 120pt centered · mic caption · text field (multi-line, 56pt min) with trailing "Gửi" button (appears only when text is non-empty) · `SecondaryButton` "Chụp ảnh giấy tờ" (`camera`) · quick links row: "Lịch hôm nay", "Lời nhắc", "Địa điểm" (64pt tiles, 2 per row at AX sizes; hidden in simple mode except "Lịch hôm nay", P-40) · section "Việc chưa xong" (drafts in "Cần bạn làm tiếp" or "Đang chờ", D-244; max 3 rows: title + `StateBadge` + relative time, AC5) + "Xem tất cả". Offline/quota banners appear above the mic. Primary buttons on this screen: mic and "Gửi" only.
+Layout: toolbar (leading "Lịch sử" `clock.arrow.circlepath`, trailing "Cài đặt" `gearshape`, both icon + text label in simple mode) · `MascotView(.greeting)` ~96pt above the greeting (hidden at AX3+ so the mic stays on screen, P-41) · `display` greeting · `ListeningMic` 120pt centered · mic caption · text field (multi-line, 56pt min) with trailing "Gửi" button (appears only when text is non-empty) · `SecondaryButton` "Chụp ảnh giấy tờ" (`camera`) · quick links row: "Lịch hôm nay", "Lời nhắc", "Địa điểm" (64pt tiles, 2 per row at AX sizes; hidden in simple mode except "Lịch hôm nay", P-40) · section "Việc chưa xong" (drafts in "Cần bạn làm tiếp" or "Đang chờ", D-244; max 3 rows: title + `StateBadge` + relative time, AC5) + "Xem tất cả". Offline/quota banners appear above the mic. Primary buttons on this screen: mic and "Gửi" only.
 
 | Key | vi | Key | vi |
 |---|---|---|---|
@@ -163,7 +164,7 @@ Layout: toolbar (leading "Lịch sử" `clock.arrow.circlepath`, trailing "Cài 
 | `home.unfinished.empty` | Không có việc nào đang chờ bạn. | `home.toolbar.history` / `home.toolbar.settings` | Lịch sử / Cài đặt |
 | `home.tip.firstRun` | Ví dụ, bạn có thể nói: “Nhắc tôi 8 giờ sáng mai uống thuốc”. | `home.quota.low` | Bạn còn {remaining} lượt AI hôm nay. |
 ### S03 Conversation
-One screen, 5 modes. Top: back button + "Hủy" (discards nothing; draft saved). Content is a simple vertical thread: user bubble (right, `surface`) and assistant bubble (left, `secondaryFill`), `body` font, each with "Đọc to".
+One screen, 5 modes. Top: back button + "Hủy" (discards nothing; draft saved). Content is a simple vertical thread: user bubble (right, `surface`) and assistant bubble (left, `secondaryFill`), `body` font, each with "Đọc to". Assistant bubbles carry a small `MascotView` avatar (P-41) whose pose follows the mode: listening → `listening`, working → `thinking`, follow-up → `asking`, unsupported / parse failed → `sorry`.
 1. **Listening:** `ListeningMic` 140pt (stop icon) · "Mình đang nghe…" · live transcript (`fieldValue`, editable after stop) · rotating hint · bottom: PrimaryButton "Dừng" (always visible, AC1). TTS stops when listening starts (AC5).
 2. **Transcript ready:** editable text area · PrimaryButton "Gửi" · SecondaryButton "Nói lại". Never auto-send (API §7.4).
 3. **Working:** spinner + "Mình đang soạn bản nháp…" · SecondaryButton "Hủy". Then push S04.
@@ -316,7 +317,7 @@ Grouped list, fixed order (spec §6.10 AC1): "Cần bạn làm tiếp", "Đang c
 |---|---|
 | `settings.account` = Tài khoản | `settings.plan.free` / `.premium` = Gói: Miễn phí / Gói: Premium (`/v1/me`) · `settings.quota` = Lượt AI còn lại hôm nay: {remaining}/{limit} (AC7) · `settings.quota.reset` = Lượt mới có lúc {time} · `settings.upgrade` = Nâng cấp Premium (→ S16) / `settings.manageSub` = Quản lý gói (`showManageSubscriptions`) |
 | `settings.voice` = Giọng nói | `settings.voice.enabled` = Đọc to câu trả lời (toggle) · `settings.voice.rate` = Tốc độ đọc (slider, ends `.slow` = Chậm / `.fast` = Nhanh) · `settings.voice.test` = Nghe thử (speaks `settings.voice.sample` = Xin chào, mình là EasyPhoneK.) |
-| `settings.display` = Hiển thị | `settings.textSize` = Cỡ chữ (live preview + `settings.textSize.note` = Đổi cỡ chữ trong Cài đặt iPhone > Màn hình & Độ sáng > Cỡ chữ.) · `settings.simpleMode` = Chế độ đơn giản (toggle; footer `settings.simpleMode.note` = Ẩn bớt các tùy chọn nâng cao.) |
+| `settings.display` = Hiển thị | `settings.textSize` = Cỡ chữ (live preview + `settings.textSize.note` = Đổi cỡ chữ trong Cài đặt iPhone > Màn hình & Độ sáng > Cỡ chữ.) · `settings.simpleMode` = Chế độ đơn giản (toggle; footer `settings.simpleMode.note` = Ẩn bớt các tùy chọn nâng cao.) · `settings.pet` = Hiện bạn Khoai (toggle, on by default; footer `settings.pet.note` = Khoai chỉ là nhân vật hướng dẫn, tắt đi app vẫn chạy như cũ.) (P-41) |
 | `settings.memory` = Ghi nhớ | `settings.nicknames` = Tên gọi thân mật (rows "mẹ → Nguyễn Thị Lan", swipe "Xóa"; `settings.nicknames.empty` = Chưa có tên gọi nào.) · `settings.savedPlaces` = Địa điểm đã lưu (→ S13) |
 | ★ `settings.advanced` = Nâng cao | `settings.snoozeHour` = Giờ của “sáng mai” (picker 5–11, "{hour} giờ") · `settings.mapsApp` = Mở chỉ đường bằng · `settings.permissions` = Quyền truy cập (one row per capability + status §10.4 + "Mở Cài đặt") |
 | `settings.connections` = Kết nối | `settings.gmail.soon` = Gmail — sắp có (disabled, D-150) |
@@ -417,6 +418,7 @@ Explainer (shown before "Xác nhận" executes when status is `notDetermined`): 
 - After navigation to S04 and after each result card, move focus to the title (`@AccessibilityFocusState`).
 - Test at AX5 + VoiceOver + Increase Contrast + Reduce Motion + Dark mode for S02, S03, S04, S06, S08, S16.
 - Voice is never required: every S03 mode has a text path; S04/S08 work by taps alone.
+- Mascot (P-41): VoiceOver skips it; Reduce Motion → no animation; it never covers or replaces a button and never signals a result on its own.
 ## 10. String catalog (non-screen keys)
 ### 10.1 Step titles `step.<kind>.<operation>` (S04 title, History summary)
 - calendarEvent: `create` Tạo lịch hẹn · `update` Sửa lịch hẹn · `delete` Xóa lịch hẹn
@@ -472,3 +474,5 @@ State labels: use `state.<raw>` exactly as `DATA_MODEL.md` §8 (`{service}`/`{ap
 | P-38 | Key scheme `<screen>.<element>`, `common.*`, `step.*`, `field.*`, `option.*`, `followup.*`, `error.*` | predictable for agent + translators |
 | P-39 | Delete step: primary label "Xác nhận xóa" in `danger` style | D-108 tap-only delete must look different |
 | P-40 | Simple mode hides Home quick links (except "Lịch hôm nay") and Settings ★ rows | makes "Chế độ đơn giản" (spec §9) concrete |
+
+**P-41 — guide mascot "Khoai"** (owner, 2026-11-09 → D-289). Art: owner-supplied, owner holds the rights; transparent PNG ≥ 1024 px or PDF vector, one image per pose (`mascot.greeting`, `.listening`, `.thinking`, `.asking`, `.happy`, `.sorry`; optional `mascot.blink`, `mascot.talk` frames). Missing art when built (1B.16) → SF Symbol placeholder + `// TODO(spec): mascot art`. Placement: S02 (above the greeting), S03 (avatar of assistant bubbles); later S04 may show `happy` **only** on a `succeeded` step with evidence — never on `handedOff` / `prepared` / `unknown` (D-102, D-124). Never on S16, S17, S19, S20. No new dialogue keys: existing bubble / title text speaks for Khoai; TTS unchanged. Toggle `settings.pet` (S15). Why: a friendly face makes the assistant less intimidating for elderly users and gives the thesis demo a clear identity tied to the "Ê Khoai" call phrase (D-288).

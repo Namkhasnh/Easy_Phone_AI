@@ -62,7 +62,7 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Last updated | 2026-11-09 |
 | Current phase | **Phase 1A — Core engine** (Phase 0 exit ✅ 2026-11-09) |
 | Working on | — |
-| Last commit | `[0] EXIT 0: Google sign-in on owner's iPhone` on branch `demo_git` (not pushed) |
+| Last commit | `[0] Khoai mascot spec P-41` on branch `demo_git` (not pushed) |
 | Build status | ✅ Simulator build; ✅ device build signed with the free Personal Team (`DEVELOPMENT_TEAM` in git-ignored `Secrets.xcconfig`) |
 | Test status | ✅ iOS `test` green (incl. `ContractFixtureTests`); ✅ backend `uv run pytest -q` 109/109; ✅ `run_db_tests.sh` 6/6 (earlier session) |
 | Next action | 1A.1: enums `TaskKind`, `TaskOperation`, `TaskState`, `TaskEvent`, `FieldType`, `FieldSource` (+ JSON `type` discriminator) per DATA_MODEL §1, with decoding tests |
@@ -113,6 +113,7 @@ option and mark the code `// TODO(decision): P-xx`. Update the Status column whe
 |---|---|---|---|
 | P-17 – P-22 | AI_PROMPTS §11 | multi-recipient SMS, phone number as recipient, calendar table, quote→span, hour rules, prompt files | ✅ D-252 – D-257 |
 | P-23 – P-30 | ARCHITECTURE §14 | folder layout, OCR fallback threshold, LLM call outside lock, asyncpg, `max_retries=0` + 12 s timeout, `@MainActor` engine, `needsUI`, `UserMessage` | ✅ D-258 – D-265 (D-258 supersedes D-019) |
+| P-41 | UI_SCREENS §12 | guide mascot "Khoai" | ✅ D-289 |
 | P-31 – P-40 | UI_SCREENS §12 | `Route.calendarToday`/`.reminders`, color tokens, type floor, "mình/bạn", alert choices, no onboarding, "Sửa" target, key scheme, delete style, simple mode | ✅ D-266 – D-275 |
 
 ---
@@ -246,6 +247,7 @@ Exit: **a Vietnamese sentence becomes an editable draft.**
 - [ ] 1B.13 `DraftBuilder` (`ParsedDraft` → `TaskDraft`, merge keeps `.user` fields) + tests — Docs: ARCHITECTURE §5
 - [ ] 1B.14 Follow-up loop: one question at a time, `dateCandidates` chips resolved on device (D-251), D-281 rule + test — Docs: spec §6.2 AC3, AC6
 - [ ] 1B.15 Live eval run (`pytest -m live`) → report in `evals/`; owner locks D-052
+- [ ] 1B.16 `MascotView` (Khoai) + placement on S02 / S03 + `settings.pet` toggle; needs the owner's art (else SF Symbol placeholder) — Docs: UI_SCREENS §2, §12 P-41, D-289
 - [ ] **EXIT 1B** On device: type and speak "Nhắc tôi 8 giờ sáng mai uống thuốc" → Review shows editable draft
 
 ### Phase 1C — Device actions
@@ -316,7 +318,7 @@ Exit: **linked flows 1 & 2 demoed end to end on the owner's iPhone.**
 - [ ] 1G.5 Info.plist usage descriptions (vi) complete — Docs: UI_SCREENS S18
 - [ ] 1G.6 Privacy + Terms as in-app text (no public URLs, D-284) — Docs: D-188
 - [ ] 1G.7 Demo backend: local + tunnel or free tier, env secrets set, `MONTHLY_SPEND_CAP_USD=5` (D-285)
-- [ ] 1G.8 Accessibility pass: AX5, VoiceOver, Increase Contrast, Reduce Motion, Dark on S02/S03/S04/S06/S08/S16 — Docs: UI_SCREENS §9
+- [ ] 1G.8 Accessibility pass (incl. mascot, P-41): AX5, VoiceOver, Increase Contrast, Reduce Motion, Dark on S02/S03/S04/S06/S08/S16 — Docs: UI_SCREENS §9
 - [ ] 1G.9 String scan test (no literals in `Text("…")`), every `error.<code>` has a key — Docs: UI_SCREENS §11
 - [ ] 1G.10 Resilience manual test: offline, denied permission, app kill mid-action, return from other app
 - [ ] 1G.11 Demo script (Vietnamese, step by step) + reinstall on the owner's iPhone 1–2 days before the defense (7-day signing, D-282)
@@ -362,6 +364,13 @@ Template:
 - Decisions asked / answered: <D-xxx / P-xx>
 - Next: <one concrete next step>
 ```
+
+### 2026-11-09 — Branding: EasyPhoneK + mascot Khoai
+- Process: owner asked for a Codex-like guide pet and a rename; "làm tiếp /plan" → plan (Vietnamese), approved ("Khoai" alone also a call phrase)
+- Done: display name + visible strings → EasyPhoneK, Siri "Ê Khoai" / "Khoai" spec (D-287, D-288, eed43a4); P-41 mascot spec → D-289, new item 1B.16
+- Verify: iOS `test` green; built Info.plist `CFBundleDisplayName = EasyPhoneK`. Owner's iPhone keeps the old name until reinstalled
+- Bugs: none. TODOs: none. Waiting on: mascot art from the owner (needed by 1B.16)
+- Next: 1A.1 enums
 
 ### 2026-11-09 — Phase 0 — EXIT 0 on the owner's iPhone
 - Process: "làm tiếp /plan" → plan (Vietnamese), approved; owner added Apple ID in Xcode, paired iPhone, Developer Mode
