@@ -62,7 +62,7 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Last updated | 2026-11-09 |
 | Current phase | **Phase 1A — Core engine** (Phase 0 exit ✅ 2026-11-09) |
 | Working on | — |
-| Last commit | `[1A] TaskStateMachine.transition` on branch `demo_git` (not pushed) |
+| Last commit | `[0] app icon light + dark (owner art)` on branch `demo_git` (not pushed) |
 | Build status | ✅ Simulator build; ✅ device build signed with the free Personal Team (`DEVELOPMENT_TEAM` in git-ignored `Secrets.xcconfig`) |
 | Test status | ✅ iOS `test` green (incl. `ContractFixtureTests`, `TaskEnumsTests`, `TaskModelTests`, `FieldCatalogTests`, `TaskStateMachineTests`); ✅ backend `uv run pytest -q` 113/113; ✅ `run_db_tests.sh` 6/6 (earlier session) |
 | Next action | 1A.5: extend `EasyPhoneTests/TaskStateMachineTests.swift` with the full §1.5 expected table (every row passes, every other `(state, event, composerDismissed)` → `nil`) |
@@ -161,7 +161,6 @@ List every `// TODO(spec):` and `// TODO(decision):` with file + line. Remove wh
 | `EasyPhoneAI/App/RootView.swift:64` | TODO(spec) | signed-in root shows the user id until S02 Home (1B.1) |
 | `EasyPhoneAI/App/RootView.swift:85` | TODO(spec) | route destinations are `EmptyView` until each screen's item |
 | `EasyPhoneAI/Features/SignIn/SignInViewModel.swift:26` | TODO(decision) | `auth.signInFailed` has no `error.auth.signInFailed` key; S01 uses `signIn.failed` (UI_SCREENS S01) |
-| `EasyPhoneAI/Features/SignIn/SignInView.swift:15` | TODO(spec) | no app icon artwork; SF Symbol placeholder |
 | `EasyPhoneAI/Features/SignIn/SignInView.swift:67` | TODO(spec) | Google "G" mark missing (no licensed asset) |
 | `EasyPhoneAI/Features/SignIn/SignInView.swift:79` | TODO(spec) | legal links no-op until in-app Terms/Privacy (1G.6, D-284) |
 | `backend/app/errors.py:118` | TODO(spec) | framework HTTP errors other than 404/405 have no §3.2 code → rendered as `500 internal` |
@@ -185,6 +184,7 @@ List every `// TODO(spec):` and `// TODO(decision):` with file + line. Remove wh
 | DOC-3, DOC-4, DOC-17, DOC-18 | 2026-11-08 | docs only | resolved by D-266, D-253, D-276, D-252 – D-275 |
 | DOC-1, DOC-2, DOC-5, DOC-6, DOC-7 | 2026-11-08 | docs only | resolved by D-277 – D-281 |
 | DOC-19 | 2026-11-09 | 0.3 commit | resolved by D-286 (keep `EasyPhoneAI/`) |
+| TODO `SignInView.swift:15` | 2026-11-09 | app icon commit | S01 uses the owner's icon art (`appLogo`) |
 
 ---
 
@@ -221,7 +221,7 @@ Exit: **unit tests pass for all state transitions.**
 - [x] 1A.1 Enums `TaskKind`, `TaskOperation`, `TaskState`, `TaskEvent`, `FieldType`, `FieldSource` (+ JSON `type` discriminator) — Docs: DATA_MODEL §1 — `Core/Models/{TaskEnums,FieldSource}.swift`: raw values verbatim, unknown raw value → decoding error (owner OK 2026-11-09), `TaskState.isFinal` (D-122) / `isClosed` (D-244), `TaskKind.allowedOperations` (§1.2 valid pairs, for 1A.7), `FieldSource` hand-written `Codable` with `type` key (+ `isOCR`), `SourceSpan`, `NormalizedRect`. Verified: `EasyPhoneTests/TaskEnumsTests.swift` (7 tests: raw lists, final/closed, every kind×operation pair, every `FieldSource` case exact JSON + round-trip, bad JSON throws) + full suite green (e7bc07c)
 - [x] 1A.2 `Field`, `Ambiguity`, `Candidate`, `TaskStep`, `StateChange`, `TaskDraft @Model`, `InputMode` — Docs: DATA_MODEL §2–3 (56ab866) — `Core/Models/{Field,TaskStep,TaskDraft}.swift`, `TaskDraft` added to `SchemaV1` (still 1.0.0, nothing shipped); `AmbiguityKind` enum; `labelKey(kind:)` takes the step kind (TODO(spec)); `TaskStep.field(_:)` helper; `currentStep`/`isClosed`/`overallStatus` left for 1A.9. Verified: `EasyPhoneTests/TaskModelTests.swift` (6 tests: JSON keys, step round-trip, `needsReview` D-126, label key, raw values, SwiftData insert → fetch in a fresh context keeps `steps` equal) + full suite green
 - [x] 1A.3 `FieldCatalog.swift` (incl. §4.1 per-operation required) + `backend/app/schemas/field_catalog.json`, equality test — Docs: DATA_MODEL §4, §4.1 (4e6948d) — `FieldSpec` (`deviceOnly`, `appBuilt`, `options`, `operations` = "op=…"), `RequiredRule` (`requiresTargetRef`, `conditional` with `equals` / `notPhoneNumber` conditions for D-247, D-253, `customLabel`), `FieldCatalog.mvp` (6 MVP kinds; Phase 2/3 not listed, D-150); JSON = `Codable` form of `.mvp` (written by a one-off script, all non-optional keys explicit). Verified: `EasyPhoneTests/FieldCatalogTests.swift` (7 tests; reads the backend file via `#filePath`, works on Simulator only) + `backend/tests/test_field_catalog.py` (4 tests); editing one option in the JSON made the Swift equality test fail, restored. Rule evaluation (incl. phone check) is 1A.7
-- [x] 1A.4 `transition(state, event, context)` pure function — Docs: DATA_MODEL §1.5 (this commit) — `Core/Engine/TaskStateMachine.swift`: `TaskStateMachine.transition(_:_:context:)` (one `switch`, one case per table row), `TransitionContext.composerDismissed` (D-222; ignored outside `processing`, where `userCancelled` follows "any non-final"); illegal → `nil` + `Logger.warning` (category `stateMachine`). Verified: `TaskStateMachineTests` (4 smoke tests) + full suite green; exhaustive pairs = 1A.5
+- [x] 1A.4 `transition(state, event, context)` pure function — Docs: DATA_MODEL §1.5 (d14492e) — `Core/Engine/TaskStateMachine.swift`: `TaskStateMachine.transition(_:_:context:)` (one `switch`, one case per table row), `TransitionContext.composerDismissed` (D-222; ignored outside `processing`, where `userCancelled` follows "any non-final"); illegal → `nil` + `Logger.warning` (category `stateMachine`). Verified: `TaskStateMachineTests` (4 smoke tests) + full suite green; exhaustive pairs = 1A.5
 - [ ] 1A.5 Tests: every table row passes; every other pair → `nil` (incl. D-222, D-242, D-243 rows) — Docs: DATA_MODEL §13
 - [ ] 1A.6 Approval hash (CryptoKit SHA256, canonical form) + tests (order-stable, changes on edit) — Docs: DATA_MODEL §3.4
 - [ ] 1A.7 `Validator.validate(step)` per §4.1 incl. cross-field rules, `channel` rule (D-247) + tests — Docs: DATA_MODEL §7.1
@@ -368,6 +368,13 @@ Template:
 - Decisions asked / answered: <D-xxx / P-xx>
 - Next: <one concrete next step>
 ```
+
+### 2026-11-09 — Off-checklist — App icon (owner art)
+- Done: owner's Figma icon (`Khoai — Light` / `Khoai — Dark`, file `WervKLr0NeNuDOvCYkrRqt`) → `AppIcon.appiconset` (1024 single size, light + dark, tinted empty → iOS generates, owner's choice), alpha removed; `ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon` in `Base.xcconfig`
+- S01: `appLogo` image set (288 px, light + dark) replaces the SF Symbol placeholder (owner OK); TODO `SignInView.swift:15` closed
+- Verify: build, `CFBundleIcons` in built Info.plist, `Assets.car` has AppIcon any + dark; S01 screenshots light/dark on Simulator; full iOS test green. Home-screen icon on the owner's iPhone after next reinstall
+- Note: icon art is not usable as mascot art (1B.16 needs 6 transparent poses)
+- Next: 1A.5 exhaustive transition tests
 
 ### 2026-11-09 — Phase 1A — 1A.4 state machine
 - Done: 1A.4 `TaskStateMachine.transition` + 4 smoke tests; iOS suite green
