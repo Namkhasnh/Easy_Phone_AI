@@ -59,12 +59,12 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Key | Value |
 |---|---|
 | Last updated | 2026-11-09 |
-| Current phase | **Phase 0 — Skeleton** (0.1 – 0.13 done) |
-| Working on | 0.14 — SQL written + checked locally; owner runs it in Supabase SQL Editor |
-| Last commit | `[0] SQL migration 0001 … + RLS (D-033, D-246)` on branch `demo_git` (not pushed) |
+| Current phase | **Phase 0 — Skeleton** (0.1 – 0.14 done) |
+| Working on | — |
+| Last commit | `[0] 0.14 done: migration applied in Supabase` on branch `demo_git` (not pushed) |
 | Build status | ✅ `xcodebuild … iPhone 18 Pro build` succeeds (iOS untouched this session) |
 | Test status | ✅ iOS 23/23 (last session); ✅ backend `uv run pytest -q` 35/35 |
-| Next action | Owner pastes `backend/migrations/0001_init.sql` into Supabase Dashboard → SQL Editor → Run; agent then checks REST anon → `200 []` for the 3 tables and ticks 0.14 |
+| Next action | 0.15 `GET /v1/me` + profile upsert (D-236) with asyncpg (D-261): owner first creates `backend/.env` with `SUPABASE_URL` + `DATABASE_URL` (Supabase → Connect → session pooler URI) |
 | Owner decisions needed now | none (0.6 kept by owner 2026-11-09). Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
@@ -193,7 +193,7 @@ Exit: **sign in with Google (Simulator + owner's iPhone, free Apple ID), backend
 - [x] 0.11 Backend skeleton: FastAPI, `config.py` (pydantic-settings), `deps.py`, request-id middleware, error envelope handler — Docs: ARCHITECTURE §7, §9.3; API_CONTRACT §3 (this commit) — `uv` project (`pyproject.toml`, Python 3.12 pinned, `httpx2` for TestClient); `app/{main,config,deps,errors,request_id}.py` + empty `routers/ schemas/ services/ repositories/ prompts/`; `AppError` + handlers (AppError, validation → 422 `invalid_input` first field no values, 404/405 → `not_found`, unhandled → 500 `internal`), vi/en fallback messages = UI_SCREENS §8 texts; `X-Request-Id` `req_<ulid>` on every response (also 500); `.env.example` (`!.env.example` in `.gitignore`). Verified: `uv run pytest -q` 11/11, uvicorn + curl → 404 envelope + header, `Accept-Language: en` works
 - [x] 0.12 `GET /v1/health` (no auth) — Verify: pytest + curl (this commit) — `routers/health.py` + `schemas/health.py` (`HealthResponse`), version/schemaVersion from `Settings`; no client-version check (uptime monitor). Verified: pytest 14/14, curl → 200 `{"status":"ok","version":"0.1.0","schemaVersion":1}` + `X-Request-Id`
 - [x] 0.13 JWT verification (`sub`, `exp`, `aud`) — Verify: pytest 401 cases (this commit) — `app/auth.py` (`verify_token`, `CurrentUser`), `deps.current_user`; ES256/RS256 via project JWKS (project uses ES256), HS256 fallback with `SUPABASE_JWT_SECRET`; `JWT_AUDIENCE` in config; JWKS unreachable → 500 `internal`; `pyjwt[crypto]` added. Verified: pytest 35/35 (fake JWKS), real project JWKS loads. **Profile upsert (D-236) moved to 0.15** (needs the 0.14 table + DB connection; owner OK'd plan)
-- [~] 0.14 SQL migration: `profiles`, `subscriptions`, `usage_events` (incl. `attempt`, D-246) + RLS (no `gmail_accounts`) — Docs: DATA_MODEL §9 — `backend/migrations/0001_init.sql` (tables verbatim §9, select-own policies `to authenticated`, `revoke` client writes; folder choice not in docs), `checks/{supabase_stub,0001_check}.sql` + `run_local.sh` (Docker Postgres 16): all checks pass, negative test (no RLS) fails as expected. **left:** owner runs the SQL in Supabase SQL Editor → REST anon `200 []` for the 3 tables
+- [x] 0.14 SQL migration: `profiles`, `subscriptions`, `usage_events` (incl. `attempt`, D-246) + RLS (no `gmail_accounts`) — Docs: DATA_MODEL §9 — `backend/migrations/0001_init.sql` (tables verbatim §9, select-own policies `to authenticated`, `revoke` client writes; folder choice not in docs), `checks/{supabase_stub,0001_check}.sql` + `run_local.sh` (Docker Postgres 16): all checks pass, negative test (no RLS) fails as expected. (de97acf + this commit) — owner ran the SQL in Supabase SQL Editor; REST anon → `200 []` for the 3 tables, `gmail_accounts` → `PGRST205`, anon insert → `42501`
 - [ ] 0.15 `GET /v1/me` returning `MeResponse` + `X-Quota-*` headers + profile upsert (D-236, deleted auth user → 401, from 0.13) — Docs: API_CONTRACT §2, §6.2
 - [ ] 0.16 `APIClient` actor: headers, 20 s timeout, `RetryPolicy`, 401 refresh-once, 426 → S19 — Docs: API_CONTRACT §10, ARCHITECTURE §10
 - [ ] 0.17 S19 Update required screen — Docs: UI_SCREENS S19
@@ -355,10 +355,11 @@ Template:
 
 ### 2026-11-09 — Phase 0 — SQL migration
 - Process: "làm tiếp /plan" → plan mode with full SQL for owner review, approved
-- In progress: 0.14 — `backend/migrations/0001_init.sql` + Docker check (`sh backend/migrations/checks/run_local.sh`); left: owner runs it in Supabase
+- Done: 0.14 — `backend/migrations/0001_init.sql` + Docker check (`sh backend/migrations/checks/run_local.sh`); owner applied it in Supabase
 - Verify: local checks pass (RLS own-rows, anon 0 rows, client writes refused, service role writes, unique key, checks, cascade); pytest 35/35
 - Supabase before run: REST → `PGRST205` (tables absent). Bugs: none. TODOs: none
-- Next: owner runs SQL → agent verifies REST → 0.14 `[x]`, then 0.15
+- Later: owner ran SQL → REST anon `200 []` ×3, `gmail_accounts` absent, anon insert `42501` → 0.14 `[x]`
+- Next: 0.15 `/v1/me` + profile upsert (needs `backend/.env`)
 
 ### 2026-11-09 — Phase 0 — JWT verification
 - Process: "làm tiếp /plan" → plan mode, approved (incl. moving profile upsert to 0.15)
