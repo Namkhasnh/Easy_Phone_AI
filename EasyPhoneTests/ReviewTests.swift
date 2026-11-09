@@ -146,4 +146,86 @@ struct ReviewViewModelTests {
         #expect(repo.draft(vm.draft!.id) != nil)
         #expect(!vm.showsActionBar)
     }
+
+    // MARK: - Result card (1A.11b, D-250)
+
+    func confirmed(_ outcome: ExecutionOutcome, kind: TaskKind = .reminder, extraStep: Bool = false) async -> ReviewViewModel {
+        let exec = MockStepExecutor(outcome: outcome)
+        var executors: [TaskKind: any StepExecutor] = [.reminder: exec]
+        executors[kind] = exec                                   // no duplicate keys in a literal (runtime trap)
+        let e = TaskEngine(repository: repo, executors: executors, now: { Self.now })
+        var steps: [TaskStep]
+        if kind == .call {
+            steps = [step(.call, .open, ["recipientName": "0901234567", "phoneNumber": "+84901234567"])]
+        } else {
+            steps = [step(.reminder, .create, Self.reminderOK)]
+        }
+        if extraStep { steps.append(step(.reminder, .create, order: 1, Self.reminderOK)) }
+        let d = TaskDraft(inputMode: .text, originalInput: "x", timeZoneId: "Asia/Ho_Chi_Minh", steps: steps)
+        repo.save(d)
+        for s in steps { e.revalidate(stepId: s.id, in: d) }
+        let vm = ReviewViewModel(draftId: d.id, repository: repo, engine: e)
+        await vm.confirm()
+        return vm
+    }
+
+    @Test func succeededLastStepSaysAllDoneAndDone() async {
+        let vm = await confirmed(.verified(evidence: "ek:reminder:R1"))
+        let card = vm.resultCard
+        #expect(!vm.showsActionBar)
+        #expect(card?.state == .succeeded)
+        #expect(card?.message == "Xong rồi!")
+        #expect(card?.primary == .init(title: "Xong", action: .done))
+        vm.perform(.done)
+        #expect(vm.didFinish)
+    }
+
+    @Test func succeededWithNextStepOffersContinue() async {
+        let vm = await confirmed(.verified(evidence: "ek:reminder:R1"), extraStep: true)
+        let card = vm.resultCard
+        #expect(card?.message == "Đã tạo lời nhắc.")
+        #expect(card?.primary?.title == "Tiếp tục: Tạo lời nhắc")
+        guard case .nextStep(let next)? = card?.primary?.action else { Issue.record("no next"); return }
+        vm.perform(.nextStep(next))
+        #expect(vm.stepId == next)
+        #expect(vm.stepPosition?.current == 2)
+        #expect(vm.blocker == nil)                            // previous step succeeded → confirmable
+    }
+
+    @Test func handedOffCallOffersMarkDoneAndLater() async {
+        let vm = await confirmed(.handedOff(note: "x"), kind: .call)
+        let card = vm.resultCard
+        #expect(card?.message == "Cần hoàn tất cuộc gọi trong ứng dụng Điện thoại.")
+        #expect(card?.primary?.action == .markDone && card?.secondary?.action == .later)
+        vm.perform(.markDone)
+        #expect(vm.step?.state == .userMarkedDone)            // D-242: only by the user's tap
+    }
+
+    @Test func failedShowsErrorAndRetryCancel() async {
+        let vm = await confirmed(.failed(code: "approval.mismatch"))
+        let card = vm.resultCard
+        #expect(card?.message == "Không thành công.")
+        #expect(card?.detail == "Thông tin đã thay đổi, vui lòng xác nhận lại")
+        #expect(card?.primary?.action == .retry && card?.secondary?.action == .cancel)
+        vm.perform(.retry)
+        #expect(vm.step?.state == .awaitingApproval && vm.showsActionBar)
+
+        let unknownCode = await confirmed(.failed(code: "something.new"))
+        #expect(unknownCode.resultCard?.detail == "Có lỗi xảy ra. Bạn thử lại nhé.")
+    }
+
+    @Test func unknownCalendarOrReminderCanRetry() {
+        let vm = open([step(.reminder, .create, Self.reminderOK)])
+        vm.draft!.steps[0].state = .unknown                   // test setup only
+        let card = vm.resultCard
+        #expect(card?.message == "Chưa rõ kết quả. Mình sẽ kiểm tra lại khi bạn mở ứng dụng.")
+        #expect(card?.primary?.action == .markDone && card?.secondary?.action == .retry)
+    }
+
+    @Test func processingShowsNoButtons() {
+        let vm = open([step(.reminder, .create, Self.reminderOK)])
+        vm.draft!.steps[0].state = .processing               // test setup only
+        #expect(vm.resultCard == .init(state: .processing, message: "Đang thực hiện…", detail: nil,
+                                       primary: nil, secondary: nil))
+    }
 }
