@@ -348,6 +348,90 @@
           }
         }
       }
+    },
+    "signIn.failed": {
+      "comment": "UI_SCREENS S01",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đăng nhập không thành công. Bạn thử lại nhé."
+          }
+        }
+      }
+    },
+    "signIn.google": {
+      "comment": "UI_SCREENS S01",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiếp tục với Google"
+          }
+        }
+      }
+    },
+    "signIn.legal": {
+      "comment": "UI_SCREENS S01",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Khi tiếp tục, bạn đồng ý với [Điều khoản sử dụng](easyphone://legal/terms) và [Chính sách quyền riêng tư](easyphone://legal/privacy)."
+          }
+        }
+      }
+    },
+    "signIn.reason": {
+      "comment": "UI_SCREENS S01",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn cần đăng nhập để dùng trợ lý AI. Lịch, danh bạ và lời nhắc vẫn nằm trên điện thoại của bạn."
+          }
+        }
+      }
+    },
+    "signIn.sessionExpired": {
+      "comment": "UI_SCREENS S01",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Phiên đăng nhập đã hết. Bạn đăng nhập lại nhé. Bản nháp vẫn được giữ."
+          }
+        }
+      }
+    },
+    "signIn.tagline": {
+      "comment": "UI_SCREENS S01",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trợ lý giúp bạn dùng điện thoại dễ hơn"
+          }
+        }
+      }
+    },
+    "signIn.title": {
+      "comment": "UI_SCREENS S01",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EasyPhone"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
