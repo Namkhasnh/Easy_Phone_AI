@@ -34,3 +34,11 @@ enum ConfirmResult: Sendable, Hashable {
     /// Step stays `processing`; present this UI, then call `composerFinished`.
     case needsUI(UIEffect)
 }
+
+/// Why a step cannot be confirmed right now (UI_SCREENS S04 disabled reasons).
+enum ConfirmBlocker: Sendable, Hashable {
+    case missing          // `review.disabled.missing`
+    case ambiguity        // `review.disabled.ambiguity`
+    case previousStep     // `review.disabled.previousStep`
+    case notConfirmable   // not in `awaitingApproval` for another reason (e.g. already processing); no text
+}
