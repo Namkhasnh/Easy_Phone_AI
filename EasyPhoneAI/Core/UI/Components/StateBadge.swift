@@ -66,7 +66,6 @@ extension StateBadge {
         switch step.state {
         case .handedOff:
             switch step.kind {
-            // TODO(spec): no key names the Phone app for `state.handedOff` (DOC-26); `app.phone` used.
             case .call: return [UserMessage(key: "app.phone").text]
             case .place: return [step.field("mapsApp").flatMap { optionLabel($0) } ?? ""]
             case .sms: return [step.field("channel").flatMap { optionLabel($0) } ?? ""]
