@@ -55,3 +55,31 @@ private struct StateBadgePreview: View {
         .background(Tokens.Colors.bg)
     }
 }
+
+extension StateBadge {
+    /// Badge for a step, filling `{app}` (handedOff) / `{service}` (prepared) from the step itself.
+    init(step: TaskStep) {
+        self.init(state: step.state, args: Self.labelArgs(step))
+    }
+
+    static func labelArgs(_ step: TaskStep) -> [String] {
+        switch step.state {
+        case .handedOff:
+            switch step.kind {
+            // TODO(spec): no key names the Phone app for `state.handedOff` (DOC-26); `app.phone` used.
+            case .call: return [UserMessage(key: "app.phone").text]
+            case .place: return [step.field("mapsApp").flatMap { optionLabel($0) } ?? ""]
+            case .sms: return [step.field("channel").flatMap { optionLabel($0) } ?? ""]
+            default: return [""]
+            }
+        case .prepared:
+            return [step.field("service")?.value ?? ""]     // Phase 3 (ride/food)
+        default:
+            return []
+        }
+    }
+
+    private static func optionLabel(_ field: Field) -> String? {
+        field.value.flatMap { FieldFormatter.option(fieldId: field.id, value: $0) }
+    }
+}

@@ -52,7 +52,7 @@ struct ReviewView: View {
             if let position = viewModel.stepPosition {
                 StepIndicator(current: position.current, total: position.total)
             }
-            StateBadge(state: step.state)
+            StateBadge(step: step)
             // TODO(spec): calendar conflict card (`review.conflict.*`) needs CalendarService (1C.2).
             if let banner = viewModel.banner {
                 Banner(message: banner, style: .warning)
