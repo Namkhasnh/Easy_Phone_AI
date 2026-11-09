@@ -59,12 +59,12 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Key | Value |
 |---|---|
 | Last updated | 2026-11-09 |
-| Current phase | **Phase 0 — Skeleton** (0.1 – 0.9 done, 0.10 built) |
-| Working on | 0.10 — left: owner signs in with Google on Simulator (real account) |
-| Last commit | `[0] S01 sign-in screen + SignInViewModel …` on branch `demo_git`, pushed to `origin` (github.com/Namkhasnh/Easy_Phone_AI) |
+| Current phase | **Phase 0 — Skeleton** (0.1 – 0.10 done) |
+| Working on | — |
+| Last commit | `[0] 0.10 done: real Google sign-in verified on Simulator …` on branch `demo_git`, pushed to `origin` (github.com/Namkhasnh/Easy_Phone_AI) |
 | Build status | ✅ `xcodebuild … iPhone 18 Pro build` succeeds |
 | Test status | ✅ `xcodebuild … test` — 23/23 green (`EasyPhoneTests`: AppConfig, AppEnvironment.mock, ModelContainer, Router, AuthService, SignInViewModel) |
-| Next action | Owner: ⌘R on iPhone 18 Pro Simulator → tap "Tiếp tục với Google" → sign in with the test Gmail → screen shows the user id (also: cancel the sheet → stays on S01, no error; relaunch → still signed in). Then tick 0.10 and start 0.11 backend skeleton |
+| Next action | 0.11 backend skeleton: `backend/app/{main.py, config.py (pydantic-settings), deps.py}`, request-id middleware, `AppError` + error envelope handler (ARCHITECTURE §7, §9.3; API_CONTRACT §3) + pytest |
 | Owner decisions needed now | none (0.6 kept by owner 2026-11-09). Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
@@ -188,7 +188,7 @@ Exit: **sign in with Google (Simulator + owner's iPhone, free Apple ID), backend
 - [x] 0.7 `Config.xcconfig` (Debug/Release `API_BASE_URL`, Supabase URL + anon key only) — Docs: D-207, D-208 (1af55a3 + project wiring commit after it) — `Config/{Base,Debug,Release,Secrets.example}.xcconfig` + partial `Config/Info.plist` at repo root (non-target folder ref in project), `Core/Networking/AppConfig.swift`, `AppEnvironment.config`; target base configs = `specialized-configurations` in `project.xcproj` (new Xcode format, hand-editable), `INFOPLIST_FILE = Config/Info.plist`. Verified: Debug + Release build, built Info.plist `APIBaseURL = http://127.0.0.1:8000`, Supabase keys empty until 0.8, app launches on simulator
 - [x] 0.8 Supabase project (free tier) + Google OAuth client (Google Cloud, free): Google provider enabled, redirect URL for the app — Docs: D-283 — Verify: test sign-in in dashboard (commit after a556285) — project `ssbppiwuzuxptyzqxlcq` (Singapore, Free); Google Cloud project `EasyPhone`, consent External + Testing (owner's Gmail = test user), OAuth client type Web, redirect `https://<ref>.supabase.co/auth/v1/callback`; Supabase: Google on, Email off, signups allowed, redirect URL `vn.namkhanh.easyphone://login-callback`; app uses the **publishable** key (`sb_publishable_…`, replaces legacy anon, D-207) in git-ignored `Config/Secrets.xcconfig`. Verified: `/auth/v1/settings` google=true email=false; browser sign-in via `/auth/v1/authorize?provider=google` → owner's user in Auth › Users; built Info.plist has Supabase URL + key
 - [x] 0.9 `AuthService` live (Supabase Swift SDK, Google only) + mock — Docs: ARCHITECTURE §4.1, D-283 (this commit) — SPM `supabase-swift` 2.55.6, product `Auth` only (owner added in Xcode; new format keys `packages` + `package-product-members`); `Core/Services/{AuthService,ServiceError}.swift`, `Live/LiveAuthService.swift` (PKCE, Keychain, `signOut` falls back to `.local`), `Mock/MockAuthService.swift` (`Mutex`); `AppEnvironment.auth`; RootView streams `sessionUpdates` → `AppState.session`; `CFBundleURLTypes` scheme `vn.namkhanh.easyphone`. Verified: build, 19 tests, app launches on simulator. Real Google sign-in exercised in 0.10 (needs the S01 button)
-- [~] 0.10 S01 Sign-in screen (Google button, legal text) + `#Preview` — Docs: UI_SCREENS S01 — left: real Google sign-in on Simulator by owner. Built: `Features/SignIn/{SignInView,SignInViewModel}.swift`, `UserMessage` (D-265), RootView switches on `session` (signed in → user id placeholder until S02), 7 `signIn.*` keys, slice of 1A.10 (6 color assets, `Core/UI/Tokens.swift`, `PrimaryButton`, `DemoDataBadge`; `ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO` in Base.xcconfig because asset `primary` collides with `Color.primary`). Verified: build, 23 tests, S01 renders on Simulator
+- [x] 0.10 S01 Sign-in screen (Google button, legal text) + `#Preview` — Docs: UI_SCREENS S01 (4e224e6 + this commit) — Built: `Features/SignIn/{SignInView,SignInViewModel}.swift`, `UserMessage` (D-265), RootView switches on `session` (signed in → user id placeholder until S02), 7 `signIn.*` keys, slice of 1A.10 (6 color assets, `Core/UI/Tokens.swift`, `PrimaryButton`, `DemoDataBadge`; `ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO` in Base.xcconfig because asset `primary` collides with `Color.primary`). Verified: build, 23 tests, S01 renders on Simulator; owner signed in with real Google account on Simulator (Google asked for a passkey → "Try another way") → user id shown; app relaunch keeps the session (Keychain). Cancel path covered by unit test only
 - [ ] 0.11 Backend skeleton: FastAPI, `config.py` (pydantic-settings), `deps.py`, request-id middleware, error envelope handler — Docs: ARCHITECTURE §7, §9.3; API_CONTRACT §3
 - [ ] 0.12 `GET /v1/health` (no auth) — Verify: pytest + curl
 - [ ] 0.13 JWT verification (`sub`, `exp`, `aud`) + profile upsert (D-236) — Verify: pytest 401 cases
@@ -359,7 +359,8 @@ Template:
 - Verify: build ok, 23/23 tests, S01 screenshot on iPhone 18 Pro Simulator. Bugs: none
 - TODOs added: RootView.swift:33, SignInViewModel.swift:26, SignInView.swift:15/67/79
 - Note: first `test` run after adding files can fail (tests target lacks explicit app dependency); re-run passes
-- Next: owner signs in with Google on Simulator → tick 0.10 → 0.11
+- Later: owner signed in for real on Simulator → user id shown, relaunch stays signed in → 0.10 `[x]`
+- Next: 0.11 backend skeleton
 
 ### 2026-11-09 — Phase 0 — AuthService
 - Process: "làm tiếp /plan" → EnterPlanMode, plan approved by owner, then built
