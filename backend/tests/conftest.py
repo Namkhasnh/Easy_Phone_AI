@@ -1,8 +1,9 @@
 import pytest
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.testclient import TestClient
 from pydantic import BaseModel, ConfigDict
 
+from app.deps import CurrentUser, current_user
 from app.errors import AppError
 from app.main import create_app
 
@@ -30,6 +31,11 @@ def crash() -> None:
 @test_router.post("/echo")
 def echo(body: EchoRequest) -> dict:
     return {"schemaVersion": 1}
+
+
+@test_router.get("/whoami")
+def whoami(user: CurrentUser = Depends(current_user)) -> dict:
+    return {"userId": user.id}
 
 
 @pytest.fixture

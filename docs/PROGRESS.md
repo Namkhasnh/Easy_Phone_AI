@@ -59,12 +59,12 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Key | Value |
 |---|---|
 | Last updated | 2026-11-09 |
-| Current phase | **Phase 0 — Skeleton** (0.1 – 0.12 done) |
+| Current phase | **Phase 0 — Skeleton** (0.1 – 0.13 done) |
 | Working on | — |
-| Last commit | `[0] GET /v1/health (D-235)` on branch `demo_git` (not pushed) |
+| Last commit | `[0] JWT verification via JWKS/HS256 (D-032)` on branch `demo_git` (not pushed) |
 | Build status | ✅ `xcodebuild … iPhone 18 Pro build` succeeds (iOS untouched this session) |
-| Test status | ✅ iOS 23/23 (last session); ✅ backend `uv run pytest -q` 14/14 |
-| Next action | 0.13 JWT verification in `backend/app/deps.py` `current_user` (`sub`, `exp`, `aud`) + profile upsert (D-236), pytest 401 cases — read API_CONTRACT §2–3, ARCHITECTURE §7 first |
+| Test status | ✅ iOS 23/23 (last session); ✅ backend `uv run pytest -q` 35/35 |
+| Next action | 0.14 SQL migration `profiles`/`subscriptions`/`usage_events` + RLS (DATA_MODEL §9) — DB schema is hard to undo: show the SQL to the owner before applying it in Supabase |
 | Owner decisions needed now | none (0.6 kept by owner 2026-11-09). Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
@@ -192,9 +192,9 @@ Exit: **sign in with Google (Simulator + owner's iPhone, free Apple ID), backend
 - [x] 0.10 S01 Sign-in screen (Google button, legal text) + `#Preview` — Docs: UI_SCREENS S01 (4e224e6 + this commit) — Built: `Features/SignIn/{SignInView,SignInViewModel}.swift`, `UserMessage` (D-265), RootView switches on `session` (signed in → user id placeholder until S02), 7 `signIn.*` keys, slice of 1A.10 (6 color assets, `Core/UI/Tokens.swift`, `PrimaryButton`, `DemoDataBadge`; `ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO` in Base.xcconfig because asset `primary` collides with `Color.primary`). Verified: build, 23 tests, S01 renders on Simulator; owner signed in with real Google account on Simulator (Google asked for a passkey → "Try another way") → user id shown; app relaunch keeps the session (Keychain). Cancel path covered by unit test only
 - [x] 0.11 Backend skeleton: FastAPI, `config.py` (pydantic-settings), `deps.py`, request-id middleware, error envelope handler — Docs: ARCHITECTURE §7, §9.3; API_CONTRACT §3 (this commit) — `uv` project (`pyproject.toml`, Python 3.12 pinned, `httpx2` for TestClient); `app/{main,config,deps,errors,request_id}.py` + empty `routers/ schemas/ services/ repositories/ prompts/`; `AppError` + handlers (AppError, validation → 422 `invalid_input` first field no values, 404/405 → `not_found`, unhandled → 500 `internal`), vi/en fallback messages = UI_SCREENS §8 texts; `X-Request-Id` `req_<ulid>` on every response (also 500); `.env.example` (`!.env.example` in `.gitignore`). Verified: `uv run pytest -q` 11/11, uvicorn + curl → 404 envelope + header, `Accept-Language: en` works
 - [x] 0.12 `GET /v1/health` (no auth) — Verify: pytest + curl (this commit) — `routers/health.py` + `schemas/health.py` (`HealthResponse`), version/schemaVersion from `Settings`; no client-version check (uptime monitor). Verified: pytest 14/14, curl → 200 `{"status":"ok","version":"0.1.0","schemaVersion":1}` + `X-Request-Id`
-- [ ] 0.13 JWT verification (`sub`, `exp`, `aud`) + profile upsert (D-236) — Verify: pytest 401 cases
+- [x] 0.13 JWT verification (`sub`, `exp`, `aud`) — Verify: pytest 401 cases (this commit) — `app/auth.py` (`verify_token`, `CurrentUser`), `deps.current_user`; ES256/RS256 via project JWKS (project uses ES256), HS256 fallback with `SUPABASE_JWT_SECRET`; `JWT_AUDIENCE` in config; JWKS unreachable → 500 `internal`; `pyjwt[crypto]` added. Verified: pytest 35/35 (fake JWKS), real project JWKS loads. **Profile upsert (D-236) moved to 0.15** (needs the 0.14 table + DB connection; owner OK'd plan)
 - [ ] 0.14 SQL migration: `profiles`, `subscriptions`, `usage_events` (incl. `attempt`, D-246) + RLS (no `gmail_accounts`) — Docs: DATA_MODEL §9
-- [ ] 0.15 `GET /v1/me` returning `MeResponse` + `X-Quota-*` headers — Docs: API_CONTRACT §6.2
+- [ ] 0.15 `GET /v1/me` returning `MeResponse` + `X-Quota-*` headers + profile upsert (D-236, deleted auth user → 401, from 0.13) — Docs: API_CONTRACT §2, §6.2
 - [ ] 0.16 `APIClient` actor: headers, 20 s timeout, `RetryPolicy`, 401 refresh-once, 426 → S19 — Docs: API_CONTRACT §10, ARCHITECTURE §10
 - [ ] 0.17 S19 Update required screen — Docs: UI_SCREENS S19
 - [ ] 0.18 Contract fixtures folder `backend/tests/fixtures/contract/` shared with iOS tests — Docs: API_CONTRACT §11
@@ -352,6 +352,12 @@ Template:
 - Decisions asked / answered: <D-xxx / P-xx>
 - Next: <one concrete next step>
 ```
+
+### 2026-11-09 — Phase 0 — JWT verification
+- Process: "làm tiếp /plan" → plan mode, approved (incl. moving profile upsert to 0.15)
+- Done: 0.13 `app/auth.py` + `deps.current_user`: JWKS (ES256/RS256) primary, HS256 fallback; `require exp/sub/aud`, `sub` UUID lowercased
+- Verify: `uv run pytest -q` 35/35 (21 new auth tests, fake JWKS); real project JWKS loads (ES256). Bugs: none. TODOs: none
+- Next: 0.14 SQL migration (show SQL to owner first)
 
 ### 2026-11-09 — Phase 0 — Health endpoint
 - Process: "làm tiếp /plan" → plan mode (Vietnamese plan), approved, then built
