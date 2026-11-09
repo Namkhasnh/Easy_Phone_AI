@@ -19,7 +19,6 @@ enum FieldFormatter {
             let args = field.id == "snoozeOption" && value == "tomorrowMorning" ? ["\(snoozeMorningHour)"] : []
             return option(fieldId: field.id, value: value, args: args) ?? value
         case .bool:
-            // TODO(spec): no key for bool values (DOC-25); `common.yes` / `common.no`.
             return UserMessage(key: value == "true" ? "common.yes" : "common.no").text
         case .contactRef, .placeRef:
             // 🔒 opaque identifiers are never shown; their human row comes from the device services (1C).

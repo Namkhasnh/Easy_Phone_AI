@@ -445,6 +445,7 @@ Explainer (shown before "Xác nhận" executes when status is `notDetermined`): 
 | `mapsApp` | `appleMaps` Bản đồ của Apple · `googleMaps` Google Maps |
 | `channel` | `sms` Tin nhắn (SMS/iMessage) · `zalo` Zalo |
 | `nextAction` | `calendarEvent` Tạo lịch hẹn · `reminder` Tạo lời nhắc · `copyContactInfo` Sao chép tên và số điện thoại · `ride` Chuẩn bị gọi xe (Phase 3) |
+| `bool` fields (`allDay`, `completed`) | `common.yes` Có · `common.no` Không (DOC-25) |
 | `alertMinutesBefore` (P-35) | `0` Đúng giờ · `15` Trước 15 phút · `60` Trước 1 tiếng · `1440` Trước 1 ngày |
 | `allDay`, `completed` | `true` Có · `false` Không |
 ### 10.4 Follow-up questions `followup.<kind>.<fieldId>` and permission status
