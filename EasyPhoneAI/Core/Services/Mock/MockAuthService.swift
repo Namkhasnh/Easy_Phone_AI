@@ -3,7 +3,8 @@ import Synchronization
 
 /// In-memory `AuthService` for previews and tests (D-206). Never touches the network or Keychain.
 final class MockAuthService: AuthService {
-    static let userId = UUID(uuidString: "00000000-0000-0000-0000-00000000A11C")!
+    /// = `userId` in the contract fixtures (API_CONTRACT §6.2 example).
+    static let userId = UUID(uuidString: "6f1c2b7e-1d0a-4c55-9a51-2f6c1c0f9e11")!
     static let accessToken = "mock-access-token"
 
     private struct State {

@@ -1,0 +1,11 @@
+{
+  "error": {
+    "code": "payload_too_large",
+    "message": "Ảnh hoặc nội dung quá lớn. Bạn thử ảnh khác hoặc nội dung ngắn hơn nhé.",
+    "retryable": false,
+    "requestId": "req_01JC0000000000000000000000",
+    "details": {
+      "maxBytes": 4194304
+    }
+  }
+}

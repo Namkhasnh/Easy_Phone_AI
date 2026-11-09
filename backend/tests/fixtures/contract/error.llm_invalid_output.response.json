@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "llm_invalid_output",
+    "message": "Mình chưa hiểu yêu cầu. Bạn thử lại nhé.",
+    "retryable": true,
+    "requestId": "req_01JC0000000000000000000000"
+  }
+}

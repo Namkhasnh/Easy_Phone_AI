@@ -1,0 +1,11 @@
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Giọng nói tạm thời chưa dùng được. Bạn gõ chữ nhé.",
+    "retryable": true,
+    "requestId": "req_01JC0000000000000000000000",
+    "details": {
+      "retryAfterSeconds": 120
+    }
+  }
+}
