@@ -59,13 +59,13 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 
 | Key | Value |
 |---|---|
-| Last updated | 2026-11-09 |
+| Last updated | 2026-11-10 |
 | Current phase | **Phase 1A — Core engine** (Phase 0 exit ✅ 2026-11-09) |
 | Working on | — |
-| Last commit | `[1A] exhaustive transition tests` on branch `demo_git` (not pushed) |
+| Last commit | `[1A] approval hash + tests` on branch `demo_git` (not pushed) |
 | Build status | ✅ Simulator build; ✅ device build signed with the free Personal Team (`DEVELOPMENT_TEAM` in git-ignored `Secrets.xcconfig`) |
-| Test status | ✅ iOS `test` green (incl. `ContractFixtureTests`, `TaskEnumsTests`, `TaskModelTests`, `FieldCatalogTests`, `TaskStateMachineTests`); ✅ backend `uv run pytest -q` 113/113; ✅ `run_db_tests.sh` 6/6 (earlier session) |
-| Next action | 1A.6: approval hash `ApprovalHash` (CryptoKit SHA256 over DATA_MODEL §3.4 canonical form) + tests (stable across field order, changes on any field / targetRef edit) |
+| Test status | ✅ iOS `test` green (incl. `ContractFixtureTests`, `TaskEnumsTests`, `TaskModelTests`, `FieldCatalogTests`, `TaskStateMachineTests`, `ApprovalHashTests`); ✅ backend `uv run pytest -q` 113/113; ✅ `run_db_tests.sh` 6/6 (earlier session) |
+| Next action | 1A.7: `Validator.validate(step) -> [ValidationIssue]` per DATA_MODEL §7.1 + §4.1 required rules (incl. `channel` D-247, phone-number D-253) + tests |
 | Owner decisions needed now | none (0.6 kept by owner 2026-11-09). Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
@@ -175,6 +175,7 @@ List every `// TODO(spec):` and `// TODO(decision):` with file + line. Remove wh
 | `EasyPhoneAI/Core/Models/Field.swift:40` | TODO(spec) | DATA_MODEL §2 `labelKey` has no args but `Field` has no kind → `labelKey(kind:)` |
 | `EasyPhoneAI/Core/Models/FieldCatalog.swift:6` | TODO(spec) | DATA_MODEL §4 gives no JSON layout for `field_catalog.json`; the Swift `Codable` shape is used |
 | `EasyPhoneAI/Core/Models/FieldCatalog.swift:140` | TODO(spec) | `channel` options list only `sms`; SupportedServices ids (DATA_MODEL §10) come with 1C.12 |
+| `EasyPhoneAI/Core/Engine/ApprovalHash.swift:10` | TODO(spec) | §3.4 canonical form does not escape `\n` / `=` inside values; implemented verbatim |
 | `Config/Release.xcconfig:2` | TODO(decision) | D-036: no production backend in thesis scope (D-284); Release uses the Debug backend URL |
 
 ### 5.4 Closed (append-only)
@@ -222,8 +223,8 @@ Exit: **unit tests pass for all state transitions.**
 - [x] 1A.2 `Field`, `Ambiguity`, `Candidate`, `TaskStep`, `StateChange`, `TaskDraft @Model`, `InputMode` — Docs: DATA_MODEL §2–3 (56ab866) — `Core/Models/{Field,TaskStep,TaskDraft}.swift`, `TaskDraft` added to `SchemaV1` (still 1.0.0, nothing shipped); `AmbiguityKind` enum; `labelKey(kind:)` takes the step kind (TODO(spec)); `TaskStep.field(_:)` helper; `currentStep`/`isClosed`/`overallStatus` left for 1A.9. Verified: `EasyPhoneTests/TaskModelTests.swift` (6 tests: JSON keys, step round-trip, `needsReview` D-126, label key, raw values, SwiftData insert → fetch in a fresh context keeps `steps` equal) + full suite green
 - [x] 1A.3 `FieldCatalog.swift` (incl. §4.1 per-operation required) + `backend/app/schemas/field_catalog.json`, equality test — Docs: DATA_MODEL §4, §4.1 (4e6948d) — `FieldSpec` (`deviceOnly`, `appBuilt`, `options`, `operations` = "op=…"), `RequiredRule` (`requiresTargetRef`, `conditional` with `equals` / `notPhoneNumber` conditions for D-247, D-253, `customLabel`), `FieldCatalog.mvp` (6 MVP kinds; Phase 2/3 not listed, D-150); JSON = `Codable` form of `.mvp` (written by a one-off script, all non-optional keys explicit). Verified: `EasyPhoneTests/FieldCatalogTests.swift` (7 tests; reads the backend file via `#filePath`, works on Simulator only) + `backend/tests/test_field_catalog.py` (4 tests); editing one option in the JSON made the Swift equality test fail, restored. Rule evaluation (incl. phone check) is 1A.7
 - [x] 1A.4 `transition(state, event, context)` pure function — Docs: DATA_MODEL §1.5 (d14492e) — `Core/Engine/TaskStateMachine.swift`: `TaskStateMachine.transition(_:_:context:)` (one `switch`, one case per table row), `TransitionContext.composerDismissed` (D-222; ignored outside `processing`, where `userCancelled` follows "any non-final"); illegal → `nil` + `Logger.warning` (category `stateMachine`). Verified: `TaskStateMachineTests` (4 smoke tests) + full suite green; exhaustive pairs = 1A.5
-- [x] 1A.5 Tests: every table row passes; every other pair → `nil` (incl. D-222, D-242, D-243 rows) — Docs: DATA_MODEL §13 (this commit) — `TaskStateMachineTests`: independent `expectedTable` copied from §1.5 (29 pairs × `composerDismissed` false/true = 58 entries), loop over all 11 states × 13 events × 2 contexts = 286 cases, closed states never leave except `succeeded + userEdited`. Verified: suite green twice in a row
-- [ ] 1A.6 Approval hash (CryptoKit SHA256, canonical form) + tests (order-stable, changes on edit) — Docs: DATA_MODEL §3.4
+- [x] 1A.5 Tests: every table row passes; every other pair → `nil` (incl. D-222, D-242, D-243 rows) — Docs: DATA_MODEL §13 (83d905a) — `TaskStateMachineTests`: independent `expectedTable` copied from §1.5 (29 pairs × `composerDismissed` false/true = 58 entries), loop over all 11 states × 13 events × 2 contexts = 286 cases, closed states never leave except `succeeded + userEdited`. Verified: suite green twice in a row
+- [x] 1A.6 Approval hash (CryptoKit SHA256, canonical form) + tests (order-stable, changes on edit) — Docs: DATA_MODEL §3.4 (this commit) — `Core/Engine/ApprovalHash.swift`: `canonical(_:)` verbatim §3.4 (ids sorted by UTF-8 bytes, all fields incl. 🔒), `hash(_:)` lowercase hex, `matches(_:)` (no stored hash → false, for the executor check). Storing/clearing the hash on `userConfirmed`/`awaitingApproval` = `TaskEngine` (1A.8). Verified: `EasyPhoneTests/ApprovalHashTests.swift` (9 tests incl. a `shasum -a 256` vector, field order, every field edit, 🔒 field, `targetRef`, ignores state/source/confidence) + full suite green
 - [ ] 1A.7 `Validator.validate(step)` per §4.1 incl. cross-field rules, `channel` rule (D-247) + tests — Docs: DATA_MODEL §7.1
 - [ ] 1A.8 `TaskEngine` (@MainActor, only writer, history cap 50, autosave) — Docs: ARCHITECTURE §5
 - [ ] 1A.9 `TaskRepository` + `LocalDataRepository` (SwiftData), `currentStep`/closed rules (D-244) — Docs: ARCHITECTURE §4.4, DATA_MODEL §3.2
@@ -368,6 +369,12 @@ Template:
 - Decisions asked / answered: <D-xxx / P-xx>
 - Next: <one concrete next step>
 ```
+
+### 2026-11-10 — Phase 1A — 1A.6 approval hash
+- Done: 1A.6 `ApprovalHash` + 9 tests; iOS suite green
+- Note: first `test` run after adding the file failed with "cannot find 'ApprovalHash'" (stale test-module build again); rerun green
+- TODOs added: `ApprovalHash.swift:10` TODO(spec) (no escaping in canonical form)
+- Next: 1A.7 validator
 
 ### 2026-11-09 — Phase 1A — 1A.5 transition tests
 - Done: 1A.5 exhaustive table test (286 cases) + closed-state test; iOS suite green (2 consecutive runs)
