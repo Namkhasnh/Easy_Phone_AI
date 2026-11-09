@@ -15,10 +15,13 @@ import Observation
 
     private let engine: TaskEngine
     private let catalog: FieldCatalog
+    private let now: () -> Date
 
-    init(draftId: UUID, repository: any TaskRepository, engine: TaskEngine, catalog: FieldCatalog = .mvp) {
+    init(draftId: UUID, repository: any TaskRepository, engine: TaskEngine, catalog: FieldCatalog = .mvp,
+         now: @escaping () -> Date = { .now }) {
         self.engine = engine
         self.catalog = catalog
+        self.now = now
         draft = repository.draft(draftId)
         stepId = draft?.currentStep?.id            // reopen at the exact step (D-244, spec §6.10 AC2)
     }
@@ -213,10 +216,29 @@ import Observation
 
     // MARK: - Intents
 
-    /// "Sửa": the first field needing review, else the first field (P-37).
+    /// "Sửa": the first field needing review, else the first editable field (P-37).
     func startEdit() {
-        let fields = visibleFields
+        let fields = visibleFields.filter { Self.isEditableInS05($0.type) }
         editingFieldId = (fields.first(where: \.needsReview) ?? fields.first)?.id
+    }
+
+    /// Row tap → S05, except types set by pickers (S06 / S13 in 1C).
+    func tapRow(_ field: Field) {
+        // TODO(spec): `coordinate` / `placeRef` rows open S13 (1C.13), contact rows open S06 (1C.9).
+        if Self.isEditableInS05(field.type) { editingFieldId = field.id }
+    }
+
+    static func isEditableInS05(_ type: FieldType) -> Bool {
+        type != .contactRef && type != .placeRef && type != .coordinate
+    }
+
+    /// S05 for `editingFieldId`; "Lưu" → `TaskEngine.edit` (D-101, D-104).
+    var editor: FieldEditorViewModel? {
+        guard let id = editingFieldId, let step, let draft,
+              let field = visibleFields.first(where: { $0.id == id }) else { return nil }
+        return FieldEditorViewModel(field: field, step: step, timeZoneId: draft.timeZoneId, now: now) { [weak self] value in
+            self?.edit(fieldId: id, value: value)
+        }
     }
 
     func edit(fieldId: String, value: String?) {

@@ -1908,6 +1908,78 @@
           }
         }
       }
+    },
+    "editor.clear": {
+      "comment": "UI_SCREENS S05",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xóa nội dung"
+          }
+        }
+      }
+    },
+    "editor.findOnMap": {
+      "comment": "UI_SCREENS S05",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tìm trên bản đồ"
+          }
+        }
+      }
+    },
+    "editor.invalid.endBeforeStart": {
+      "comment": "UI_SCREENS S05",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giờ kết thúc phải sau giờ bắt đầu."
+          }
+        }
+      }
+    },
+    "editor.invalid.past": {
+      "comment": "UI_SCREENS S05",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thời gian này đã qua. Bạn chọn thời gian khác nhé."
+          }
+        }
+      }
+    },
+    "editor.invalid.tooLong": {
+      "comment": "UI_SCREENS S05; %@ = {max}",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nội dung quá dài (tối đa %@ ký tự)."
+          }
+        }
+      }
+    },
+    "editor.invalid.phone": {
+      "comment": "UI_SCREENS S05",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Số điện thoại chưa đúng."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -33,6 +33,10 @@ struct ReviewView: View {
             default: nil
             }
         }
+        .sheet(isPresented: Binding(get: { viewModel.editingFieldId != nil },
+                                    set: { if !$0 { viewModel.editingFieldId = nil } })) {
+            if let editor = viewModel.editor { FieldEditorView(viewModel: editor) }
+        }
         .accessibilityIdentifier("screen.S04")
     }
 
@@ -55,7 +59,7 @@ struct ReviewView: View {
             }
             ForEach(viewModel.visibleFields) { field in
                 FieldRow(field: field, kind: step.kind, displayValue: viewModel.displayValue(field),
-                         onEdit: { viewModel.editingFieldId = field.id })
+                         onEdit: { viewModel.tapRow(field) })
                 // TODO(spec): "Xem ảnh gốc" (S10, 1D.8) and "Chọn" (S06 picker, 1C.9) open their screens later.
             }
             if let original = viewModel.originalInput {
@@ -84,7 +88,6 @@ struct ReviewView: View {
                     .foregroundStyle(Tokens.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            // TODO(spec): "Sửa" opens S05 (1A.12); until then it only selects the field.
             SecondaryButton("common.edit") { viewModel.startEdit() }
             SecondaryButton("common.cancel") { viewModel.cancel() }
         }
