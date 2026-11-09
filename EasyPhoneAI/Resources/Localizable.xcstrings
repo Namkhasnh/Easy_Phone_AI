@@ -1634,7 +1634,7 @@
       }
     },
     "common.yes": {
-      "comment": "bool field value; key not in docs (DOC-25)",
+      "comment": "UI_SCREENS §10.3 bool value (DOC-25)",
       "extractionState": "manual",
       "localizations": {
         "vi": {
@@ -1646,7 +1646,7 @@
       }
     },
     "common.no": {
-      "comment": "bool field value; key not in docs (DOC-25)",
+      "comment": "UI_SCREENS §10.3 bool value (DOC-25)",
       "extractionState": "manual",
       "localizations": {
         "vi": {
