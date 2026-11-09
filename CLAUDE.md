@@ -127,10 +127,10 @@ names must be unique. `Widgets/` and `backend/` are at the repo root.
 xcodebuild -scheme EasyPhoneAI -destination 'platform=iOS Simulator,name=iPhone 18 Pro' build
 xcodebuild -scheme EasyPhoneAI -destination 'platform=iOS Simulator,name=iPhone 18 Pro' test
 
-# Backend
-cd backend && pytest -q            # CI suite, mocked LLM
-cd backend && pytest -m live       # real model evals — costs money, run only when asked
-cd backend && uvicorn app.main:app --reload   # local server (expose via tunnel for device tests, D-037)
+# Backend (uv manages Python 3.12 + .venv; first time: cd backend && uv sync)
+cd backend && uv run pytest -q            # CI suite, mocked LLM (live tests excluded by default)
+cd backend && uv run pytest -m live       # real model evals — costs money, run only when asked
+cd backend && uv run uvicorn app.main:app --reload   # local server (expose via tunnel for device tests, D-037)
 
 git status                          # must be clean at session start, else note it in PROGRESS §1
 ```

@@ -45,7 +45,7 @@ Update this file **in the same commit** as the code, then commit (D-203). Requir
 ### 0.4 Health checks (run at session start, record failures in §5)
 - [ ] `xcodebuild -scheme EasyPhoneAI -destination 'platform=iOS Simulator,name=iPhone 18 Pro' build` succeeds
 - [ ] `xcodebuild … test` — all `EasyPhoneTests` green
-- [ ] `cd backend && pytest -q` — green (live tests excluded)
+- [ ] `cd backend && uv run pytest -q` — green (live tests excluded)
 - [ ] `git status` clean at start (else note the uncommitted work in §1)
 
 ### 0.5 `CLAUDE.md`
@@ -59,12 +59,12 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Key | Value |
 |---|---|
 | Last updated | 2026-11-09 |
-| Current phase | **Phase 0 — Skeleton** (0.1 – 0.10 done) |
+| Current phase | **Phase 0 — Skeleton** (0.1 – 0.11 done) |
 | Working on | — |
-| Last commit | `[0] 0.10 done: real Google sign-in verified on Simulator …` on branch `demo_git`, pushed to `origin` (github.com/Namkhasnh/Easy_Phone_AI) |
-| Build status | ✅ `xcodebuild … iPhone 18 Pro build` succeeds |
-| Test status | ✅ `xcodebuild … test` — 23/23 green (`EasyPhoneTests`: AppConfig, AppEnvironment.mock, ModelContainer, Router, AuthService, SignInViewModel) |
-| Next action | 0.11 backend skeleton: `backend/app/{main.py, config.py (pydantic-settings), deps.py}`, request-id middleware, `AppError` + error envelope handler (ARCHITECTURE §7, §9.3; API_CONTRACT §3) + pytest |
+| Last commit | `[0] backend skeleton: config, request id, error envelope …` on branch `demo_git` (not pushed) |
+| Build status | ✅ `xcodebuild … iPhone 18 Pro build` succeeds (iOS untouched this session) |
+| Test status | ✅ iOS 23/23 (last session); ✅ backend `uv run pytest -q` 11/11 |
+| Next action | 0.12 `GET /v1/health` (no auth): `backend/app/routers/health.py` → `{status, version, schemaVersion}` (API_CONTRACT §6.1), add to `ROUTERS` in `main.py`, pytest + curl |
 | Owner decisions needed now | none (0.6 kept by owner 2026-11-09). Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
@@ -160,6 +160,7 @@ List every `// TODO(spec):` and `// TODO(decision):` with file + line. Remove wh
 | `EasyPhoneAI/Features/SignIn/SignInView.swift:15` | TODO(spec) | no app icon artwork; SF Symbol placeholder |
 | `EasyPhoneAI/Features/SignIn/SignInView.swift:67` | TODO(spec) | Google "G" mark missing (no licensed asset) |
 | `EasyPhoneAI/Features/SignIn/SignInView.swift:79` | TODO(spec) | legal links no-op until in-app Terms/Privacy (1G.6, D-284) |
+| `backend/app/errors.py:118` | TODO(spec) | framework HTTP errors other than 404/405 have no §3.2 code → rendered as `500 internal` |
 | `Config/Release.xcconfig:2` | TODO(decision) | D-036: no production backend in thesis scope (D-284); Release uses the Debug backend URL |
 
 ### 5.4 Closed (append-only)
@@ -189,7 +190,7 @@ Exit: **sign in with Google (Simulator + owner's iPhone, free Apple ID), backend
 - [x] 0.8 Supabase project (free tier) + Google OAuth client (Google Cloud, free): Google provider enabled, redirect URL for the app — Docs: D-283 — Verify: test sign-in in dashboard (commit after a556285) — project `ssbppiwuzuxptyzqxlcq` (Singapore, Free); Google Cloud project `EasyPhone`, consent External + Testing (owner's Gmail = test user), OAuth client type Web, redirect `https://<ref>.supabase.co/auth/v1/callback`; Supabase: Google on, Email off, signups allowed, redirect URL `vn.namkhanh.easyphone://login-callback`; app uses the **publishable** key (`sb_publishable_…`, replaces legacy anon, D-207) in git-ignored `Config/Secrets.xcconfig`. Verified: `/auth/v1/settings` google=true email=false; browser sign-in via `/auth/v1/authorize?provider=google` → owner's user in Auth › Users; built Info.plist has Supabase URL + key
 - [x] 0.9 `AuthService` live (Supabase Swift SDK, Google only) + mock — Docs: ARCHITECTURE §4.1, D-283 (this commit) — SPM `supabase-swift` 2.55.6, product `Auth` only (owner added in Xcode; new format keys `packages` + `package-product-members`); `Core/Services/{AuthService,ServiceError}.swift`, `Live/LiveAuthService.swift` (PKCE, Keychain, `signOut` falls back to `.local`), `Mock/MockAuthService.swift` (`Mutex`); `AppEnvironment.auth`; RootView streams `sessionUpdates` → `AppState.session`; `CFBundleURLTypes` scheme `vn.namkhanh.easyphone`. Verified: build, 19 tests, app launches on simulator. Real Google sign-in exercised in 0.10 (needs the S01 button)
 - [x] 0.10 S01 Sign-in screen (Google button, legal text) + `#Preview` — Docs: UI_SCREENS S01 (4e224e6 + this commit) — Built: `Features/SignIn/{SignInView,SignInViewModel}.swift`, `UserMessage` (D-265), RootView switches on `session` (signed in → user id placeholder until S02), 7 `signIn.*` keys, slice of 1A.10 (6 color assets, `Core/UI/Tokens.swift`, `PrimaryButton`, `DemoDataBadge`; `ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO` in Base.xcconfig because asset `primary` collides with `Color.primary`). Verified: build, 23 tests, S01 renders on Simulator; owner signed in with real Google account on Simulator (Google asked for a passkey → "Try another way") → user id shown; app relaunch keeps the session (Keychain). Cancel path covered by unit test only
-- [ ] 0.11 Backend skeleton: FastAPI, `config.py` (pydantic-settings), `deps.py`, request-id middleware, error envelope handler — Docs: ARCHITECTURE §7, §9.3; API_CONTRACT §3
+- [x] 0.11 Backend skeleton: FastAPI, `config.py` (pydantic-settings), `deps.py`, request-id middleware, error envelope handler — Docs: ARCHITECTURE §7, §9.3; API_CONTRACT §3 (this commit) — `uv` project (`pyproject.toml`, Python 3.12 pinned, `httpx2` for TestClient); `app/{main,config,deps,errors,request_id}.py` + empty `routers/ schemas/ services/ repositories/ prompts/`; `AppError` + handlers (AppError, validation → 422 `invalid_input` first field no values, 404/405 → `not_found`, unhandled → 500 `internal`), vi/en fallback messages = UI_SCREENS §8 texts; `X-Request-Id` `req_<ulid>` on every response (also 500); `.env.example` (`!.env.example` in `.gitignore`). Verified: `uv run pytest -q` 11/11, uvicorn + curl → 404 envelope + header, `Accept-Language: en` works
 - [ ] 0.12 `GET /v1/health` (no auth) — Verify: pytest + curl
 - [ ] 0.13 JWT verification (`sub`, `exp`, `aud`) + profile upsert (D-236) — Verify: pytest 401 cases
 - [ ] 0.14 SQL migration: `profiles`, `subscriptions`, `usage_events` (incl. `attempt`, D-246) + RLS (no `gmail_accounts`) — Docs: DATA_MODEL §9
@@ -351,6 +352,14 @@ Template:
 - Decisions asked / answered: <D-xxx / P-xx>
 - Next: <one concrete next step>
 ```
+
+### 2026-11-09 — Phase 0 — Backend skeleton
+- Process: "làm tiếp /plan" → plan mode, plan approved; owner asked plans in Vietnamese from now on
+- Done: 0.11 FastAPI skeleton (config, request id, `AppError` + envelope handlers) with `uv` + Python 3.12
+- Verify: `uv run pytest -q` 11/11; uvicorn + curl unknown route → 404 envelope + `X-Request-Id`. Bugs: none
+- Also: CLAUDE.md §8 / PROGRESS §0.4 backend commands now `uv run …`; `.gitignore` keeps `.env.example`
+- TODOs added: backend/app/errors.py:118 TODO(spec)
+- Next: 0.12 `GET /v1/health`
 
 ### 2026-11-09 — Phase 0 — S01 Sign-in
 - Process: "làm tiếp /plan" → EnterPlanMode, plan approved, then built
