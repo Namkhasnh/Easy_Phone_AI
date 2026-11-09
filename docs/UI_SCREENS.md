@@ -25,11 +25,11 @@ from the app icon (D-291): cream / navy-night backgrounds, warm brown text, swea
 | `primary` | `#1F5FA8` | `#8CC2F2` | primary button fill, links, mic (Khoai's sweater) | 5.6 / 8.1 as text on `surface` |
 | `onPrimary` | `#FFFFFF` | `#0D1726` | text/icon on `primary` | 6.4 / 9.5 |
 | `secondaryFill` | `#E3EEFA` | `#1B3350` | secondary button fill (text = `primary`) | 5.5 / 6.8 |
-| `honey` | `#F3CB8D` | `#E2B26E` | **fill only** (Khoai's fur): Home greeting card, mic listening ring, EmptyState circle; text on it = `textPrimary` (light) / `bg` (dark), never a text color | 10.3 / 9.3 |
+| `honey` | `#F3CB8D` | `#E2B26E` | **fill only** (Khoai's fur): Home greeting card, mic listening ring, EmptyState circle; text on it = asset `onHoney` (= `textPrimary` light / `bg` dark); never a text color | 10.3 / 9.3 |
 | `success` | `#1E7B34` | `#5BD07A` | `succeeded`, `userMarkedDone` icon+text | 4.6 / 7.8 on `surface` |
 | `warning` | `#7A4F00` | `#FFC24D` | "Kiểm tra lại" text on `warningBg` | 6.4 / 8.5 |
 | `warningBg` | `#FFF1D6` | `#3A2C00` | low-confidence / OCR / ambiguity row fill | — |
-| `danger` | `#B42318` | `#FF7A6E` | delete, `failed`, errors (text on fill: white / `bg`) | 5.7 / 6.0 on `surface` |
+| `danger` | `#B42318` | `#FF7A6E` | delete, `failed`, errors (text on fill: `onPrimary`, 6.6 / 7.1) | 5.7 / 6.0 on `surface` |
 | `border` | `#7A6A5A` | `#9A8B7B` | field outlines, dividers that carry meaning | 4.5 / 4.6 on `surface` |
 | `focusRing` | `primary` | `primary` | 3pt outline on keyboard/VoiceOver focus | — |
 
