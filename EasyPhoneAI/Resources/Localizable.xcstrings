@@ -2102,7 +2102,7 @@
       }
     },
     "app.phone": {
-      "comment": "Phone app name for state.handedOff {app}; key not in docs (DOC-26)",
+      "comment": "UI_SCREENS §10.3 Phone app name for state.handedOff {app} (DOC-26)",
       "extractionState": "manual",
       "localizations": {
         "vi": {
