@@ -1,0 +1,36 @@
+# Backend CI (CLAUDE.md §8): mocked-LLM pytest suite + SQL migration check. No secrets needed;
+# live model evals (`pytest -m live`) are excluded by default and never run here (cost, D-285).
+name: backend
+
+on:
+  push:
+    paths: ["backend/**", ".github/workflows/backend.yml"]
+  pull_request:
+    paths: ["backend/**", ".github/workflows/backend.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - name: Install (locked)
+        run: uv sync --locked
+      - name: pytest (mocked LLM)
+        run: uv run pytest -q
+      - name: SQL migration check (throwaway Postgres in Docker)
+        run: sh migrations/checks/run_local.sh

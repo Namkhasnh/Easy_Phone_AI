@@ -47,6 +47,7 @@ Update this file **in the same commit** as the code, then commit (D-203). Requir
 - [ ] `xcodebuild … test` — all `EasyPhoneTests` green
 - [ ] `cd backend && uv run pytest -q` — green (live tests excluded)
 - [ ] `git status` clean at start (else note the uncommitted work in §1)
+- CI: `.github/workflows/backend.yml` runs pytest + SQL migration check on every push touching `backend/` (iOS CI deferred: macOS minutes, Xcode version on runners)
 
 ### 0.5 `CLAUDE.md`
 The repo root `CLAUDE.md` (project doc `CLAUDE.md`) holds the session protocol, doc map, rules and commands.
@@ -352,6 +353,11 @@ Template:
 - Decisions asked / answered: <D-xxx / P-xx>
 - Next: <one concrete next step>
 ```
+
+### 2026-11-09 — Infra — Backend CI
+- Done: pushed `demo_git`; `.github/workflows/backend.yml` (ubuntu, uv, `pytest -q`, `migrations/checks/run_local.sh`), owner OK'd
+- iOS CI deferred (macOS runners: 10× minutes, Xcode/simulator version mismatch, no `Secrets.xcconfig`); revisit at 1C XCUITest
+- Next: 0.15 `/v1/me` + profile upsert (owner creates `backend/.env` first)
 
 ### 2026-11-09 — Phase 0 — SQL migration
 - Process: "làm tiếp /plan" → plan mode with full SQL for owner review, approved
