@@ -2,18 +2,21 @@ import SwiftUI
 
 /// Dependency container (ARCHITECTURE §3). Built once in `EasyPhoneApp`, injected via `.environment(\.appEnv, …)`.
 /// Service properties are added by the item that builds each service (protocol + Live + Mock, D-206):
-/// `auth` (0.9), `api` (0.16), `drafts`/`localData` (1A.9), device services (1C), `speech`/`tts` (1B),
+/// `api` (0.16), `drafts`/`localData` (1A.9), device services (1C), `speech`/`tts` (1B),
 /// `ocr` (1D), `purchases` (1F). Debug vs Release never changes the wiring (D-208).
 struct AppEnvironment: Sendable {
     /// Build configuration from `Config/*.xcconfig` (0.7, D-207).
     let config: AppConfig
+    /// Google sign-in + session (0.9, D-283).
+    let auth: any AuthService
 
     static func live() -> AppEnvironment {
-        AppEnvironment(config: .fromMainBundle())
+        let config = AppConfig.fromMainBundle()
+        return AppEnvironment(config: config, auth: LiveAuthService(config: config))
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
-        AppEnvironment(config: .mock)
+        AppEnvironment(config: .mock, auth: MockAuthService())
     }
 }
 

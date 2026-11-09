@@ -1,6 +1,7 @@
 # Secrets (D-207) — never commit
 .env
 .env.*
+!.env.example
 *.p8
 Secrets.xcconfig
 
