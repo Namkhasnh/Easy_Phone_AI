@@ -4,6 +4,7 @@ import SwiftUI
 struct ReviewView: View {
     @State var viewModel: ReviewViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(Router.self) private var router
     @AccessibilityFocusState private var titleFocused: Bool
 
     var body: some View {
@@ -14,11 +15,24 @@ struct ReviewView: View {
         }
         .background(Tokens.Colors.bg)
         .safeAreaInset(edge: .bottom) {
-            if viewModel.showsActionBar { actionBar }
+            if viewModel.showsActionBar {
+                actionBar
+            } else if let card = viewModel.resultCard {
+                resultCard(card)
+            }
         }
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { titleFocused = true }
+        .onChange(of: viewModel.step?.state) { titleFocused = true }      // focus the title after each result (§9)
         .onChange(of: viewModel.didClose) { _, closed in if closed { dismiss() } }
+        .onChange(of: viewModel.didFinish) { _, finished in if finished { router.popToRoot() } }
+        .sensoryFeedback(trigger: viewModel.step?.state) { _, new in      // §1.3 haptics
+            switch new {
+            case .succeeded: .success
+            case .failed: .warning
+            default: nil
+            }
+        }
         .accessibilityIdentifier("screen.S04")
     }
 
@@ -80,6 +94,55 @@ struct ReviewView: View {
     }
 }
 
+extension ReviewView {
+    /// Result card: replaces the button bar of the finished step (UI_SCREENS S04, D-250). Never a new screen.
+    fileprivate func resultCard(_ card: ReviewViewModel.ResultCard) -> some View {
+        VStack(alignment: .leading, spacing: Tokens.Space.l) {
+            HStack(alignment: .top, spacing: Tokens.Space.m) {
+                if card.state == .processing {
+                    ProgressView().controlSize(.large)
+                } else {
+                    Image(systemName: card.state.symbolName)
+                        .font(.system(size: Tokens.Size.iconHero * 0.6))
+                        .foregroundStyle(Self.tint(card.state))
+                        .accessibilityHidden(true)
+                }
+                VStack(alignment: .leading, spacing: Tokens.Space.xs) {
+                    Text(verbatim: card.message)
+                        .font(Tokens.Fonts.title)
+                        .foregroundStyle(Tokens.Colors.textPrimary)
+                    if let detail = card.detail {
+                        Text(verbatim: detail)
+                            .font(Tokens.Fonts.body)
+                            .foregroundStyle(Tokens.Colors.textSecondary)
+                    }
+                }
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .accessibilityElement(children: .combine)
+            // Titles are already localized (with args); a lookup of the text itself falls back to the text.
+            if let primary = card.primary {
+                PrimaryButton(LocalizedStringKey(primary.title)) { viewModel.perform(primary.action) }
+            }
+            if let secondary = card.secondary {
+                SecondaryButton(LocalizedStringKey(secondary.title)) { viewModel.perform(secondary.action) }
+            }
+        }
+        .padding(Tokens.Space.screenPadding)
+        .background(Tokens.Colors.bg)
+        .overlay(alignment: .top) { Divider() }
+    }
+
+    private static func tint(_ state: TaskState) -> Color {
+        switch state {
+        case .succeeded, .userMarkedDone: Tokens.Colors.success
+        case .failed: Tokens.Colors.danger
+        default: Tokens.Colors.textSecondary
+        }
+    }
+}
+
 // MARK: - Previews (mock data, "Dữ liệu mẫu", D-189)
 
 @MainActor
@@ -132,6 +195,7 @@ private struct ReviewPreview: View {
             ReviewView(viewModel: viewModel)
                 .toolbar { ToolbarItem(placement: .topBarTrailing) { DemoDataBadge() } }
         }
+        .environment(Router())
     }
 }
 

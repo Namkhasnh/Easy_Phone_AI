@@ -12,7 +12,8 @@ import os
     private let serviceIds: Set<String>
     private let logger = Logger(subsystem: "vn.namkhanh.easyphone", category: "taskEngine")
 
-    init(
+    /// `nonisolated` so `AppEnvironment.mock()` (also the `@Entry` default) can build it off the main actor.
+    nonisolated init(
         repository: any TaskRepository,
         executors: [TaskKind: any StepExecutor] = [:],   // one per kind, added in 1C / 1D
         serviceIds: Set<String> = [],                   // SupportedServices.json ids (1C.12)

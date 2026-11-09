@@ -1656,6 +1656,258 @@
           }
         }
       }
+    },
+    "result.processing": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đang thực hiện…"
+          }
+        }
+      }
+    },
+    "result.calendarEvent.created": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã tạo lịch hẹn trong Lịch."
+          }
+        }
+      }
+    },
+    "result.calendarEvent.updated": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã sửa lịch hẹn."
+          }
+        }
+      }
+    },
+    "result.calendarEvent.deleted": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã xóa lịch hẹn."
+          }
+        }
+      }
+    },
+    "result.reminder.created": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã tạo lời nhắc."
+          }
+        }
+      }
+    },
+    "result.reminder.completed": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã đánh dấu xong."
+          }
+        }
+      }
+    },
+    "result.reminder.snoozed": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã dời lời nhắc tới %@."
+          }
+        }
+      }
+    },
+    "result.sms.sent": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tin nhắn đã được gửi."
+          }
+        }
+      }
+    },
+    "result.place.saved": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã lưu địa điểm “%@”."
+          }
+        }
+      }
+    },
+    "result.ocr.confirmed": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã lưu thông tin từ ảnh."
+          }
+        }
+      }
+    },
+    "result.call.handedOff": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cần hoàn tất cuộc gọi trong ứng dụng Điện thoại."
+          }
+        }
+      }
+    },
+    "result.directions.handedOff": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đường đi đã được mở trong %@."
+          }
+        }
+      }
+    },
+    "result.unknown": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chưa rõ kết quả. Mình sẽ kiểm tra lại khi bạn mở ứng dụng."
+          }
+        }
+      }
+    },
+    "result.markDone": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tôi đã làm xong"
+          }
+        }
+      }
+    },
+    "result.failed": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không thành công."
+          }
+        }
+      }
+    },
+    "result.openInCalendar": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mở trong Lịch"
+          }
+        }
+      }
+    },
+    "result.openInReminders": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mở trong Lời nhắc"
+          }
+        }
+      }
+    },
+    "result.nextStep": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiếp tục: %@"
+          }
+        }
+      }
+    },
+    "result.allDone": {
+      "comment": "UI_SCREENS S04 result card",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xong rồi!"
+          }
+        }
+      }
+    },
+    "error.generic": {
+      "comment": "UI_SCREENS §8 fallback",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Có lỗi xảy ra. Bạn thử lại nhé."
+          }
+        }
+      }
+    },
+    "error.eventkit.saveFailed": {
+      "comment": "UI_SCREENS §8; %@ = {app}",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không lưu được vào %@. Bạn thử lại nhé."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

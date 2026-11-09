@@ -82,9 +82,14 @@ struct RootView: View {
         }
     }
 
-    // TODO(spec): each route gets its screen in its own item (S04 1A.11, S14 1A.13, S15 1A.14, …).
+    // TODO(spec): the other routes get their screens in their own items (S14 1A.13, S15 1A.14, …).
     @ViewBuilder private func destination(_ route: Route) -> some View {
-        EmptyView()
+        switch route {
+        case .review(let draftId):
+            ReviewView(viewModel: ReviewViewModel(draftId: draftId, repository: env.drafts, engine: env.engine))
+        default:
+            EmptyView()
+        }
     }
 }
 

@@ -16,19 +16,24 @@ struct AppEnvironment: Sendable {
     let drafts: any TaskRepository
     /// Saved places, nicknames, settings (1A.9b, DATA_MODEL §5).
     let localData: any LocalDataRepository
+    /// The only writer of task steps (ARCHITECTURE §5); executors are added per kind in 1C / 1D.
+    let engine: TaskEngine
 
     @MainActor static func live(container: ModelContainer) -> AppEnvironment {
         let config = AppConfig.fromMainBundle()
         let auth = LiveAuthService(config: config)
+        let drafts = LiveTaskRepository(container: container)
         return AppEnvironment(config: config, auth: auth,
                               api: APIClient(config: config, auth: auth, client: .fromMainBundle()),
-                              drafts: LiveTaskRepository(container: container),
-                              localData: LiveLocalDataRepository(container: container))
+                              drafts: drafts,
+                              localData: LiveLocalDataRepository(container: container),
+                              engine: TaskEngine(repository: drafts))
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
-        AppEnvironment(config: .mock, auth: MockAuthService(), api: MockAPIClient(), drafts: MockTaskRepository(),
-                       localData: MockLocalDataRepository())
+        let drafts = MockTaskRepository()
+        return AppEnvironment(config: .mock, auth: MockAuthService(), api: MockAPIClient(), drafts: drafts,
+                              localData: MockLocalDataRepository(), engine: TaskEngine(repository: drafts))
     }
 }
 

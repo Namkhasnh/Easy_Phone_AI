@@ -16,7 +16,7 @@ enum ExecutionOutcome: Sendable, Hashable {
 
 /// One executor per `TaskKind` (Calendar, Reminders, Call, SMS, Place, OCRConfirm — built in 1C/1D).
 /// Executors do the permission check (§5.1 step 4), the idempotency lookup (D-105) and re-read verification.
-@MainActor protocol StepExecutor {
+@MainActor protocol StepExecutor: Sendable {
     func execute(_ step: TaskStep, draft: TaskDraft) async -> ExecutionOutcome
 }
 
