@@ -1,0 +1,464 @@
+{
+  "schemaVersion": 1,
+  "kinds": [
+    {
+      "kind": "calendarEvent",
+      "fields": [
+        {
+          "id": "title",
+          "type": "text",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "startDate",
+          "type": "dateTime",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "endDate",
+          "type": "dateTime",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "allDay",
+          "type": "bool",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "location",
+          "type": "address",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "notes",
+          "type": "longText",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "alertMinutesBefore",
+          "type": "durationMinutes",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "calendarId",
+          "type": "text",
+          "deviceOnly": true,
+          "appBuilt": false
+        }
+      ],
+      "required": [
+        {
+          "operation": "create",
+          "requiresTargetRef": false,
+          "fields": [
+            "title",
+            "startDate"
+          ],
+          "conditional": []
+        },
+        {
+          "operation": "update",
+          "requiresTargetRef": true,
+          "fields": [
+            "title",
+            "startDate"
+          ],
+          "conditional": []
+        },
+        {
+          "operation": "delete",
+          "requiresTargetRef": true,
+          "fields": [],
+          "conditional": []
+        }
+      ]
+    },
+    {
+      "kind": "reminder",
+      "fields": [
+        {
+          "id": "title",
+          "type": "text",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "dueDate",
+          "type": "dateTime",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "notes",
+          "type": "longText",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "snoozeOption",
+          "type": "enumChoice",
+          "deviceOnly": false,
+          "appBuilt": false,
+          "options": [
+            "min15",
+            "hour1",
+            "tomorrowMorning"
+          ],
+          "operations": [
+            "snooze"
+          ]
+        },
+        {
+          "id": "completed",
+          "type": "bool",
+          "deviceOnly": false,
+          "appBuilt": true,
+          "operations": [
+            "complete"
+          ]
+        }
+      ],
+      "required": [
+        {
+          "operation": "create",
+          "requiresTargetRef": false,
+          "fields": [
+            "title",
+            "dueDate"
+          ],
+          "conditional": []
+        },
+        {
+          "operation": "update",
+          "requiresTargetRef": true,
+          "fields": [
+            "title",
+            "dueDate"
+          ],
+          "conditional": []
+        },
+        {
+          "operation": "delete",
+          "requiresTargetRef": true,
+          "fields": [],
+          "conditional": []
+        },
+        {
+          "operation": "complete",
+          "requiresTargetRef": true,
+          "fields": [
+            "completed"
+          ],
+          "conditional": []
+        },
+        {
+          "operation": "snooze",
+          "requiresTargetRef": true,
+          "fields": [
+            "snoozeOption"
+          ],
+          "conditional": []
+        }
+      ]
+    },
+    {
+      "kind": "call",
+      "fields": [
+        {
+          "id": "recipientName",
+          "type": "text",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "contactId",
+          "type": "contactRef",
+          "deviceOnly": true,
+          "appBuilt": false
+        },
+        {
+          "id": "phoneNumber",
+          "type": "phone",
+          "deviceOnly": true,
+          "appBuilt": false
+        }
+      ],
+      "required": [
+        {
+          "operation": "open",
+          "requiresTargetRef": false,
+          "fields": [
+            "recipientName",
+            "phoneNumber"
+          ],
+          "conditional": [
+            {
+              "when": [
+                {
+                  "type": "notPhoneNumber",
+                  "field": "recipientName"
+                }
+              ],
+              "fields": [
+                "contactId"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "sms",
+      "fields": [
+        {
+          "id": "recipientName",
+          "type": "text",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "contactId",
+          "type": "contactRef",
+          "deviceOnly": true,
+          "appBuilt": false
+        },
+        {
+          "id": "phoneNumber",
+          "type": "phone",
+          "deviceOnly": true,
+          "appBuilt": false
+        },
+        {
+          "id": "body",
+          "type": "longText",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "channel",
+          "type": "enumChoice",
+          "deviceOnly": false,
+          "appBuilt": false,
+          "options": [
+            "sms"
+          ]
+        }
+      ],
+      "required": [
+        {
+          "operation": "open",
+          "requiresTargetRef": false,
+          "fields": [
+            "recipientName",
+            "body",
+            "channel"
+          ],
+          "conditional": [
+            {
+              "when": [
+                {
+                  "type": "equals",
+                  "field": "channel",
+                  "value": "sms"
+                }
+              ],
+              "fields": [
+                "phoneNumber"
+              ]
+            },
+            {
+              "when": [
+                {
+                  "type": "equals",
+                  "field": "channel",
+                  "value": "sms"
+                },
+                {
+                  "type": "notPhoneNumber",
+                  "field": "recipientName"
+                }
+              ],
+              "fields": [
+                "contactId"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "place",
+      "fields": [
+        {
+          "id": "query",
+          "type": "text",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "name",
+          "type": "text",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "address",
+          "type": "address",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "coordinate",
+          "type": "coordinate",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "label",
+          "type": "enumChoice",
+          "deviceOnly": false,
+          "appBuilt": false,
+          "options": [
+            "home",
+            "work",
+            "custom"
+          ],
+          "operations": [
+            "create"
+          ]
+        },
+        {
+          "id": "customLabel",
+          "type": "text",
+          "deviceOnly": false,
+          "appBuilt": false,
+          "operations": [
+            "create"
+          ]
+        },
+        {
+          "id": "mapsApp",
+          "type": "enumChoice",
+          "deviceOnly": false,
+          "appBuilt": false,
+          "options": [
+            "appleMaps",
+            "googleMaps"
+          ],
+          "operations": [
+            "open"
+          ]
+        }
+      ],
+      "required": [
+        {
+          "operation": "create",
+          "requiresTargetRef": false,
+          "fields": [
+            "query",
+            "name",
+            "address",
+            "coordinate",
+            "label"
+          ],
+          "conditional": [
+            {
+              "when": [
+                {
+                  "type": "equals",
+                  "field": "label",
+                  "value": "custom"
+                }
+              ],
+              "fields": [
+                "customLabel"
+              ]
+            }
+          ]
+        },
+        {
+          "operation": "open",
+          "requiresTargetRef": false,
+          "fields": [
+            "query",
+            "name",
+            "address",
+            "coordinate",
+            "mapsApp"
+          ],
+          "conditional": []
+        }
+      ]
+    },
+    {
+      "kind": "ocr",
+      "fields": [
+        {
+          "id": "extractedText",
+          "type": "longText",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "dateTime",
+          "type": "dateTime",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "address",
+          "type": "address",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "personName",
+          "type": "text",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "phoneNumber",
+          "type": "phone",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "nextAction",
+          "type": "enumChoice",
+          "deviceOnly": false,
+          "appBuilt": false,
+          "options": [
+            "calendarEvent",
+            "reminder",
+            "copyContactInfo",
+            "ride"
+          ]
+        }
+      ],
+      "required": [
+        {
+          "operation": "create",
+          "requiresTargetRef": false,
+          "fields": [
+            "extractedText"
+          ],
+          "conditional": []
+        }
+      ]
+    }
+  ]
+}
