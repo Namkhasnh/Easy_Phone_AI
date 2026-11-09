@@ -29,13 +29,8 @@ import os
     /// "Xác nhận" (D-100). Step 0 (permission explainer, D-185) is done by the ViewModel before calling this.
     func confirm(stepId: UUID, in draft: TaskDraft) async -> ConfirmResult {
         guard let index = draft.steps.firstIndex(where: { $0.id == stepId }) else { return .notAllowed }
-        // 1. awaitingApproval + no validation issue (incl. ambiguity, D-106).
-        // TODO(spec): linked-step rule (previous step final / handedOff / prepared, DATA_MODEL §3.3) is 1C.14.
-        let current = draft.steps[index]
-        guard current.state == .awaitingApproval,
-              Validator.validate(current, now: now(), serviceIds: serviceIds).isEmpty else {
-            return .notAllowed
-        }
+        // 1. awaitingApproval + no validation issue (incl. ambiguity, D-106) + linked-step rule (§3.3).
+        guard confirmBlocker(stepId: stepId, in: draft) == nil else { return .notAllowed }
         // 2. Store hash, attempt += 1, → processing, save before executing (applyInPlace + apply).
         guard apply(.userConfirmed, stepId: stepId, in: draft) else { return .notAllowed }
         let step = draft.steps[index]
@@ -52,6 +47,21 @@ import os
         // 4–6. Permission, idempotency and verification happen inside the executor.
         let outcome = await executor.execute(step, draft: draft)
         return finish(outcome, stepId: stepId, in: draft)
+    }
+
+    /// Why "Xác nhận" is disabled (UI_SCREENS S04), or nil when the step can be confirmed now.
+    /// Order: ambiguity (D-106) → missing / invalid fields (§7.1) → previous linked step not done
+    /// (DATA_MODEL §3.3: final, `handedOff` or `prepared`) → state is not `awaitingApproval`.
+    func confirmBlocker(stepId: UUID, in draft: TaskDraft) -> ConfirmBlocker? {
+        guard let step = draft.steps.first(where: { $0.id == stepId }) else { return .notConfirmable }
+        let issues = Validator.validate(step, now: now(), serviceIds: serviceIds)
+        if issues.contains(where: { $0.reason == .ambiguous }) { return .ambiguity }
+        if !issues.isEmpty { return .missing }
+        let previous = draft.steps.filter { $0.order < step.order }.max { $0.order < $1.order }
+        if let previous, !(previous.state.isFinal || previous.state == .handedOff || previous.state == .prepared) {
+            return .previousStep
+        }
+        return step.state == .awaitingApproval ? nil : .notConfirmable
     }
 
     /// SMS composer result (ARCHITECTURE §5.3, D-222). Only meaningful while the step is `processing`.
