@@ -135,6 +135,11 @@ cd backend && uv run uvicorn app.main:app --reload   # local server (expose via 
 cloudflared tunnel --url http://127.0.0.1:8000       # free HTTPS quick tunnel for the iPhone; the URL changes every
                                                      # run → put it in Config/Secrets.xcconfig `API_BASE_URL`, rebuild
 
+# Owner's iPhone (free Apple ID, D-282): DEVELOPMENT_TEAM lives in Config/Secrets.xcconfig, never in project.xcproj
+xcrun devicectl list devices                         # find the iPhone UDID
+xcodebuild -scheme EasyPhoneAI -destination 'platform=iOS,id=<UDID>' -derivedDataPath build/dd -allowProvisioningUpdates build
+xcrun devicectl device install app --device <UDID> build/dd/Build/Products/Debug-iphoneos/EasyPhoneAI.app
+
 git status                          # must be clean at session start, else note it in PROGRESS §1
 ```
 If a command here is wrong for the actual project, fix this section in the same commit.
