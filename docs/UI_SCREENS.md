@@ -12,28 +12,31 @@
 7. Every screen has a `#Preview` with `AppEnvironment.mock(...)` (D-206); preview data shows the badge "Dữ liệu mẫu" (D-189).
 8. iPhone only, portrait-first, safe-area aware (D-010). Landscape works but is not optimized.
 ## 1. Design tokens (`Core/UI/Tokens.swift`, P-32)
-### 1.1 Colors (asset catalog, light / dark; all text pairs verified ≥ 4.5:1)
-System blue fails 4.5:1 on white for normal text, so the app uses its own tokens. Name = asset name.
+### 1.1 Colors (asset catalog, light / dark; all text pairs verified ≥ 4.5:1) — "Khoai" palette (D-291)
+System blue fails 4.5:1 on white for normal text, so the app uses its own tokens. Name = asset name. Palette taken
+from the app icon (D-291): cream / navy-night backgrounds, warm brown text, sweater-blue `primary`, honey-fur accent.
 
-| Token | Light | Dark | Use | Contrast (measured) |
+| Token | Light | Dark | Use | Contrast (measured, light / dark) |
 |---|---|---|---|---|
-| `bg` | `#FFFFFF` | `#000000` | screen background | — |
-| `surface` | `#F2F4F7` | `#1C1C1E` | cards, field rows, sheets | — |
-| `textPrimary` | `#1A1A1A` | `#F5F5F5` | titles, values | 17.4 / 19.3 on `bg` |
-| `textSecondary` | `#4A4A4A` | `#C7C7CC` | hints, subtitles | 8.0 / 10.1 on `surface` |
-| `primary` | `#0A58CA` | `#5AA2FF` | primary button fill, links, mic | — |
-| `onPrimary` | `#FFFFFF` | `#000000` | text/icon on `primary` | 6.4 / 8.1 |
-| `secondaryFill` | `#E8F0FC` | `#14243D` | secondary button fill (text = `primary`) | 5.6 / 6.0 |
-| `success` | `#1E7B34` | `#4CC46A` | `succeeded`, `userMarkedDone` icon+text | 4.8 / 9.4 |
-| `warning` | `#7A4F00` | `#FFC24D` | "Kiểm tra lại" text on `warningBg` | 6.5 / 8.5 |
-| `warningBg` | `#FFF4D6` | `#3A2C00` | low-confidence / OCR / ambiguity row fill | — |
-| `danger` | `#B42318` | `#FF6B5E` | delete, `failed`, errors (white/black text) | 6.6 / 7.5 |
-| `border` | `#767676` | `#8E8E93` | field outlines, dividers that carry meaning | 4.5 / 5.2 |
+| `bg` | `#FFFBF5` | `#0D1726` | screen background (warm cream / navy night) | — |
+| `surface` | `#F6EEE4` | `#18263B` | cards, field rows, sheets | — |
+| `textPrimary` | `#2B2118` | `#F7F1EA` | titles, values | 13.7 / 13.6 on `surface` |
+| `textSecondary` | `#5A4A3A` | `#CDBFAF` | hints, subtitles | 7.4 / 8.5 on `surface` |
+| `primary` | `#1F5FA8` | `#8CC2F2` | primary button fill, links, mic (Khoai's sweater) | 5.6 / 8.1 as text on `surface` |
+| `onPrimary` | `#FFFFFF` | `#0D1726` | text/icon on `primary` | 6.4 / 9.5 |
+| `secondaryFill` | `#E3EEFA` | `#1B3350` | secondary button fill (text = `primary`) | 5.5 / 6.8 |
+| `honey` | `#F3CB8D` | `#E2B26E` | **fill only** (Khoai's fur): Home greeting card, mic listening ring, EmptyState circle; text on it = `textPrimary` (light) / `bg` (dark), never a text color | 10.3 / 9.3 |
+| `success` | `#1E7B34` | `#5BD07A` | `succeeded`, `userMarkedDone` icon+text | 4.6 / 7.8 on `surface` |
+| `warning` | `#7A4F00` | `#FFC24D` | "Kiểm tra lại" text on `warningBg` | 6.4 / 8.5 |
+| `warningBg` | `#FFF1D6` | `#3A2C00` | low-confidence / OCR / ambiguity row fill | — |
+| `danger` | `#B42318` | `#FF7A6E` | delete, `failed`, errors (text on fill: white / `bg`) | 5.7 / 6.0 on `surface` |
+| `border` | `#7A6A5A` | `#9A8B7B` | field outlines, dividers that carry meaning | 4.5 / 4.6 on `surface` |
 | `focusRing` | `primary` | `primary` | 3pt outline on keyboard/VoiceOver focus | — |
 
-Rules: support **Increase Contrast** (`colorSchemeContrast == .increased` → borders 2pt, `secondaryFill` → `surface` with `primary` 2pt border). Never put `textSecondary` on `warningBg`. No gradients, no opacity < 1 for text.
+Rules: no gradients or star decoration behind text. Support **Increase Contrast** (`colorSchemeContrast == .increased` → borders 2pt, `secondaryFill` → `surface` with `primary` 2pt border). Never put `textSecondary` on `warningBg`. No gradients, no opacity < 1 for text.
 ### 1.2 Typography (Dynamic Type only, P-33)
-Only SwiftUI text styles; **no fixed point sizes**. Sizes below are the iOS defaults at "Large" for reference.
+Only SwiftUI text styles; **no fixed point sizes**. `display`, `title`, `button` use the rounded design
+(`.fontDesign(.rounded)`, SF Pro Rounded, D-291); the rest use the default design. Sizes below are the iOS defaults at "Large" for reference.
 
 | Token | Text style | Default pt | Weight | Use |
 |---|---|---|---|---|
@@ -71,8 +74,8 @@ Grid = 4pt. Buttons stack vertically at the bottom of the screen (primary first,
 | `Banner(UserMessage, action?)` | top of content, `surface` + 4pt left bar (`danger` / `warning`), icon + `body` + optional `SecondaryButton`. |
 | `Toast(key, undo?)` | bottom, 4 s (8 s with VoiceOver on), announced via `AccessibilityNotification.Announcement`; optional "Hoàn tác". |
 | `StepIndicator(current,total)` | "Bước {n}/{total}" + dots; dots decorative (`accessibilityHidden`). |
-| `ListeningMic` | circle `primary`, `mic.fill` 56pt; listening → `stop.fill`, ring pulse, label changes. |
-| `EmptyState(icon, titleKey, bodyKey)` | centered, `icon.hero`, `title` + `body`. |
+| `ListeningMic` | circle `primary`, `mic.fill` 56pt; listening → `stop.fill`, `honey` ring pulse (light: plus a 2pt `primary` outline, honey alone is 1.5:1 on `bg`, D-291), label changes. |
+| `EmptyState(icon, titleKey, bodyKey)` | centered, `icon.hero` (default `pawprint.fill`, D-291) on an 88pt `honey` circle, `title` + `body`. |
 | `ConfirmSheet` | `.presentationDetents([.medium, .large])`, title, body, primary + secondary. Used for every destructive confirm. |
 | `MascotView(pose, size)` | Guide mascot **Khoai** (P-41, D-289). Owner-supplied art, asset `mascot.<pose>`: `greeting`, `listening`, `thinking`, `asking`, `happy`, `sorry`. Decorative (`accessibilityHidden`), not a button, no tap action, no text of its own. Idle breathe/bounce, tilt on `thinking`, small hop on `happy` (`PhaseAnimator`); Reduce Motion → static. Hidden everywhere when `settings.pet` is off. |
 ## 3. Screen inventory

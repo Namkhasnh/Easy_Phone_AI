@@ -342,7 +342,7 @@ If a user asks for an out-of-scope feature, show **"Chưa hỗ trợ"** — do n
 | D-264 | P-29 | `ExecutionOutcome.needsUI` for system UI (composer, pickers) | DEFAULT |
 | D-265 | P-30 | `UserMessage { key, args }` is the only error/notice type a View renders | DEFAULT |
 | D-266 | P-31 | `Route.calendarToday`, `Route.reminders` | DEFAULT |
-| D-267 | P-32 | Custom color tokens (UI_SCREENS §1.1) | DEFAULT |
+| D-267 | P-32 | Custom color tokens (UI_SCREENS §1.1) — values superseded by D-291 | DEFAULT |
 | D-268 | P-33 | Text floor `.callout`; values and buttons `.title3` | DEFAULT |
 | D-269 | P-34 | Voice: app = "mình", user = "bạn" | DEFAULT |
 | D-270 | P-35 | `alertMinutesBefore` choices 0 / 15 / 60 / 1440 | DEFAULT |
@@ -384,11 +384,12 @@ everything else (safety rules, engine, data model, API, accessibility) is unchan
 | D-288 | **Refines D-171:** voice call phrases are **"Ê Khoai"** and **"Khoai"**. "Khoai" is declared as an alternative app name (`INAlternativeAppNames` with a pronunciation hint, added in 1E.2) and phrases use `\(.applicationName)`, so D-171 still holds. Fallbacks "Mở EasyPhoneK", "Nói với EasyPhoneK" + English. Verified on the owner's iPhone in 1E.2; a phrase Xcode or Siri rejects / mishears is dropped and noted in PROGRESS §5. | DEFAULT |
 | D-289 | **Guide mascot "Khoai"** = P-41 (UI_SCREENS §2, S02, S03, S15, §9, §12): owner-supplied art, decorative only (no text, no actions, VoiceOver skips it, Reduce Motion → static), toggle `settings.pet` (on by default); never signals success on its own (D-102, D-124). Built in 1B.16 after S02/S03 exist; no third-party animation library (D-017). | DEFAULT |
 
-### 12.8 Engine details (owner, 2026-11-10)
+### 12.8 Engine details and visual style (owner, 2026-11-10)
 
 | ID | Decision | Status |
 |---|---|---|
 | D-290 | **Edit after success (DOC-22):** `succeeded` + `userEdited` → `awaitingApproval` is a new action on the same item. `TaskEngine` sets `resultEvidence = nil`; for `calendarEvent`/`reminder` with `operation = create` it also sets `operation = update` and `targetRef` = the identifier from the evidence (`ek:event:<id>` / `ek:reminder:<id>`, DATA_MODEL §3.5), then re-validates. Other kinds keep their operation. | DEFAULT |
+| D-291 | **"Khoai" visual style (P-42, owner 2026-11-10), supersedes the color values of D-267:** palette from the app icon — light `bg #FFFBF5`, `surface #F6EEE4`, `textPrimary #2B2118`, `textSecondary #5A4A3A`, `primary #1F5FA8`, `secondaryFill #E3EEFA`, `border #7A6A5A`; dark `bg #0D1726` (navy night), `surface #18263B`, `primary #8CC2F2`, `onPrimary #0D1726`; new token **`honey`** `#F3CB8D` / `#E2B26E` = fill only (greeting card, mic ring, EmptyState), never text. `display` / `title` / `button` use SF Pro Rounded. Full table + measured contrast: UI_SCREENS §1.1 (every text pair ≥ 4.5:1, unit-tested in 1A.10). Accessibility rules (D-180 – D-183) unchanged. | DEFAULT |
 
 ---
 
@@ -427,5 +428,6 @@ building on top of the default in a way that is hard to undo (e.g. App Store pro
 | 2026-11-09 | D-287, D-288 | Owner: display name EasyPhoneK (supersedes D-001 display name), voice call "Ê Khoai" / "Khoai" via alternative app name (refines D-171) | Owner + Claude |
 | 2026-11-09 | D-289 | Owner approved P-41: guide mascot "Khoai" (art from owner), built in 1B.16 | Owner + Claude |
 | 2026-11-10 | D-290 | Owner approved the DOC-22 fix: edit after `succeeded` → `update` on the evidence item, evidence cleared | Owner + Claude |
+| 2026-11-10 | D-291 | Owner approved P-42 "Khoai" palette + `honey` token + SF Pro Rounded after reviewing a Figma Make mock-up (supersedes D-267 values) | Owner + Claude |
 
 <!-- Append new rows below. To change a LOCKED decision, add a new ID that "supersedes D-xxx". -->
