@@ -175,7 +175,7 @@ List every `// TODO(spec):` and `// TODO(decision):` with file + line. Remove wh
 | `EasyPhoneAI/Core/Models/FieldSource.swift:67` | TODO(spec) | `NormalizedRect` undefined in DATA_MODEL §1.7; fields `x, y, width, height` (0–1, origin bottom-left) |
 | `EasyPhoneAI/Core/Models/Field.swift:40` | TODO(spec) | DATA_MODEL §2 `labelKey` has no args but `Field` has no kind → `labelKey(kind:)` |
 | `EasyPhoneAI/Core/Models/FieldCatalog.swift:6` | TODO(spec) | DATA_MODEL §4 gives no JSON layout for `field_catalog.json`; the Swift `Codable` shape is used |
-| `EasyPhoneAI/Core/Models/FieldCatalog.swift:142` | TODO(spec) | `channel` options list only `sms`; SupportedServices ids (DATA_MODEL §10) come with 1C.12 |
+| `EasyPhoneAI/Core/Models/FieldCatalog.swift:140` | TODO(spec) | `channel` options list only `sms`; SupportedServices ids (DATA_MODEL §10) come with 1C.12 |
 | `Config/Release.xcconfig:2` | TODO(decision) | D-036: no production backend in thesis scope (D-284); Release uses the Debug backend URL |
 
 ### 5.4 Closed (append-only)
@@ -371,7 +371,7 @@ Template:
 
 ### 2026-11-09 — Phase 1A — 1A.3 field catalog
 - Done: 1A.3 `FieldCatalog.swift` + `field_catalog.json` + 7 Swift / 4 pytest tests; iOS green, backend 113/113; negative check done
-- TODOs added: `FieldCatalog.swift:6` JSON layout, `:142` channel options
+- TODOs added: `FieldCatalog.swift:6` JSON layout, `:140` channel options
 - Note: Swift reads the backend JSON by `#filePath` (no project-file change); test only runs on Simulator
 - Next: 1A.4 `transition` pure function
 
