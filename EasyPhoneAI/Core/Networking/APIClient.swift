@@ -53,6 +53,18 @@ actor APIClient: APIClientProtocol {
         try await send(Endpoint(method: "GET", path: "/v1/me", authorized: true))
     }
 
+    func parse(_ request: ParseRequest, idempotencyKey: IdempotencyKey) async throws -> ParsedDraft {
+        let body: Data
+        do {
+            body = try JSONEncoder().encode(request)
+        } catch {
+            throw AppError.decoding(requestId: nil)  // cannot happen for these types; never sent half-built
+        }
+        // Same `Endpoint` (same key) for every automatic retry inside `send` (D-245).
+        return try await send(Endpoint(method: "POST", path: "/v1/parse", authorized: true,
+                                       body: body, idempotencyKey: idempotencyKey))
+    }
+
     // MARK: - Pipeline
 
     private func send<Response: Decodable & Sendable>(_ endpoint: Endpoint) async throws -> Response {

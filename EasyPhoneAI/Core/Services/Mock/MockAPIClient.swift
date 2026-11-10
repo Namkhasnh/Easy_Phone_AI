@@ -1,16 +1,24 @@
 import Foundation
+import Synchronization
 
 /// In-memory `APIClientProtocol` for previews and tests (D-206). Never touches the network.
 /// The `.mock` values are kept in code so previews need no fixture files in the app bundle (owner, 0.18 option A);
 /// `ContractFixtureTests.mocksEqualFixtures` keeps them equal to `backend/tests/fixtures/contract/` (API_CONTRACT §11).
 final class MockAPIClient: APIClientProtocol {
     private let meResult: Result<MeResponse, AppError>
+    private let parseResult: Result<ParsedDraft, AppError>
+    private let parseLog = Mutex<[(request: ParseRequest, key: IdempotencyKey)]>([])
     private let quota = Broadcast<Quota>()
     private let blocking = Broadcast<BlockingScreen>()
 
-    init(me: Result<MeResponse, AppError> = .success(.mock)) {
+    init(me: Result<MeResponse, AppError> = .success(.mock),
+         parse: Result<ParsedDraft, AppError> = .success(.mockSMS)) {
         meResult = me
+        parseResult = parse
     }
+
+    /// Every `parse` call so far (tests check the request and that a retry reused the key).
+    var parseCalls: [(request: ParseRequest, key: IdempotencyKey)] { parseLog.withLock { $0 } }
 
     var quotaUpdates: AsyncStream<Quota> { quota.stream }
     var blockingUpdates: AsyncStream<BlockingScreen> { blocking.stream }
@@ -18,6 +26,26 @@ final class MockAPIClient: APIClientProtocol {
     func health() async throws -> HealthResponse { .mock }
 
     func me() async throws -> MeResponse { try meResult.get() }
+
+    func parse(_ request: ParseRequest, idempotencyKey: IdempotencyKey) async throws -> ParsedDraft {
+        parseLog.withLock { $0.append((request, idempotencyKey)) }
+        return try parseResult.get()
+    }
+}
+
+/// = `parse.sms.response.json` (API_CONTRACT §7.1 example A).
+extension ParsedDraft {
+    static let mockSMS = ParsedDraft(
+        schemaVersion: 1,
+        requestId: "req_01JC8Z4K3M",
+        steps: [ParsedStep(kind: "sms", operation: "open", fields: [
+            ParsedField(id: "recipientName", value: "anh Minh", confidence: 0.95, sourceQuote: "anh Minh"),
+            ParsedField(id: "body", value: "Chiều nay em đến muộn nhé.", confidence: 0.85, sourceQuote: nil),
+            ParsedField(id: "channel", value: "sms", confidence: 0.6, sourceQuote: nil),
+        ], dateCandidates: [])],
+        followUpQuestion: nil,
+        unsupported: nil
+    )
 }
 
 /// = `health.ok.response.json`.

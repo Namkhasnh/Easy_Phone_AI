@@ -88,6 +88,7 @@ struct ContractFixtureTests {
     @Test func mocksEqualFixtures() throws {
         #expect(MeResponse.mock == (try Self.decode(MeResponse.self, "me.free.response.json")))
         #expect(HealthResponse.mock == (try Self.decode(HealthResponse.self, "health.ok.response.json")))
+        #expect(ParsedDraft.mockSMS == (try Self.decode(ParsedDraft.self, "parse.sms.response.json")))
     }
 
     static var requestFixtureNames: [String] {
