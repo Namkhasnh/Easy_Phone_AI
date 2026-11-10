@@ -1633,6 +1633,18 @@
         }
       }
     },
+    "ambiguity.date": {
+      "comment": "UI_SCREENS §10 ambiguity question for dateCandidates (DraftBuilder)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn muốn chọn ngày nào?"
+          }
+        }
+      }
+    },
     "common.yes": {
       "comment": "UI_SCREENS §10.3 bool value (DOC-25)",
       "extractionState": "manual",

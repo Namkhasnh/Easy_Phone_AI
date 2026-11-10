@@ -145,6 +145,42 @@ import os
         return issues
     }
 
+    // MARK: - Parse results (ARCHITECTURE §6.2, DATA_MODEL §6.2)
+
+    /// First `/v1/parse` answer for `draft`: builds the steps (DraftBuilder), stores `serverRequestId` and the
+    /// backend's `followUpQuestion` (D-281 decides later whether it is used), then validates each step →
+    /// `needsInfo` / `awaitingApproval`. Saved once (D-104). Returns `false` (nothing changes) when the draft already
+    /// has steps or the answer builds none (`unsupported`, or every step dropped) — the caller shows "Chưa hỗ trợ".
+    @discardableResult
+    func applyParsed(_ parsed: ParsedDraft, to draft: TaskDraft,
+                     defaults: DraftBuilder.Defaults = .init()) -> Bool {
+        guard draft.steps.isEmpty else {
+            logger.warning("applyParsed: draft already has steps")
+            return false
+        }
+        var steps = DraftBuilder.steps(from: parsed, now: now(), defaults: defaults)
+        guard !steps.isEmpty else { return false }
+        for i in steps.indices { revalidateInPlace(&steps[i]) }
+        draft.steps = steps
+        draft.serverRequestId = parsed.requestId
+        draft.followUpQuestion = parsed.followUpQuestion
+        save(draft)
+        return true
+    }
+
+    /// A typed / spoken follow-up answer (`/v1/parse` with `context`): merged without overwriting `.user` fields
+    /// (API_CONTRACT §7.1 Example B), then re-validated. Saved once.
+    func mergeAnswer(_ parsed: ParsedDraft, into draft: TaskDraft, defaults: DraftBuilder.Defaults = .init()) {
+        var steps = DraftBuilder.merge(parsed, into: draft.steps, defaults: defaults)
+        for i in steps.indices where DraftBuilder.mergeableStates.contains(steps[i].state) {
+            revalidateInPlace(&steps[i])
+        }
+        draft.steps = steps
+        draft.serverRequestId = parsed.requestId ?? draft.serverRequestId
+        draft.followUpQuestion = parsed.followUpQuestion
+        save(draft)
+    }
+
     // MARK: - Editing (D-101, D-104)
 
     /// Sets one field from a user edit: `source = .user`, `confidence = nil` (DATA_MODEL §1.7), ambiguity resolved
