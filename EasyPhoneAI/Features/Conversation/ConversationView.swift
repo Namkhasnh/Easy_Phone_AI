@@ -23,6 +23,7 @@ struct ConversationView: View {
             .padding(Tokens.Space.screenPadding)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .dismissesKeyboard($textFocused)
         .background(Tokens.Colors.bg)
         .safeAreaInset(edge: .bottom) { bottomBar }
         .toolbar {

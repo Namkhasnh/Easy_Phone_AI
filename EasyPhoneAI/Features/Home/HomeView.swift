@@ -6,6 +6,7 @@ struct HomeView: View {
     @Environment(Router.self) private var router
     @Environment(AppState.self) private var appState
     @Environment(\.dynamicTypeSize) private var typeSize
+    @FocusState private var inputFocused: Bool
 
     var body: some View {
         ScrollView {
@@ -46,6 +47,7 @@ struct HomeView: View {
             .padding(Tokens.Space.screenPadding)
             .frame(maxWidth: .infinity)
         }
+        .dismissesKeyboard($inputFocused)
         .background(Tokens.Colors.bg)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -92,6 +94,7 @@ struct HomeView: View {
                 .font(Tokens.Fonts.body)
                 .foregroundStyle(Tokens.Colors.textPrimary)
                 .lineLimit(1...5)
+                .focused($inputFocused)
                 .padding(.horizontal, Tokens.Space.l)
                 .padding(.vertical, Tokens.Space.m)
                 .frame(minHeight: Tokens.Size.buttonMinHeight)
@@ -166,6 +169,7 @@ struct HomeView: View {
     }
 
     private func send() {
+        inputFocused = false
         guard let id = viewModel.send() else { return }
         router.push(.conversation(id))
     }
