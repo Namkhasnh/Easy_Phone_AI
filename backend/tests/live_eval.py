@@ -1,7 +1,7 @@
 """1B.15: scoring + report for the live parse eval (AI_PROMPTS §10). Pure functions, unit-tested in CI.
 
 Match rules (AI_PROMPTS §10 "field-level match: kind/op exact, dates exact, text fuzzy"):
-- `unsupported` expected → no steps and `unsupported.message` starts with "Chưa hỗ trợ".
+- `unsupported` expected → no steps, `unsupported.message` starts with "Chưa hỗ trợ", same `reason`.
 - steps: same count, same (kind, operation) in order.
 - a field with an expected value: `dateTime` = same instant (offset may differ), text-like = fuzzy,
   anything else (bool, enum, minutes, phone…) = exact. Missing / null → fail.
@@ -31,7 +31,16 @@ DATE_TYPES = {"dateTime"}
 FUZZY_MIN_RATIO = 0.6
 
 
+EXTRA_GROUPS = {  # 1B.15b extra cases `x_<topic>_…`
+    "cal": "extra: calendar", "rem": "extra: reminders", "call": "extra: calls", "sms": "extra: messages",
+    "place": "extra: places", "multi": "extra: several steps", "scope": "extra: out of scope",
+    "follow": "extra: follow-up answers", "voice": "extra: speech style",
+}
+
+
 def group_of(case: str) -> str:
+    if case.startswith("x_"):
+        return EXTRA_GROUPS[case.split("_")[1]]
     if re.fullmatch(r"E\d+", case):
         return "examples E1–E8"
     if case.startswith("date_"):
@@ -86,6 +95,8 @@ def score(expected: dict, actual: dict, live_match: dict | None = None) -> list[
             fails.append("unsupported: steps returned")
         if not u or not str(u.get("message") or "").startswith("Chưa hỗ trợ"):
             fails.append("unsupported: missing or message")
+        elif u.get("reason") != expected["unsupported"]["reason"]:
+            fails.append("unsupported: reason")
         return fails
     if actual.get("unsupported") is not None:
         return ["unexpected unsupported"]

@@ -1,0 +1,46 @@
+{
+  "case": "x_rem_snooze",
+  "source": "1B.15b extra case (owner request 2026-11-10)",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Hoãn lời nhắc uống thuốc thêm 15 phút",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "snooze",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Uống thuốc",
+            "confidence": 0.85,
+            "sourceQuote": "uống thuốc"
+          },
+          {
+            "id": "snoozeOption",
+            "value": "min15",
+            "confidence": 0.9,
+            "sourceQuote": "15 phút"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

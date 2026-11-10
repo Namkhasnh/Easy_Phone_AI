@@ -1,0 +1,49 @@
+{
+  "case": "x_rem_morning_no_hour",
+  "source": "1B.15b extra case (owner request 2026-11-10)",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Sáng mai nhắc tôi gọi thợ sửa điện",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Gọi thợ sửa điện",
+            "confidence": 0.9,
+            "sourceQuote": "gọi thợ sửa điện"
+          },
+          {
+            "id": "dueDate",
+            "value": null,
+            "confidence": null,
+            "sourceQuote": "Sáng mai"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": "Bạn muốn được nhắc lúc mấy giờ sáng mai?",
+    "unsupported": null
+  },
+  "liveMatch": {
+    "followUpQuestion": "present"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "case": "x_rem_complete",
+  "source": "1B.15b extra case (owner request 2026-11-10)",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Đánh dấu đã xong lời nhắc uống thuốc",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "complete",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Uống thuốc",
+            "confidence": 0.85,
+            "sourceQuote": "uống thuốc"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

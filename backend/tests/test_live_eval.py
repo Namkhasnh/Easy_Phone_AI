@@ -70,7 +70,16 @@ def test_unsupported_needs_message_and_no_steps():
     a = copy.deepcopy(g["expected"])
     a["unsupported"]["message"] = "Không được"
     assert score(g["expected"], a) == ["unsupported: missing or message"]
+    a = copy.deepcopy(g["expected"])
+    a["unsupported"]["reason"] = "other"
+    assert score(g["expected"], a) == ["unsupported: reason"]
     assert score(load("E1")["expected"], g["expected"]) == ["unexpected unsupported"]
+
+
+def test_every_case_has_a_group():
+    from tests.live_eval import group_of
+    for p in FILES:
+        assert group_of(p.stem.split(".", 1)[1])
 
 
 def test_report_has_no_user_content():

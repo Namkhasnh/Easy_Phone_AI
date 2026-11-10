@@ -1,0 +1,40 @@
+{
+  "case": "x_cal_delete",
+  "source": "1B.15b extra case (owner request 2026-11-10)",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Xóa lịch đi đám cưới ngày 15/11",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "calendarEvent",
+        "operation": "delete",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Đi đám cưới",
+            "confidence": 0.85,
+            "sourceQuote": "đi đám cưới"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

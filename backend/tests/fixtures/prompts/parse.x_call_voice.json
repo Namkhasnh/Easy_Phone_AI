@@ -1,0 +1,40 @@
+{
+  "case": "x_call_voice",
+  "source": "1B.15b extra case (owner request 2026-11-10)",
+  "request": {
+    "schemaVersion": 1,
+    "text": "goi cho anh tuan",
+    "inputMode": "voice",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "call",
+        "operation": "open",
+        "fields": [
+          {
+            "id": "recipientName",
+            "value": "anh Tuấn",
+            "confidence": 0.85,
+            "sourceQuote": "anh tuan"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

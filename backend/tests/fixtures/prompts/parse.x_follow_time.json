@@ -1,0 +1,72 @@
+{
+  "case": "x_follow_time",
+  "source": "1B.15b extra case (owner request 2026-11-10)",
+  "request": {
+    "schemaVersion": 1,
+    "text": "4 giờ chiều",
+    "inputMode": "voice",
+    "now": "2026-11-08T10:00:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": "4d2f7a10-3c5b-4e8a-9f1d-6b7c8e9a0b1c",
+      "answeringFieldId": "dueDate",
+      "currentDraft": {
+        "schemaVersion": 1,
+        "requestId": "req_01JC8Z5B02",
+        "steps": [
+          {
+            "kind": "reminder",
+            "operation": "create",
+            "fields": [
+              {
+                "id": "title",
+                "value": "Đi lấy thuốc",
+                "confidence": 0.95,
+                "sourceQuote": null
+              },
+              {
+                "id": "dueDate",
+                "value": null,
+                "confidence": null,
+                "sourceQuote": null
+              }
+            ],
+            "dateCandidates": []
+          }
+        ],
+        "followUpQuestion": "Bạn muốn được nhắc lúc mấy giờ?",
+        "unsupported": null
+      }
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Đi lấy thuốc",
+            "confidence": 0.95,
+            "sourceQuote": null
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-08T16:00:00+07:00",
+            "confidence": 0.9,
+            "sourceQuote": "4 giờ chiều"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

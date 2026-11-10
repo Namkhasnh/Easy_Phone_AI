@@ -1,0 +1,55 @@
+{
+  "case": "x_sms_voice",
+  "source": "1B.15b extra case (owner request 2026-11-10)",
+  "request": {
+    "schemaVersion": 1,
+    "text": "nhan tin cho chi hai la em toi tre 10 phut",
+    "inputMode": "voice",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "sms",
+        "operation": "open",
+        "fields": [
+          {
+            "id": "recipientName",
+            "value": "chị Hai",
+            "confidence": 0.95,
+            "sourceQuote": "chi hai"
+          },
+          {
+            "id": "body",
+            "value": "Em tới trễ 10 phút.",
+            "confidence": 0.8,
+            "sourceQuote": null
+          },
+          {
+            "id": "channel",
+            "value": "sms",
+            "confidence": 0.6,
+            "sourceQuote": null
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  },
+  "liveMatch": {
+    "body": "fuzzy"
+  }
+}

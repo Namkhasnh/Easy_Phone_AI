@@ -1,10 +1,11 @@
 """1B.15: golden parse fixtures against the **real** model (AI_PROMPTS §10). Costs money — `pytest -m live` only.
 
-    LIVE_MODELS=gpt-4o-mini,gpt-6-luna uv run pytest -m live tests/test_live_parse.py -s
+    LIVE_MODELS=gpt-4o-mini,gpt-6-luna LIVE_TAG=81cases uv run pytest -m live tests/test_live_parse.py -s
 
 Default model list = `MODEL_PARSE`. Each model runs every `fixtures/prompts/parse.*.json` once, sequentially,
 through the production path (`parse_service.parse`, strict schema, repair, post-processing, 18 s budget).
-Writes `evals/<date>-<model>-parse.v<N>.md` (+ `.json`) and `evals/<date>-parse-summary.md` at the repo root.
+Writes `evals/<date>-<model>-parse.v<N>[-<tag>].md` (+ `.json`) and `evals/<date>-parse-summary[-<tag>].md` at the
+repo root; `LIVE_TAG` keeps runs of the same day apart (e.g. a bigger fixture set).
 """
 
 import asyncio
@@ -29,6 +30,7 @@ pytestmark = pytest.mark.live
 GOLDEN = Path(__file__).parent / "fixtures" / "prompts"
 EVALS = Path(__file__).parents[2] / "evals"
 BASE = Settings()
+TAG = f"-{os.environ['LIVE_TAG']}" if os.environ.get("LIVE_TAG") else ""
 MODELS = [m.strip() for m in os.environ.get("LIVE_MODELS", BASE.MODEL_PARSE).split(",") if m.strip()]
 
 
@@ -60,11 +62,12 @@ async def _run_model(model: str) -> ModelRun:
 def test_live_parse(model):
     run = asyncio.run(_run_model(model))
     EVALS.mkdir(exist_ok=True)
-    stem = f"{run.date}-{model}-parse.v{run.prompt_version}"
+    stem = f"{run.date}-{model}-parse.v{run.prompt_version}{TAG}"
     (EVALS / f"{stem}.json").write_text(run.to_json(), "utf-8")
     (EVALS / f"{stem}.md").write_text(report(run), "utf-8")
-    runs = [ModelRun.from_json(p.read_text("utf-8")) for p in sorted(EVALS.glob(f"{run.date}-*-parse.v*.json"))]
-    (EVALS / f"{run.date}-parse-summary.md").write_text(summary(runs), "utf-8")
+    runs = [ModelRun.from_json(p.read_text("utf-8"))
+            for p in sorted(EVALS.glob(f"{run.date}-*-parse.v{run.prompt_version}{TAG}.json"))]
+    (EVALS / f"{run.date}-parse-summary{TAG}.md").write_text(summary(runs), "utf-8")
     print(f"\n{model}: {run.passed}/{len(run.results)}, p50 {run.latency(0.5)} ms, ${run.cost:.4f}")
 
     # The strict `task_draft.json` must be accepted by the real API: an OpenAI 400 maps to `internal`.
