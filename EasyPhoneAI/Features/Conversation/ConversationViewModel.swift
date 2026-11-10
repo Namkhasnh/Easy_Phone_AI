@@ -12,6 +12,11 @@ import OSLog
 
     static let locale = Locale(identifier: "vi-VN")
     static let hintKeys = ["conv.listening.hint.1", "conv.listening.hint.2", "conv.listening.hint.3"]
+    // TODO(decision): DOC-29 — auto-stop is the owner's request (2026-11-10), not yet in UI_SCREENS S03 / spec §6.2.
+    /// Silence after the last recognized words → stop by itself, like Siri. "Dừng" stays visible (AC1).
+    static let silenceAfterSpeech: Duration = .seconds(2)
+    /// Nothing recognized at all → stop and show `conv.speech.empty`.
+    static let noSpeechTimeout: Duration = .seconds(8)
 
     private(set) var mode: Mode = .transcript
     /// Live transcript while listening; the editable request afterwards. Edits autosave (D-104).
@@ -29,12 +34,19 @@ import OSLog
     private let settings: AppSettings
     private let now: () -> Date
     private var listenTask: Task<Void, Never>?
+    private var silenceTask: Task<Void, Never>?
+    private let silenceAfterSpeech: Duration
+    private let noSpeechTimeout: Duration
     /// Text before "Nói lại"; restored when the new recording gives nothing, so a failed retry loses nothing (D-104).
     private var previousText = ""
 
     init(draftId: UUID?, repository: any TaskRepository, speech: any SpeechService, tts: any TTSService,
-         localData: any LocalDataRepository, now: @escaping () -> Date = { .now }) {
+         localData: any LocalDataRepository, now: @escaping () -> Date = { .now },
+         silenceAfterSpeech: Duration = ConversationViewModel.silenceAfterSpeech,
+         noSpeechTimeout: Duration = ConversationViewModel.noSpeechTimeout) {
         self.draftId = draftId
+        self.silenceAfterSpeech = silenceAfterSpeech
+        self.noSpeechTimeout = noSpeechTimeout
         self.repository = repository
         self.speech = speech
         self.tts = tts
@@ -54,6 +66,7 @@ import OSLog
     /// Leaving the screen stops mic and voice; the draft is already saved (D-104).
     func onDisappear() {
         tts.stop()
+        silenceTask?.cancel()
         listenTask?.cancel()
         Task { await speech.stop() }
     }
@@ -73,10 +86,15 @@ import OSLog
         previousText = text
         mode = .listening                                    // before clearing: no autosave of the empty text
         text = ""
+        armAutoStop(after: noSpeechTimeout)
         let task = Task { @MainActor in
             do {
                 for try await transcript in speech.start(locale: Self.locale) {
+                    // On-device Speech can end with an empty "final" after `endAudio`; never let it wipe the
+                    // words already shown (owner report 2026-11-10: "Gọi cho mẹ" vanished after "Dừng").
+                    guard !transcript.text.isEmpty, transcript.text != text else { continue }
                     text = transcript.text
+                    armAutoStop(after: silenceAfterSpeech)
                 }
                 finishListening(errorCode: nil)
             } catch {
@@ -92,11 +110,22 @@ import OSLog
         await speech.stop()
     }
 
+    /// Restarts the silence timer; when it fires while still listening, recording stops like "Dừng".
+    private func armAutoStop(after delay: Duration) {
+        silenceTask?.cancel()
+        silenceTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: delay)
+            guard !Task.isCancelled, let self, self.mode == .listening else { return }
+            await self.speech.stop()
+        }
+    }
+
     /// "Nói lại": replaces the text with a new recording (same draft).
     func speakAgain() async { await listen() }
 
     private func finishListening(errorCode: String?) {
         guard mode == .listening else { return }
+        silenceTask?.cancel()
         mode = .transcript
         let heardNothing = trimmed.isEmpty
         if heardNothing, !previousText.isEmpty {

@@ -102,6 +102,42 @@ struct ConversationTests {
         #expect(tts.spoken.first?.rate == 0.4)
     }
 
+    // MARK: - Owner report 2026-11-10 + auto-stop (DOC-29)
+
+    func fastModel() -> ConversationViewModel {
+        ConversationViewModel(draftId: nil, repository: repo, speech: speech, tts: tts, localData: local,
+                              silenceAfterSpeech: .milliseconds(50), noSpeechTimeout: .milliseconds(80))
+    }
+
+    @Test func emptyFinalAfterStopKeepsHeardWords() async {
+        speech.script = [Transcript(text: "Gọi cho mẹ", isFinal: false), Transcript(text: "", isFinal: true)]
+        let vm = model()
+        await vm.onAppear()
+        #expect(vm.text == "Gọi cho mẹ")
+        #expect(vm.noticeKey == nil)
+        #expect(repo.draft(vm.draftId!)?.originalInput == "Gọi cho mẹ")
+    }
+
+    @Test func silenceAfterSpeechStopsByItself() async {
+        speech.script = [Transcript(text: "Gọi", isFinal: false), Transcript(text: "Gọi cho mẹ", isFinal: false)]
+        speech.holdsUntilStop = true
+        let vm = fastModel()
+        await vm.onAppear()                                              // returns only after the auto-stop
+        #expect(speech.stopCount == 1)
+        #expect(vm.mode == .transcript)
+        #expect(vm.text == "Gọi cho mẹ")
+        #expect(vm.canSend)                                              // waits for "Gửi", never auto-sent
+    }
+
+    @Test func noSpeechStopsAndAsksAgain() async {
+        speech.script = []
+        speech.holdsUntilStop = true
+        let vm = fastModel()
+        await vm.onAppear()
+        #expect(speech.stopCount == 1)
+        #expect(vm.noticeKey == "conv.speech.empty")
+    }
+
     @Test func leavingStopsMicAndVoice() async {
         let vm = model()
         vm.onDisappear()

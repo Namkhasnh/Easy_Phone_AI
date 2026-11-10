@@ -9,6 +9,9 @@ import Foundation
     ]
     var error: ServiceError?
     var audio: Data?
+    /// Like the live service: after the script, the stream stays open until `stop()` (auto-stop / "Dừng" tests).
+    var holdsUntilStop = false
+    private var openContinuation: AsyncThrowingStream<Transcript, Error>.Continuation?
     private(set) var startCount = 0
     private(set) var stopCount = 0
     private(set) var lastLocale: Locale?
@@ -20,13 +23,21 @@ import Foundation
         startCount += 1
         lastLocale = locale
         let script = script, error = error
-        return AsyncThrowingStream { continuation in
-            for transcript in script { continuation.yield(transcript) }
+        let (stream, continuation) = AsyncThrowingStream<Transcript, Error>.makeStream()
+        for transcript in script { continuation.yield(transcript) }
+        if holdsUntilStop {
+            openContinuation = continuation
+        } else {
             continuation.finish(throwing: error)
         }
+        return stream
     }
 
-    func stop() async { stopCount += 1 }
+    func stop() async {
+        stopCount += 1
+        openContinuation?.finish(throwing: error)
+        openContinuation = nil
+    }
 
     func recordedAudio() async -> Data? { audio }
 }

@@ -170,8 +170,10 @@ import Synchronization
         let lastText = Mutex("")
         return { result, error in
             if let result {
-                let text = result.bestTranscription.formattedString
-                lastText.withLock { $0 = text }
+                // An empty final after `endAudio` must not replace the words already heard.
+                let heard = result.bestTranscription.formattedString
+                let text = heard.isEmpty ? lastText.withLock { $0 } : heard
+                if !heard.isEmpty { lastText.withLock { $0 = heard } }
                 let scores = result.bestTranscription.segments.map(\.confidence)
                 continuation.yield(Transcript(text: text, isFinal: result.isFinal,
                                               confidence: result.isFinal ? Transcript.averageConfidence(scores) : nil))
