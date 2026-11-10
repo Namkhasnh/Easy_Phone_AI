@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     MONTHLY_SPEND_CAP_USD: float = 5.0
     REQUEST_BUDGET_SECONDS: float = 18.0
     LLM_TIMEOUT_SECONDS: float = 12.0
+    REPAIR_MIN_SECONDS: float = 5.0  # repair call only if this much budget remains (D-246)
+    IDEMPOTENCY_WINDOW_HOURS: int = 24  # same key later → 422 idempotencyKeyExpired (API_CONTRACT §4.4)
 
     # Kinds the LLM may produce (DATA_MODEL §1.1). MVP kinds only; Phase 2/3 kinds stay off (D-150).
     ENABLED_KINDS: list[str] = ["calendarEvent", "reminder", "call", "sms", "place", "ocr"]
