@@ -228,7 +228,7 @@ struct ConversationTests {
         vm.cancelWorking()
         #expect(vm.mode == .transcript)
         #expect(vm.text == "Nhắc tôi uống thuốc" && vm.canSend)
-        #expect(UserMessage(key: "conv.working").text == "Mình đang soạn bản nháp…")
+        #expect(UserMessage(key: "conv.working").text == "Oki, bạn đợi mình chút…")
     }
 
     @Test func unsupportedShowsBackendSentenceAndRephrase() {

@@ -313,7 +313,7 @@ import OSLog
 
     // MARK: - Working (mode 3) and unsupported (mode 5)
 
-    /// Mode 3: spinner + "Mình đang soạn bản nháp…". The request text stays saved (D-104).
+    /// Mode 3: spinner + "Oki, bạn đợi mình chút…". The request text stays saved (D-104).
     func showWorking() {
         stopReading()
         noticeKey = nil
