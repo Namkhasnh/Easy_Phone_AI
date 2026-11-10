@@ -60,12 +60,12 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Key | Value |
 |---|---|
 | Last updated | 2026-11-10 |
-| Current phase | **Phase 1A — Core engine** (Phase 0 exit ✅ 2026-11-09) |
+| Current phase | **Phase 1B — Input** (Phase 0 exit ✅ 2026-11-09, Phase 1A exit ✅ 2026-11-10) |
 | Working on | — |
-| Last commit | `[1A] S14 History` on branch `demo_git` (not pushed) |
+| Last commit | `[1A] S15 Settings shell` on branch `demo_git` (not pushed) |
 | Build status | ✅ Simulator build; ✅ device build signed with the free Personal Team (`DEVELOPMENT_TEAM` in git-ignored `Secrets.xcconfig`) |
-| Test status | ✅ iOS `test` green (incl. `ContractFixtureTests`, `TaskEnumsTests`, `TaskModelTests`, `FieldCatalogTests`, `TaskStateMachineTests`, `ApprovalHashTests`, `ValidatorTests`, `TaskEngineTests`, `TaskEngineConfirmTests`, `TaskDraftStatusTests`, `LiveTaskRepositoryTests`, `NameNormalizerTests`, `LiveLocalDataRepositoryTests`, `TokenContrastTests`, `ComponentStringsTests`, `FieldFormatterTests`, `ReviewViewModelTests`, `FieldEditorTests`, `HistoryTests`); ✅ backend `uv run pytest -q` 113/113; ✅ `run_db_tests.sh` 6/6 (earlier session) |
-| Next action | 1A.14: S15 Settings shell — `List(.insetGrouped)`, sections in UI_SCREENS S15 order with their keys, rows 56pt, simple mode hides ★ rows (P-40), no live data yet (toggles bound to `AppSettings` via `LocalDataRepository` where they exist; actions that need later items show nothing / TODO) + route `.settings` — UI_SCREENS S15 |
+| Test status | ✅ iOS `test` green (incl. `ContractFixtureTests`, `TaskEnumsTests`, `TaskModelTests`, `FieldCatalogTests`, `TaskStateMachineTests`, `ApprovalHashTests`, `ValidatorTests`, `TaskEngineTests`, `TaskEngineConfirmTests`, `TaskDraftStatusTests`, `LiveTaskRepositoryTests`, `NameNormalizerTests`, `LiveLocalDataRepositoryTests`, `TokenContrastTests`, `ComponentStringsTests`, `FieldFormatterTests`, `ReviewViewModelTests`, `FieldEditorTests`, `HistoryTests`, `SettingsTests`); ✅ backend `uv run pytest -q` 113/113; ✅ `run_db_tests.sh` 6/6 (earlier session) |
+| Next action | 1B.1: S02 Home — toolbar Lịch sử / Cài đặt (→ S14 / S15), `MascotView` slot (placeholder until 1B.16), `display` greeting "Bạn cần mình giúp gì?", `ListeningMic` 120pt + caption, multi-line text field + "Gửi" when non-empty, "Chụp ảnh giấy tờ", quick links (hidden in simple mode except Lịch hôm nay), "Việc chưa xong" (max 3 + Xem tất cả); replaces the user-id placeholder in `RootView` — UI_SCREENS S02 |
 | Owner decisions needed now | none (0.6 kept by owner 2026-11-09). Thesis scope (D-282 – D-285): no paid Apple account, Google-only sign-in |
 
 ---
@@ -156,6 +156,7 @@ Format: `BUG-xxx | phase | severity (P1 crash/data loss, P2 wrong behavior, P3 c
 | DOC-24 | Mic VoiceOver value "Đang nghe" (UI_SCREENS §9) has no key | UI_SCREENS §9 vs §0 rule 1 | add `home.mic.listening.a11y` = Đang nghe (used in code) | fixed (owner OK 2026-11-10, UI_SCREENS §9) |
 | DOC-25 | Bool field values (`allDay`, `completed`) have no display text in UI_SCREENS §10 | UI_SCREENS §10.3 | add `common.yes` = Có / `common.no` = Không (used in code) | fixed (owner OK 2026-11-10, UI_SCREENS §10.3) |
 | DOC-26 | `state.handedOff` = "Cần hoàn tất trong {app}" but no key names the Phone app for calls | DATA_MODEL §8 vs UI_SCREENS §10 | add `app.phone` = Điện thoại (used in code) | fixed (owner OK 2026-11-10, UI_SCREENS §10.3) |
+| DOC-27 | D-289 needs a `settings.pet` toggle but DATA_MODEL §5 `AppSettings` has no field; S15 "{hour} giờ" has no key | DECISIONS D-289 vs DATA_MODEL §5; UI_SCREENS S15 | add `petEnabled: Bool = true` to DATA_MODEL §5 and key `settings.snoozeHour.value` to S15 (both used in code) | open |
 | DOC-19 | Spec §3.2 layout root is `EasyPhone/`; the repo's app folder, target and scheme are `EasyPhoneAI` (CLAUDE.md §8 uses `EasyPhoneAI`) | Spec §3.2 vs repo | keep `EasyPhoneAI/` as the app root (no project rename) | fixed (D-286) |
 
 ### 5.3 Code TODOs left in source
@@ -208,8 +209,18 @@ List every `// TODO(spec):` and `// TODO(decision):` with file + line. Remove wh
 | `EasyPhoneAI/Features/History/HistoryViewModel.swift:72` | TODO(spec) | UI_SCREENS S14 names no kind icons; SF Symbols chosen here. |
 | `EasyPhoneAI/Features/History/HistoryViewModel.swift:87` | TODO(spec) | `{mainValue}` of `history.summary` is only shown by example ("anh Minh"); per-kind field chosen here. |
 | `EasyPhoneAI/Features/History/HistoryViewModel.swift:98` | TODO(spec) | S14 gives no format for dates older than yesterday; `common.dateTimeFormat` used. |
+| `EasyPhoneAI/Features/Settings/SettingsView.swift:29` | TODO(spec) | range of the rate slider is not specified; 0.3–0.6 around the 0.45 default (DATA_MODEL §5). |
+| `EasyPhoneAI/Features/Settings/SettingsView.swift:30` | TODO(spec) | "Nghe thử" needs TTSService (1B.3). |
+| `EasyPhoneAI/Features/Settings/SettingsView.swift:39` | TODO(spec) | the "live preview" content of the text-size row is not specified. |
+| `EasyPhoneAI/Features/Settings/SettingsView.swift:54` | TODO(spec) | "mẹ → Nguyễn Thị Lan" needs the contact name from ContactsService (1C.7). |
+| `EasyPhoneAI/Features/Settings/SettingsView.swift:61` | TODO(spec) | "Địa điểm đã lưu" opens S13 (1C.13). |
+| `EasyPhoneAI/Features/Settings/SettingsView.swift:80` | TODO(spec) | "Quyền truy cập" rows need PermissionManager (1C.1). |
+| `EasyPhoneAI/Features/Settings/SettingsView.swift:100` | TODO(spec) | "Chính sách quyền riêng tư" / "Điều khoản sử dụng" open in-app text (1G.6, D-284). |
+| `EasyPhoneAI/Features/Settings/SettingsView.swift:110` | TODO(spec) | "Xóa tài khoản" needs `DELETE /v1/me` + local wipe (1G.1–1G.2). |
+| `EasyPhoneAI/Features/Settings/SettingsView.swift:134` | TODO(spec) | quota row + reset time + "Nâng cấp Premium" / "Quản lý gói" come with 1F.6–1F.8. |
 | `EasyPhoneAI/App/RootView.swift:64` | TODO(spec) | S02 Home replaces this in 1B.1; until then show the signed-in user id (EXIT 0 check). |
-| `EasyPhoneAI/App/RootView.swift:85` | TODO(spec) | the other routes get their screens in their own items (S15 1A.14, …). |
+| `EasyPhoneAI/App/RootView.swift:85` | TODO(spec) | the other routes get their screens in their own items (1B–1F). |
+| `EasyPhoneAI/Core/Models/LocalModels.swift:54` | TODO(decision) | DATA_MODEL §5 vs D-289 (`settings.pet` toggle, on by default) — field added here (DOC-27). |
 | `Config/Release.xcconfig:2` | TODO(decision) | D-036: no production backend in thesis scope (D-284); Release uses the Debug backend URL |
 
 ### 5.4 Closed (append-only)
@@ -267,8 +278,8 @@ Exit: **unit tests pass for all state transitions.**
 - [x] 1A.11 S04 Review (fields, buttons, disabled reasons, result card per D-250) with mock draft — Docs: UI_SCREENS S04, spec §5.3 — split into 11a / 11b: **11a done** (20e8cff): `Core/UI/FieldFormatter.swift` (dateTime → `common.dateTimeFormat` in the draft time zone with vi weekday, options `option.<field>.<value>` incl. alert P-35 + snooze hour, bool → `common.yes/no` (DOC-25), 🔒 refs never shown), `TaskEngine.confirmBlocker` (ambiguity → missing → previous linked step not final/handedOff/prepared → not awaitingApproval; `confirm()` uses it, so the DATA_MODEL §3.3 confirm rule is now enforced — the 1C.14 `.linked` value updates are still open), `Features/Review/{ReviewViewModel,ReviewView}.swift` (title `step.<kind>.<op>`, StepIndicator, StateBadge, banner `approval.mismatch` / `review.editedAfterApproval`, FieldRows in catalog order hiding conditional-only rows, original input, bottom bar Xác nhận (destructive "Xác nhận xóa" + hint for delete) / Sửa (P-37 field choice) / Hủy (cancel + pop), disabled reason text, 3 previews with "Dữ liệu mẫu"); 45 keys (`step.*`, `option.*`, `review.*`). Verified: `EasyPhoneTests/ReviewTests.swift` (3 formatter + 9 Review tests) + full suite green; S04 rendered in a hosted window (light reminder, dark ambiguous SMS) and checked by eye → added a divider above the pinned bar. **11b done** (f326ae7): result card replaces the bar (D-250): processing (spinner, no buttons), succeeded (`result.<kind>.<op>` or "Xong rồi!" on the last step; Primary "Tiếp tục: {step}" / "Xong" → Home), handedOff/prepared (markDone + Để sau), unknown (markDone + Thử lại for calendar/reminder, else Để sau), failed (`result.failed` + `error.<code>` → `error.generic` fallback; Thử lại + Hủy), userMarkedDone/cancelled; haptics success/warning, VoiceOver focus back to the title; `TaskEngine` in `AppEnvironment` (nonisolated init, `StepExecutor: Sendable`), `RootView` routes `.review(id)`; 21 keys (`result.*`, `error.generic`, `error.eventkit.saveFailed`). Verified: 6 more `ReviewViewModelTests` (result card per state, next step, markDone, retry, done) + full suite green. Open: "Mở trong Lịch/Lời nhắc" + permission fallback buttons (1C)
 - [x] 1A.12 S05 Field editor per `FieldType` — Docs: UI_SCREENS S05 (ce0c5dc) — `Features/FieldEditor/{FieldEditorViewModel,FieldEditorView}.swift`: title = field label; text/address (multi-line field + "Xóa nội dung"), phone (phone pad, saved as E.164 via new `Validator.normalizePhone` §7.3), longText (TextEditor ≥ 160pt), dateTime (chips Hôm nay / Ngày mai keep the time + graphical date + wheel time, encoded ISO with the draft's offset; empty → next full hour, TODO), date (graphical, `YYYY-MM-DD`), alert choices P-35 (keeps a non-listed AI value), bool toggle 56pt, enumChoice radio rows 64pt + checkmark; inline `editor.invalid.*` in `danger` + icon via new `Validator.check(fieldId:value:in:now:)` (encoding of any non-empty value + endBeforeStart / past); "Lưu" disabled while invalid, "Hủy". S04: row tap / "Sửa" open the sheet (picker types `contactRef`/`placeRef`/`coordinate` excluded until 1C), "Lưu" → `TaskEngine.edit`. 6 `editor.*` keys. Verified: `EasyPhoneTests/FieldEditorTests.swift` (10 tests incl. S04 → S05 → engine → `awaitingApproval`) + full suite green; date-time (light) and alert list (dark) rendered and checked by eye. Not done here: "Đọc to" (TTS 1B.3), "Tìm trên bản đồ" (S13 1C.13); snooze hour from settings (1C.17)
 - [x] 1A.13 S14 History (4 groups, reopen at `currentStep`, hide) — Docs: UI_SCREENS S14, DATA_MODEL §8 (f5575b2) — `Features/History/{HistoryViewModel,HistoryView}.swift`: sections in fixed order (empty ones hidden), rows ≥ 72pt newest first: kind icon (SF Symbols, TODO) + `history.summary` "{stepTitle}: {mainValue}" of `currentStep` (mainValue field per kind, TODO) + "Hôm nay / Hôm qua {HH:mm}" else `common.dateTimeFormat` (TODO) + `StateBadge` of the group step + "{done}/{total} bước"; tap → `router.push(.review(id))` (Review opens at `currentStep`, AC2); swipe / VoiceOver action "Ẩn" → `isArchived`; empty → `EmptyState` "Chưa có việc nào."; route `.history` in `RootView` (entry point = Home toolbar, 1B.1). Fix found by screenshot: `state.handedOff` showed "%@" → `StateBadge(step:)` / `labelArgs` fill `{app}` (call → `app.phone` "Điện thoại", DOC-26; directions → `mapsApp` label; SMS copy → `channel` label), used on S04 and S14. 10 keys. Verified: `EasyPhoneTests/HistoryTests.swift` (5 tests) + full suite green; S14 rendered and checked by eye
-- [ ] 1A.14 S15 Settings shell (sections, no live data yet) — Docs: UI_SCREENS S15
-- [ ] **EXIT 1A** `EasyPhoneTests` green for state machine, hash, validator
+- [x] 1A.14 S15 Settings shell (sections, no live data yet) — Docs: UI_SCREENS S15 (this commit) — `Features/Settings/{SettingsViewModel,SettingsView}.swift`: insetGrouped list on `surface` rows, sections in S15 order; Tài khoản (plan from `AppState.entitlement`), Giọng nói (toggle + rate slider Chậm/Nhanh), Hiển thị (text-size note, simple mode, "Hiện bạn Khoai"), Ghi nhớ (nicknames + swipe Xóa / empty text), ★ Nâng cao (snooze hour 5–11, maps app; hidden in simple mode, P-40), Kết nối (Gmail — sắp có, disabled), Dữ liệu (Xóa lịch sử → closed drafts only D-244, Xóa dữ liệu ghi nhớ) and Đăng xuất (drafts kept) via `ConfirmSheet` (S20), Thông tin (AI disclosure D-187, legal links no-op, version); settings autosave; route `.settings`. `AppSettings.petEnabled = true` added (D-289 vs DATA_MODEL §5, DOC-27); 40 keys. Verified: `EasyPhoneTests/SettingsTests.swift` (6 tests) + full suite green; S15 rendered light/dark (fixed: rows were system white → `surface`); Simulator with the old store launches and gains `ZPETENABLED`. Left for later items: quota/upgrade (1F), voice test (1B.3), permissions (1C.1), saved places (1C.13), nickname contact names (1C.7), delete account + legal text (1G)
+- [x] **EXIT 1A** `EasyPhoneTests` green for state machine, hash, validator — 2026-11-10: `TaskStateMachineTests`, `ApprovalHashTests`, `ValidatorTests` green (and the full suite); backend 113/113
 
 ### Phase 1B — Input
 Exit: **a Vietnamese sentence becomes an editable draft.**
@@ -404,6 +415,12 @@ Template:
 - Decisions asked / answered: <D-xxx / P-xx>
 - Next: <one concrete next step>
 ```
+
+### 2026-11-10 — Phase 1A — 1A.14 S15 Settings + EXIT 1A
+- Done: DOC-26 recorded (ad3f244); 1A.14 (Settings shell, S20 confirms for history/memory/sign-out, 6 tests); **EXIT 1A ✅** — Phase 1B starts
+- Fixed by screenshot: Settings rows used system white instead of `surface`
+- DOC-27 opened (`petEnabled`, `settings.snoozeHour.value`)
+- Next: 1B.1 S02 Home
 
 ### 2026-11-10 — Phase 1A — 1A.13 S14 History
 - Done: 1A.13 (History screen + route, `StateBadge(step:)` args fix, 5 tests); suite green; S14 checked by screenshot
