@@ -2,15 +2,38 @@ import Foundation
 import Observation
 import OSLog
 
-/// S03 Conversation (UI_SCREENS S03, spec §6.2). Modes 1 listening, 2 transcript ready (1B.4a), 3 working and
-/// 5 unsupported (1B.4b). Mode 4 follow-up comes with 1B.4c. The `/v1/parse` call that drives 3 / 5 is wired in 1B.10
-/// through `showWorking()`, `showUnsupported(_:)` and `showParseFailed()`.
+/// S03 Conversation (UI_SCREENS S03, spec §6.2). Modes 1 listening, 2 transcript ready (1B.4a), 3 working,
+/// 5 unsupported (1B.4b), 4 follow-up (1B.4c). The `/v1/parse` call and the follow-up loop that drive 3–5 are wired in
+/// 1B.10 / 1B.14 through `showWorking()`, `showUnsupported(_:)`, `showParseFailed()`, `showFollowUp(_:)`.
 @Observable @MainActor final class ConversationViewModel {
     enum Mode: Equatable, Sendable {
         case listening
         case transcript
         case working
         case unsupported(Unsupported)
+        case followUp(FollowUp)
+    }
+
+    /// Mode 4: the ONE question (spec §6.2 AC3). `question` is already chosen by the D-281 rule (1B.14):
+    /// `followUpQuestion` or the `followup.<kind>.<fieldId>` text.
+    struct FollowUp: Equatable, Sendable {
+        let question: String
+        var chips: [DateChip] = []
+    }
+
+    /// A `dateCandidates` entry (DATA_MODEL §6.2): `{ fieldId, value, label }`. Tapping it resolves the field on device.
+    struct DateChip: Equatable, Hashable, Sendable, Identifiable {
+        let fieldId: String
+        let value: String
+        let label: String
+        var id: String { fieldId + "|" + value }
+    }
+
+    /// What the user gave in mode 4; consumed by the follow-up loop (1B.14).
+    enum FollowUpAnswer: Equatable, Sendable {
+        case chip(DateChip)          // D-251: on device, no `/v1/parse`, no unit
+        case text(String)            // typed / spoken: a new `/v1/parse` with context (ARCHITECTURE §6.2)
+        case skipped                 // "Bỏ qua, tôi sẽ sửa sau" → S04
     }
 
     /// `ParsedDraft.unsupported` (API_CONTRACT §7.1): `reason` ∈ recurringEvent, bulkAction, phaseNotEnabled, booking,
@@ -42,6 +65,11 @@ import OSLog
     private(set) var noticeKey: String?
     private(set) var isReading = false
     private(set) var draftId: UUID?
+    /// Mode 4 answer field (typed or spoken).
+    var answerText = ""
+    /// Last answer given in mode 4.
+    // TODO(spec): 1B.14 applies it (chip → field on device, text → `/v1/parse` with context); until then it is only recorded.
+    private(set) var lastAnswer: FollowUpAnswer?
 
     private let repository: any TaskRepository
     private let speech: any SpeechService
@@ -54,6 +82,9 @@ import OSLog
     private let noSpeechTimeout: Duration
     /// Text before "Nói lại"; restored when the new recording gives nothing, so a failed retry loses nothing (D-104).
     private var previousText = ""
+    /// Where a recording goes: the request (modes 1–2) or the follow-up answer (mode 4).
+    private enum Target { case request, answer(FollowUp) }
+    private var target: Target = .request
 
     init(draftId: UUID?, repository: any TaskRepository, speech: any SpeechService, tts: any TTSService,
          localData: any LocalDataRepository, now: @escaping () -> Date = { .now },
@@ -93,22 +124,42 @@ import OSLog
 
     // MARK: - Listening (mode 1)
 
-    /// Starts a session and returns when it ended (final, stop, error). TTS stops first (spec §6.2 AC5).
-    func listen() async {
+    /// Starts a session for the request and returns when it ended (final, stop, error). TTS stops first (AC5).
+    func listen() async { await record(.request) }
+
+    /// Mode 4 mic: records the answer, then returns to the same question.
+    func listenForAnswer() async {
+        guard case .followUp(let f) = mode else { return }
+        await record(.answer(f))
+    }
+
+    /// Text shown live while listening.
+    var listeningText: String {
+        if case .answer = target { return answerText }
+        return text
+    }
+
+    private func record(_ target: Target) async {
         stopReading()
         listenTask?.cancel()
         noticeKey = nil
-        previousText = text
+        self.target = target
         mode = .listening                                    // before clearing: no autosave of the empty text
-        text = ""
+        if case .answer = target {
+            previousText = answerText
+            answerText = ""
+        } else {
+            previousText = text
+            text = ""
+        }
         armAutoStop(after: noSpeechTimeout)
         let task = Task { @MainActor in
             do {
                 for try await transcript in speech.start(locale: Self.locale) {
                     // On-device Speech can end with an empty "final" after `endAudio`; never let it wipe the
                     // words already shown (owner report 2026-11-10: "Gọi cho mẹ" vanished after "Dừng").
-                    guard !transcript.text.isEmpty, transcript.text != text else { continue }
-                    text = transcript.text
+                    guard !transcript.text.isEmpty, transcript.text != listeningText else { continue }
+                    if case .answer = self.target { answerText = transcript.text } else { text = transcript.text }
                     armAutoStop(after: silenceAfterSpeech)
                 }
                 finishListening(errorCode: nil)
@@ -141,11 +192,20 @@ import OSLog
     private func finishListening(errorCode: String?) {
         guard mode == .listening else { return }
         silenceTask?.cancel()
-        mode = .transcript
-        let heardNothing = trimmed.isEmpty
-        if heardNothing, !previousText.isEmpty {
-            text = previousText                               // mode is .transcript again → autosave sees the same text
+        let heardNothing: Bool
+        switch target {
+        case .request:
+            mode = .transcript
+            heardNothing = trimmed.isEmpty
+            if heardNothing, !previousText.isEmpty {
+                text = previousText                           // mode is .transcript again → autosave sees the same text
+            }
+        case .answer(let followUp):
+            mode = .followUp(followUp)
+            heardNothing = answerText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            if heardNothing { answerText = previousText }
         }
+        target = .request
         if let errorCode {
             Self.logger.info("listening ended: \(errorCode, privacy: .public)")
             // TODO(spec): permission denied (`permission.microphone/speech.denied`) has no S03 text until S18 (1C.1);
@@ -204,6 +264,41 @@ import OSLog
     func rephrase() {
         noticeKey = nil
         mode = .transcript
+    }
+
+    // MARK: - Follow-up (mode 4)
+
+    /// Shows the ONE question (spec §6.2 AC3); the answer field starts empty.
+    func showFollowUp(_ followUp: FollowUp) {
+        stopReading()
+        noticeKey = nil
+        answerText = ""
+        mode = .followUp(followUp)
+    }
+
+    var canSendAnswer: Bool {
+        guard case .followUp = mode else { return false }
+        return !answerText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// Chip tap: resolved on device, never an AI call or a unit (D-251).
+    func pick(_ chip: DateChip) {
+        guard case .followUp(let f) = mode, f.chips.contains(chip) else { return }
+        lastAnswer = .chip(chip)
+    }
+
+    /// "Gửi" under the answer field: never automatic (API_CONTRACT §7.4).
+    func sendAnswer() {
+        guard canSendAnswer else { return }
+        stopReading()
+        lastAnswer = .text(answerText.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    /// "Bỏ qua, tôi sẽ sửa sau": the draft opens in S04 with the field still empty. Returns the draft to open.
+    func skipFollowUp() -> UUID? {
+        guard case .followUp = mode else { return nil }
+        lastAnswer = .skipped
+        return draftId
     }
 
     // MARK: - Transcript ready (mode 2)

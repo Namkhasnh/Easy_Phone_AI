@@ -1,12 +1,13 @@
 import SwiftUI
 
-/// S03 Conversation (UI_SCREENS S03). Modes: listening, transcript ready, working, unsupported (follow-up: 1B.4c).
+/// S03 Conversation (UI_SCREENS S03). Modes: listening, transcript ready, working, follow-up, unsupported.
 struct ConversationView: View {
     @State var viewModel: ConversationViewModel
     @Environment(Router.self) private var router
     @Environment(\.dismiss) private var dismiss
     @State private var hintIndex = 0
     @FocusState private var textFocused: Bool
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         ScrollView {
@@ -16,6 +17,7 @@ struct ConversationView: View {
                 case .transcript: transcript
                 case .working: working
                 case .unsupported: unsupported
+                case .followUp(let followUp): followUpView(followUp)
                 }
             }
             .padding(Tokens.Space.screenPadding)
@@ -45,9 +47,9 @@ struct ConversationView: View {
             ListeningMic(isListening: true) { Task { await viewModel.stopListening() } }
             Spacer()
         }
-        if !viewModel.text.isEmpty {
+        if !viewModel.listeningText.isEmpty {
             userBubble {
-                Text(verbatim: viewModel.text)
+                Text(verbatim: viewModel.listeningText)
                     .font(Tokens.Fonts.fieldValue)
                     .foregroundStyle(Tokens.Colors.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -111,6 +113,60 @@ struct ConversationView: View {
         }
     }
 
+    // MARK: - Mode 4: follow-up (spec §6.2 AC3, D-251)
+
+    @ViewBuilder private func followUpView(_ followUp: ConversationViewModel.FollowUp) -> some View {
+        userBubble {
+            Text(verbatim: viewModel.text)
+                .font(Tokens.Fonts.fieldValue)
+                .foregroundStyle(Tokens.Colors.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        assistantBubble { Text(verbatim: followUp.question) }          // the ONE question, already localized
+        if !followUp.chips.isEmpty {
+            // Each chip ≥ 56pt; tapping fills the field on device — no AI call, no unit (D-251).
+            // One chip per row at AX sizes so a date never wraps into one word per line.
+            let columns = typeSize.isAccessibilitySize
+                ? [GridItem(.flexible())]
+                : [GridItem(.adaptive(minimum: 150), spacing: Tokens.Space.s)]
+            LazyVGrid(columns: columns, spacing: Tokens.Space.s) {
+                ForEach(followUp.chips) { chip in
+                    Button { viewModel.pick(chip) } label: {
+                        Text(verbatim: chip.label)
+                            .font(Tokens.Fonts.button)
+                            .foregroundStyle(Tokens.Colors.primary)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.horizontal, Tokens.Space.m)
+                            .frame(maxWidth: .infinity, minHeight: Tokens.Size.buttonMinHeight, maxHeight: .infinity)
+                            .background(Tokens.Colors.secondaryFill, in: RoundedRectangle(cornerRadius: Tokens.Radius.button))
+                            .contentShape(RoundedRectangle(cornerRadius: Tokens.Radius.button))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        if let notice = viewModel.noticeKey {
+            assistantBubble(LocalizedStringKey(notice))
+        }
+        HStack {
+            Spacer()
+            ListeningMic(isListening: false) { Task { await viewModel.listenForAnswer() } }
+            Spacer()
+        }
+        // TODO(spec): S03 mode 4 gives no placeholder for the answer field; the S02 one is reused.
+        TextField("home.input.placeholder", text: $viewModel.answerText, axis: .vertical)
+            .font(Tokens.Fonts.body)
+            .foregroundStyle(Tokens.Colors.textPrimary)
+            .lineLimit(1...5)
+            .padding(.horizontal, Tokens.Space.l)
+            .padding(.vertical, Tokens.Space.m)
+            .frame(minHeight: Tokens.Size.buttonMinHeight)
+            .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.button))
+            .overlay { RoundedRectangle(cornerRadius: Tokens.Radius.button).strokeBorder(Tokens.Colors.border) }
+            .focused($textFocused)
+    }
+
     // MARK: - Mode 5: unsupported (spec §11, D-280)
 
     @ViewBuilder private var unsupported: some View {
@@ -141,6 +197,13 @@ struct ConversationView: View {
                 }
             case .working:
                 SecondaryButton("common.cancel") { viewModel.cancelWorking() }
+            case .followUp:
+                if viewModel.canSendAnswer {                           // primaries: mic + "Gửi" only (D-183)
+                    PrimaryButton("conv.send") { textFocused = false; viewModel.sendAnswer() }
+                }
+                SecondaryButton("conv.followup.skip") {
+                    if let id = viewModel.skipFollowUp() { router.push(.review(id)) }
+                }
             case .unsupported:
                 PrimaryButton("conv.unsupported.home") { router.popToRoot() }
                 switch viewModel.unsupportedAction {
@@ -168,7 +231,7 @@ struct ConversationView: View {
             if viewModel.showsMascot {
                 // TODO(spec): mascot art — `MascotView` with the mode's pose comes with 1B.16; SF Symbol placeholder.
                 Image(systemName: "pawprint.fill")
-                    .font(Tokens.Fonts.label)
+                    .font(.system(size: Tokens.Size.stepBadge * 0.5))   // decorative, fixed inside its fixed circle
                     .foregroundStyle(Tokens.Colors.onHoney)
                     .frame(width: Tokens.Size.stepBadge, height: Tokens.Size.stepBadge)
                     .background(Tokens.Colors.honey, in: Circle())
@@ -259,6 +322,18 @@ private func conversationModePreview(_ apply: (ConversationViewModel) -> Void) -
     NavigationStack { ConversationView(viewModel: conversationModePreview { $0.showParseFailed() }) }
         .environment(Router())
         .dynamicTypeSize(.accessibility5)
+}
+
+#Preview("Follow-up with chips") {
+    NavigationStack {
+        ConversationView(viewModel: conversationModePreview {
+            $0.showFollowUp(.init(question: "Bạn muốn hẹn thứ Sáu nào?", chips: [
+                .init(fieldId: "startDate", value: "2026-11-13T09:00:00+07:00", label: "Thứ Sáu 13/11"),
+                .init(fieldId: "startDate", value: "2026-11-20T09:00:00+07:00", label: "Thứ Sáu 20/11"),
+            ]))
+        })
+    }
+    .environment(Router())
 }
 
 #Preview("Speech unavailable, dark") {

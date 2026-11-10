@@ -183,6 +183,67 @@ struct ConversationTests {
         #expect(UserMessage(key: "conv.unsupported.openList").text == "Mở danh sách để làm từng việc")
     }
 
+    // MARK: - 1B.4c follow-up (UI_SCREENS S03 mode 4, spec §6.2 AC3, D-251)
+
+    static let friday13 = ConversationViewModel.DateChip(fieldId: "startDate", value: "2026-11-13T09:00:00+07:00", label: "Thứ Sáu 13/11")
+    static let friday20 = ConversationViewModel.DateChip(fieldId: "startDate", value: "2026-11-20T09:00:00+07:00", label: "Thứ Sáu 20/11")
+
+    @Test func chipAnswersOnDeviceWithoutSending() {
+        let vm = typedModel("Hẹn nha sĩ thứ Sáu 9 giờ")
+        vm.showFollowUp(.init(question: "Bạn muốn hẹn thứ Sáu nào?", chips: [Self.friday13, Self.friday20]))
+        #expect(!vm.canSendAnswer && !vm.canSend)
+        vm.pick(Self.friday20)
+        #expect(vm.lastAnswer == .chip(Self.friday20))                   // D-251: no parse, no unit
+        vm.pick(.init(fieldId: "startDate", value: "x", label: "y"))     // not offered → ignored
+        #expect(vm.lastAnswer == .chip(Self.friday20))
+    }
+
+    @Test func typedAnswerNeedsTextAndKeepsRequest() {
+        let vm = typedModel("Nhắc tôi uống thuốc")
+        vm.showFollowUp(.init(question: "Bạn muốn được nhắc lúc mấy giờ?"))
+        vm.answerText = "   "
+        #expect(!vm.canSendAnswer)
+        vm.sendAnswer()
+        #expect(vm.lastAnswer == nil)
+        vm.answerText = " 8 giờ sáng mai "
+        vm.sendAnswer()
+        #expect(vm.lastAnswer == .text("8 giờ sáng mai"))
+        #expect(repo.draft(vm.draftId!)?.originalInput == "Nhắc tôi uống thuốc")   // request untouched
+    }
+
+    @Test func spokenAnswerFillsAnswerAndReturnsToQuestion() async {
+        speech.script = [Transcript(text: "8 giờ sáng", isFinal: false), Transcript(text: "", isFinal: true)]
+        let vm = typedModel("Nhắc tôi uống thuốc")
+        let question = ConversationViewModel.FollowUp(question: "Bạn muốn được nhắc lúc mấy giờ?")
+        vm.showFollowUp(question)
+        await vm.listenForAnswer()
+        #expect(vm.mode == .followUp(question))
+        #expect(vm.answerText == "8 giờ sáng")
+        #expect(vm.text == "Nhắc tôi uống thuốc")                         // the request is not replaced
+        #expect(vm.canSendAnswer && vm.lastAnswer == nil)                 // never auto-sent
+    }
+
+    @Test func emptySpokenAnswerAsksAgainInPlace() async {
+        speech.script = []
+        let vm = typedModel("Gọi cho mẹ")
+        let question = ConversationViewModel.FollowUp(question: "Bạn muốn gọi cho ai?")
+        vm.showFollowUp(question)
+        vm.answerText = "mẹ"
+        await vm.listenForAnswer()
+        #expect(vm.mode == .followUp(question))
+        #expect(vm.answerText == "mẹ")                                    // previous answer kept
+        #expect(vm.noticeKey == "conv.speech.empty")
+    }
+
+    @Test func skipOpensReviewOfThisDraft() {
+        let vm = typedModel("Hẹn nha sĩ")
+        #expect(vm.skipFollowUp() == nil)                                 // only in mode 4
+        vm.showFollowUp(.init(question: "Lịch hẹn vào ngày nào, mấy giờ?"))
+        #expect(vm.skipFollowUp() == vm.draftId)
+        #expect(vm.lastAnswer == .skipped)
+        #expect(UserMessage(key: "conv.followup.skip").text == "Bỏ qua, tôi sẽ sửa sau")
+    }
+
     @Test func leavingStopsMicAndVoice() async {
         let vm = model()
         vm.onDisappear()

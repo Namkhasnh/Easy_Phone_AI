@@ -2988,6 +2988,18 @@
           }
         }
       }
+    },
+    "conv.followup.skip": {
+      "comment": "UI_SCREENS S03",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bỏ qua, tôi sẽ sửa sau"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
