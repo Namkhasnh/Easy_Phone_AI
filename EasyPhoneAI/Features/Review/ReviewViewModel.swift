@@ -210,12 +210,24 @@ import Observation
         }
     }
 
-    /// `error.<code>` (D-249); unknown code → `error.generic` (UI_SCREENS §8).
-    private func errorMessage(_ step: TaskStep) -> String? {
+    /// `error.<code>` (D-249); unknown code → `error.generic` (UI_SCREENS §8). Fills `{feature}` / `{app}`.
+    func errorMessage(_ step: TaskStep) -> String? {
         guard let code = step.errorCode else { return nil }
         let key = "error.\(code)"
-        let text = UserMessage(key: key).text
+        let text = UserMessage(key: key, args: Self.errorArgs(code: code, kind: step.kind)).text
         return text == key ? UserMessage(key: "error.generic").text : text
+    }
+
+    static func errorArgs(code: String, kind: TaskKind) -> [String] {
+        if let capability = Capability.allCases.first(where: { code == "permission.\($0.rawValue).denied" }) {
+            // TODO(spec): `{feature}` = `perm.<c>.feature` (PROGRESS DOC-37).
+            return [UserMessage(key: "perm.\(capability.rawValue).feature").text]
+        }
+        if code == "eventkit.saveFailed" {
+            // TODO(spec): `{app}` names: only `app.phone` is in UI_SCREENS; `app.calendar` / `app.reminders` added.
+            return [UserMessage(key: kind == .reminder ? "app.reminders" : "app.calendar").text]
+        }
+        return []
     }
 
     // MARK: - Intents

@@ -3720,6 +3720,126 @@
           }
         }
       }
+    },
+    "app.calendar": {
+      "comment": "{app} of error.eventkit.saveFailed; not in UI_SCREENS (TODO(spec), DOC-37)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lịch"
+          }
+        }
+      }
+    },
+    "app.reminders": {
+      "comment": "{app} of error.eventkit.saveFailed; not in UI_SCREENS (TODO(spec), DOC-37)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lời nhắc"
+          }
+        }
+      }
+    },
+    "error.permission.calendar.denied": {
+      "comment": "UI_SCREENS §8 (D-249)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ứng dụng chưa được phép dùng %@."
+          }
+        }
+      }
+    },
+    "error.permission.reminders.denied": {
+      "comment": "UI_SCREENS §8 (D-249)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ứng dụng chưa được phép dùng %@."
+          }
+        }
+      }
+    },
+    "error.permission.contacts.denied": {
+      "comment": "UI_SCREENS §8 (D-249)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ứng dụng chưa được phép dùng %@."
+          }
+        }
+      }
+    },
+    "error.permission.microphone.denied": {
+      "comment": "UI_SCREENS §8 (D-249)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ứng dụng chưa được phép dùng %@."
+          }
+        }
+      }
+    },
+    "error.permission.speech.denied": {
+      "comment": "UI_SCREENS §8 (D-249)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ứng dụng chưa được phép dùng %@."
+          }
+        }
+      }
+    },
+    "error.permission.camera.denied": {
+      "comment": "UI_SCREENS §8 (D-249)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ứng dụng chưa được phép dùng %@."
+          }
+        }
+      }
+    },
+    "error.permission.photos.denied": {
+      "comment": "UI_SCREENS §8 (D-249)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ứng dụng chưa được phép dùng %@."
+          }
+        }
+      }
+    },
+    "error.permission.location.denied": {
+      "comment": "UI_SCREENS §8 (D-249)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ứng dụng chưa được phép dùng %@."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

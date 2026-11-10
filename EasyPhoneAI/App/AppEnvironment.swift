@@ -31,21 +31,32 @@ struct AppEnvironment: Sendable {
         let config = AppConfig.fromMainBundle()
         let auth = LiveAuthService(config: config)
         let drafts = LiveTaskRepository(container: container)
+        let permissions = LivePermissionManager()
+        let calendar = LiveCalendarService()
         return AppEnvironment(config: config, auth: auth,
                               api: APIClient(config: config, auth: auth, client: .fromMainBundle()),
                               drafts: drafts,
                               localData: LiveLocalDataRepository(container: container),
-                              engine: TaskEngine(repository: drafts),
+                              engine: TaskEngine(repository: drafts, executors: executors(calendar, permissions)),
                               speech: LiveSpeechService(), tts: LiveTTSService(),
-                              permissions: LivePermissionManager(), calendar: LiveCalendarService())
+                              permissions: permissions, calendar: calendar)
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
         let drafts = MockTaskRepository()
+        let permissions = MockPermissionManager()
+        let calendar = MockCalendarService()
         return AppEnvironment(config: .mock, auth: MockAuthService(), api: MockAPIClient(), drafts: drafts,
-                              localData: MockLocalDataRepository(), engine: TaskEngine(repository: drafts),
+                              localData: MockLocalDataRepository(),
+                              engine: TaskEngine(repository: drafts, executors: executors(calendar, permissions)),
                               speech: MockSpeechService(), tts: MockTTSService(),
-                              permissions: MockPermissionManager(), calendar: MockCalendarService())
+                              permissions: permissions, calendar: calendar)
+    }
+
+    /// One executor per kind (ARCHITECTURE §5.1); the others are added by their items (1C.5, 1C.10 – 1C.13, 1D).
+    private static func executors(_ calendar: any CalendarService,
+                                  _ permissions: any PermissionManager) -> [TaskKind: any StepExecutor] {
+        [.calendarEvent: CalendarExecutor(calendar: calendar, permissions: permissions)]
     }
 }
 
