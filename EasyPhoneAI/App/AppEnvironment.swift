@@ -24,6 +24,8 @@ struct AppEnvironment: Sendable {
     let tts: any TTSService
     /// Status + request for the 8 capabilities; asked only after the S18 explainer (1C.1, D-185).
     let permissions: any PermissionManager
+    /// EventKit events: conflicts, search, save with `easyphone:<stepId>` (1C.2, D-225).
+    let calendar: any CalendarService
 
     @MainActor static func live(container: ModelContainer) -> AppEnvironment {
         let config = AppConfig.fromMainBundle()
@@ -35,7 +37,7 @@ struct AppEnvironment: Sendable {
                               localData: LiveLocalDataRepository(container: container),
                               engine: TaskEngine(repository: drafts),
                               speech: LiveSpeechService(), tts: LiveTTSService(),
-                              permissions: LivePermissionManager())
+                              permissions: LivePermissionManager(), calendar: LiveCalendarService())
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
@@ -43,7 +45,7 @@ struct AppEnvironment: Sendable {
         return AppEnvironment(config: .mock, auth: MockAuthService(), api: MockAPIClient(), drafts: drafts,
                               localData: MockLocalDataRepository(), engine: TaskEngine(repository: drafts),
                               speech: MockSpeechService(), tts: MockTTSService(),
-                              permissions: MockPermissionManager())
+                              permissions: MockPermissionManager(), calendar: MockCalendarService())
     }
 }
 

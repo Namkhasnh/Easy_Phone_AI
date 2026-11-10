@@ -12,6 +12,18 @@
 	<string>EasyPhoneK dùng micro để nghe yêu cầu bạn nói.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>EasyPhoneK chuyển lời bạn nói thành chữ để hiểu yêu cầu.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>EasyPhoneK xem và tạo lịch hẹn theo yêu cầu của bạn. Lịch chỉ được xử lý trên điện thoại.</string>
+	<key>NSRemindersFullAccessUsageDescription</key>
+	<string>EasyPhoneK tạo và quản lý lời nhắc theo yêu cầu của bạn.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>EasyPhoneK tìm người trong danh bạ để gọi hoặc nhắn tin. Danh bạ không được gửi lên máy chủ.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>EasyPhoneK dùng camera để chụp giấy tờ và đọc chữ giúp bạn.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>EasyPhoneK đọc ảnh bạn chọn để lấy thông tin như ngày hẹn, địa chỉ.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>EasyPhoneK dùng vị trí để tìm địa điểm gần bạn.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
