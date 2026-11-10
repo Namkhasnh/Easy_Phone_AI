@@ -3,6 +3,8 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from app.config import Settings
 from app.services import prompts
 from app.services.prompt_context import load_catalog
@@ -95,6 +97,7 @@ def _doc_lines(start: str, end: str) -> list[str]:
     return lines[i : j + 1]
 
 
+@pytest.mark.skipif(not (DOCS / "AI_PROMPTS.md").exists(), reason="docs/ is local only (not in git); runs on the owner's Mac")
 def test_parse_prompt_is_the_doc_text_verbatim():
     text = prompts.load("parse", Settings().PROMPT_VERSION_PARSE)
     security = _doc_lines("SECURITY RULES", "- Output must match the JSON schema exactly.")
