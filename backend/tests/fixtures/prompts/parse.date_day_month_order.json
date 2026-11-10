@@ -1,0 +1,49 @@
+{
+  "case": "date_day_month_order",
+  "source": "AI_PROMPTS §8.1 row 8",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Nhắc tôi 3/4 2 giờ nộp hồ sơ",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Nộp hồ sơ",
+            "confidence": 0.9,
+            "sourceQuote": "nộp hồ sơ"
+          },
+          {
+            "id": "dueDate",
+            "value": "2027-04-03T14:00:00+07:00",
+            "confidence": 0.6,
+            "sourceQuote": "3/4 2 giờ"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  },
+  "liveMatch": {
+    "confidence": "≤ 0.6"
+  }
+}

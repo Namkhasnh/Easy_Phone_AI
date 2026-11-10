@@ -1,0 +1,60 @@
+{
+  "case": "date_friday_today",
+  "source": "AI_PROMPTS §8.1 row 3 = API_CONTRACT §7.1 Example C",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Hẹn nha sĩ thứ Sáu 9 giờ",
+    "inputMode": "text",
+    "now": "2026-11-13T07:30:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "calendarEvent",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Hẹn nha sĩ",
+            "confidence": 0.9,
+            "sourceQuote": "Hẹn nha sĩ"
+          },
+          {
+            "id": "startDate",
+            "value": null,
+            "confidence": null,
+            "sourceQuote": "thứ Sáu 9 giờ"
+          }
+        ],
+        "dateCandidates": [
+          {
+            "fieldId": "startDate",
+            "value": "2026-11-13T09:00:00+07:00",
+            "label": "Thứ Sáu 13/11 (hôm nay)"
+          },
+          {
+            "fieldId": "startDate",
+            "value": "2026-11-20T09:00:00+07:00",
+            "label": "Thứ Sáu 20/11"
+          }
+        ]
+      }
+    ],
+    "followUpQuestion": "Bạn muốn hẹn thứ Sáu nào?",
+    "unsupported": null
+  },
+  "liveMatch": {
+    "followUpQuestion": "present"
+  }
+}

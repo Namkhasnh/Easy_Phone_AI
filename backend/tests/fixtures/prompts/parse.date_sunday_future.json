@@ -1,0 +1,60 @@
+{
+  "case": "date_sunday_future",
+  "source": "AI_PROMPTS §8.1 row 1",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Chủ nhật 3 giờ chiều đi đám cưới",
+    "inputMode": "text",
+    "now": "2026-11-08T08:00:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "calendarEvent",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Đi đám cưới",
+            "confidence": 0.9,
+            "sourceQuote": "đi đám cưới"
+          },
+          {
+            "id": "startDate",
+            "value": null,
+            "confidence": null,
+            "sourceQuote": "Chủ nhật 3 giờ chiều"
+          }
+        ],
+        "dateCandidates": [
+          {
+            "fieldId": "startDate",
+            "value": "2026-11-08T15:00:00+07:00",
+            "label": "Chủ nhật 08/11 (hôm nay)"
+          },
+          {
+            "fieldId": "startDate",
+            "value": "2026-11-15T15:00:00+07:00",
+            "label": "Chủ nhật 15/11"
+          }
+        ]
+      }
+    ],
+    "followUpQuestion": "Bạn muốn chọn Chủ nhật nào?",
+    "unsupported": null
+  },
+  "liveMatch": {
+    "followUpQuestion": "present"
+  }
+}

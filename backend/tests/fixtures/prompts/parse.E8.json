@@ -1,0 +1,32 @@
+{
+  "case": "E8",
+  "source": "AI_PROMPTS §7 E8",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Nhắc tôi uống thuốc mỗi sáng 7 giờ",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [],
+    "followUpQuestion": null,
+    "unsupported": {
+      "reason": "recurringEvent",
+      "message": "Chưa hỗ trợ nhắc lặp lại mỗi ngày."
+    }
+  },
+  "liveMatch": {
+    "message": "startsWith Chưa hỗ trợ"
+  }
+}

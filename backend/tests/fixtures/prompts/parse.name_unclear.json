@@ -1,0 +1,40 @@
+{
+  "case": "name_unclear",
+  "source": "AI_PROMPTS §8.2",
+  "request": {
+    "schemaVersion": 1,
+    "text": "gọi cho bác sĩ hôm qua",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "call",
+        "operation": "open",
+        "fields": [
+          {
+            "id": "recipientName",
+            "value": "bác sĩ hôm qua",
+            "confidence": 0.5,
+            "sourceQuote": "bác sĩ hôm qua"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

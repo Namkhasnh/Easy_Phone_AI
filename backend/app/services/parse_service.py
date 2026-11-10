@@ -27,8 +27,16 @@ logger = logging.getLogger("easyphone.parse")
 DATETIME_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 URL_RE = re.compile(r"(https?://\S+|www\.\S+)", re.I)
+# D-247: `channel` = "sms" (the only catalog option) or a service id from `SupportedServices.json`, which only the
+# device has (DATA_MODEL §7.1 rule 4). The backend checks the id's shape; the device checks that it exists.
+SERVICE_ID_RE = re.compile(r"^[a-z][a-z0-9]{0,31}$")
+SERVICE_ID_FIELDS = {("sms", "channel")}
 SMS_BODY_MAX = 2000  # AI_PROMPTS §9.4
 MAX_DATE_CANDIDATES = 3  # AI_PROMPTS §3 DATES
+# AI_PROMPTS §8.4 "very long dictation": keep the first 5 steps and ask. The text is the doc's expected output.
+# TODO(spec): DOC-33 — the rule is only in §8.4 (not in the §3 prompt or the §9 checks); enforced here.
+MAX_STEPS = 5
+TOO_MANY_STEPS_QUESTION = "Mình làm 5 việc đầu trước nhé?"
 FALLBACK_UNSUPPORTED_MESSAGE = "Chưa hỗ trợ yêu cầu này."  # TODO(spec): text when the backend (not the LLM) sets it
 
 
@@ -81,7 +89,7 @@ def _parse_dt(value: str) -> datetime | None:
         return None
 
 
-def _encoded(value: str, field: dict[str, Any]) -> bool:
+def _encoded(value: str, field: dict[str, Any], kind: str = "") -> bool:
     """DATA_MODEL §1.6, same rules as Swift `Validator.isEncoded` (AI_PROMPTS §9.1 for dates)."""
     t = field["type"]
     if t == "text":
@@ -112,7 +120,9 @@ def _encoded(value: str, field: dict[str, Any]) -> bool:
             return False
         return len(parts) == 2 and -90 <= lat <= 90 and -180 <= lng <= 180
     if t == "enumChoice":
-        return "options" not in field or value in field["options"]  # sms `channel`: no options, checked on device (D-247)
+        if (kind, field["id"]) in SERVICE_ID_FIELDS:
+            return value in field.get("options", []) or bool(SERVICE_ID_RE.match(value))
+        return "options" not in field or value in field["options"]
     if t == "phone":
         return "\n" not in value  # raw OCR text before device normalization (§1.6)
     return False  # contactRef / placeRef never come from the LLM
@@ -143,7 +153,7 @@ def _clean_field(f: dict, spec: dict, kind: str, request_text: str) -> dict:
     value, confidence, quote = f.get("value"), f.get("confidence"), f.get("sourceQuote")
     if isinstance(value, str) and spec["type"] == "text":
         value = value.strip()
-    valid = value is not None and _encoded(value, spec)
+    valid = value is not None and _encoded(value, spec, kind)
     if valid and kind == "sms" and spec["id"] == "body":
         # AI_PROMPTS §9.4: ≤ 2000 chars; no URL the user did not say.
         urls = URL_RE.findall(value)
@@ -210,4 +220,6 @@ def post_process(raw: dict, req: ParseRequest, settings: Settings) -> dict:
         return _unsupported("bulkAction")  # §9.5, D-280
     question = raw.get("followUpQuestion")
     question = (question.strip() or None) if isinstance(question, str) else None
+    if len(steps) > MAX_STEPS:
+        steps, question = steps[:MAX_STEPS], TOO_MANY_STEPS_QUESTION
     return {"steps": steps, "followUpQuestion": question, "unsupported": None}

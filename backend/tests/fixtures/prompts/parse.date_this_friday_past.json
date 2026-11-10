@@ -1,0 +1,49 @@
+{
+  "case": "date_this_friday_past",
+  "source": "AI_PROMPTS §8.1 row 4",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Hẹn khám mắt thứ Sáu tuần này 9 giờ",
+    "inputMode": "text",
+    "now": "2026-11-14T09:00:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "calendarEvent",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Khám mắt",
+            "confidence": 0.9,
+            "sourceQuote": "khám mắt"
+          },
+          {
+            "id": "startDate",
+            "value": null,
+            "confidence": null,
+            "sourceQuote": "thứ Sáu tuần này 9 giờ"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": "Thứ Sáu tuần này đã qua. Bạn muốn ngày nào?",
+    "unsupported": null
+  },
+  "liveMatch": {
+    "followUpQuestion": "present"
+  }
+}

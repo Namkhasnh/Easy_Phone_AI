@@ -1,0 +1,80 @@
+{
+  "case": "name_two_recipients",
+  "source": "AI_PROMPTS §8.2, D-252",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Nhắn Minh và Lan là em đến muộn",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "sms",
+        "operation": "open",
+        "fields": [
+          {
+            "id": "recipientName",
+            "value": "Minh",
+            "confidence": 0.95,
+            "sourceQuote": "Minh"
+          },
+          {
+            "id": "body",
+            "value": "Em đến muộn ạ.",
+            "confidence": 0.8,
+            "sourceQuote": null
+          },
+          {
+            "id": "channel",
+            "value": "sms",
+            "confidence": 0.6,
+            "sourceQuote": null
+          }
+        ],
+        "dateCandidates": []
+      },
+      {
+        "kind": "sms",
+        "operation": "open",
+        "fields": [
+          {
+            "id": "recipientName",
+            "value": "Lan",
+            "confidence": 0.95,
+            "sourceQuote": "Lan"
+          },
+          {
+            "id": "body",
+            "value": "Em đến muộn ạ.",
+            "confidence": 0.8,
+            "sourceQuote": null
+          },
+          {
+            "id": "channel",
+            "value": "sms",
+            "confidence": 0.6,
+            "sourceQuote": null
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  },
+  "liveMatch": {
+    "body": "fuzzy"
+  }
+}

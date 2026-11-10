@@ -217,3 +217,12 @@ def test_locked_key_in_current_draft_rejected():
     body["context"]["currentDraft"]["steps"][0]["fields"][0]["contactId"] = "abc"
     with pytest.raises(Exception):
         ParseRequest.model_validate(body)
+
+
+def test_sms_channel_accepts_service_ids_shape_only():
+    out = run(draft(step("sms", "open", [f("channel", "zalo"), f("recipientName", "Lan")]),
+                    step("sms", "open", [f("channel", "Zalo App"), f("recipientName", "Lan")])))
+    assert out["steps"][0]["fields"][0]["value"] == "zalo"  # D-247: existence checked on device
+    assert out["steps"][1]["fields"][0]["value"] is None
+    other = run(draft(step("place", "open", [f("mapsApp", "waze")])))
+    assert other["steps"][0]["fields"][0]["value"] is None  # other enums keep the catalog options

@@ -1,0 +1,46 @@
+{
+  "case": "E2",
+  "source": "AI_PROMPTS §7 E2",
+  "request": {
+    "schemaVersion": 1,
+    "text": "30 phút nữa nhắc tôi tắt bếp",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Tắt bếp",
+            "confidence": 0.95,
+            "sourceQuote": "tắt bếp"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-08T18:37:00+07:00",
+            "confidence": 0.95,
+            "sourceQuote": "30 phút nữa"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

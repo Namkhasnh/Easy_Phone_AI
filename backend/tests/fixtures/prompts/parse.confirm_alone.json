@@ -1,0 +1,32 @@
+{
+  "case": "confirm_alone",
+  "source": "AI_PROMPTS §8.4 row 1, D-100",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Ừ",
+    "inputMode": "voice",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [],
+    "followUpQuestion": null,
+    "unsupported": {
+      "reason": "other",
+      "message": "Chưa hỗ trợ câu này. Bạn nói việc cần làm nhé."
+    }
+  },
+  "liveMatch": {
+    "message": "startsWith Chưa hỗ trợ"
+  }
+}
