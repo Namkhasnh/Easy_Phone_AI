@@ -22,6 +22,8 @@ struct AppEnvironment: Sendable {
     let speech: any SpeechService
     /// Text-to-speech, vi-VN on device (1B.3, ARCHITECTURE §4.3).
     let tts: any TTSService
+    /// Status + request for the 8 capabilities; asked only after the S18 explainer (1C.1, D-185).
+    let permissions: any PermissionManager
 
     @MainActor static func live(container: ModelContainer) -> AppEnvironment {
         let config = AppConfig.fromMainBundle()
@@ -32,14 +34,16 @@ struct AppEnvironment: Sendable {
                               drafts: drafts,
                               localData: LiveLocalDataRepository(container: container),
                               engine: TaskEngine(repository: drafts),
-                              speech: LiveSpeechService(), tts: LiveTTSService())
+                              speech: LiveSpeechService(), tts: LiveTTSService(),
+                              permissions: LivePermissionManager())
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
         let drafts = MockTaskRepository()
         return AppEnvironment(config: .mock, auth: MockAuthService(), api: MockAPIClient(), drafts: drafts,
                               localData: MockLocalDataRepository(), engine: TaskEngine(repository: drafts),
-                              speech: MockSpeechService(), tts: MockTTSService())
+                              speech: MockSpeechService(), tts: MockTTSService(),
+                              permissions: MockPermissionManager())
     }
 }
 
