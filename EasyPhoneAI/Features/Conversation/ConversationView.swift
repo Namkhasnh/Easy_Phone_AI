@@ -232,10 +232,8 @@ struct ConversationView: View {
     private func assistantBubble<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
         HStack(alignment: .top, spacing: Tokens.Space.s) {
             if viewModel.showsMascot {
-                // TODO(spec): mascot art — `MascotView` with the mode's pose comes with 1B.16; SF Symbol placeholder.
-                Image(systemName: "pawprint.fill")
-                    .font(.system(size: Tokens.Size.stepBadge * 0.5))   // decorative, fixed inside its fixed circle
-                    .foregroundStyle(Tokens.Colors.onHoney)
+                // Pose follows the mode (UI_SCREENS S03): listening / thinking / asking / sorry.
+                MascotView(pose: viewModel.mascotPose, size: Tokens.Size.stepBadge - 2)
                     .frame(width: Tokens.Size.stepBadge, height: Tokens.Size.stepBadge)
                     .background(Tokens.Colors.honey, in: Circle())
                     .accessibilityHidden(true)

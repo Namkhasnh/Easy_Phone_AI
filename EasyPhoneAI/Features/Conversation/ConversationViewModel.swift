@@ -153,6 +153,18 @@ import OSLog
     /// Khoai avatar on assistant bubbles (P-41); hidden when `settings.pet` is off (D-289).
     var showsMascot: Bool { settings.petEnabled }
 
+    /// UI_SCREENS S03: listening → `listening`, working → `thinking`, follow-up → `asking`, unsupported / any notice
+    /// (parse failed, speech empty, errors) → `sorry`.
+    var mascotPose: MascotPose {
+        switch mode {
+        case .unsupported: return .sorry
+        case _ where noticeKey != nil: return .sorry
+        case .working: return .thinking
+        case .followUp: return .asking
+        case .listening, .transcript: return .listening
+        }
+    }
+
     // MARK: - Listening (mode 1)
 
     /// Starts a session for the request and returns when it ended (final, stop, error). TTS stops first (AC5).

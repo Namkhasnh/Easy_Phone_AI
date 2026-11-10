@@ -61,11 +61,9 @@ struct HomeView: View {
 
     // MARK: - Parts
 
-    // TODO(spec): mascot art — `MascotView(.greeting)` comes with 1B.16; SF Symbol placeholder until then (P-41).
+    /// Khoai waves once, then idles (UI_SCREENS S02, P-41). Decorative, fixed-size slot (~96pt).
     private var mascotSlot: some View {
-        Image(systemName: "pawprint.fill")
-            .font(.system(size: Tokens.Size.iconHero))       // decorative, fixed-size slot (~96pt)
-            .foregroundStyle(Tokens.Colors.onHoney)
+        MascotView(pose: .greeting, size: 88)
             .frame(width: 96, height: 96)
             .background(Tokens.Colors.honey, in: Circle())
             .accessibilityHidden(true)
