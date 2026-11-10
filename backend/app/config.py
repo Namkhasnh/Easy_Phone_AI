@@ -22,6 +22,16 @@ class Settings(BaseSettings):
     MODEL_SUMMARIZE: str = "gpt-4o-mini"  # Phase 2 only
     PROMPT_VERSION_PARSE: int = 1
     PROMPT_VERSION_EXTRACT: int = 1
+    PROMPT_VERSION_REPAIR: int = 1
+    LLM_TEMPERATURE: float | None = None  # AI_PROMPTS §0.2: sent only when set (some models reject it)
+    # USD per 1M tokens [input, output], for `usage_events.cost_usd` + the spend cap (D-087).
+    # TODO(spec): prices are not in the docs; values = OpenAI list prices known 2026-11 — re-check when D-052 is locked.
+    MODEL_PRICES_USD_PER_1M: dict[str, list[float]] = {
+        "gpt-4o-mini": [0.15, 0.60],
+        "gpt-4o": [2.50, 10.00],
+    }
+    # A model without a price is charged at this (high) rate, so the spend cap can only trip early, never late.
+    UNKNOWN_MODEL_PRICE_USD_PER_1M: list[float] = [10.0, 40.0]
 
     # Quota (D-091, D-232, D-224) and units (API_CONTRACT §4.1)
     FREE_DAILY_QUOTA: int = 10

@@ -12,8 +12,9 @@ from app.auth import CurrentUser, verify_token
 from app.config import Settings, get_settings
 from app.errors import AppError
 from app.services import accounts
+from app.services.llm import LLMClient, make_completions
 
-__all__ = ["AuthedUser", "CurrentUser", "Settings", "authed_user", "clock", "current_user", "db", "get_settings", "idempotency_key", "request_id"]
+__all__ = ["AuthedUser", "CurrentUser", "Settings", "authed_user", "clock", "current_user", "db", "get_settings", "idempotency_key", "llm", "request_id"]
 
 
 @dataclass(frozen=True)
@@ -32,6 +33,15 @@ def idempotency_key(key: str | None = Header(default=None, alias="Idempotency-Ke
     if not _LOWER_UUID.match(key):
         raise AppError("invalid_input", 422, False, details={"field": "Idempotency-Key", "reason": "notLowercaseUuid"})
     return key
+
+
+def llm(request: Request, settings: Settings = Depends(get_settings)) -> LLMClient:
+    """One OpenAI client per app, created on first use (health / me never need the key)."""
+    client = getattr(request.app.state, "llm", None)
+    if client is None:
+        client = LLMClient(settings, make_completions(settings))
+        request.app.state.llm = client
+    return client
 
 
 def request_id(request: Request) -> str:
