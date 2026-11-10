@@ -2784,6 +2784,30 @@
           }
         }
       }
+    },
+    "settings.voice.test": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nghe thử"
+          }
+        }
+      }
+    },
+    "settings.voice.sample": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xin chào, mình là EasyPhoneK."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

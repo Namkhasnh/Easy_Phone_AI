@@ -27,7 +27,10 @@ struct SettingsView: View {
                 }
                 .padding(.vertical, Tokens.Space.s)
                 // TODO(spec): range of the rate slider is not specified; 0.3–0.6 around the 0.45 default (DATA_MODEL §5).
-                // TODO(spec): "Nghe thử" needs TTSService (1B.3).
+                SecondaryButton("settings.voice.test", systemImage: "speaker.wave.2") {
+                    Task { await viewModel.testVoice() }
+                }
+                .padding(.vertical, Tokens.Space.s)
             }
 
             Section(header: header("settings.display")) {
@@ -123,6 +126,7 @@ struct SettingsView: View {
                          onConfirm: { Task { await viewModel.perform(confirm) } },
                          onCancel: { viewModel.pendingConfirm = nil })
         }
+        .onDisappear { viewModel.stopVoice() }
         .accessibilityIdentifier("screen.S15")
     }
 

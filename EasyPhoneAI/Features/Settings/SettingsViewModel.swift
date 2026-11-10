@@ -19,11 +19,14 @@ import Observation
     private let localData: any LocalDataRepository
     private let drafts: any TaskRepository
     private let auth: any AuthService
+    private let tts: any TTSService
 
-    init(localData: any LocalDataRepository, drafts: any TaskRepository, auth: any AuthService) {
+    init(localData: any LocalDataRepository, drafts: any TaskRepository, auth: any AuthService,
+         tts: any TTSService = MockTTSService()) {
         self.localData = localData
         self.drafts = drafts
         self.auth = auth
+        self.tts = tts
         settings = localData.settings()
         nicknames = localData.nicknames()
     }
@@ -40,6 +43,14 @@ import Observation
     }
 
     func save() { localData.saveSettings() }
+
+    /// "Nghe thử" (S15): speaks `settings.voice.sample` at the chosen rate. Works even when voice is off (explicit tap).
+    func testVoice() async {
+        await tts.speak(UserMessage(key: "settings.voice.sample").text, rate: settings.speechRate)
+    }
+
+    /// Leaving Settings or starting a new sample cuts the voice off (spec §6.2 AC5).
+    func stopVoice() { tts.stop() }
 
     func deleteNickname(_ nickname: Nickname) {
         localData.delete(nickname)
