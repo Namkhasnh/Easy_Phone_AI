@@ -1,0 +1,614 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "steps",
+    "followUpQuestion",
+    "unsupported"
+  ],
+  "properties": {
+    "steps": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "operation",
+              "fields",
+              "dateCandidates"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "calendarEvent"
+                ]
+              },
+              "operation": {
+                "type": "string",
+                "enum": [
+                  "create",
+                  "update",
+                  "delete"
+                ]
+              },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "value",
+                    "confidence",
+                    "sourceQuote"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "enum": [
+                        "title",
+                        "startDate",
+                        "endDate",
+                        "allDay",
+                        "location",
+                        "notes",
+                        "alertMinutesBefore"
+                      ]
+                    },
+                    "value": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "confidence": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "sourceQuote": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              },
+              "dateCandidates": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "fieldId",
+                    "value",
+                    "label"
+                  ],
+                  "properties": {
+                    "fieldId": {
+                      "type": "string",
+                      "enum": [
+                        "startDate",
+                        "endDate"
+                      ]
+                    },
+                    "value": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "operation",
+              "fields",
+              "dateCandidates"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "reminder"
+                ]
+              },
+              "operation": {
+                "type": "string",
+                "enum": [
+                  "create",
+                  "update",
+                  "delete",
+                  "complete",
+                  "snooze"
+                ]
+              },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "value",
+                    "confidence",
+                    "sourceQuote"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "enum": [
+                        "title",
+                        "dueDate",
+                        "notes",
+                        "snoozeOption"
+                      ]
+                    },
+                    "value": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "confidence": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "sourceQuote": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              },
+              "dateCandidates": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "fieldId",
+                    "value",
+                    "label"
+                  ],
+                  "properties": {
+                    "fieldId": {
+                      "type": "string",
+                      "enum": [
+                        "dueDate"
+                      ]
+                    },
+                    "value": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "operation",
+              "fields",
+              "dateCandidates"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "call"
+                ]
+              },
+              "operation": {
+                "type": "string",
+                "enum": [
+                  "open"
+                ]
+              },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "value",
+                    "confidence",
+                    "sourceQuote"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "enum": [
+                        "recipientName"
+                      ]
+                    },
+                    "value": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "confidence": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "sourceQuote": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              },
+              "dateCandidates": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "fieldId",
+                    "value",
+                    "label"
+                  ],
+                  "properties": {
+                    "fieldId": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "operation",
+              "fields",
+              "dateCandidates"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "sms"
+                ]
+              },
+              "operation": {
+                "type": "string",
+                "enum": [
+                  "open"
+                ]
+              },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "value",
+                    "confidence",
+                    "sourceQuote"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "enum": [
+                        "recipientName",
+                        "body",
+                        "channel"
+                      ]
+                    },
+                    "value": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "confidence": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "sourceQuote": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              },
+              "dateCandidates": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "fieldId",
+                    "value",
+                    "label"
+                  ],
+                  "properties": {
+                    "fieldId": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "operation",
+              "fields",
+              "dateCandidates"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "place"
+                ]
+              },
+              "operation": {
+                "type": "string",
+                "enum": [
+                  "create",
+                  "open"
+                ]
+              },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "value",
+                    "confidence",
+                    "sourceQuote"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "enum": [
+                        "query",
+                        "name",
+                        "address",
+                        "coordinate",
+                        "label",
+                        "customLabel",
+                        "mapsApp"
+                      ]
+                    },
+                    "value": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "confidence": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "sourceQuote": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              },
+              "dateCandidates": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "fieldId",
+                    "value",
+                    "label"
+                  ],
+                  "properties": {
+                    "fieldId": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "operation",
+              "fields",
+              "dateCandidates"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "ocr"
+                ]
+              },
+              "operation": {
+                "type": "string",
+                "enum": [
+                  "create"
+                ]
+              },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "value",
+                    "confidence",
+                    "sourceQuote"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "enum": [
+                        "extractedText",
+                        "title",
+                        "dateTime",
+                        "address",
+                        "personName",
+                        "phoneNumber",
+                        "nextAction"
+                      ]
+                    },
+                    "value": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "confidence": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "sourceQuote": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              },
+              "dateCandidates": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "fieldId",
+                    "value",
+                    "label"
+                  ],
+                  "properties": {
+                    "fieldId": {
+                      "type": "string",
+                      "enum": [
+                        "dateTime"
+                      ]
+                    },
+                    "value": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "followUpQuestion": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "unsupported": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "reason",
+            "message"
+          ],
+          "properties": {
+            "reason": {
+              "type": "string",
+              "enum": [
+                "recurringEvent",
+                "invitation",
+                "emailSend",
+                "booking",
+                "payment",
+                "multiPageOcr",
+                "bulkAction",
+                "phaseNotEnabled",
+                "other"
+              ]
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}
