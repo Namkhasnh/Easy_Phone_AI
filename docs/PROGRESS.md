@@ -62,7 +62,7 @@ Copy it to the repo root in item 0.1. Keep it in sync when this file's protocol 
 | Last updated | 2026-11-10 |
 | Current phase | **Phase 1B — Input** (Phase 0 exit ✅ 2026-11-09, Phase 1A exit ✅ 2026-11-10) |
 | Working on | — |
-| Last commit | `[1A] S15 Settings shell` on branch `demo_git` (not pushed) |
+| Last commit | `[1A] petEnabled + snooze hour key (DOC-27)` on branch `demo_git` (pushed 2026-11-10) |
 | Build status | ✅ Simulator build; ✅ device build signed with the free Personal Team (`DEVELOPMENT_TEAM` in git-ignored `Secrets.xcconfig`) |
 | Test status | ✅ iOS `test` green (incl. `ContractFixtureTests`, `TaskEnumsTests`, `TaskModelTests`, `FieldCatalogTests`, `TaskStateMachineTests`, `ApprovalHashTests`, `ValidatorTests`, `TaskEngineTests`, `TaskEngineConfirmTests`, `TaskDraftStatusTests`, `LiveTaskRepositoryTests`, `NameNormalizerTests`, `LiveLocalDataRepositoryTests`, `TokenContrastTests`, `ComponentStringsTests`, `FieldFormatterTests`, `ReviewViewModelTests`, `FieldEditorTests`, `HistoryTests`, `SettingsTests`); ✅ backend `uv run pytest -q` 113/113; ✅ `run_db_tests.sh` 6/6 (earlier session) |
 | Next action | 1B.1: S02 Home — toolbar Lịch sử / Cài đặt (→ S14 / S15), `MascotView` slot (placeholder until 1B.16), `display` greeting "Bạn cần mình giúp gì?", `ListeningMic` 120pt + caption, multi-line text field + "Gửi" when non-empty, "Chụp ảnh giấy tờ", quick links (hidden in simple mode except Lịch hôm nay), "Việc chưa xong" (max 3 + Xem tất cả); replaces the user-id placeholder in `RootView` — UI_SCREENS S02 |
