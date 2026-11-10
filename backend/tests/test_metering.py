@@ -62,3 +62,12 @@ def test_idempotency_key_header():
         assert resp.status_code == 422
         err = resp.json()["error"]
         assert err["code"] == "invalid_input" and err["details"]["field"] == "Idempotency-Key"
+
+
+def test_quota_headers_and_json():
+    from app.services.quota import QuotaInfo, quota_headers, quota_json
+
+    q = QuotaInfo(10, 3, 7, datetime.fromisoformat("2026-11-10T00:00:00+07:00"))
+    assert quota_headers(q) == {
+        "X-Quota-Limit": "10", "X-Quota-Remaining": "7", "X-Quota-Resets-At": "2026-11-10T00:00:00+07:00"}
+    assert quota_json(q) == {"limit": 10, "used": 3, "remaining": 7, "resetsAt": "2026-11-10T00:00:00+07:00"}

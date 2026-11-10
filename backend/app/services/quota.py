@@ -67,7 +67,16 @@ async def entitlement(conn: asyncpg.Connection, user_id: str, settings: Settings
 
 def quota_json(q: QuotaInfo) -> dict:
     """API_CONTRACT §4.5 `Quota` object."""
-    return {"limit": q.limit, "used": q.used, "remaining": q.remaining, "resetsAt": q.resets_at.isoformat()}
+    return {"limit": q.limit, "used": q.used, "remaining": q.remaining, "resetsAt": q.resets_at.isoformat(timespec="seconds")}
+
+
+def quota_headers(q: QuotaInfo) -> dict[str, str]:
+    """`X-Quota-*` response headers after this request (API_CONTRACT §1, D-234)."""
+    return {
+        "X-Quota-Limit": str(q.limit),
+        "X-Quota-Remaining": str(q.remaining),
+        "X-Quota-Resets-At": q.resets_at.isoformat(timespec="seconds"),
+    }
 
 
 async def reserve(

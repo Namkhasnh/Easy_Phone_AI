@@ -219,3 +219,129 @@ def test_parallel_new_keys_cannot_exceed_limit():
             await c.close()
 
     asyncio.run(body())
+
+
+# ---- 1B.6: rest of the API_CONTRACT §11 quota suite ----
+
+LOCAL_2359 = datetime(2026, 11, 9, 16, 59, 59, tzinfo=UTC)  # 23:59:59 Asia/Ho_Chi_Minh
+LOCAL_0000 = datetime(2026, 11, 9, 17, 0, 0, tzinfo=UTC)  # 00:00:00 next local day
+
+
+def test_day_boundary_at_local_midnight():
+    async def body():
+        c = await connect()
+        uid = await new_user(c)
+        await call(c, uid, key(), now=LOCAL_2359)
+        last = await call(c, uid, key(), now=LOCAL_2359)
+        assert last.quota.remaining == 0 and last.quota.resets_at.isoformat() == "2026-11-10T00:00:00+07:00"
+        with pytest.raises(AppError):
+            await call(c, uid, key(), now=LOCAL_2359)
+        fresh = await call(c, uid, key(), now=LOCAL_0000)  # new local day: limit is back
+        assert (fresh.quota.used, fresh.quota.remaining) == (1, 1)
+        assert fresh.quota.resets_at.isoformat() == "2026-11-11T00:00:00+07:00"
+        await c.close()
+
+    asyncio.run(body())
+
+
+async def make_premium(c, uid, expires):
+    await c.execute(
+        "insert into subscriptions (user_id, product_id, original_transaction_id, expires_at, status, environment)"
+        " values ($1::uuid, 'easyphone.premium.monthly', $2, $3, 'active', 'Xcode')",
+        uid, f"tx-{uid}", expires,
+    )
+
+
+def test_premium_limit_applies_immediately_and_used_is_kept():
+    settings = Settings(FREE_DAILY_QUOTA=2, PREMIUM_DAILY_QUOTA=3)
+
+    async def body():
+        c = await connect()
+        uid = await new_user(c)
+        await call(c, uid, key(), settings=settings)
+        await call(c, uid, key(), settings=settings)
+        with pytest.raises(AppError) as e:
+            await call(c, uid, key(), settings=settings)
+        assert e.value.details["plan"] == "free"
+        await make_premium(c, uid, NOW + timedelta(days=30))  # = what billing verify writes (1F)
+        up = await call(c, uid, key(), settings=settings)
+        assert (up.quota.limit, up.quota.used, up.quota.remaining) == (3, 3, 0)
+        with pytest.raises(AppError) as e:
+            await call(c, uid, key(), settings=settings)
+        assert e.value.details["plan"] == "premium" and e.value.details["quota"]["limit"] == 3
+        await c.close()
+
+    asyncio.run(body())
+
+
+def test_expired_premium_is_free_limit():
+    async def body():
+        c = await connect()
+        uid = await new_user(c)
+        await make_premium(c, uid, NOW - timedelta(seconds=1))
+        got = await call(c, uid, key(), settings=Settings(FREE_DAILY_QUOTA=2, PREMIUM_DAILY_QUOTA=3))
+        assert got.quota.limit == 2
+        await c.close()
+
+    asyncio.run(body())
+
+
+def test_last_attempt_fails_means_zero_units_even_if_older_succeeds_late():
+    async def body():
+        c1, c2 = await connect(), await connect()
+        uid, k = await new_user(c1), key()
+        started, release = asyncio.Event(), asyncio.Event()
+
+        async def slow_ok(budget, meter):
+            started.set()
+            await release.wait()
+            meter.add(1, 1, Decimal("0.0001"))
+            return "late"
+
+        old = asyncio.create_task(call(c1, uid, k, run=slow_ok))
+        await started.wait()
+        with pytest.raises(AppError):
+            await call(c2, uid, k, run=boom)  # attempt 2 (latest) fails → refund
+        release.set()
+        assert (await old).result == "late"
+        r = await row(c1, uid, k)
+        assert (r["units"], r["attempt"]) == (0, 2)  # charged only if the LAST attempt was 2xx (§4.4)
+        assert r["cost_usd"] == Decimal("0.0006")  # both attempts' cost counted
+        await c1.close()
+        await c2.close()
+
+    asyncio.run(body())
+
+
+def test_parallel_same_key_is_charged_once():
+    async def body():
+        conns = [await connect() for _ in range(3)]
+        uid, k = await new_user(conns[0]), key()
+        await asyncio.gather(*(call(c, uid, k) for c in conns))
+        r = await row(conns[0], uid, k)
+        assert (r["units"], r["attempt"]) == (1, 3)
+        total = await conns[0].fetchval("select sum(units) from usage_events where user_id = $1::uuid", uid)
+        assert total == 1
+        for c in conns:
+            await c.close()
+
+    asyncio.run(body())
+
+
+def test_me_reflects_metered_usage():
+    from tests.test_db import make_client
+
+    async def body():
+        c = await connect()
+        uid = await new_user(c)
+        await call(c, uid, key(), settings=Settings())
+        with pytest.raises(AppError):
+            await call(c, uid, key(), run=boom, settings=Settings())  # refunded: not counted
+        await c.close()
+        return uid
+
+    uid = asyncio.run(body())
+    with make_client(uid) as client:
+        resp = client.get("/v1/me")
+    assert resp.json()["quota"]["used"] == 1
+    assert resp.headers["X-Quota-Remaining"] == "9" and resp.headers["X-Quota-Limit"] == "10"
