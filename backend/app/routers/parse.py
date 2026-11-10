@@ -20,7 +20,7 @@ ENDPOINT = "/v1/parse"
 async def parse(
     body: ParseRequest,
     response: Response,
-    user: AuthedUser = Depends(authed_user),
+    user: AuthedUser = Depends(authed_user),  # step 1 auth (401) → step 2 client version (426)
     conn: asyncpg.Connection = Depends(db),  # same connection as `authed_user`
     settings: Settings = Depends(get_settings),
     now: datetime = Depends(clock),
@@ -28,7 +28,6 @@ async def parse(
     client: LLMClient = Depends(llm),
     rid: str = Depends(request_id),
 ) -> ParsedDraft:
-    # TODO(spec): `X-Client-Version` → 426 (API_CONTRACT §4.3 step 2) is not implemented for any endpoint yet.
     parse_service.check_text_length(body, settings)  # step 3: 413 before any unit is reserved
     out = await metered(
         conn, settings, endpoint=ENDPOINT, units=settings.UNITS_PARSE, user_id=user.id, key=key, now=now,

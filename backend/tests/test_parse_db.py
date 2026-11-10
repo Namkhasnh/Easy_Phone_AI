@@ -18,6 +18,8 @@ from app.services.llm import LLMClient
 from tests.test_llm import FakeCompletions, resp
 from tests.test_parse_route import LLM_SMS, body
 
+APP_HEADERS = {"X-Client-Version": "1.0(1)"}  # what the app sends today (MARKETING_VERSION 1.0)
+
 pytestmark = pytest.mark.db
 URL = os.environ.get("TEST_DATABASE_URL", "")
 NOW = datetime(2026, 11, 8, 11, 7, tzinfo=UTC)
@@ -49,7 +51,7 @@ def client_for(uid, fake):
     app.dependency_overrides[deps.current_user] = lambda: CurrentUser(id=uid)
     app.dependency_overrides[deps.clock] = lambda: NOW
     app.dependency_overrides[deps.llm] = lambda: LLMClient(settings, fake)
-    return TestClient(app, raise_server_exceptions=False)
+    return TestClient(app, raise_server_exceptions=False, headers=APP_HEADERS)
 
 
 def test_parse_charges_once_records_cost_and_402_after_limit():

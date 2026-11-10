@@ -16,6 +16,8 @@ from app.services.metering import CostMeter, Deadline, Metered
 from app.services.quota import QuotaInfo
 from tests.test_llm import FakeCompletions, resp
 
+APP_HEADERS = {"X-Client-Version": "1.0(1)"}  # what the app sends today (MARKETING_VERSION 1.0)
+
 FIXTURES = Path(__file__).parent / "fixtures" / "contract"
 KEY = "0b9a3c2e-5f4d-4e6a-9b1c-2d3e4f5a6b7c"
 SECRET = "Nhắn anh Minh là chiều nay em đến muộn"
@@ -52,7 +54,7 @@ def setup(monkeypatch):
     app.dependency_overrides[deps.db] = no_db
     app.dependency_overrides[deps.llm] = lambda: LLMClient(Settings(), fake)
     app.dependency_overrides[deps.clock] = lambda: datetime(2026, 11, 8, 11, 7, tzinfo=UTC)
-    return TestClient(app, raise_server_exceptions=False), fake, calls
+    return TestClient(app, raise_server_exceptions=False, headers=APP_HEADERS), fake, calls
 
 
 def test_ok_matches_fixture_shape_and_sets_quota_headers(setup, caplog):

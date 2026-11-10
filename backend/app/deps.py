@@ -1,4 +1,4 @@
-"""Shared `Depends` (ARCHITECTURE §7). `client_version` comes in its item."""
+"""Shared `Depends` (ARCHITECTURE §7)."""
 
 import re
 from collections.abc import AsyncIterator
@@ -14,12 +14,40 @@ from app.errors import AppError
 from app.services import accounts
 from app.services.llm import LLMClient, make_completions
 
-__all__ = ["AuthedUser", "CurrentUser", "Settings", "authed_user", "clock", "current_user", "db", "get_settings", "idempotency_key", "llm", "request_id"]
+__all__ = ["AuthedUser", "CurrentUser", "Settings", "authed_user", "client_version", "clock", "current_user", "db", "get_settings", "idempotency_key", "llm", "request_id"]
 
 
 @dataclass(frozen=True)
 class AuthedUser(CurrentUser):
     locale: str  # stored `profiles.locale` (set on create only, D-236)
+
+
+# `CFBundleShortVersionString(CFBundleVersion)`, e.g. `1.0.0(12)` or `1.0(1)` (API_CONTRACT §1).
+_CLIENT_VERSION = re.compile(r"^(\d{1,4}(?:\.\d{1,4}){0,2})(?:\(\d{1,9}\))?$")
+
+
+def version_tuple(version: str) -> tuple[int, int, int]:
+    """`1.0` → (1, 0, 0). Missing parts are 0 so `1.0` == `1.0.0`."""
+    parts = [int(p) for p in version.split(".")]
+    return tuple(parts + [0] * (3 - len(parts)))  # type: ignore[return-value]
+
+
+def client_version(
+    x_client_version: str | None = Header(default=None, alias="X-Client-Version"),
+    settings: Settings = Depends(get_settings),
+) -> str:
+    """API_CONTRACT §4.3 step 2 (after auth, before body validation): older than `MIN_CLIENT_VERSION` → 426."""
+    # TODO(spec): §1 says the header is required on all app calls but no code is given for missing / malformed;
+    # 422 `invalid_input` (field `X-Client-Version`), like a missing `Idempotency-Key`.
+    raw = (x_client_version or "").strip()
+    if not raw:
+        raise AppError("invalid_input", 422, False, details={"field": "X-Client-Version", "reason": "missing"})
+    match = _CLIENT_VERSION.match(raw)
+    if not match:
+        raise AppError("invalid_input", 422, False, details={"field": "X-Client-Version", "reason": "malformed"})
+    if version_tuple(match.group(1)) < version_tuple(settings.MIN_CLIENT_VERSION):
+        raise AppError("client_outdated", 426, False, details={"minVersion": settings.MIN_CLIENT_VERSION})
+    return raw
 
 
 _LOWER_UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
@@ -73,9 +101,10 @@ async def db(request: Request, settings: Settings = Depends(get_settings)) -> As
 
 async def authed_user(
     user: CurrentUser = Depends(current_user),
+    _version: str = Depends(client_version),  # declared after `current_user`: 401 is checked before 426
     conn: asyncpg.Connection = Depends(db),
     accept_language: str | None = Header(default=None),
 ) -> AuthedUser:
-    """Every authenticated endpoint except `DELETE /v1/me`: JWT + profile upsert (D-236)."""
+    """Every authenticated endpoint except `DELETE /v1/me`: JWT → client version → profile upsert (D-236)."""
     locale = await accounts.ensure_profile(conn, user.id, accept_language)
     return AuthedUser(id=user.id, locale=locale)

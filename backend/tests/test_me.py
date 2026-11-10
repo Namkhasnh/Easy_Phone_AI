@@ -13,6 +13,8 @@ from app.main import create_app
 from app.repositories import profiles, subscriptions, usage
 from app.repositories.subscriptions import SubscriptionRow
 
+APP_HEADERS = {"X-Client-Version": "1.0(1)"}  # what the app sends today (MARKETING_VERSION 1.0)
+
 UID = "6f1c2b7e-1d0a-4c55-9a51-2f6c1c0f9e11"
 NOW = datetime(2026, 11, 9, 5, 0, tzinfo=UTC)  # 12:00 Vietnam
 
@@ -57,7 +59,7 @@ def make_client(user_id: str = UID, **settings) -> TestClient:
     app.dependency_overrides[deps.current_user] = lambda: CurrentUser(id=user_id)
     app.dependency_overrides[deps.db] = fake_db
     app.dependency_overrides[deps.clock] = lambda: NOW
-    return TestClient(app, raise_server_exceptions=False)
+    return TestClient(app, raise_server_exceptions=False, headers=APP_HEADERS)
 
 
 def test_me_free_user_body_and_headers(store):
@@ -131,7 +133,7 @@ def test_deleted_auth_user_is_unauthorized(store):
 def test_me_without_token_is_unauthorized(store):
     app = create_app()
     app.dependency_overrides[deps.db] = fake_db
-    resp = TestClient(app, raise_server_exceptions=False).get("/v1/me")
+    resp = TestClient(app, raise_server_exceptions=False, headers=APP_HEADERS).get("/v1/me")
     assert resp.status_code == 401
     assert resp.json()["error"]["code"] == "unauthorized"
 
@@ -140,7 +142,7 @@ def test_me_without_database_url_is_internal(store):
     app = create_app()
     app.dependency_overrides[get_settings] = lambda: Settings(DATABASE_URL=None)
     app.dependency_overrides[deps.current_user] = lambda: CurrentUser(id=UID)
-    resp = TestClient(app, raise_server_exceptions=False).get("/v1/me")
+    resp = TestClient(app, raise_server_exceptions=False, headers=APP_HEADERS).get("/v1/me")
     assert resp.status_code == 500
     err = resp.json()["error"]
     assert err["code"] == "internal" and err["retryable"] is True
@@ -151,7 +153,7 @@ def test_me_database_unreachable_is_internal_without_leaking_url(store, caplog):
     app = create_app()
     app.dependency_overrides[get_settings] = lambda: Settings(DATABASE_URL=url, DB_CONNECT_TIMEOUT_SECONDS=1)
     app.dependency_overrides[deps.current_user] = lambda: CurrentUser(id=UID)
-    resp = TestClient(app, raise_server_exceptions=False).get("/v1/me")
+    resp = TestClient(app, raise_server_exceptions=False, headers=APP_HEADERS).get("/v1/me")
     assert resp.status_code == 500 and resp.json()["error"]["code"] == "internal"
     assert "topsecret" not in caplog.text and "topsecret" not in resp.text
 
