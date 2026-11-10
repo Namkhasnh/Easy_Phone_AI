@@ -160,24 +160,37 @@ import os
         }
         var steps = DraftBuilder.steps(from: parsed, now: now(), defaults: defaults)
         guard !steps.isEmpty else { return false }
+        let llmTarget = FollowUpPlanner.llmTarget(of: steps)
         for i in steps.indices { revalidateInPlace(&steps[i]) }
         draft.steps = steps
         draft.serverRequestId = parsed.requestId
-        draft.followUpQuestion = parsed.followUpQuestion
+        setFollowUpWording(parsed.followUpQuestion, llmTarget: llmTarget, in: draft)
         save(draft)
         return true
+    }
+
+    /// The ONE question S03 asks next (D-281), or nil → open S04.
+    func nextFollowUp(in draft: TaskDraft) -> FollowUpPrompt? {
+        FollowUpPlanner.next(in: draft, now: now(), serviceIds: serviceIds)
+    }
+
+    /// D-281: keep the backend wording only when it targets the field the app asks about.
+    private func setFollowUpWording(_ question: String?, llmTarget: FollowUpPlanner.Target?, in draft: TaskDraft) {
+        let appTarget = FollowUpPlanner.target(in: draft, now: now(), serviceIds: serviceIds)
+        draft.followUpQuestion = FollowUpPlanner.wording(question, llmTarget: llmTarget, appTarget: appTarget)
     }
 
     /// A typed / spoken follow-up answer (`/v1/parse` with `context`): merged without overwriting `.user` fields
     /// (API_CONTRACT §7.1 Example B), then re-validated. Saved once.
     func mergeAnswer(_ parsed: ParsedDraft, into draft: TaskDraft, defaults: DraftBuilder.Defaults = .init()) {
         var steps = DraftBuilder.merge(parsed, into: draft.steps, defaults: defaults)
+        let llmTarget = FollowUpPlanner.llmTarget(of: steps.filter { DraftBuilder.mergeableStates.contains($0.state) })
         for i in steps.indices where DraftBuilder.mergeableStates.contains(steps[i].state) {
             revalidateInPlace(&steps[i])
         }
         draft.steps = steps
         draft.serverRequestId = parsed.requestId ?? draft.serverRequestId
-        draft.followUpQuestion = parsed.followUpQuestion
+        setFollowUpWording(parsed.followUpQuestion, llmTarget: llmTarget, in: draft)
         save(draft)
     }
 
@@ -212,6 +225,9 @@ import os
         }
         revalidateInPlace(&step)
         draft.steps[index] = step
+        // The backend wording was about the state before this edit (e.g. a chip pick, D-251); later questions use
+        // the catalog text (D-281).
+        draft.followUpQuestion = nil
         save(draft)
         return true
     }

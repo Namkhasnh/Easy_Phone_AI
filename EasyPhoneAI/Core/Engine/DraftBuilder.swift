@@ -98,6 +98,30 @@ enum DraftBuilder {
         return trimmed
     }
 
+    // MARK: - Back to the wire (`context.currentDraft`, DATA_MODEL §6.2)
+
+    /// The draft as a `ParsedDraft` for a follow-up `/v1/parse`: steps in `order`, **no 🔒 field** (`deviceOnly`,
+    /// D-056) and no app-built field, no `targetRef` / evidence / state (the DTO has no such key), date ambiguities as
+    /// `dateCandidates`. `sourceQuote` is not stored on device → `null`.
+    static func wireDraft(_ draft: TaskDraft, catalog: FieldCatalog = .mvp) -> ParsedDraft {
+        let steps = draft.steps.sorted { $0.order < $1.order }.map { step in
+            let visible = step.fields.filter { field in
+                let spec = catalog.fields(step.kind, step.operation).first { $0.id == field.id }
+                return !field.deviceOnly && spec?.deviceOnly != true && spec?.appBuilt != true
+            }
+            return ParsedStep(
+                kind: step.kind.rawValue, operation: step.operation.rawValue,
+                fields: visible.map { ParsedField(id: $0.id, value: $0.value,
+                                                  confidence: $0.value == nil ? nil : $0.confidence, sourceQuote: nil) },
+                dateCandidates: visible.flatMap { field -> [ParsedDateCandidate] in
+                    guard let a = field.ambiguity, a.kind == .date else { return [] }
+                    return a.candidates.map { ParsedDateCandidate(fieldId: field.id, value: $0.id, label: $0.title) }
+                })
+        }
+        return ParsedDraft(schemaVersion: 1, requestId: draft.serverRequestId, steps: steps,
+                           followUpQuestion: draft.followUpQuestion, unsupported: nil)
+    }
+
     // MARK: - Merge (follow-up answer, API_CONTRACT §7.1 Example B)
 
     /// States whose fields a follow-up answer may change. A step that already ran (or is running) is never touched.

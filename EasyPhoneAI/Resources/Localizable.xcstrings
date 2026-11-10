@@ -1645,6 +1645,114 @@
         }
       }
     },
+    "followup.calendarEvent.title": {
+      "comment": "UI_SCREENS §10.4 follow-up (D-281)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn muốn đặt tên lịch hẹn là gì?"
+          }
+        }
+      }
+    },
+    "followup.calendarEvent.startDate": {
+      "comment": "UI_SCREENS §10.4 follow-up (D-281)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lịch hẹn vào ngày nào, mấy giờ?"
+          }
+        }
+      }
+    },
+    "followup.reminder.title": {
+      "comment": "UI_SCREENS §10.4 follow-up (D-281)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn muốn được nhắc việc gì?"
+          }
+        }
+      }
+    },
+    "followup.reminder.dueDate": {
+      "comment": "UI_SCREENS §10.4 follow-up (D-281)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn muốn được nhắc lúc mấy giờ?"
+          }
+        }
+      }
+    },
+    "followup.call.recipientName": {
+      "comment": "UI_SCREENS §10.4 follow-up (D-281)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn muốn gọi cho ai?"
+          }
+        }
+      }
+    },
+    "followup.sms.recipientName": {
+      "comment": "UI_SCREENS §10.4 follow-up (D-281)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn muốn nhắn cho ai?"
+          }
+        }
+      }
+    },
+    "followup.sms.body": {
+      "comment": "UI_SCREENS §10.4 follow-up (D-281)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn muốn nhắn nội dung gì?"
+          }
+        }
+      }
+    },
+    "followup.place.query": {
+      "comment": "UI_SCREENS §10.4 follow-up (D-281)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn muốn tìm địa điểm nào?"
+          }
+        }
+      }
+    },
+    "followup.generic": {
+      "comment": "UI_SCREENS §10.4 follow-up (D-281); %@ = {fieldLabel}",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn cho mình biết thêm %@ nhé?"
+          }
+        }
+      }
+    },
     "common.yes": {
       "comment": "UI_SCREENS §10.3 bool value (DOC-25)",
       "extractionState": "manual",
