@@ -138,6 +138,51 @@ struct ConversationTests {
         #expect(vm.noticeKey == "conv.speech.empty")
     }
 
+    // MARK: - 1B.4b working + unsupported (UI_SCREENS S03 modes 3 and 5)
+
+    func typedModel(_ text: String) -> ConversationViewModel {
+        let draft = TaskDraft(inputMode: .text, originalInput: text)
+        repo.save(draft)
+        return model(draftId: draft.id)
+    }
+
+    @Test func cancelWorkingKeepsText() {
+        let vm = typedModel("Nhắc tôi uống thuốc")
+        vm.showWorking()
+        #expect(vm.mode == .working && !vm.canSend)
+        vm.cancelWorking()
+        #expect(vm.mode == .transcript)
+        #expect(vm.text == "Nhắc tôi uống thuốc" && vm.canSend)
+        #expect(UserMessage(key: "conv.working").text == "Mình đang soạn bản nháp…")
+    }
+
+    @Test func unsupportedShowsBackendSentenceAndRephrase() {
+        let vm = typedModel("Nhắc tôi uống thuốc mỗi ngày")
+        vm.showUnsupported(.init(reason: "recurringEvent", message: " Chưa hỗ trợ nhắc lặp lại mỗi ngày. "))
+        #expect(vm.unsupportedMessage == "Chưa hỗ trợ nhắc lặp lại mỗi ngày.")
+        #expect(vm.unsupportedAction == .rephrase)                      // oneTimeOffer hidden until 1B.13
+        vm.rephrase()
+        #expect(vm.mode == .transcript && vm.text == "Nhắc tôi uống thuốc mỗi ngày")
+        #expect(repo.draft(vm.draftId!)?.steps.isEmpty == true)        // no steps built (spec §11)
+    }
+
+    @Test func bulkActionOpensCalendarToday() {
+        let vm = typedModel("Xóa hết lịch tuần này")
+        vm.showUnsupported(.init(reason: "bulkAction", message: "Chưa hỗ trợ xóa nhiều lịch cùng lúc."))
+        #expect(vm.unsupportedAction == .openList(.calendarToday))     // D-280, DOC-30
+        vm.showUnsupported(.init(reason: "other", message: "  "))
+        #expect(vm.unsupportedMessage == nil)
+    }
+
+    @Test func parseFailedReturnsToTextWithMessage() {
+        let vm = typedModel("abc")
+        vm.showWorking()
+        vm.showParseFailed()
+        #expect(vm.mode == .transcript && vm.noticeKey == "conv.parseFailed")
+        #expect(UserMessage(key: "conv.parseFailed").text == "Mình chưa hiểu yêu cầu. Bạn thử nói cách khác nhé.")
+        #expect(UserMessage(key: "conv.unsupported.openList").text == "Mở danh sách để làm từng việc")
+    }
+
     @Test func leavingStopsMicAndVoice() async {
         let vm = model()
         vm.onDisappear()

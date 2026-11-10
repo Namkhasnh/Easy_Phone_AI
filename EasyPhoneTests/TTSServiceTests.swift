@@ -14,7 +14,7 @@ struct TTSServiceTests {
         vm.settings.speechRate = 0.38
         await vm.testVoice()
         #expect(tts.spoken.count == 1)
-        #expect(tts.spoken.first?.text == "Xin chào, mình là EasyPhoneK.")
+        #expect(tts.spoken.first?.text == "Chào bạn, mình là Khoai đây.")
         #expect(tts.spoken.first?.rate == 0.38)
         vm.stopVoice()
         #expect(tts.stopCount == 1)

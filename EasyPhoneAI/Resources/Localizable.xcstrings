@@ -2804,7 +2804,7 @@
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Xin chào, mình là EasyPhoneK."
+            "value": "Chào bạn, mình là Khoai đây."
           }
         }
       }
@@ -2925,6 +2925,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mình chưa nghe rõ. Bạn nói lại hoặc gõ chữ nhé."
+          }
+        }
+      }
+    },
+    "conv.working": {
+      "comment": "UI_SCREENS S03",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mình đang soạn bản nháp…"
+          }
+        }
+      }
+    },
+    "conv.parseFailed": {
+      "comment": "UI_SCREENS S03",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mình chưa hiểu yêu cầu. Bạn thử nói cách khác nhé."
+          }
+        }
+      }
+    },
+    "conv.unsupported.home": {
+      "comment": "UI_SCREENS S03",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Về trang chính"
+          }
+        }
+      }
+    },
+    "conv.unsupported.rephrase": {
+      "comment": "UI_SCREENS S03",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thử cách nói khác"
+          }
+        }
+      }
+    },
+    "conv.unsupported.openList": {
+      "comment": "UI_SCREENS S03",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mở danh sách để làm từng việc"
           }
         }
       }

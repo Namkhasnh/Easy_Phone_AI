@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// S03 Conversation (UI_SCREENS S03). 1B.4a: listening + transcript-ready modes.
+/// S03 Conversation (UI_SCREENS S03). Modes: listening, transcript ready, working, unsupported (follow-up: 1B.4c).
 struct ConversationView: View {
     @State var viewModel: ConversationViewModel
     @Environment(Router.self) private var router
@@ -14,6 +14,8 @@ struct ConversationView: View {
                 switch viewModel.mode {
                 case .listening: listening
                 case .transcript: transcript
+                case .working: working
+                case .unsupported: unsupported
                 }
             }
             .padding(Tokens.Space.screenPadding)
@@ -92,6 +94,37 @@ struct ConversationView: View {
         }
     }
 
+    // MARK: - Mode 3: working
+
+    @ViewBuilder private var working: some View {
+        userBubble {
+            Text(verbatim: viewModel.text)
+                .font(Tokens.Fonts.fieldValue)
+                .foregroundStyle(Tokens.Colors.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        assistantBubble {
+            HStack(spacing: Tokens.Space.s) {
+                ProgressView().tint(Tokens.Colors.primary)
+                Text("conv.working")
+            }
+        }
+    }
+
+    // MARK: - Mode 5: unsupported (spec §11, D-280)
+
+    @ViewBuilder private var unsupported: some View {
+        EmptyState(systemImage: "nosign", titleKey: "common.unsupported")
+        if let message = viewModel.unsupportedMessage {
+            Text(verbatim: message)                                 // backend sentence = data, never a key
+                .font(Tokens.Fonts.body)
+                .foregroundStyle(Tokens.Colors.textSecondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity)
+        }
+    }
+
     // MARK: - Bottom bar
 
     @ViewBuilder private var bottomBar: some View {
@@ -106,6 +139,16 @@ struct ConversationView: View {
                     textFocused = false
                     Task { await viewModel.speakAgain() }
                 }
+            case .working:
+                SecondaryButton("common.cancel") { viewModel.cancelWorking() }
+            case .unsupported:
+                PrimaryButton("conv.unsupported.home") { router.popToRoot() }
+                switch viewModel.unsupportedAction {
+                case .rephrase:
+                    SecondaryButton("conv.unsupported.rephrase") { viewModel.rephrase() }
+                case .openList(let route):
+                    SecondaryButton("conv.unsupported.openList") { router.push(route) }
+                }
             }
         }
         .padding(Tokens.Space.screenPadding)
@@ -117,6 +160,10 @@ struct ConversationView: View {
 
     /// Assistant bubble: left, `secondaryFill`, with the Khoai avatar slot (P-41).
     private func assistantBubble(_ key: LocalizedStringKey) -> some View {
+        assistantBubble { Text(key) }
+    }
+
+    private func assistantBubble<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
         HStack(alignment: .top, spacing: Tokens.Space.s) {
             if viewModel.showsMascot {
                 // TODO(spec): mascot art — `MascotView` with the mode's pose comes with 1B.16; SF Symbol placeholder.
@@ -127,7 +174,7 @@ struct ConversationView: View {
                     .background(Tokens.Colors.honey, in: Circle())
                     .accessibilityHidden(true)
             }
-            Text(key)
+            content()
                 .font(Tokens.Fonts.body)
                 .foregroundStyle(Tokens.Colors.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -184,6 +231,34 @@ private func conversationPreviewModel(draftText: String? = nil, speechError: Ser
             .toolbar { ToolbarItem(placement: .principal) { DemoDataBadge() } }
     }
     .environment(Router())
+}
+
+@MainActor
+private func conversationModePreview(_ apply: (ConversationViewModel) -> Void) -> ConversationViewModel {
+    let vm = conversationPreviewModel(draftText: "Xóa hết lịch tuần này")
+    apply(vm)
+    return vm
+}
+
+#Preview("Working") {
+    NavigationStack { ConversationView(viewModel: conversationModePreview { $0.showWorking() }) }
+        .environment(Router())
+}
+
+#Preview("Unsupported bulkAction, dark") {
+    NavigationStack {
+        ConversationView(viewModel: conversationModePreview {
+            $0.showUnsupported(.init(reason: "bulkAction", message: "Chưa hỗ trợ xóa nhiều lịch cùng lúc."))
+        })
+    }
+    .environment(Router())
+    .preferredColorScheme(.dark)
+}
+
+#Preview("Parse failed, AX5") {
+    NavigationStack { ConversationView(viewModel: conversationModePreview { $0.showParseFailed() }) }
+        .environment(Router())
+        .dynamicTypeSize(.accessibility5)
 }
 
 #Preview("Speech unavailable, dark") {

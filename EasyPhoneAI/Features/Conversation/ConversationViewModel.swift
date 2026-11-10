@@ -2,18 +2,33 @@ import Foundation
 import Observation
 import OSLog
 
-/// S03 Conversation (UI_SCREENS S03, spec §6.2 AC1 / AC5). Sub-step 1B.4a: modes 1 (listening) and 2 (transcript ready).
-/// Modes 3–5 (working, follow-up, unsupported) come with 1B.4b / 1B.4c.
+/// S03 Conversation (UI_SCREENS S03, spec §6.2). Modes 1 listening, 2 transcript ready (1B.4a), 3 working and
+/// 5 unsupported (1B.4b). Mode 4 follow-up comes with 1B.4c. The `/v1/parse` call that drives 3 / 5 is wired in 1B.10
+/// through `showWorking()`, `showUnsupported(_:)` and `showParseFailed()`.
 @Observable @MainActor final class ConversationViewModel {
     enum Mode: Equatable, Sendable {
         case listening
         case transcript
+        case working
+        case unsupported(Unsupported)
+    }
+
+    /// `ParsedDraft.unsupported` (API_CONTRACT §7.1): `reason` ∈ recurringEvent, bulkAction, phaseNotEnabled, booking,
+    /// other; `message` is the backend's Vietnamese sentence, shown as data under "Chưa hỗ trợ" (DATA_MODEL §6.2).
+    struct Unsupported: Equatable, Sendable {
+        let reason: String
+        let message: String?
+    }
+
+    /// The secondary button of mode 5 (UI_SCREENS S03).
+    enum UnsupportedAction: Equatable, Sendable {
+        case rephrase                    // "Thử cách nói khác"
+        case openList(Route)             // bulkAction (D-280): "Mở danh sách để làm từng việc"
     }
 
     static let locale = Locale(identifier: "vi-VN")
     static let hintKeys = ["conv.listening.hint.1", "conv.listening.hint.2", "conv.listening.hint.3"]
-    // TODO(decision): DOC-29 — auto-stop is the owner's request (2026-11-10), not yet in UI_SCREENS S03 / spec §6.2.
-    /// Silence after the last recognized words → stop by itself, like Siri. "Dừng" stays visible (AC1).
+    /// UI_SCREENS S03 (DOC-29): silence after the last recognized words → stop by itself, like Siri. "Dừng" stays visible (AC1).
     static let silenceAfterSpeech: Duration = .seconds(2)
     /// Nothing recognized at all → stop and show `conv.speech.empty`.
     static let noSpeechTimeout: Duration = .seconds(8)
@@ -23,7 +38,7 @@ import OSLog
     var text = "" {
         didSet { if mode == .transcript, text != oldValue { autosave() } }
     }
-    /// `conv.speech.unavailable` / `conv.speech.empty` under the text area, or `nil`.
+    /// `conv.speech.unavailable` / `conv.speech.empty` / `conv.parseFailed` under the text area, or `nil`.
     private(set) var noticeKey: String?
     private(set) var isReading = false
     private(set) var draftId: UUID?
@@ -140,6 +155,55 @@ import OSLog
             noticeKey = "conv.speech.empty"
         }
         autosave()
+    }
+
+    // MARK: - Working (mode 3) and unsupported (mode 5)
+
+    /// Mode 3: spinner + "Mình đang soạn bản nháp…". The request text stays saved (D-104).
+    func showWorking() {
+        stopReading()
+        noticeKey = nil
+        mode = .working
+    }
+
+    /// "Hủy" while working: back to the editable text, nothing lost.
+    // TODO(spec): 1B.10 also cancels the `/v1/parse` task here (ARCHITECTURE §8: leaving cancels the network task).
+    func cancelWorking() {
+        guard mode == .working else { return }
+        mode = .transcript
+    }
+
+    /// Mode 5 (spec §11, D-280). Builds no steps.
+    func showUnsupported(_ unsupported: Unsupported) {
+        stopReading()
+        noticeKey = nil
+        mode = .unsupported(unsupported)
+    }
+
+    /// Parse failed (`llm_invalid_output` after the repair, spec §6.2 AC2): back to the text with `conv.parseFailed`.
+    func showParseFailed() {
+        mode = .transcript
+        noticeKey = "conv.parseFailed"
+    }
+
+    /// The backend sentence, or `nil` when it is empty.
+    var unsupportedMessage: String? {
+        guard case .unsupported(let u) = mode, let m = u.message?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !m.isEmpty else { return nil }
+        return m
+    }
+
+    /// Mode 5 secondary. `bulkAction` always opens S11 (DOC-30, AI_PROMPTS §8 table).
+    // TODO(spec): `recurringEvent` "Tạo nhắc một lần cho sáng mai?" stays hidden until DraftBuilder (1B.13) can build it (owner 2026-11-10).
+    var unsupportedAction: UnsupportedAction {
+        if case .unsupported(let u) = mode, u.reason == "bulkAction" { return .openList(.calendarToday) }
+        return .rephrase
+    }
+
+    /// "Thử cách nói khác": back to the saved text to edit it or speak again.
+    func rephrase() {
+        noticeKey = nil
+        mode = .transcript
     }
 
     // MARK: - Transcript ready (mode 2)
