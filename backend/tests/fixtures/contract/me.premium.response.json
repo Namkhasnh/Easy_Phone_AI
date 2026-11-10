@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "userId": "6f1c2b7e-1d0a-4c55-9a51-2f6c1c0f9e11",
+  "locale": "vi",
+  "plan": "premium",
+  "quota": {
+    "limit": 200,
+    "used": 3,
+    "remaining": 197,
+    "resetsAt": "2026-11-09T00:00:00+07:00"
+  },
+  "subscription": {
+    "productId": "easyphone.premium.monthly",
+    "status": "active",
+    "expiresAt": "2026-12-08T18:00:00+07:00",
+    "environment": "Sandbox"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "error": {
+    "code": "quota_exceeded",
+    "message": "Bạn đã dùng hết lượt hôm nay.",
+    "retryable": false,
+    "requestId": "req_01JC0000000000000000000000",
+    "details": {
+      "plan": "free",
+      "quota": {
+        "limit": 10,
+        "used": 10,
+        "remaining": 0,
+        "resetsAt": "2026-11-09T00:00:00+07:00"
+      }
+    }
+  }
+}

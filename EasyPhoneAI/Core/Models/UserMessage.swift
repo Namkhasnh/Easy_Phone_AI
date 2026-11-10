@@ -12,3 +12,11 @@ struct UserMessage: Sendable, Hashable {
         self.args = args
     }
 }
+
+extension UserMessage {
+    /// Catalog text with `args` filled in order (`%@` placeholders, UI_SCREENS §0 rule 2).
+    var text: String {
+        let format = String(localized: String.LocalizationValue(key))
+        return args.isEmpty ? format : String(format: format, arguments: args)
+    }
+}

@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "internal",
+    "message": "Có lỗi, bản nháp đã được lưu.",
+    "retryable": true,
+    "requestId": "req_01JC0000000000000000000000"
+  }
+}

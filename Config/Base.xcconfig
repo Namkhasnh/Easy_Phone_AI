@@ -10,3 +10,6 @@ SUPABASE_ANON_KEY =
 // Color tokens are asset names (UI_SCREENS §1.1); `primary` would collide with SwiftUI `Color.primary`.
 // Keep `ColorResource` symbols, skip the `Color`/`UIColor` extensions; code uses `Tokens.Colors`.
 ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO
+
+// App icon (owner art, Figma "Khoai — Light" / "Khoai — Dark"): light + dark; tinted left empty → iOS generates it.
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon

@@ -1,0 +1,11 @@
+{
+  "error": {
+    "code": "client_outdated",
+    "message": "Cần cập nhật ứng dụng.",
+    "retryable": false,
+    "requestId": "req_01JC0000000000000000000000",
+    "details": {
+      "minVersion": "1.2.0"
+    }
+  }
+}

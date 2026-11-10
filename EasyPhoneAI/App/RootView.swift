@@ -1,3 +1,4 @@
+import OSLog
 import SwiftData
 import SwiftUI
 
@@ -20,7 +21,37 @@ struct RootView: View {
                 appState.session = session
             }
         }
+        .task {
+            for await quota in env.api.quotaUpdates {
+                appState.apply(quota: quota)
+            }
+        }
+        .task {
+            for await screen in env.api.blockingUpdates {
+                appState.blockingScreen = screen
+            }
+        }
+        .fullScreenCover(isPresented: isBlocked) { blockingCover }
+        .task(id: appState.session) {
+            await loadAccount()
+        }
     }
+
+    /// API_CONTRACT §6.2: `/v1/me` on launch and after sign-in. Failures only log; UI keeps working.
+    private func loadAccount() async {
+        guard case .signedIn = appState.session else {
+            appState.entitlement = nil
+            return
+        }
+        do {
+            appState.apply(me: try await env.api.me())
+        } catch {
+            let code = (error as? AppError)?.code ?? "cancelled"
+            Self.logger.info("me failed: \(code, privacy: .public)")
+        }
+    }
+
+    private static let logger = Logger(subsystem: "vn.namkhanh.easyphone", category: "root")
 
     /// Root screen by session (UI_SCREENS §4): restoring → spinner, signed out → S01, signed in → S02.
     @ViewBuilder private var rootScreen: some View {
@@ -37,9 +68,32 @@ struct RootView: View {
         }
     }
 
-    // TODO(spec): each route gets its screen in its own item (S04 1A.11, S14 1A.13, S15 1A.14, …).
+    /// UI_SCREENS §4: any 426 → S19, blocking. Never cleared by the user; only a newer build removes it.
+    private var isBlocked: Binding<Bool> {
+        Binding(get: { appState.blockingScreen != nil }, set: { _ in })
+    }
+
+    @ViewBuilder private var blockingCover: some View {
+        switch appState.blockingScreen {
+        case .clientOutdated(let minVersion):
+            UpdateRequiredView(viewModel: UpdateRequiredViewModel(minVersion: minVersion))
+        case nil:
+            EmptyView()
+        }
+    }
+
+    // TODO(spec): the other routes get their screens in their own items (1B–1F).
     @ViewBuilder private func destination(_ route: Route) -> some View {
-        EmptyView()
+        switch route {
+        case .review(let draftId):
+            ReviewView(viewModel: ReviewViewModel(draftId: draftId, repository: env.drafts, engine: env.engine))
+        case .history:
+            HistoryView(viewModel: HistoryViewModel(repository: env.drafts))
+        case .settings:
+            SettingsView(viewModel: SettingsViewModel(localData: env.localData, drafts: env.drafts, auth: env.auth))
+        default:
+            EmptyView()
+        }
     }
 }
 

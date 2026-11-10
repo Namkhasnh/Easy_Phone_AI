@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Phiên đăng nhập đã hết. Bạn đăng nhập lại nhé.",
+    "retryable": false,
+    "requestId": "req_01JC0000000000000000000000"
+  }
+}

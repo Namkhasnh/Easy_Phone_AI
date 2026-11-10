@@ -12,14 +12,13 @@ struct SignInView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Tokens.Space.l) {
-                // TODO(spec): no app icon artwork yet; SF Symbol placeholder at the S01 96pt size.
-                Image(systemName: "iphone.gen3")
+                // S01 app icon 96pt: `appLogo` = the AppIcon art (light + dark), a separate image set
+                // because SwiftUI cannot load the AppIcon set.
+                Image(.appLogo)
                     .resizable()
                     .scaledToFit()
-                    .padding(Tokens.Space.xl)
-                    .foregroundStyle(Tokens.Colors.onPrimary)
                     .frame(width: 96, height: 96)
-                    .background(Tokens.Colors.primary, in: RoundedRectangle(cornerRadius: 22))
+                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
                     .accessibilityHidden(true)
 
                 Text("signIn.title")
