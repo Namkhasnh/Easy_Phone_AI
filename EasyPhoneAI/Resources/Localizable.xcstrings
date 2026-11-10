@@ -2808,6 +2808,126 @@
           }
         }
       }
+    },
+    "conv.listening.title": {
+      "comment": "UI_SCREENS S03",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mình đang nghe…"
+          }
+        }
+      }
+    },
+    "conv.listening.stop": {
+      "comment": "UI_SCREENS S03",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dừng"
+          }
+        }
+      }
+    },
+    "conv.listening.hint.1": {
+      "comment": "UI_SCREENS S03",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ví dụ: “Gọi cho mẹ”"
+          }
+        }
+      }
+    },
+    "conv.listening.hint.2": {
+      "comment": "UI_SCREENS S03",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ví dụ: “Nhắn anh Minh là chiều nay em đến muộn”"
+          }
+        }
+      }
+    },
+    "conv.listening.hint.3": {
+      "comment": "UI_SCREENS S03",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ví dụ: “Mai 9 giờ sáng khám răng ở nha khoa An Bình”"
+          }
+        }
+      }
+    },
+    "conv.transcript.edit.a11y": {
+      "comment": "UI_SCREENS S03",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lời bạn vừa nói, có thể sửa"
+          }
+        }
+      }
+    },
+    "conv.send": {
+      "comment": "UI_SCREENS S03",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gửi"
+          }
+        }
+      }
+    },
+    "conv.speakAgain": {
+      "comment": "UI_SCREENS S03",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nói lại"
+          }
+        }
+      }
+    },
+    "conv.speech.unavailable": {
+      "comment": "UI_SCREENS S03",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máy chưa nghe được tiếng Việt lúc này. Bạn gõ chữ nhé."
+          }
+        }
+      }
+    },
+    "conv.speech.empty": {
+      "comment": "UI_SCREENS S03",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mình chưa nghe rõ. Bạn nói lại hoặc gõ chữ nhé."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
