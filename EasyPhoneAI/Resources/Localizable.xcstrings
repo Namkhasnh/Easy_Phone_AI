@@ -2772,6 +2772,18 @@
           }
         }
       }
+    },
+    "error.speech.vi.unavailable": {
+      "comment": "UI_SCREENS §8",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máy chưa nghe được tiếng Việt lúc này. Bạn gõ chữ nhé."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

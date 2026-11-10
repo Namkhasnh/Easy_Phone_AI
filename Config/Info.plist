@@ -8,6 +8,10 @@
 	<string>$(SUPABASE_URL)</string>
 	<key>SupabaseAnonKey</key>
 	<string>$(SUPABASE_ANON_KEY)</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>EasyPhoneK dùng micro để nghe yêu cầu bạn nói.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>EasyPhoneK chuyển lời bạn nói thành chữ để hiểu yêu cầu.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
