@@ -2616,6 +2616,162 @@
           }
         }
       }
+    },
+    "home.greeting": {
+      "comment": "UI_SCREENS S02",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn cần mình giúp gì?"
+          }
+        }
+      }
+    },
+    "home.mic.caption": {
+      "comment": "UI_SCREENS S02",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bấm để nói"
+          }
+        }
+      }
+    },
+    "home.input.placeholder": {
+      "comment": "UI_SCREENS S02",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoặc gõ yêu cầu ở đây"
+          }
+        }
+      }
+    },
+    "home.send": {
+      "comment": "UI_SCREENS S02",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gửi"
+          }
+        }
+      }
+    },
+    "home.link.calendar": {
+      "comment": "UI_SCREENS S02",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lịch hôm nay"
+          }
+        }
+      }
+    },
+    "home.link.reminders": {
+      "comment": "UI_SCREENS S02",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lời nhắc"
+          }
+        }
+      }
+    },
+    "home.link.places": {
+      "comment": "UI_SCREENS S02",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Địa điểm"
+          }
+        }
+      }
+    },
+    "home.unfinished.title": {
+      "comment": "UI_SCREENS S02",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Việc chưa xong"
+          }
+        }
+      }
+    },
+    "home.unfinished.empty": {
+      "comment": "UI_SCREENS S02",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không có việc nào đang chờ bạn."
+          }
+        }
+      }
+    },
+    "home.toolbar.history": {
+      "comment": "UI_SCREENS S02",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lịch sử"
+          }
+        }
+      }
+    },
+    "home.toolbar.settings": {
+      "comment": "UI_SCREENS S02",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cài đặt"
+          }
+        }
+      }
+    },
+    "home.tip.firstRun": {
+      "comment": "UI_SCREENS S02",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ví dụ, bạn có thể nói: “Nhắc tôi 8 giờ sáng mai uống thuốc”."
+          }
+        }
+      }
+    },
+    "home.quota.low": {
+      "comment": "UI_SCREENS S02; %@ = {remaining}",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn còn %@ lượt AI hôm nay."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

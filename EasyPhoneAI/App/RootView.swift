@@ -60,11 +60,8 @@ struct RootView: View {
             ProgressView()
         case .signedOut:
             SignInView(viewModel: SignInViewModel(auth: env.auth))
-        case .signedIn(let userId):
-            // TODO(spec): S02 Home replaces this in 1B.1; until then show the signed-in user id (EXIT 0 check).
-            Text(verbatim: userId.uuidString)
-                .font(Tokens.Fonts.body)
-                .textSelection(.enabled)
+        case .signedIn:
+            HomeView(viewModel: HomeViewModel(repository: env.drafts, localData: env.localData))
         }
     }
 
