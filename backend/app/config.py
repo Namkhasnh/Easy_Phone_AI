@@ -14,25 +14,29 @@ class Settings(BaseSettings):
     SCHEMA_VERSION: int = 1
     MIN_CLIENT_VERSION: str = "1.0.0"  # API_CONTRACT §3.2 `client_outdated`
 
-    # Models (D-278). D-052 is OPEN: placeholders until the 1B live evals lock them.
-    MODEL_PARSE: str = "gpt-4o-mini"
-    MODEL_EXTRACT: str = "gpt-4o-mini"
-    MODEL_VISION: str = "gpt-4o-mini"
-    MODEL_TRANSCRIBE: str = "gpt-4o-mini-transcribe"
-    MODEL_SUMMARIZE: str = "gpt-4o-mini"  # Phase 2 only
+    # Models (D-278), values locked by D-052 (1B.15 live eval, `evals/2026-11-10-parse-summary.md`).
+    MODEL_PARSE: str = "gpt-6-luna"  # D-052
+    MODEL_EXTRACT: str = "gpt-6-luna"  # D-052
+    MODEL_VISION: str = "gpt-6-luna"  # D-052
+    MODEL_TRANSCRIBE: str = "gpt-4o-mini-transcribe"  # D-052
+    MODEL_SUMMARIZE: str = "gpt-6-luna"  # Phase 2 only (D-052)
     PROMPT_VERSION_PARSE: int = 1
     PROMPT_VERSION_EXTRACT: int = 1
     PROMPT_VERSION_REPAIR: int = 1
     LLM_TEMPERATURE: float | None = None  # AI_PROMPTS §0.2: sent only when set (some models reject it)
     # USD per 1M tokens [input, output], for `usage_events.cost_usd` + the spend cap (D-087).
-    # TODO(spec): prices are not in the docs; values = OpenAI list prices known 2026-11 — re-check when D-052 is locked.
+    # Values = OpenAI list prices read 2026-11-10 at D-052 (developers.openai.com/api/docs/pricing); cached input
+    # is not modelled, so the recorded cost can only be a little high (spend cap trips early, never late).
     MODEL_PRICES_USD_PER_1M: dict[str, list[float]] = {
         "gpt-4o-mini": [0.15, 0.60],
         "gpt-4o": [2.50, 10.00],
         "gpt-4o-mini-transcribe": [1.25, 5.00],  # audio input / text output tokens
+        # D-052 eval candidates (1B.15)
+        "gpt-6-luna": [0.10, 0.50],
+        "gpt-5-nano": [0.05, 0.40],
     }
     # Transcription billed by duration (no token usage in the response): USD per audio minute.
-    TRANSCRIBE_USD_PER_MINUTE: float = 0.006
+    TRANSCRIBE_USD_PER_MINUTE: float = 0.006  # fallback only; 2× the 2026-11-10 list estimate ($0.003), spend cap trips early
     TRANSCRIBE_MAX_BYTES: int = 2 * 1024 * 1024  # API_CONTRACT §7.4: ≤ 2 MB
     TRANSCRIBE_MAX_SECONDS: int = 60  # ≤ 60 s; also the cost estimate when the response has no usage
     # A model without a price is charged at this (high) rate, so the spend cap can only trip early, never late.

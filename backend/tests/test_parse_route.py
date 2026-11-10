@@ -69,7 +69,7 @@ def test_ok_matches_fixture_shape_and_sets_quota_headers(setup, caplog):
     assert r.headers["X-Quota-Limit"] == "10" and r.headers["X-Quota-Remaining"] == "6"
     assert r.headers["X-Quota-Resets-At"] == "2026-11-09T00:00:00+07:00"
     assert calls == [{"endpoint": "/v1/parse", "units": 1, "key": KEY}]
-    assert fake.calls[0]["model"] == "gpt-4o-mini"
+    assert fake.calls[0]["model"] == Settings().MODEL_PARSE == "gpt-6-luna"  # D-052
     assert SECRET not in caplog.text and "anh Minh" not in caplog.text  # D-059
 
 
