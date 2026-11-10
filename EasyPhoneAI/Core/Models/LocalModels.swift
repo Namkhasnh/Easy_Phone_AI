@@ -51,8 +51,7 @@ import SwiftData
     var snoozeMorningHour: Int = 8
     var preferredMapsApp: String = "appleMaps"
     var lastSeenEntitlement: CachedEntitlement?  // display only (D-085)
-    // TODO(decision): DATA_MODEL §5 vs D-289 (`settings.pet` toggle, on by default) — field added here (DOC-27).
-    var petEnabled: Bool = true
+    var petEnabled: Bool = true       // "Hiện bạn Khoai" (D-289)
 
     init() {}
 }

@@ -319,7 +319,7 @@ for every `(kind, operation)`. Required = needed to leave `needsInfo`.
   var voiceEnabled: Bool = true
   var speechRate: Double = 0.45     // AVSpeechUtterance rate
   var simpleMode: Bool = false      // "Chế độ đơn giản"
-  var snoozeMorningHour: Int = 8
+  var snoozeMorningHour: Int = 8; var petEnabled: Bool = true   // "Hiện bạn Khoai" (D-289, DOC-27)
   var preferredMapsApp: String = "appleMaps"
   var lastSeenEntitlement: CachedEntitlement?  // display only (D-085)
 }

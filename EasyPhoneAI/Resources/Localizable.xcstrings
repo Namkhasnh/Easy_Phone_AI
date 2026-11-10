@@ -2546,7 +2546,7 @@
       }
     },
     "settings.snoozeHour.value": {
-      "comment": "UI_SCREENS S15 \"{hour} giờ\"; key name not in docs (DOC-27)",
+      "comment": "UI_SCREENS S15 \"{hour} giờ\" (DOC-27)",
       "extractionState": "manual",
       "localizations": {
         "vi": {
