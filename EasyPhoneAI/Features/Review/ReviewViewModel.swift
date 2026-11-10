@@ -12,14 +12,18 @@ import Observation
     private(set) var didClose = false
     /// Set after "Xong": the View returns to Home (S02).
     private(set) var didFinish = false
+    /// S18 sheet before "Xác nhận" executes (ARCHITECTURE §5.1 step 0, D-185).
+    var pendingPermission: PendingPermission?
 
     private let engine: TaskEngine
+    private let permissions: any PermissionManager
     private let catalog: FieldCatalog
     private let now: () -> Date
 
-    init(draftId: UUID, repository: any TaskRepository, engine: TaskEngine, catalog: FieldCatalog = .mvp,
-         now: @escaping () -> Date = { .now }) {
+    init(draftId: UUID, repository: any TaskRepository, engine: TaskEngine, permissions: any PermissionManager,
+         catalog: FieldCatalog = .mvp, now: @escaping () -> Date = { .now }) {
         self.engine = engine
+        self.permissions = permissions
         self.catalog = catalog
         self.now = now
         draft = repository.draft(draftId)
@@ -148,7 +152,7 @@ import Observation
                               primary: markDone,
                               secondary: canRetry ? ResultButton(title: UserMessage(key: "common.retry").text, action: .retry) : later)
         case .failed:
-            // TODO(spec): `permission.<c>.denied` → Primary `perm.<c>.fallback` + "Tôi đã làm xong" comes with S18 (1C.1).
+            // TODO(spec): `permission.<c>.denied` → Primary `perm.<c>.fallback` + "Tôi đã làm xong" comes with the executors that re-check permission (1C.3, 1C.5).
             return ResultCard(state: .failed, message: UserMessage(key: "result.failed").text, detail: errorMessage(step),
                               primary: ResultButton(title: UserMessage(key: "common.retry").text, action: .retry),
                               secondary: ResultButton(title: UserMessage(key: "common.cancel").text, action: .cancel))
@@ -246,8 +250,43 @@ import Observation
         engine.edit(fieldId: fieldId, value: value, stepId: stepId, in: draft)
     }
 
-    /// "Xác nhận". Step 0 (permission explainer, D-185) comes with `PermissionManager` (1C.1).
+    /// "Xác nhận". Step 0 (ARCHITECTURE §5.1, D-185): a capability never asked → S18 explainer first;
+    /// denied / restricted → S18 denied variant. Otherwise the engine confirms (it re-checks everything).
     func confirm() async {
+        guard let step else { return }
+        if let capability = Capability.required(for: step.kind) {
+            switch permissions.status(capability) {
+            case .notDetermined:
+                pendingPermission = PendingPermission(capability: capability, variant: .explainer)
+                return
+            case .denied, .restricted:
+                pendingPermission = PendingPermission(capability: capability, variant: .denied)
+                return
+            case .granted, .limited, .writeOnly:
+                break
+            }
+        }
+        await execute()
+    }
+
+    /// S18 "Cho phép": the system alert, then confirm when usable; a "no" shows the denied variant (D-185).
+    func allowPermission() async {
+        guard let pending = pendingPermission, pending.variant == .explainer else { return }
+        pendingPermission = nil
+        let status = await permissions.request(pending.capability)
+        if status.isUsable {
+            await execute()
+        } else {
+            pendingPermission = PendingPermission(capability: pending.capability, variant: .denied)
+        }
+    }
+
+    /// S18 "Để sau" / "Mở Cài đặt" / swipe down: nothing runs; the step stays `awaitingApproval` (D-100).
+    func dismissPermission() {
+        pendingPermission = nil
+    }
+
+    private func execute() async {
         guard let draft, let stepId else { return }
         _ = await engine.confirm(stepId: stepId, in: draft)
         // TODO(spec): `.needsUI` (SMS composer, ARCHITECTURE §5.3) is presented from 1C.11.

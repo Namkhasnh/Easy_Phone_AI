@@ -83,7 +83,8 @@ struct RootView: View {
     @ViewBuilder private func destination(_ route: Route) -> some View {
         switch route {
         case .review(let draftId):
-            ReviewView(viewModel: ReviewViewModel(draftId: draftId, repository: env.drafts, engine: env.engine))
+            ReviewView(viewModel: ReviewViewModel(draftId: draftId, repository: env.drafts, engine: env.engine,
+                                                       permissions: env.permissions))
         case .conversation(let draftId):
             ConversationView(viewModel: ConversationViewModel(draftId: draftId, repository: env.drafts, speech: env.speech, api: env.api,
                                                               tts: env.tts, localData: env.localData,

@@ -3204,6 +3204,450 @@
           }
         }
       }
+    },
+    "perm.allow": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cho phép"
+          }
+        }
+      }
+    },
+    "perm.calendar.body": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Để mình tạo và xem lịch hẹn giúp bạn. Lịch chỉ được đọc trên điện thoại."
+          }
+        }
+      }
+    },
+    "perm.calendar.fallback": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sao chép thông tin lịch hẹn"
+          }
+        }
+      }
+    },
+    "perm.calendar.feature": {
+      "comment": "{feature} of perm.denied.title; not in UI_SCREENS S18 (TODO(spec), DOC-37)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lịch"
+          }
+        }
+      }
+    },
+    "perm.calendar.title": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cho phép dùng Lịch"
+          }
+        }
+      }
+    },
+    "perm.camera.body": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Để chụp giấy hẹn, tờ ghi chú và đọc chữ giúp bạn."
+          }
+        }
+      }
+    },
+    "perm.camera.fallback": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chọn ảnh có sẵn"
+          }
+        }
+      }
+    },
+    "perm.camera.feature": {
+      "comment": "{feature} of perm.denied.title; not in UI_SCREENS S18 (TODO(spec), DOC-37)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camera"
+          }
+        }
+      }
+    },
+    "perm.camera.title": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cho phép dùng camera"
+          }
+        }
+      }
+    },
+    "perm.contacts.body": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Để mình tìm đúng người khi bạn muốn gọi hoặc nhắn tin. Danh bạ không được gửi đi đâu."
+          }
+        }
+      }
+    },
+    "perm.contacts.fallback": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nhập số điện thoại"
+          }
+        }
+      }
+    },
+    "perm.contacts.feature": {
+      "comment": "{feature} of perm.denied.title; not in UI_SCREENS S18 (TODO(spec), DOC-37)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Danh bạ"
+          }
+        }
+      }
+    },
+    "perm.contacts.title": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cho phép dùng Danh bạ"
+          }
+        }
+      }
+    },
+    "perm.denied.body": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn có thể bật lại trong Cài đặt iPhone. Các tính năng khác vẫn dùng được."
+          }
+        }
+      }
+    },
+    "perm.denied.title": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ chưa được cho phép"
+          }
+        }
+      }
+    },
+    "perm.limited.contacts": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn đang cho phép một số liên hệ. Thêm người bằng nút bên dưới."
+          }
+        }
+      }
+    },
+    "perm.location.body": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Để tìm địa điểm gần bạn hơn."
+          }
+        }
+      }
+    },
+    "perm.location.fallback": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gõ tên địa điểm"
+          }
+        }
+      }
+    },
+    "perm.location.feature": {
+      "comment": "{feature} of perm.denied.title; not in UI_SCREENS S18 (TODO(spec), DOC-37)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vị trí"
+          }
+        }
+      }
+    },
+    "perm.location.title": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cho phép dùng vị trí"
+          }
+        }
+      }
+    },
+    "perm.microphone.body": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Để bạn nói yêu cầu thay vì gõ chữ."
+          }
+        }
+      }
+    },
+    "perm.microphone.fallback": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gõ chữ"
+          }
+        }
+      }
+    },
+    "perm.microphone.feature": {
+      "comment": "{feature} of perm.denied.title; not in UI_SCREENS S18 (TODO(spec), DOC-37)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Micro"
+          }
+        }
+      }
+    },
+    "perm.microphone.title": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cho phép dùng micro"
+          }
+        }
+      }
+    },
+    "perm.photos.body": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Để bạn chọn ảnh giấy tờ có sẵn trong máy."
+          }
+        }
+      }
+    },
+    "perm.photos.fallback": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chụp ảnh"
+          }
+        }
+      }
+    },
+    "perm.photos.feature": {
+      "comment": "{feature} of perm.denied.title; not in UI_SCREENS S18 (TODO(spec), DOC-37)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ảnh"
+          }
+        }
+      }
+    },
+    "perm.photos.title": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cho phép chọn ảnh"
+          }
+        }
+      }
+    },
+    "perm.reminders.body": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Để mình tạo lời nhắc đúng giờ cho bạn."
+          }
+        }
+      }
+    },
+    "perm.reminders.fallback": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sao chép nội dung nhắc"
+          }
+        }
+      }
+    },
+    "perm.reminders.feature": {
+      "comment": "{feature} of perm.denied.title; not in UI_SCREENS S18 (TODO(spec), DOC-37)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lời nhắc"
+          }
+        }
+      }
+    },
+    "perm.reminders.title": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cho phép dùng Lời nhắc"
+          }
+        }
+      }
+    },
+    "perm.speech.body": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Để mình hiểu lời bạn nói bằng tiếng Việt."
+          }
+        }
+      }
+    },
+    "perm.speech.fallback": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gõ chữ"
+          }
+        }
+      }
+    },
+    "perm.speech.feature": {
+      "comment": "{feature} of perm.denied.title; not in UI_SCREENS S18 (TODO(spec), DOC-37)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nhận dạng giọng nói"
+          }
+        }
+      }
+    },
+    "perm.speech.title": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cho phép nhận dạng giọng nói"
+          }
+        }
+      }
+    },
+    "perm.writeOnly.calendar": {
+      "comment": "UI_SCREENS S18",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mình chỉ được thêm lịch, không xem được lịch có sẵn nên không kiểm tra trùng giờ."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

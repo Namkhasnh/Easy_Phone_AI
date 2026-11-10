@@ -25,3 +25,16 @@ protocol PermissionManager: Sendable {
     func status(_ capability: Capability) -> PermissionStatus
     func request(_ capability: Capability) async -> PermissionStatus
 }
+
+extension Capability {
+    /// The capability a step's executor needs at "Xác nhận" (ARCHITECTURE §5.1 step 0), nil = none.
+    /// TODO(spec): no doc maps kinds to capabilities. Contacts are read by `DeviceResolver` when the draft is built
+    /// (1C.9), not at confirm; `tel://`, the SMS composer and Maps need no permission; OCR asks camera/photos in S09.
+    static func required(for kind: TaskKind) -> Capability? {
+        switch kind {
+        case .calendarEvent: .calendar
+        case .reminder: .reminders
+        case .call, .sms, .place, .ocr, .emailReply, .ride, .food: nil
+        }
+    }
+}

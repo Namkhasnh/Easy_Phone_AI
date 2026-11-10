@@ -39,6 +39,7 @@ struct FieldFormatterTests {
 struct ReviewViewModelTests {
     static let now = Validator.parseDateTime("2026-11-09T10:00:00+07:00")!
     let repo = MockTaskRepository()
+    let permissions = MockPermissionManager()
     let engine: TaskEngine
 
     init() { engine = TaskEngine(repository: repo, now: { Self.now }) }
@@ -55,7 +56,7 @@ struct ReviewViewModelTests {
         let d = TaskDraft(inputMode: .text, originalInput: input, timeZoneId: "Asia/Ho_Chi_Minh", steps: steps)
         repo.save(d)
         for s in steps { engine.revalidate(stepId: s.id, in: d) }
-        return ReviewViewModel(draftId: d.id, repository: repo, engine: engine)
+        return ReviewViewModel(draftId: d.id, repository: repo, engine: engine, permissions: permissions)
     }
 
     static let reminderOK = ["title": "Uống thuốc", "dueDate": "2026-11-10T08:00:00+07:00"]
@@ -164,7 +165,7 @@ struct ReviewViewModelTests {
         let d = TaskDraft(inputMode: .text, originalInput: "x", timeZoneId: "Asia/Ho_Chi_Minh", steps: steps)
         repo.save(d)
         for s in steps { e.revalidate(stepId: s.id, in: d) }
-        let vm = ReviewViewModel(draftId: d.id, repository: repo, engine: e)
+        let vm = ReviewViewModel(draftId: d.id, repository: repo, engine: e, permissions: MockPermissionManager())
         await vm.confirm()
         return vm
     }
