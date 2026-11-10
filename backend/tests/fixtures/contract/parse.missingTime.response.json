@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "requestId": "req_01JC8Z5A01",
+  "steps": [
+    {
+      "kind": "reminder",
+      "operation": "create",
+      "fields": [
+        {
+          "id": "title",
+          "value": "Uống thuốc",
+          "confidence": 0.9,
+          "sourceQuote": "uống thuốc"
+        },
+        {
+          "id": "dueDate",
+          "value": null,
+          "confidence": null,
+          "sourceQuote": null
+        }
+      ],
+      "dateCandidates": []
+    }
+  ],
+  "followUpQuestion": "Bạn muốn được nhắc lúc mấy giờ?",
+  "unsupported": null
+}

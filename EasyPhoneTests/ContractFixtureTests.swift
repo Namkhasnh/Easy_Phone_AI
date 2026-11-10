@@ -44,6 +44,7 @@ struct ContractFixtureTests {
         case "health": reencoded = try JSONEncoder().encode(Self.decode(HealthResponse.self, name))
         case "me": reencoded = try JSONEncoder().encode(Self.decode(MeResponse.self, name))
         case "error": reencoded = try JSONEncoder().encode(Self.decode(APIErrorEnvelope.self, name))
+        case "parse": reencoded = try JSONEncoder().encode(Self.decode(ParsedDraft.self, name))
         default:
             Issue.record("no DTO mapped for \(name)")
             return
@@ -87,6 +88,59 @@ struct ContractFixtureTests {
     @Test func mocksEqualFixtures() throws {
         #expect(MeResponse.mock == (try Self.decode(MeResponse.self, "me.free.response.json")))
         #expect(HealthResponse.mock == (try Self.decode(HealthResponse.self, "health.ok.response.json")))
+    }
+
+    static var requestFixtureNames: [String] {
+        (bundle.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? [])
+            .map(\.lastPathComponent)
+            .filter { $0.hasSuffix(".request.json") }
+            .sorted()
+    }
+
+    /// Request fixtures: our encoder writes the same JSON the backend validates (all keys, nulls included).
+    @Test(arguments: requestFixtureNames)
+    func requestRoundTripsExactly(name: String) throws {
+        let raw = try Self.data(name)
+        let encoded: Data
+        switch name.split(separator: ".").first {
+        case "parse": encoded = try JSONEncoder().encode(Self.decode(ParseRequest.self, name))
+        default:
+            Issue.record("no DTO mapped for \(name)")
+            return
+        }
+        let a = try JSONSerialization.jsonObject(with: raw) as? NSDictionary
+        let b = try JSONSerialization.jsonObject(with: encoded) as? NSDictionary
+        #expect(a == b)
+    }
+
+    @Test func parseFixturesTyped() throws {
+        let sms = try Self.decode(ParsedDraft.self, "parse.sms.response.json")
+        #expect(sms.steps.first?.kind == "sms")
+        #expect(sms.steps.first?.fields.map(\.id) == ["recipientName", "body", "channel"])
+        let ambiguous = try Self.decode(ParsedDraft.self, "parse.ambiguousDate.response.json")
+        #expect(ambiguous.steps.first?.dateCandidates.count == 2)
+        #expect(ambiguous.steps.first?.fields.last?.value == nil)
+        let unsupported = try Self.decode(ParsedDraft.self, "parse.unsupported.response.json")
+        #expect(unsupported.steps.isEmpty && unsupported.unsupported?.reason == "recurringEvent")
+    }
+
+    /// D-056: an encoded parse request never carries a 🔒 key, even with a current draft.
+    @Test func parseRequestHasNoLockedKeys() throws {
+        let request = try Self.decode(ParseRequest.self, "parse.followUpAnswer.request.json")
+        let json = try JSONSerialization.jsonObject(with: JSONEncoder().encode(request))
+        func keys(_ v: Any) -> Set<String> {
+            if let d = v as? [String: Any] { return Set(d.keys).union(d.values.flatMap { keys($0) }) }
+            if let a = v as? [Any] { return Set(a.flatMap { keys($0) }) }
+            return []
+        }
+        let locked: Set = ["contactId", "phoneNumber", "targetRef", "calendarId", "resultEvidence", "imagePath"]
+        #expect(keys(json).isDisjoint(with: locked))
+    }
+
+    @Test func nowStringKeepsOffset() {
+        let date = Date(timeIntervalSince1970: 1_794_136_020)  // 2026-11-08T11:07:00Z
+        let s = ParseRequest.nowString(date, in: TimeZone(identifier: "Asia/Ho_Chi_Minh")!)
+        #expect(s == "2026-11-08T18:07:00+07:00")
     }
 
     /// Every key path (`quota.resetsAt`, `error.details.minVersion`) whose value is not null.

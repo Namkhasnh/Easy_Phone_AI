@@ -12,6 +12,7 @@ from app.errors import MESSAGES
 from app.schemas.error import ErrorCode, ErrorEnvelope
 from app.schemas.health import HealthResponse
 from app.schemas.me import MeResponse
+from app.schemas.parse import ParsedDraft, ParseRequest
 
 FIXTURES = Path(__file__).parent / "fixtures" / "contract"
 NAME = re.compile(r"^(?P<endpoint>[a-z]+)\.(?P<case>[A-Za-z_]+)\.(?P<kind>request|response)\.json$")
@@ -21,6 +22,10 @@ RESPONSE_MODELS: dict[str, type[BaseModel]] = {
     "health": HealthResponse,
     "me": MeResponse,
     "error": ErrorEnvelope,
+    "parse": ParsedDraft,
+}
+REQUEST_MODELS: dict[str, type[BaseModel]] = {
+    "parse": ParseRequest,
 }
 
 # 🔒 keys never leave the device (D-056, API_CONTRACT §11).
@@ -49,17 +54,22 @@ def test_folder_is_not_empty() -> None:
 def test_name_and_known_endpoint(path: Path) -> None:
     match = NAME.match(path.name)
     assert match, f"{path.name} is not <endpoint>.<case>.request|response.json"
-    assert match["kind"] == "response", "request fixtures arrive with the first POST endpoint (1B)"
-    assert match["endpoint"] in RESPONSE_MODELS
+    models = RESPONSE_MODELS if match["kind"] == "response" else REQUEST_MODELS
+    assert match["endpoint"] in models
 
 
 @pytest.mark.parametrize("path", FILES, ids=lambda p: p.name)
-def test_response_validates_and_round_trips(path: Path) -> None:
-    model = RESPONSE_MODELS[path.name.split(".")[0]]
+def test_fixture_validates_and_round_trips(path: Path) -> None:
+    endpoint, _, kind, _ = path.name.split(".")
+    model = (RESPONSE_MODELS if kind == "response" else REQUEST_MODELS)[endpoint]
     raw = _load(path)
     parsed = model.model_validate(raw)
     # Same bytes back: date format (`+07:00`, seconds), key names, nulls.
-    assert parsed.model_dump(mode="json", exclude_unset=True) == raw
+    dumped = parsed.model_dump(mode="json", exclude_unset=True)
+    if endpoint == "parse" and kind == "request":
+        dumped["now"] = raw["now"]  # AwareDatetime re-serializes; the value itself is checked below
+        assert parsed.now.isoformat() == raw["now"]
+    assert dumped == raw
 
 
 @pytest.mark.parametrize("path", FILES, ids=lambda p: p.name)
