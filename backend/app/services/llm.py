@@ -10,6 +10,7 @@
 
 import json
 import logging
+import math
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -37,6 +38,26 @@ class Completions(Protocol):
     async def create(self, **kwargs: Any) -> Any: ...
 
 
+class Transcriptions(Protocol):
+    """The slice of `AsyncOpenAI().audio.transcriptions` we use (a fake in tests)."""
+
+    async def create(self, **kwargs: Any) -> Any: ...
+
+
+@dataclass(frozen=True)
+class AudioUpload:
+    data: bytes
+    filename: str
+    content_type: str
+    language: str  # ISO 639-1, e.g. "vi"
+
+
+@dataclass(frozen=True)
+class TranscriptResult:
+    text: str
+    confidence: float | None  # 0–1, or None when the model gives no score (D-238)
+
+
 @dataclass(frozen=True)
 class StructuredCall:
     prompt_name: str  # "parse", "extract" (for logs)
@@ -47,13 +68,16 @@ class StructuredCall:
     schema: dict[str, Any]
 
 
-def make_completions(settings: Settings) -> Completions:
-    """One `AsyncOpenAI` per process; key from env only (D-051)."""
+def make_openai(settings: Settings) -> openai.AsyncOpenAI:
+    """One `AsyncOpenAI` per process; key from env only (D-051); SDK retries off (D-262)."""
     if settings.OPENAI_API_KEY is None:
         logger.error("llm misconfigured: OPENAI_API_KEY missing")
         raise AppError("internal", 500, True)
-    client = openai.AsyncOpenAI(api_key=settings.OPENAI_API_KEY.get_secret_value(), max_retries=0)
-    return client.chat.completions
+    return openai.AsyncOpenAI(api_key=settings.OPENAI_API_KEY.get_secret_value(), max_retries=0)
+
+
+def make_completions(settings: Settings) -> Completions:
+    return make_openai(settings).chat.completions
 
 
 def cost_usd(settings: Settings, model: str, tokens_in: int, tokens_out: int) -> Decimal:
@@ -72,9 +96,60 @@ class _Output:
 
 
 class LLMClient:
-    def __init__(self, settings: Settings, completions: Completions) -> None:
+    def __init__(self, settings: Settings, completions: Completions, transcriptions: Transcriptions | None = None) -> None:
         self._settings = settings
         self._completions = completions
+        self._transcriptions = transcriptions
+
+    async def transcribe(self, audio: AudioUpload, budget: Deadline, meter: CostMeter) -> TranscriptResult:
+        """`/v1/transcribe` (API_CONTRACT §7.4). Audio is passed through, never stored or logged (D-059)."""
+        if self._transcriptions is None:
+            raise AppError("internal", 500, True)
+        model = self._settings.MODEL_TRANSCRIBE
+        timeout = budget.llm_timeout(self._settings)
+        if timeout <= 0:
+            raise AppError("upstream_error", 503, True)
+        started = time.monotonic()
+        kwargs: dict[str, Any] = {
+            "model": model,
+            "file": (audio.filename, audio.data, audio.content_type),
+            "language": audio.language,
+            "response_format": "json",
+            "include": ["logprobs"],  # → confidence; models without logprobs just omit them
+            "timeout": timeout,
+        }
+        try:
+            resp = await self._transcriptions.create(**kwargs)
+        except openai.APIError as exc:
+            self._raise_mapped(exc, "transcribe", model, started)
+        tokens_in, tokens_out, cost = self._transcribe_cost(resp, model)
+        meter.add(tokens_in, tokens_out, cost)
+        logger.info(
+            "llm prompt=transcribe model=%s result=ok tokens_in=%s tokens_out=%s latency_ms=%s",
+            model, tokens_in, tokens_out, int((time.monotonic() - started) * 1000),
+        )
+        return TranscriptResult((getattr(resp, "text", None) or "").strip(), _confidence(resp))
+
+    def _transcribe_cost(self, resp: Any, model: str) -> tuple[int, int, Decimal]:
+        usage = getattr(resp, "usage", None)
+        if usage is not None and getattr(usage, "type", None) == "tokens":
+            t_in, t_out = int(usage.input_tokens or 0), int(usage.output_tokens or 0)
+            return t_in, t_out, cost_usd(self._settings, model, t_in, t_out)
+        seconds = getattr(usage, "seconds", None) if usage is not None else None
+        if seconds is None:
+            seconds = self._settings.TRANSCRIBE_MAX_SECONDS  # no usage: assume the longest allowed clip (spend cap)
+        per_minute = Decimal(str(self._settings.TRANSCRIBE_USD_PER_MINUTE))
+        return 0, 0, (per_minute * Decimal(str(seconds)) / 60).quantize(Decimal("0.000001"))
+
+    def _raise_mapped(self, exc: Exception, phase: str, model: str, started: float) -> None:
+        """OpenAI SDK error → `AppError` (ARCHITECTURE §7.2): timeout / connection / 429 / 5xx → 503, else 500."""
+        name = type(exc).__name__
+        logger.info("llm prompt=%s model=%s result=%s latency_ms=%s",
+                    phase, model, name, int((time.monotonic() - started) * 1000))
+        if isinstance(exc, (openai.APITimeoutError, openai.APIConnectionError, openai.RateLimitError,
+                            openai.InternalServerError)):
+            raise AppError("upstream_error", 503, True) from None
+        raise AppError("internal", 500, True) from None
 
     async def structured(
         self, call: StructuredCall, validate: Validator, budget: Deadline, meter: CostMeter
@@ -154,6 +229,15 @@ class LLMClient:
             "llm prompt=%s.v%s model=%s result=%s errors=%s tokens_in=%s tokens_out=%s latency_ms=%s",
             call.prompt_name, call.prompt_version, call.model, result, n_errors, tokens[0], tokens[1], latency_ms,
         )
+
+
+def _confidence(resp: Any) -> float | None:
+    """Mean token probability = exp(mean logprob), in 0–1; None without logprobs (D-238)."""
+    logprobs = getattr(resp, "logprobs", None) or []
+    values = [lp.logprob for lp in logprobs if getattr(lp, "logprob", None) is not None]
+    if not values:
+        return None
+    return round(min(1.0, max(0.0, math.exp(sum(values) / len(values)))), 2)
 
 
 def _usage(resp: Any) -> tuple[int, int]:

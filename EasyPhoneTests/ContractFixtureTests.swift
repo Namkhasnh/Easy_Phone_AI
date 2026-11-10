@@ -45,6 +45,7 @@ struct ContractFixtureTests {
         case "me": reencoded = try JSONEncoder().encode(Self.decode(MeResponse.self, name))
         case "error": reencoded = try JSONEncoder().encode(Self.decode(APIErrorEnvelope.self, name))
         case "parse": reencoded = try JSONEncoder().encode(Self.decode(ParsedDraft.self, name))
+        case "transcribe": reencoded = try JSONEncoder().encode(Self.decode(TranscribeResponse.self, name))
         default:
             Issue.record("no DTO mapped for \(name)")
             return
@@ -136,6 +137,11 @@ struct ContractFixtureTests {
         }
         let locked: Set = ["contactId", "phoneNumber", "targetRef", "calendarId", "resultEvidence", "imagePath"]
         #expect(keys(json).isDisjoint(with: locked))
+    }
+
+    @Test func transcribeConfidenceMayBeNull() throws {
+        #expect(try Self.decode(TranscribeResponse.self, "transcribe.ok.response.json").confidence == 0.82)
+        #expect(try Self.decode(TranscribeResponse.self, "transcribe.noConfidence.response.json").confidence == nil)
     }
 
     @Test func nowStringKeepsOffset() {

@@ -62,6 +62,7 @@ class AppError(Exception):
         retryable: bool,
         message_key: str | None = None,
         details: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
     ) -> None:
         super().__init__(code)
         self.code = code
@@ -69,6 +70,7 @@ class AppError(Exception):
         self.retryable = retryable
         self.message_key = message_key or code
         self.details = details
+        self.headers = headers or {}  # e.g. `Retry-After` on 429 (API_CONTRACT §1)
 
 
 def _language(request: Request) -> str:
@@ -94,7 +96,7 @@ def render(request: Request, err: AppError) -> JSONResponse:
     if err.details is not None:
         body["details"] = err.details
     # Header set here too: the unhandled-exception handler runs outside RequestIdMiddleware.
-    return JSONResponse(status_code=err.http_status, content={"error": body}, headers={HEADER: request_id})
+    return JSONResponse(status_code=err.http_status, content={"error": body}, headers={**err.headers, HEADER: request_id})
 
 
 async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:

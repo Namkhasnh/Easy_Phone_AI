@@ -104,3 +104,27 @@ async def cost_between(conn: asyncpg.Connection, start: datetime, end: datetime)
         start,
         end,
     )
+
+
+async def window_count(
+    conn: asyncpg.Connection, user_id: str, endpoint: str, since: datetime
+) -> tuple[int, datetime | None]:
+    """Rows of `endpoint` for the user with `created_at > since`, and the oldest one's time (rate limit, D-237)."""
+    rec = await conn.fetchrow(
+        "select count(*)::int as n, min(created_at) as oldest from usage_events"
+        " where user_id = $1::uuid and endpoint = $2 and created_at > $3",
+        user_id,
+        endpoint,
+        since,
+    )
+    return rec["n"], rec["oldest"]
+
+
+async def insert_unkeyed(conn: asyncpg.Connection, user_id: str, endpoint: str, now: datetime) -> int:
+    """A `units = 0` row without an idempotency key (`/v1/transcribe`: cost still counts for the spend cap)."""
+    return await conn.fetchval(
+        "insert into usage_events (user_id, endpoint, units, created_at) values ($1::uuid, $2, 0, $3) returning id",
+        user_id,
+        endpoint,
+        now,
+    )

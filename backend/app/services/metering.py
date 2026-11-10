@@ -7,6 +7,7 @@ Never logs request text or model output (D-059): only ids, endpoint, status, att
 
 import asyncio
 import logging
+import math
 import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
@@ -141,3 +142,48 @@ async def metered(
 async def _settle(conn: asyncpg.Connection, row_id: int, meter: CostMeter) -> None:
     if meter.tokens_in or meter.tokens_out or meter.cost_usd:
         await usage.add_cost(conn, row_id, meter.tokens_in, meter.tokens_out, meter.cost_usd)
+
+
+RATE_WINDOW = timedelta(hours=1)
+
+
+async def rate_limited(
+    conn: asyncpg.Connection,
+    settings: Settings,
+    *,
+    endpoint: str,
+    per_hour: int,
+    user_id: str,
+    now: datetime,
+    run: Run[T],
+    deadline: Deadline | None = None,
+) -> T:
+    """Free, rate-limited endpoints (`/v1/transcribe`, API_CONTRACT §4.3): step 4 skipped, 5 spend cap,
+    6 = rate limit → `429 rate_limited` + `Retry-After` (D-237). The row is inserted with `units = 0` **before** the
+    call, so failed calls count toward the limit too; its tokens/cost are added afterwards (spend cap)."""
+    budget = deadline or Deadline(settings.REQUEST_BUDGET_SECONDS)
+    async with conn.transaction():
+        await conn.execute("select pg_advisory_xact_lock(hashtext($1))", user_id)
+        await quota.check_spend_cap(conn, settings, now)
+        count, oldest = await usage.window_count(conn, user_id, endpoint, now - RATE_WINDOW)
+        if count >= per_hour:
+            wait = max(1, math.ceil(((oldest or now) + RATE_WINDOW - now).total_seconds()))
+            raise AppError("rate_limited", 429, True, details={"retryAfterSeconds": wait},
+                           headers={"Retry-After": str(wait)})
+        row_id = await usage.insert_unkeyed(conn, user_id, endpoint, now)
+
+    meter = CostMeter()
+    try:
+        try:
+            async with asyncio.timeout(budget.remaining()):
+                result = await run(budget, meter)
+        except TimeoutError:
+            raise AppError("upstream_error", 503, True) from None
+    except BaseException as exc:
+        await _settle(conn, row_id, meter)
+        logger.info("rate_limited fail endpoint=%s row=%s error=%s", endpoint, row_id,
+                    getattr(exc, "code", type(exc).__name__))
+        raise
+    await _settle(conn, row_id, meter)
+    logger.info("rate_limited ok endpoint=%s row=%s", endpoint, row_id)
+    return result

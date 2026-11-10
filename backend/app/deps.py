@@ -12,7 +12,7 @@ from app.auth import CurrentUser, verify_token
 from app.config import Settings, get_settings
 from app.errors import AppError
 from app.services import accounts
-from app.services.llm import LLMClient, make_completions
+from app.services.llm import LLMClient, make_openai
 
 __all__ = ["AuthedUser", "CurrentUser", "Settings", "authed_user", "client_version", "clock", "current_user", "db", "get_settings", "idempotency_key", "llm", "request_id"]
 
@@ -67,7 +67,8 @@ def llm(request: Request, settings: Settings = Depends(get_settings)) -> LLMClie
     """One OpenAI client per app, created on first use (health / me never need the key)."""
     client = getattr(request.app.state, "llm", None)
     if client is None:
-        client = LLMClient(settings, make_completions(settings))
+        openai_client = make_openai(settings)
+        client = LLMClient(settings, openai_client.chat.completions, openai_client.audio.transcriptions)
         request.app.state.llm = client
     return client
 

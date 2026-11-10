@@ -29,7 +29,12 @@ class Settings(BaseSettings):
     MODEL_PRICES_USD_PER_1M: dict[str, list[float]] = {
         "gpt-4o-mini": [0.15, 0.60],
         "gpt-4o": [2.50, 10.00],
+        "gpt-4o-mini-transcribe": [1.25, 5.00],  # audio input / text output tokens
     }
+    # Transcription billed by duration (no token usage in the response): USD per audio minute.
+    TRANSCRIBE_USD_PER_MINUTE: float = 0.006
+    TRANSCRIBE_MAX_BYTES: int = 2 * 1024 * 1024  # API_CONTRACT §7.4: ≤ 2 MB
+    TRANSCRIBE_MAX_SECONDS: int = 60  # ≤ 60 s; also the cost estimate when the response has no usage
     # A model without a price is charged at this (high) rate, so the spend cap can only trip early, never late.
     UNKNOWN_MODEL_PRICE_USD_PER_1M: list[float] = [10.0, 40.0]
 
