@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     UNITS_OCR: int = 1
     UNITS_TRANSCRIBE: int = 0
     TRANSCRIBE_PER_HOUR: int = 30  # D-237
+    PARSE_TEXT_MAX_CHARS: int = 2000  # D-238
+    OCR_TEXT_MAX_CHARS: int = 10_000  # D-238
 
     # Cost + time (D-285, D-246, D-262)
     MONTHLY_SPEND_CAP_USD: float = 5.0
