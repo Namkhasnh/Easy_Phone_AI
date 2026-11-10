@@ -66,6 +66,15 @@ struct MascotView: View {
             .resizable()
             .interpolation(.high)
             .scaledToFit()
+            // Depth without a backdrop (owner 2026-11-10): soft ground shadow under the paws + light drop shadow.
+            .background(alignment: .bottom) {
+                Ellipse()
+                    .fill(.black.opacity(0.22))
+                    .frame(width: size * 0.62, height: size * 0.12)
+                    .blur(radius: size * 0.04)
+                    .offset(y: size * 0.02)
+            }
+            .shadow(color: .black.opacity(0.18), radius: size * 0.05, x: 0, y: size * 0.04)
             .frame(width: size, height: size)              // decorative, fixed-size slot (not text)
             .accessibilityHidden(true)
             .task(id: PlayKey(pose: pose, reduceMotion: reduceMotion)) { await play() }

@@ -61,11 +61,10 @@ struct HomeView: View {
 
     // MARK: - Parts
 
-    /// Khoai waves once, then idles (UI_SCREENS S02, P-41). Decorative, fixed-size slot (~96pt).
+    /// Khoai waves once, then idles (UI_SCREENS S02, P-41). Decorative, fixed-size slot (~96pt), no backdrop.
     private var mascotSlot: some View {
-        MascotView(pose: .greeting, size: 88)
-            .frame(width: 96, height: 96)
-            .background(Tokens.Colors.honey, in: Circle())
+        MascotView(pose: .greeting, size: 104)
+            .frame(width: 104, height: 104)
             .accessibilityHidden(true)
     }
 

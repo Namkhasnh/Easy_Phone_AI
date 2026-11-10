@@ -233,9 +233,8 @@ struct ConversationView: View {
         HStack(alignment: .top, spacing: Tokens.Space.s) {
             if viewModel.showsMascot {
                 // Pose follows the mode (UI_SCREENS S03): listening / thinking / asking / sorry.
-                MascotView(pose: viewModel.mascotPose, size: Tokens.Size.stepBadge - 2)
-                    .frame(width: Tokens.Size.stepBadge, height: Tokens.Size.stepBadge)
-                    .background(Tokens.Colors.honey, in: Circle())
+                MascotView(pose: viewModel.mascotPose, size: Tokens.Size.stepBadge + 8)   // no backdrop (owner)
+                    .frame(width: Tokens.Size.stepBadge + 8, height: Tokens.Size.stepBadge + 8)
                     .accessibilityHidden(true)
             }
             content()
