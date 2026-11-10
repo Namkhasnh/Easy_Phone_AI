@@ -2112,6 +2112,510 @@
           }
         }
       }
+    },
+    "settings.title": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cài đặt"
+          }
+        }
+      }
+    },
+    "settings.account": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tài khoản"
+          }
+        }
+      }
+    },
+    "settings.plan.free": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gói: Miễn phí"
+          }
+        }
+      }
+    },
+    "settings.plan.premium": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gói: Premium"
+          }
+        }
+      }
+    },
+    "settings.voice": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giọng nói"
+          }
+        }
+      }
+    },
+    "settings.voice.enabled": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đọc to câu trả lời"
+          }
+        }
+      }
+    },
+    "settings.voice.rate": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tốc độ đọc"
+          }
+        }
+      }
+    },
+    "settings.voice.rate.slow": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chậm"
+          }
+        }
+      }
+    },
+    "settings.voice.rate.fast": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nhanh"
+          }
+        }
+      }
+    },
+    "settings.display": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hiển thị"
+          }
+        }
+      }
+    },
+    "settings.textSize": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cỡ chữ"
+          }
+        }
+      }
+    },
+    "settings.textSize.note": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đổi cỡ chữ trong Cài đặt iPhone > Màn hình & Độ sáng > Cỡ chữ."
+          }
+        }
+      }
+    },
+    "settings.simpleMode": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chế độ đơn giản"
+          }
+        }
+      }
+    },
+    "settings.simpleMode.note": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ẩn bớt các tùy chọn nâng cao."
+          }
+        }
+      }
+    },
+    "settings.pet": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hiện bạn Khoai"
+          }
+        }
+      }
+    },
+    "settings.pet.note": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Khoai chỉ là nhân vật hướng dẫn, tắt đi app vẫn chạy như cũ."
+          }
+        }
+      }
+    },
+    "settings.memory": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ghi nhớ"
+          }
+        }
+      }
+    },
+    "settings.nicknames": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tên gọi thân mật"
+          }
+        }
+      }
+    },
+    "settings.nicknames.empty": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chưa có tên gọi nào."
+          }
+        }
+      }
+    },
+    "settings.savedPlaces": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Địa điểm đã lưu"
+          }
+        }
+      }
+    },
+    "settings.advanced": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nâng cao"
+          }
+        }
+      }
+    },
+    "settings.snoozeHour": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giờ của “sáng mai”"
+          }
+        }
+      }
+    },
+    "settings.mapsApp": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mở chỉ đường bằng"
+          }
+        }
+      }
+    },
+    "settings.permissions": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quyền truy cập"
+          }
+        }
+      }
+    },
+    "settings.connections": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kết nối"
+          }
+        }
+      }
+    },
+    "settings.gmail.soon": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gmail — sắp có"
+          }
+        }
+      }
+    },
+    "settings.data": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dữ liệu"
+          }
+        }
+      }
+    },
+    "settings.clearHistory": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xóa lịch sử"
+          }
+        }
+      }
+    },
+    "settings.clearMemory": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xóa dữ liệu ghi nhớ"
+          }
+        }
+      }
+    },
+    "settings.about": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thông tin"
+          }
+        }
+      }
+    },
+    "settings.aiDisclosure": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yêu cầu AI của bạn được xử lý bởi một nhà cung cấp AI bên thứ ba (OpenAI). Danh bạ và lịch được xử lý trên điện thoại."
+          }
+        }
+      }
+    },
+    "settings.privacy": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chính sách quyền riêng tư"
+          }
+        }
+      }
+    },
+    "settings.terms": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Điều khoản sử dụng"
+          }
+        }
+      }
+    },
+    "settings.version": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Phiên bản %@"
+          }
+        }
+      }
+    },
+    "settings.signOut": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đăng xuất"
+          }
+        }
+      }
+    },
+    "settings.deleteAccount": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xóa tài khoản"
+          }
+        }
+      }
+    },
+    "settings.snoozeHour.value": {
+      "comment": "UI_SCREENS S15 \"{hour} giờ\"; key name not in docs (DOC-27)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ giờ"
+          }
+        }
+      }
+    },
+    "confirm.clearMemory.title": {
+      "comment": "UI_SCREENS S20",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xóa dữ liệu ghi nhớ?"
+          }
+        }
+      }
+    },
+    "confirm.clearMemory.body": {
+      "comment": "UI_SCREENS S20",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tên gọi thân mật và địa điểm đã lưu sẽ bị xóa."
+          }
+        }
+      }
+    },
+    "confirm.signOut.title": {
+      "comment": "UI_SCREENS S20",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đăng xuất?"
+          }
+        }
+      }
+    },
+    "confirm.signOut.body": {
+      "comment": "UI_SCREENS S20",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bản nháp trên điện thoại vẫn được giữ."
+          }
+        }
+      }
+    },
+    "confirm.signOut.yes": {
+      "comment": "UI_SCREENS S20",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đăng xuất"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
