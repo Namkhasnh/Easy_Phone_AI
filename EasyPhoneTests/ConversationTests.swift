@@ -139,11 +139,12 @@ struct ConversationTests {
     }
 
     @Test func failedRetryKeepsPreviousText() async throws {
-        let draft = TaskDraft(inputMode: .text, originalInput: "Gọi cho mẹ")
+        let draft = TaskDraft(inputMode: .voice, originalInput: "Gọi cho mẹ")
         repo.save(draft)
         let vm = model(draftId: draft.id)
         await vm.onAppear()
-        #expect(speech.startCount == 0)                                      // saved draft → transcript, no auto-listen
+        #expect(speech.startCount == 0)                                      // saved voice draft → transcript, no auto-listen
+        #expect(api.parseCalls.isEmpty)                                      // and never auto-sent
         #expect(vm.mode == .transcript && vm.text == "Gọi cho mẹ")
         speech.script = [Transcript(text: "", isFinal: true)]
         await vm.speakAgain()
@@ -157,10 +158,13 @@ struct ConversationTests {
         let vm = model()
         await vm.onAppear()
         #expect(!vm.canSend)
-        #expect(!vm.send())
+        await vm.send()
+        #expect(api.parseCalls.isEmpty)
         vm.text = "Gọi cho mẹ"
         #expect(vm.canSend)
-        #expect(vm.send())
+        #expect(api.parseCalls.isEmpty)                                  // only "Gửi" sends
+        await vm.send()
+        #expect(api.parseCalls.count == 1)
         #expect(repo.draft(vm.draftId!)?.originalInput == "Gọi cho mẹ")
     }
 
@@ -269,15 +273,15 @@ struct ConversationTests {
         #expect(vm.lastAnswer == .chip(Self.friday20))
     }
 
-    @Test func typedAnswerNeedsTextAndKeepsRequest() {
+    @Test func typedAnswerNeedsTextAndKeepsRequest() async {
         let vm = typedModel("Nhắc tôi uống thuốc")
         vm.showFollowUp(.init(question: "Bạn muốn được nhắc lúc mấy giờ?"))
         vm.answerText = "   "
         #expect(!vm.canSendAnswer)
-        vm.sendAnswer()
+        await vm.sendAnswer()
         #expect(vm.lastAnswer == nil)
         vm.answerText = " 8 giờ sáng mai "
-        vm.sendAnswer()
+        await vm.sendAnswer()
         #expect(vm.lastAnswer == .text("8 giờ sáng mai"))
         #expect(repo.draft(vm.draftId!)?.originalInput == "Nhắc tôi uống thuốc")   // request untouched
     }

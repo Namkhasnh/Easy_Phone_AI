@@ -3,8 +3,9 @@ import Observation
 import OSLog
 
 /// S03 Conversation (UI_SCREENS S03, spec §6.2). Modes 1 listening, 2 transcript ready (1B.4a), 3 working,
-/// 5 unsupported (1B.4b), 4 follow-up (1B.4c). The `/v1/parse` call and the follow-up loop that drive 3–5 are wired in
-/// 1B.10 / 1B.14 through `showWorking()`, `showUnsupported(_:)`, `showParseFailed()`, `showFollowUp(_:)`.
+/// 5 unsupported (1B.4b), 4 follow-up (1B.4c). 1B.14b: "Gửi" → `/v1/parse` → `TaskEngine.applyParsed` → the ONE
+/// question (`TaskEngine.nextFollowUp`, D-281) or S04 (`reviewDraftId`); a chip is applied on device (D-251), a typed /
+/// spoken answer is a new `/v1/parse` with `context` → `TaskEngine.mergeAnswer` (ARCHITECTURE §6.2).
 @Observable @MainActor final class ConversationViewModel {
     enum Mode: Equatable, Sendable {
         case listening
@@ -68,8 +69,11 @@ import OSLog
     /// Mode 4 answer field (typed or spoken).
     var answerText = ""
     /// Last answer given in mode 4.
-    // TODO(spec): 1B.14 applies it (chip → field on device, text → `/v1/parse` with context); until then it is only recorded.
     private(set) var lastAnswer: FollowUpAnswer?
+    /// The question shown in mode 4 (which step / field the answer is for).
+    private(set) var prompt: FollowUpPrompt?
+    /// Set when nothing is left to ask: the View replaces S03 with S04 of this draft.
+    private(set) var reviewDraftId: UUID?
 
     private let repository: any TaskRepository
     private let speech: any SpeechService
@@ -79,6 +83,12 @@ import OSLog
     private var workingReturnMode: Mode?
     private let tts: any TTSService
     private let settings: AppSettings
+    private let localData: any LocalDataRepository
+    private let engine: TaskEngine
+    /// `/v1/parse` in flight; "Hủy" / leaving cancels it (ARCHITECTURE §8).
+    private var parseTask: Task<Void, Never>?
+    /// How the current mode-4 answer was given (`ParseRequest.inputMode`).
+    private var answerInputMode: InputMode = .text
     private let now: () -> Date
     private var listenTask: Task<Void, Never>?
     private var silenceTask: Task<Void, Never>?
@@ -91,7 +101,8 @@ import OSLog
     private var target: Target = .request
 
     init(draftId: UUID?, repository: any TaskRepository, speech: any SpeechService, api: any APIClientProtocol,
-         tts: any TTSService, localData: any LocalDataRepository, now: @escaping () -> Date = { .now },
+         tts: any TTSService, localData: any LocalDataRepository, engine: TaskEngine? = nil,
+         now: @escaping () -> Date = { .now },
          silenceAfterSpeech: Duration = ConversationViewModel.silenceAfterSpeech,
          noSpeechTimeout: Duration = ConversationViewModel.noSpeechTimeout) {
         self.draftId = draftId
@@ -102,17 +113,30 @@ import OSLog
         self.api = api
         self.tts = tts
         self.now = now
+        self.localData = localData
+        self.engine = engine ?? TaskEngine(repository: repository)   // tests pass one with their clock
         settings = localData.settings()
         if let draftId, let draft = repository.draft(draftId) {
             text = draft.originalInput
         }
     }
 
-    /// Mic / widget entry (`.conversation(nil)`) starts listening; a saved draft opens as an editable transcript.
-    // TODO(spec): a typed request from S02 "Gửi" should go straight to working (parse) — wired with 1B.13/1B.14; until then it opens here.
+    /// Mic / widget entry (`.conversation(nil)`) starts listening. A draft with steps resumes at its next question (or
+    /// S04). A typed request from S02 "Gửi" (text draft, never parsed) goes straight to mode 3 — the user already
+    /// tapped "Gửi" there. Any other saved draft opens as an editable transcript.
+    // TODO(spec): `Route.conversation(UUID?)` carries no "send now" flag; "S02 typed" = `.text` draft without steps and
+    // without `serverRequestId`.
     func onAppear() async {
-        if draftId == nil, text.isEmpty { await listen() }
+        if draftId == nil, text.isEmpty { await listen(); return }
+        guard let draft = currentDraft else { return }
+        if !draft.steps.isEmpty {
+            advance(draft)
+        } else if draft.inputMode == .text, draft.serverRequestId == nil, mode == .transcript, !trimmed.isEmpty {
+            await send()
+        }
     }
+
+    private var currentDraft: TaskDraft? { draftId.flatMap { repository.draft($0) } }
 
     /// Leaving the screen stops mic and voice; the draft is already saved (D-104).
     func onDisappear() {
@@ -120,6 +144,7 @@ import OSLog
         silenceTask?.cancel()
         listenTask?.cancel()
         transcribeTask?.cancel()
+        parseTask?.cancel()
         Task { await speech.stop() }
     }
 
@@ -210,7 +235,7 @@ import OSLog
         case .answer(let followUp):
             mode = .followUp(followUp)
             heardNothing = answerText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            if heardNothing { answerText = previousText }
+            if heardNothing { answerText = previousText } else { answerInputMode = .voice }
         }
         let finishedTarget = target
         target = .request
@@ -270,7 +295,7 @@ import OSLog
         }
         switch target {
         case .request: text = words                         // mode is .transcript → autosave (D-104)
-        case .answer: answerText = words
+        case .answer: answerText = words; answerInputMode = .voice
         }
     }
 
@@ -283,11 +308,11 @@ import OSLog
         mode = .working
     }
 
-    /// "Hủy" while working: back to the editable text, nothing lost.
-    // TODO(spec): 1B.13/1B.14 also cancel the `/v1/parse` task here (ARCHITECTURE §8: leaving cancels the network task).
+    /// "Hủy" while working: back to the editable text (or the question), nothing lost. Cancels the network task.
     func cancelWorking() {
         guard mode == .working else { return }
         transcribeTask?.cancel()
+        parseTask?.cancel()
         mode = workingReturnMode ?? .transcript
         workingReturnMode = nil
     }
@@ -332,6 +357,7 @@ import OSLog
         stopReading()
         noticeKey = nil
         answerText = ""
+        answerInputMode = .text
         mode = .followUp(followUp)
     }
 
@@ -340,17 +366,29 @@ import OSLog
         return !answerText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    /// Chip tap: resolved on device, never an AI call or a unit (D-251).
+    /// Chip tap: resolved on device through `TaskEngine.edit` (`source = .user`, ambiguity cleared), never an AI call
+    /// or a unit (D-251). Then the next question or S04.
     func pick(_ chip: DateChip) {
         guard case .followUp(let f) = mode, f.chips.contains(chip) else { return }
         lastAnswer = .chip(chip)
+        guard let prompt, prompt.fieldId == chip.fieldId, let draft = currentDraft else { return }
+        stopReading()
+        engine.edit(fieldId: chip.fieldId, value: chip.value, stepId: prompt.stepId, in: draft)
+        advance(draft)
     }
 
-    /// "Gửi" under the answer field: never automatic (API_CONTRACT §7.4).
-    func sendAnswer() {
-        guard canSendAnswer else { return }
+    /// "Gửi" under the answer field: never automatic (API_CONTRACT §7.4). A new `/v1/parse` (new key, 1 unit) with
+    /// `context` = this draft without 🔒 fields (D-056), then merged (`.user` fields kept).
+    func sendAnswer() async {
+        guard canSendAnswer, case .followUp(let followUp) = mode else { return }
         stopReading()
-        lastAnswer = .text(answerText.trimmingCharacters(in: .whitespacesAndNewlines))
+        let answer = answerText.trimmingCharacters(in: .whitespacesAndNewlines)
+        lastAnswer = .text(answer)
+        guard let prompt, let draft = currentDraft else { return }
+        let context = ParseRequest.ParseContext(draftId: draft.id, answeringFieldId: prompt.fieldId,
+                                                currentDraft: DraftBuilder.wireDraft(draft))
+        await runParse(text: answer, inputMode: answerInputMode, context: context, draft: draft,
+                       returnMode: .followUp(followUp))
     }
 
     /// "Bỏ qua, tôi sẽ sửa sau": the draft opens in S04 with the field still empty. Returns the draft to open.
@@ -362,13 +400,108 @@ import OSLog
 
     // MARK: - Transcript ready (mode 2)
 
-    /// "Gửi": never automatic (API_CONTRACT §7.4). Saves the request; returns `true` when the screen may leave.
-    // TODO(spec): 1B.13/1B.14 replace "save and go Home" with mode 3 (working) → `/v1/parse` → S04.
-    func send() -> Bool {
-        guard canSend else { return false }
+    /// "Gửi": never automatic (API_CONTRACT §7.4). Saves the request (D-104), then mode 3 → `/v1/parse` (new key).
+    func send() async {
+        guard canSend else { return }
         stopReading()
         autosave()
-        return true
+        guard let draft = currentDraft else { return }
+        guard draft.steps.isEmpty else { advance(draft); return }       // already parsed: never charge twice
+        await runParse(text: trimmed, inputMode: draft.inputMode, context: .none, draft: draft, returnMode: .transcript)
+    }
+
+    // MARK: - Parse loop (ARCHITECTURE §6.2)
+
+    private func runParse(text: String, inputMode: InputMode, context: ParseRequest.ParseContext, draft: TaskDraft,
+                          returnMode: Mode) async {
+        noticeKey = nil
+        workingReturnMode = returnMode
+        mode = .working
+        let zone = TimeZone(identifier: draft.timeZoneId) ?? .current
+        let request = ParseRequest(text: text, inputMode: inputMode, now: ParseRequest.nowString(now(), in: zone),
+                                   timezone: zone.identifier, locale: draft.locale,
+                                   savedPlaceLabels: savedPlaceLabels, context: context)
+        let key = IdempotencyKey()                                     // one per call; retries inside APIClient reuse it
+        let isAnswer = context.answeringFieldId != nil
+        let task = Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                let parsed = try await self.api.parse(request, idempotencyKey: key)
+                guard !Task.isCancelled, self.mode == .working else { return }   // "Hủy" already left
+                self.workingReturnMode = nil
+                self.handle(parsed, isAnswer: isAnswer, draft: draft, returnMode: returnMode)
+            } catch {
+                guard !Task.isCancelled, self.mode == .working else { return }
+                self.workingReturnMode = nil
+                self.fail(error, returnMode: returnMode)
+            }
+        }
+        parseTask = task
+        await task.value
+    }
+
+    /// DATA_MODEL §5: labels only (`home`, `work`, `custom`), never addresses.
+    private var savedPlaceLabels: [String] {
+        var seen = Set<String>()
+        return localData.savedPlaces().map(\.label).filter { seen.insert($0).inserted }
+    }
+
+    private func handle(_ parsed: ParsedDraft, isAnswer: Bool, draft: TaskDraft, returnMode: Mode) {
+        let defaults = DraftBuilder.Defaults(mapsApp: settings.preferredMapsApp)
+        if isAnswer {
+            guard parsed.unsupported == nil else {
+                // TODO(spec): an `unsupported` reply to a follow-up answer is not specified; the same question is
+                // asked again with `conv.parseFailed` (the draft keeps its steps).
+                mode = returnMode
+                noticeKey = "conv.parseFailed"
+                return
+            }
+            engine.mergeAnswer(parsed, into: draft, defaults: defaults)
+            advance(draft)
+            return
+        }
+        if let u = parsed.unsupported {
+            showUnsupported(.init(reason: u.reason, message: u.message))
+        } else if engine.applyParsed(parsed, to: draft, defaults: defaults) {
+            advance(draft)
+        } else {
+            // Every step dropped on device (unknown kind / pair, D-150): nothing to review → "Chưa hỗ trợ" (spec §11).
+            showUnsupported(.init(reason: "other", message: nil))
+        }
+    }
+
+    /// The next ONE question (D-281) or S04 when nothing S03 can ask is left.
+    private func advance(_ draft: TaskDraft) {
+        if let next = engine.nextFollowUp(in: draft) {
+            prompt = next
+            showFollowUp(FollowUp(question: next.question, chips: next.candidates.map {
+                DateChip(fieldId: next.fieldId, value: $0.id, label: $0.title)
+            }))
+        } else {
+            prompt = nil
+            reviewDraftId = draft.id
+        }
+    }
+
+    /// ARCHITECTURE §9.2 for parse: back to where the user was, text kept, one notice. "Gửi" again = "Thử lại" (new key).
+    private func fail(_ error: any Error, returnMode: Mode) {
+        let code = (error as? AppError)?.code ?? "generic"
+        Self.logger.info("parse failed: \(code, privacy: .public)")       // D-059: code only
+        mode = returnMode
+        noticeKey = Self.noticeKey(forParseError: code)
+    }
+
+    /// `error.<code>` keys of UI_SCREENS §8 used by S03; unknown → `error.generic`.
+    // TODO(spec): 402 should open S16 / S17 (1F); until then the notice `error.quota_exceeded` is shown.
+    static func noticeKey(forParseError code: String) -> String {
+        if code.hasPrefix("network.") { return "error.network.offline" }
+        switch code {
+        case APIErrorCode.llmInvalidOutput: return "conv.parseFailed"
+        case APIErrorCode.quotaExceeded, APIErrorCode.spendCap, APIErrorCode.internal, APIErrorCode.upstreamError,
+             "invalid_input", "not_found", "payload_too_large":
+            return "error.\(code)"
+        default: return "error.generic"
+        }
     }
 
     /// "Đọc to" on the user bubble (S03) at the Settings rate; tap again = "Dừng đọc".

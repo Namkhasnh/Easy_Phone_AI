@@ -1753,6 +1753,90 @@
         }
       }
     },
+    "error.quota_exceeded": {
+      "comment": "UI_SCREENS §8 (ARCHITECTURE §9.2), S03 parse errors",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn đã dùng hết lượt hôm nay."
+          }
+        }
+      }
+    },
+    "error.spend_cap": {
+      "comment": "UI_SCREENS §8 (ARCHITECTURE §9.2), S03 parse errors",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dịch vụ AI tạm dừng. Các tính năng khác vẫn dùng được."
+          }
+        }
+      }
+    },
+    "error.internal": {
+      "comment": "UI_SCREENS §8 (ARCHITECTURE §9.2), S03 parse errors",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Có lỗi, bản nháp đã được lưu."
+          }
+        }
+      }
+    },
+    "error.upstream_error": {
+      "comment": "UI_SCREENS §8 (ARCHITECTURE §9.2), S03 parse errors",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Có lỗi, bản nháp đã được lưu."
+          }
+        }
+      }
+    },
+    "error.invalid_input": {
+      "comment": "UI_SCREENS §8 (ARCHITECTURE §9.2), S03 parse errors",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Có lỗi, bản nháp đã được lưu."
+          }
+        }
+      }
+    },
+    "error.not_found": {
+      "comment": "UI_SCREENS §8 (ARCHITECTURE §9.2), S03 parse errors",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Có lỗi, bản nháp đã được lưu."
+          }
+        }
+      }
+    },
+    "error.payload_too_large": {
+      "comment": "UI_SCREENS §8 (ARCHITECTURE §9.2), S03 parse errors",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ảnh hoặc nội dung quá lớn. Bạn thử ảnh khác hoặc nội dung ngắn hơn nhé."
+          }
+        }
+      }
+    },
     "common.yes": {
       "comment": "UI_SCREENS §10.3 bool value (DOC-25)",
       "extractionState": "manual",

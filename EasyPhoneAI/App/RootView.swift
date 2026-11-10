@@ -86,7 +86,8 @@ struct RootView: View {
             ReviewView(viewModel: ReviewViewModel(draftId: draftId, repository: env.drafts, engine: env.engine))
         case .conversation(let draftId):
             ConversationView(viewModel: ConversationViewModel(draftId: draftId, repository: env.drafts, speech: env.speech, api: env.api,
-                                                              tts: env.tts, localData: env.localData))
+                                                              tts: env.tts, localData: env.localData,
+                                                              engine: env.engine))
         case .history:
             HistoryView(viewModel: HistoryViewModel(repository: env.drafts))
         case .settings:

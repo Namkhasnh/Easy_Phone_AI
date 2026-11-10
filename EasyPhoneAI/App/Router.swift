@@ -27,4 +27,10 @@ enum Route: Hashable, Sendable {
     func popToRoot() {
         path.removeAll()
     }
+
+    /// Replaces the top screen (S03 → S04 when the draft is ready), so "Back" from Review does not reopen S03.
+    func replaceLast(with route: Route) {
+        if !path.isEmpty { path.removeLast() }
+        path.append(route)
+    }
 }

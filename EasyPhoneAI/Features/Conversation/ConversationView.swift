@@ -34,6 +34,9 @@ struct ConversationView: View {
             }
         }
         .task { await viewModel.onAppear() }
+        .onChange(of: viewModel.reviewDraftId) { _, id in
+            if let id { router.replaceLast(with: .review(id)) }       // nothing left to ask → S04
+        }
         .onDisappear { viewModel.onDisappear() }
         .accessibilityIdentifier("screen.S03")
     }
@@ -199,7 +202,7 @@ struct ConversationView: View {
                 SecondaryButton("common.cancel") { viewModel.cancelWorking() }
             case .followUp:
                 if viewModel.canSendAnswer {                           // primaries: mic + "Gửi" only (D-183)
-                    PrimaryButton("conv.send") { textFocused = false; viewModel.sendAnswer() }
+                    PrimaryButton("conv.send") { textFocused = false; Task { await viewModel.sendAnswer() } }
                 }
                 SecondaryButton("conv.followup.skip") {
                     if let id = viewModel.skipFollowUp() { router.push(.review(id)) }
@@ -260,8 +263,8 @@ struct ConversationView: View {
     // MARK: - Actions
 
     private func send() {
-        guard viewModel.send() else { return }
-        router.popToRoot()
+        textFocused = false
+        Task { await viewModel.send() }
     }
 
     private func leave() {

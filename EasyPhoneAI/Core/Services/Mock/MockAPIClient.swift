@@ -8,6 +8,8 @@ final class MockAPIClient: APIClientProtocol {
     private let meResult: Result<MeResponse, AppError>
     private let parseResult: Result<ParsedDraft, AppError>
     private let parseLog = Mutex<[(request: ParseRequest, key: IdempotencyKey)]>([])
+    /// Answers for the next `parse` calls, in order; when empty, `parseResult` is returned.
+    private let parseQueue: Mutex<[Result<ParsedDraft, AppError>]>
     private let transcribeResult: Result<TranscribeResponse, AppError>
     private let transcribeLog = Mutex<[Data]>([])
     private let quota = Broadcast<Quota>()
@@ -15,9 +17,11 @@ final class MockAPIClient: APIClientProtocol {
 
     init(me: Result<MeResponse, AppError> = .success(.mock),
          parse: Result<ParsedDraft, AppError> = .success(.mockSMS),
+         parseSequence: [Result<ParsedDraft, AppError>] = [],
          transcribe: Result<TranscribeResponse, AppError> = .success(.mock)) {
         meResult = me
         parseResult = parse
+        parseQueue = Mutex(parseSequence)
         transcribeResult = transcribe
     }
 
@@ -36,7 +40,8 @@ final class MockAPIClient: APIClientProtocol {
 
     func parse(_ request: ParseRequest, idempotencyKey: IdempotencyKey) async throws -> ParsedDraft {
         parseLog.withLock { $0.append((request, idempotencyKey)) }
-        return try parseResult.get()
+        let next = parseQueue.withLock { $0.isEmpty ? nil : $0.removeFirst() }
+        return try (next ?? parseResult).get()
     }
 
     func transcribe(m4a: Data, meta: MediaMeta) async throws -> TranscribeResponse {
