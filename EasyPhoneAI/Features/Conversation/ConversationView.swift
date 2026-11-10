@@ -5,6 +5,7 @@ struct ConversationView: View {
     @State var viewModel: ConversationViewModel
     @Environment(Router.self) private var router
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     @State private var hintIndex = 0
     @FocusState private var textFocused: Bool
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -39,6 +40,16 @@ struct ConversationView: View {
             if let id { router.replaceLast(with: .review(id)) }       // nothing left to ask → S04
         }
         .onDisappear { viewModel.onDisappear() }
+        .sheet(item: $viewModel.pendingPermission) { pending in
+            PermissionSheet(pending: pending,
+                            onAllow: { Task { await viewModel.allowPermission() } },
+                            onOpenSettings: {
+                                viewModel.dismissPermission()
+                                // = UIApplication.openSettingsURLString, without importing UIKit (D-014)
+                                if let url = URL(string: "app-settings:") { openURL(url) }
+                            },
+                            onLater: { viewModel.dismissPermission() })
+        }
         .accessibilityIdentifier("screen.S03")
     }
 

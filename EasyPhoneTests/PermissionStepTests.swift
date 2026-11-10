@@ -100,3 +100,66 @@ struct PermissionStepTests {
         #expect(UserMessage(key: "perm.denied.title", args: ["Lịch"]).text == "Lịch chưa được cho phép")
     }
 }
+
+/// S03 mic step 0 → S18 for microphone, then speech (D-185); S15 "Quyền truy cập" rows (UI_SCREENS S15, §10.4).
+@MainActor
+@Suite("Permission S03 mic + S15 rows")
+struct PermissionMicAndSettingsTests {
+    let repo = MockTaskRepository()
+    let speech = MockSpeechService()
+    let local = MockLocalDataRepository()
+
+    func conversation(_ perms: MockPermissionManager) -> ConversationViewModel {
+        ConversationViewModel(draftId: nil, repository: repo, speech: speech, api: MockAPIClient(), tts: MockTTSService(),
+                              localData: local, permissions: perms)
+    }
+
+    @Test func micAsksMicrophoneThenSpeechThenRecords() async {
+        let perms = MockPermissionManager([.microphone: .notDetermined, .speech: .notDetermined], answer: .granted)
+        let vm = conversation(perms)
+        await vm.onAppear()
+        #expect(vm.pendingPermission == PendingPermission(capability: .microphone, variant: .explainer))
+        #expect(speech.startCount == 0 && perms.requested.isEmpty)       // nothing before the explainer
+        await vm.allowPermission()
+        #expect(vm.pendingPermission == PendingPermission(capability: .speech, variant: .explainer))
+        #expect(speech.startCount == 0)
+        await vm.allowPermission()
+        #expect(perms.requested == [.microphone, .speech])
+        #expect(vm.pendingPermission == nil)
+        #expect(speech.startCount == 1)
+        #expect(vm.text == "Nhắc tôi 8 giờ sáng mai uống thuốc")
+    }
+
+    @Test func deniedMicShowsDeniedAndKeepsKeyboard() async {
+        let perms = MockPermissionManager([.microphone: .denied])
+        let vm = conversation(perms)
+        await vm.onAppear()
+        #expect(vm.pendingPermission == PendingPermission(capability: .microphone, variant: .denied))
+        #expect(vm.mode == .transcript && speech.startCount == 0)
+        vm.dismissPermission()
+        #expect(vm.pendingPermission == nil && vm.mode == .transcript)    // fallback: type (S18 "Gõ chữ")
+    }
+
+    @Test func refusingTheSystemAlertShowsDenied() async {
+        let perms = MockPermissionManager([.speech: .notDetermined], answer: .denied)
+        let vm = conversation(perms)
+        await vm.onAppear()
+        await vm.allowPermission()
+        #expect(vm.pendingPermission == PendingPermission(capability: .speech, variant: .denied))
+        #expect(speech.startCount == 0)
+    }
+
+    @Test func settingsRowsReadWithoutAskingAndRefresh() {
+        let perms = MockPermissionManager([.calendar: .writeOnly, .contacts: .limited, .camera: .notDetermined])
+        let vm = SettingsViewModel(localData: local, drafts: repo, auth: MockAuthService(), permissions: perms)
+        #expect(vm.permissionStatuses.map(\.capability) == Capability.allCases)
+        #expect(vm.permissionStatuses.first { $0.capability == .calendar }?.status == .writeOnly)
+        #expect(perms.requested.isEmpty)                                  // S15 never prompts (D-185)
+        perms.set(.calendar, .denied)                                     // changed in iOS Settings
+        vm.refreshPermissions()
+        #expect(vm.permissionStatuses.first { $0.capability == .calendar }?.status == .denied)
+        for status in [PermissionStatus.notDetermined, .granted, .limited, .writeOnly, .denied, .restricted] {
+            #expect(UserMessage(key: status.labelKey).text != status.labelKey, "missing \(status.labelKey)")
+        }
+    }
+}

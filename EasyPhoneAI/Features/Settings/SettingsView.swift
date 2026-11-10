@@ -4,6 +4,8 @@ import SwiftUI
 struct SettingsView: View {
     @State var viewModel: SettingsViewModel
     @Environment(AppState.self) private var appState
+    @Environment(\.openURL) private var openURL
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         @Bindable var settings = viewModel.settings
@@ -80,8 +82,8 @@ struct SettingsView: View {
                     } label: { rowText("settings.mapsApp") }
                     .onChange(of: settings.preferredMapsApp) { viewModel.save() }
                     .frame(minHeight: Tokens.Size.buttonMinHeight)
-                    // TODO(spec): "Quyền truy cập" rows need PermissionManager (1C.1).
                 }
+                permissionsSection
             }
 
             Section(header: header("settings.connections")) {
@@ -127,7 +129,35 @@ struct SettingsView: View {
                          onCancel: { viewModel.pendingConfirm = nil })
         }
         .onDisappear { viewModel.stopVoice() }
+        .onChange(of: scenePhase) { _, phase in if phase == .active { viewModel.refreshPermissions() } }
         .accessibilityIdentifier("screen.S15")
+    }
+
+    /// ★ "Quyền truy cập" (UI_SCREENS S15): capability + status (§10.4) + "Mở Cài đặt". Read-only; never prompts.
+    private var permissionsSection: some View {
+        Section(header: header("settings.permissions")) {
+            ForEach(viewModel.permissionStatuses, id: \.capability) { row in
+                HStack(spacing: Tokens.Space.m) {
+                    Image(systemName: PermissionSheet.symbol(row.capability))
+                        .foregroundStyle(Tokens.Colors.primary)
+                        .accessibilityHidden(true)
+                    // TODO(spec): row label = `perm.<c>.feature` (DOC-37); S15 names no label per capability.
+                    rowText(LocalizedStringKey("perm.\(row.capability.rawValue).feature"))
+                    Spacer(minLength: Tokens.Space.s)
+                    Text(LocalizedStringKey(row.status.labelKey))
+                        .font(Tokens.Fonts.body)
+                        .foregroundStyle(Tokens.Colors.textSecondary)
+                        .multilineTextAlignment(.trailing)
+                }
+                .frame(minHeight: Tokens.Size.buttonMinHeight)
+                .accessibilityElement(children: .combine)
+            }
+            SecondaryButton("common.openSettings") {
+                // = UIApplication.openSettingsURLString, without importing UIKit (D-014)
+                if let url = URL(string: "app-settings:") { openURL(url) }
+            }
+            .padding(.vertical, Tokens.Space.s)
+        }
     }
 
     @ViewBuilder private var accountSection: some View {

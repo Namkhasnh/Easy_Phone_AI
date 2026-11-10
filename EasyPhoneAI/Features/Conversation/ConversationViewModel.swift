@@ -74,6 +74,10 @@ import OSLog
     private(set) var prompt: FollowUpPrompt?
     /// Set when nothing is left to ask: the View replaces S03 with S04 of this draft.
     private(set) var reviewDraftId: UUID?
+    /// S18 before the mic starts: microphone, then speech (D-185). The recording waits for the answer.
+    var pendingPermission: PendingPermission?
+    private var pendingTarget: Target?
+    private let permissions: any PermissionManager
 
     private let repository: any TaskRepository
     private let speech: any SpeechService
@@ -101,7 +105,8 @@ import OSLog
     private var target: Target = .request
 
     init(draftId: UUID?, repository: any TaskRepository, speech: any SpeechService, api: any APIClientProtocol,
-         tts: any TTSService, localData: any LocalDataRepository, engine: TaskEngine? = nil,
+         tts: any TTSService, localData: any LocalDataRepository,
+         permissions: any PermissionManager = MockPermissionManager(), engine: TaskEngine? = nil,
          now: @escaping () -> Date = { .now },
          silenceAfterSpeech: Duration = ConversationViewModel.silenceAfterSpeech,
          noSpeechTimeout: Duration = ConversationViewModel.noSpeechTimeout) {
@@ -114,6 +119,7 @@ import OSLog
         self.tts = tts
         self.now = now
         self.localData = localData
+        self.permissions = permissions
         self.engine = engine ?? TaskEngine(repository: repository)   // tests pass one with their clock
         settings = localData.settings()
         if let draftId, let draft = repository.draft(draftId) {
@@ -182,7 +188,47 @@ import OSLog
         return text
     }
 
+    /// Step 0 for the mic (D-185): the first capability never asked → S18 explainer; denied → S18 denied + keyboard.
+    /// Returns true when recording may start.
+    private func permissionsReady(for target: Target) -> Bool {
+        for capability in [Capability.microphone, .speech] {
+            switch permissions.status(capability) {
+            case .notDetermined:
+                pendingTarget = target
+                pendingPermission = PendingPermission(capability: capability, variant: .explainer)
+                return false
+            case .denied, .restricted:
+                pendingTarget = nil
+                pendingPermission = PendingPermission(capability: capability, variant: .denied)
+                return false
+            case .granted, .limited, .writeOnly:
+                continue
+            }
+        }
+        return true
+    }
+
+    /// S18 "Cho phép": the system alert; usable → the next capability or the recording, else the denied variant.
+    func allowPermission() async {
+        guard let pending = pendingPermission, pending.variant == .explainer, let target = pendingTarget else { return }
+        pendingPermission = nil
+        let status = await permissions.request(pending.capability)
+        guard status.isUsable else {
+            pendingTarget = nil
+            pendingPermission = PendingPermission(capability: pending.capability, variant: .denied)
+            return
+        }
+        await record(target)
+    }
+
+    /// S18 "Để sau" / "Mở Cài đặt" / swipe down: no recording; the text field stays (fallback "Gõ chữ").
+    func dismissPermission() {
+        pendingPermission = nil
+        pendingTarget = nil
+    }
+
     private func record(_ target: Target) async {
+        guard permissionsReady(for: target) else { return }
         stopReading()
         listenTask?.cancel()
         noticeKey = nil
@@ -260,8 +306,8 @@ import OSLog
                 startTranscribeFallback(for: finishedTarget)
                 return
             }
-            // TODO(spec): permission denied (`permission.microphone/speech.denied`) has no S03 text until S18 (1C.1);
-            // every other failure shows `conv.speech.unavailable` and the keyboard.
+            // Permission denied is explained by S18 before recording (D-185); a late denial and every other failure
+            // show `conv.speech.unavailable` and the keyboard.
             noticeKey = heardNothing ? "conv.speech.unavailable" : nil
         } else if heardNothing {
             noticeKey = "conv.speech.empty"

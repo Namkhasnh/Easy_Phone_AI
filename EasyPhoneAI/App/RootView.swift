@@ -88,12 +88,12 @@ struct RootView: View {
         case .conversation(let draftId):
             ConversationView(viewModel: ConversationViewModel(draftId: draftId, repository: env.drafts, speech: env.speech, api: env.api,
                                                               tts: env.tts, localData: env.localData,
-                                                              engine: env.engine))
+                                                              permissions: env.permissions, engine: env.engine))
         case .history:
             HistoryView(viewModel: HistoryViewModel(repository: env.drafts))
         case .settings:
             SettingsView(viewModel: SettingsViewModel(localData: env.localData, drafts: env.drafts, auth: env.auth,
-                                                      tts: env.tts))
+                                                      tts: env.tts, permissions: env.permissions))
         default:
             EmptyView()
         }

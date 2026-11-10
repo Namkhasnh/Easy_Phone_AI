@@ -138,24 +138,14 @@ import Synchronization
 
     // MARK: - Permissions
 
-    // TODO(spec): permissions are asked here on first use; the S18 explainer before the system alert comes with 1C.1 (D-185).
-    // TODO(spec): switch these codes to `ServiceError.permissionDenied(.microphone / .speech)` when `Capability` exists (1C.1).
+    /// Never prompts: S03 shows the S18 explainer and asks through `PermissionManager` first (D-185).
     private static func ensurePermissions() async throws {
-        switch AVAudioApplication.shared.recordPermission {
-        case .granted: break
-        case .undetermined:
-            guard await AVAudioApplication.requestRecordPermission() else {
-                throw ServiceError.unavailable("permission.microphone.denied")
-            }
-        default: throw ServiceError.unavailable("permission.microphone.denied")
+        guard AVAudioApplication.shared.recordPermission == .granted else {
+            throw ServiceError.permissionDenied(.microphone)
         }
-        var status = SFSpeechRecognizer.authorizationStatus()
-        if status == .notDetermined { status = await requestSpeechAuthorization() }
-        guard status == .authorized else { throw ServiceError.unavailable("permission.speech.denied") }
-    }
-
-    nonisolated private static func requestSpeechAuthorization() async -> SFSpeechRecognizerAuthorizationStatus {
-        await withCheckedContinuation { c in SFSpeechRecognizer.requestAuthorization { c.resume(returning: $0) } }
+        guard SFSpeechRecognizer.authorizationStatus() == .authorized else {
+            throw ServiceError.permissionDenied(.speech)
+        }
     }
 
     // MARK: - Callbacks (built nonisolated: they run on audio / Speech threads, never on the main actor)

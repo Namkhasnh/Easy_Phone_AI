@@ -3648,6 +3648,78 @@
           }
         }
       }
+    },
+    "permStatus.granted": {
+      "comment": "UI_SCREENS §10.4",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã cho phép"
+          }
+        }
+      }
+    },
+    "permStatus.limited": {
+      "comment": "UI_SCREENS §10.4",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cho phép một phần"
+          }
+        }
+      }
+    },
+    "permStatus.writeOnly": {
+      "comment": "UI_SCREENS §10.4",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chỉ được thêm mới"
+          }
+        }
+      }
+    },
+    "permStatus.denied": {
+      "comment": "UI_SCREENS §10.4",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã từ chối"
+          }
+        }
+      }
+    },
+    "permStatus.restricted": {
+      "comment": "UI_SCREENS §10.4",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bị giới hạn bởi thiết bị"
+          }
+        }
+      }
+    },
+    "permStatus.notDetermined": {
+      "comment": "UI_SCREENS §10.4",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chưa hỏi"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

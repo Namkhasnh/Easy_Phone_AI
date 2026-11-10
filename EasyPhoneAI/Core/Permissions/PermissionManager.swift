@@ -8,8 +8,11 @@ enum Capability: String, Sendable, CaseIterable, Hashable {
 
 /// iOS authorization collapsed to what the app acts on (ARCHITECTURE §4.4).
 /// `limited` = contacts / photos subset; `writeOnly` = calendar add-only access (no conflict check).
-enum PermissionStatus: Sendable, Hashable {
+enum PermissionStatus: String, Sendable, Hashable {
     case notDetermined, granted, limited, writeOnly, denied, restricted
+
+    /// `permStatus.<raw>` (UI_SCREENS §10.4), shown in S15 "Quyền truy cập".
+    var labelKey: String { "permStatus.\(rawValue)" }
 
     /// The capability can be used now (fully or partly). `notDetermined` is not usable: ask first (D-185, D-249).
     var isUsable: Bool {
