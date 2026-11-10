@@ -73,6 +73,10 @@ import OSLog
 
     private let repository: any TaskRepository
     private let speech: any SpeechService
+    private let api: any APIClientProtocol
+    /// `/v1/transcribe` fallback in flight (1B.12), and where "Hủy" / the result returns to.
+    private var transcribeTask: Task<Void, Never>?
+    private var workingReturnMode: Mode?
     private let tts: any TTSService
     private let settings: AppSettings
     private let now: () -> Date
@@ -86,8 +90,8 @@ import OSLog
     private enum Target { case request, answer(FollowUp) }
     private var target: Target = .request
 
-    init(draftId: UUID?, repository: any TaskRepository, speech: any SpeechService, tts: any TTSService,
-         localData: any LocalDataRepository, now: @escaping () -> Date = { .now },
+    init(draftId: UUID?, repository: any TaskRepository, speech: any SpeechService, api: any APIClientProtocol,
+         tts: any TTSService, localData: any LocalDataRepository, now: @escaping () -> Date = { .now },
          silenceAfterSpeech: Duration = ConversationViewModel.silenceAfterSpeech,
          noSpeechTimeout: Duration = ConversationViewModel.noSpeechTimeout) {
         self.draftId = draftId
@@ -95,6 +99,7 @@ import OSLog
         self.noSpeechTimeout = noSpeechTimeout
         self.repository = repository
         self.speech = speech
+        self.api = api
         self.tts = tts
         self.now = now
         settings = localData.settings()
@@ -104,7 +109,7 @@ import OSLog
     }
 
     /// Mic / widget entry (`.conversation(nil)`) starts listening; a saved draft opens as an editable transcript.
-    // TODO(spec): a typed request from S02 "Gửi" should go straight to working (parse) — wired in 1B.10; until then it opens here.
+    // TODO(spec): a typed request from S02 "Gửi" should go straight to working (parse) — wired with 1B.13/1B.14; until then it opens here.
     func onAppear() async {
         if draftId == nil, text.isEmpty { await listen() }
     }
@@ -114,6 +119,7 @@ import OSLog
         tts.stop()
         silenceTask?.cancel()
         listenTask?.cancel()
+        transcribeTask?.cancel()
         Task { await speech.stop() }
     }
 
@@ -169,6 +175,7 @@ import OSLog
         }
         listenTask = task
         await task.value
+        await transcribeTask?.value                           // a `/v1/transcribe` fallback started by this session
     }
 
     /// "Dừng" / the 140pt mic: ends recording; the stream then delivers the final text.
@@ -205,16 +212,66 @@ import OSLog
             heardNothing = answerText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             if heardNothing { answerText = previousText }
         }
+        let finishedTarget = target
         target = .request
         if let errorCode {
             Self.logger.info("listening ended: \(errorCode, privacy: .public)")
+            if errorCode == Self.viUnavailable, heardNothing {
+                // ARCHITECTURE §4.3: no on-device Vietnamese → upload the recording to `/v1/transcribe` (1B.12).
+                // TODO(spec): "or confidence is low" (§4.3) has no threshold in the docs; only "unavailable" falls back.
+                autosave()
+                startTranscribeFallback(for: finishedTarget)
+                return
+            }
             // TODO(spec): permission denied (`permission.microphone/speech.denied`) has no S03 text until S18 (1C.1);
-            // every failure shows `conv.speech.unavailable` and the keyboard. `/v1/transcribe` fallback is 1B.12.
+            // every other failure shows `conv.speech.unavailable` and the keyboard.
             noticeKey = heardNothing ? "conv.speech.unavailable" : nil
         } else if heardNothing {
             noticeKey = "conv.speech.empty"
         }
         autosave()
+    }
+
+    static let viUnavailable = "speech.vi.unavailable"
+
+    /// Mode 3 while the recording is transcribed by the backend. The result is only shown, never sent (AC1, §7.4).
+    // TODO(spec): S03 has no "đang chuyển giọng nói" text; mode 3 shows `conv.working` meanwhile.
+    private func startTranscribeFallback(for target: Target) {
+        let returnMode = mode                               // .transcript or .followUp(…)
+        workingReturnMode = returnMode
+        mode = .working
+        transcribeTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            guard let audio = await self.speech.recordedAudio(), !audio.isEmpty else {
+                self.endTranscribe(nil, unavailable: true, target: target)
+                return
+            }
+            do {
+                let result = try await self.api.transcribe(m4a: audio, meta: .vietnamese)
+                guard !Task.isCancelled else { return }
+                self.endTranscribe(result.text, unavailable: false, target: target)
+            } catch {
+                guard !Task.isCancelled else { return }
+                // D-059: code only. 429 / spend cap / offline → keyboard (ARCHITECTURE §9.2).
+                Self.logger.info("transcribe failed: \((error as? AppError)?.code ?? "unknown", privacy: .public)")
+                self.endTranscribe(nil, unavailable: true, target: target)
+            }
+        }
+    }
+
+    private func endTranscribe(_ result: String?, unavailable: Bool, target: Target) {
+        guard mode == .working, let returnMode = workingReturnMode else { return }   // "Hủy" already left
+        workingReturnMode = nil
+        mode = returnMode
+        let words = result?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if words.isEmpty {
+            noticeKey = unavailable ? "conv.speech.unavailable" : "conv.speech.empty"
+            return
+        }
+        switch target {
+        case .request: text = words                         // mode is .transcript → autosave (D-104)
+        case .answer: answerText = words
+        }
     }
 
     // MARK: - Working (mode 3) and unsupported (mode 5)
@@ -227,10 +284,12 @@ import OSLog
     }
 
     /// "Hủy" while working: back to the editable text, nothing lost.
-    // TODO(spec): 1B.10 also cancels the `/v1/parse` task here (ARCHITECTURE §8: leaving cancels the network task).
+    // TODO(spec): 1B.13/1B.14 also cancel the `/v1/parse` task here (ARCHITECTURE §8: leaving cancels the network task).
     func cancelWorking() {
         guard mode == .working else { return }
-        mode = .transcript
+        transcribeTask?.cancel()
+        mode = workingReturnMode ?? .transcript
+        workingReturnMode = nil
     }
 
     /// Mode 5 (spec §11, D-280). Builds no steps.
@@ -304,7 +363,7 @@ import OSLog
     // MARK: - Transcript ready (mode 2)
 
     /// "Gửi": never automatic (API_CONTRACT §7.4). Saves the request; returns `true` when the screen may leave.
-    // TODO(spec): 1B.10 replaces "save and go Home" with mode 3 (working) → `/v1/parse` → S04.
+    // TODO(spec): 1B.13/1B.14 replace "save and go Home" with mode 3 (working) → `/v1/parse` → S04.
     func send() -> Bool {
         guard canSend else { return false }
         stopReading()

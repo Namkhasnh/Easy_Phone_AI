@@ -8,14 +8,21 @@ final class MockAPIClient: APIClientProtocol {
     private let meResult: Result<MeResponse, AppError>
     private let parseResult: Result<ParsedDraft, AppError>
     private let parseLog = Mutex<[(request: ParseRequest, key: IdempotencyKey)]>([])
+    private let transcribeResult: Result<TranscribeResponse, AppError>
+    private let transcribeLog = Mutex<[Data]>([])
     private let quota = Broadcast<Quota>()
     private let blocking = Broadcast<BlockingScreen>()
 
     init(me: Result<MeResponse, AppError> = .success(.mock),
-         parse: Result<ParsedDraft, AppError> = .success(.mockSMS)) {
+         parse: Result<ParsedDraft, AppError> = .success(.mockSMS),
+         transcribe: Result<TranscribeResponse, AppError> = .success(.mock)) {
         meResult = me
         parseResult = parse
+        transcribeResult = transcribe
     }
+
+    /// Audio of every `transcribe` call so far.
+    var transcribeCalls: [Data] { transcribeLog.withLock { $0 } }
 
     /// Every `parse` call so far (tests check the request and that a retry reused the key).
     var parseCalls: [(request: ParseRequest, key: IdempotencyKey)] { parseLog.withLock { $0 } }
@@ -31,6 +38,17 @@ final class MockAPIClient: APIClientProtocol {
         parseLog.withLock { $0.append((request, idempotencyKey)) }
         return try parseResult.get()
     }
+
+    func transcribe(m4a: Data, meta: MediaMeta) async throws -> TranscribeResponse {
+        transcribeLog.withLock { $0.append(m4a) }
+        return try transcribeResult.get()
+    }
+}
+
+/// = `transcribe.ok.response.json`.
+extension TranscribeResponse {
+    static let mock = TranscribeResponse(schemaVersion: 1, requestId: "req_01JC8Z9E33",
+                                         text: "nhắn anh minh là chiều nay em đến muộn", confidence: 0.82)
 }
 
 /// = `parse.sms.response.json` (API_CONTRACT §7.1 example A).

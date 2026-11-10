@@ -51,13 +51,15 @@ struct RetryPolicyTests {
         #expect(policy.decide(error, retryAfter: 4, counts: &counts) == .stop)
     }
 
-    @Test func rateLimitedFallsBackToDetailsAndClamps() {
+    @Test func rateLimitedFallsBackToDetailsAndStopsWhenTooLong() {
         var counts = RetryPolicy.Counts()
         let fromDetails = Self.api(APIErrorCode.rateLimited, details: APIErrorDetails(retryAfterSeconds: 7))
         #expect(policy.decide(fromDetails, retryAfter: nil, counts: &counts) == .retry(after: .seconds(7)))
 
         var fresh = RetryPolicy.Counts()
-        #expect(policy.decide(Self.api(APIErrorCode.rateLimited), retryAfter: 3600, counts: &fresh)
+        #expect(policy.decide(Self.api(APIErrorCode.rateLimited), retryAfter: 3600, counts: &fresh) == .stop)
+        var edge = RetryPolicy.Counts()
+        #expect(policy.decide(Self.api(APIErrorCode.rateLimited), retryAfter: 30, counts: &edge)
                 == .retry(after: .seconds(30)))
     }
 }

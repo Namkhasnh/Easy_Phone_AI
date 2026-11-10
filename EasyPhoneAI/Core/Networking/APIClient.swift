@@ -9,6 +9,7 @@ actor APIClient: APIClientProtocol {
         let path: String
         let authorized: Bool
         var body: Data?
+        var contentType = "application/json; charset=utf-8"
         var idempotencyKey: IdempotencyKey?
     }
 
@@ -63,6 +64,21 @@ actor APIClient: APIClientProtocol {
         // Same `Endpoint` (same key) for every automatic retry inside `send` (D-245).
         return try await send(Endpoint(method: "POST", path: "/v1/parse", authorized: true,
                                        body: body, idempotencyKey: idempotencyKey))
+    }
+
+    func transcribe(m4a: Data, meta: MediaMeta) async throws -> TranscribeResponse {
+        var form = MultipartBody()
+        let metaJSON: Data
+        do {
+            metaJSON = try JSONEncoder().encode(meta)
+        } catch {
+            throw AppError.decoding(requestId: nil)
+        }
+        form.addField("meta", String(decoding: metaJSON, as: UTF8.self))
+        form.addFile("audio", filename: "speech.m4a", mimeType: "audio/mp4", m4a)
+        let contentType = form.contentType
+        return try await send(Endpoint(method: "POST", path: "/v1/transcribe", authorized: true,
+                                       body: form.finish(), contentType: contentType))
     }
 
     // MARK: - Pipeline
@@ -138,7 +154,7 @@ actor APIClient: APIClientProtocol {
         if let key = endpoint.idempotencyKey { request.setValue(key.value, forHTTPHeaderField: "Idempotency-Key") }
         if let body = endpoint.body {
             request.httpBody = body
-            request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
+            request.setValue(endpoint.contentType, forHTTPHeaderField: "Content-Type")
         }
         return request
     }

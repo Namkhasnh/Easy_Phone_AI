@@ -10,9 +10,80 @@ struct ConversationTests {
     let speech = MockSpeechService()
     let tts = MockTTSService()
     let local = MockLocalDataRepository()
+    let api = MockAPIClient()
 
-    func model(draftId: UUID? = nil) -> ConversationViewModel {
-        ConversationViewModel(draftId: draftId, repository: repo, speech: speech, tts: tts, localData: local)
+    func model(draftId: UUID? = nil, api: MockAPIClient? = nil) -> ConversationViewModel {
+        ConversationViewModel(draftId: draftId, repository: repo, speech: speech, api: api ?? self.api, tts: tts,
+                              localData: local)
+    }
+
+    // MARK: - 1B.12b `/v1/transcribe` fallback (ARCHITECTURE §4.3, §9.2; API_CONTRACT §7.4)
+
+    static let audio = Data("m4a".utf8)
+
+    @Test func viUnavailableUploadsRecordingAndShowsEditableText() async throws {
+        speech.script = []
+        speech.error = .unavailable("speech.vi.unavailable")
+        speech.audio = Self.audio
+        let vm = model()
+        await vm.onAppear()
+        #expect(api.transcribeCalls == [Self.audio])
+        #expect(vm.mode == .transcript)                                   // editable, never sent (AC1)
+        #expect(vm.text == "nhắn anh minh là chiều nay em đến muộn")
+        #expect(vm.noticeKey == nil)
+        #expect(api.parseCalls.isEmpty)
+        let id = try #require(vm.draftId)
+        #expect(repo.draft(id)?.originalInput == vm.text)                 // D-104
+    }
+
+    @Test func transcribeRateLimitedFallsBackToKeyboardAndKeepsText() async throws {
+        let limited = MockAPIClient(transcribe: .failure(.api(code: APIErrorCode.rateLimited, retryable: true,
+                                                              details: nil, requestId: nil)))
+        let saved = TaskDraft(createdAt: .now, inputMode: .voice, originalInput: "Gọi cho mẹ")
+        repo.save(saved)
+        let vm = model(draftId: saved.id, api: limited)
+        speech.script = []
+        speech.error = .unavailable("speech.vi.unavailable")
+        speech.audio = Self.audio
+        await vm.speakAgain()
+        #expect(limited.transcribeCalls.count == 1)
+        #expect(vm.mode == .transcript)
+        #expect(vm.noticeKey == "conv.speech.unavailable")
+        #expect(vm.text == "Gọi cho mẹ")                                   // a failed retry loses nothing
+    }
+
+    @Test func emptyTranscriptAsksAgain() async {
+        let empty = MockAPIClient(transcribe: .success(TranscribeResponse(schemaVersion: 1, requestId: "r", text: "  ",
+                                                                          confidence: nil)))
+        speech.script = []
+        speech.error = .unavailable("speech.vi.unavailable")
+        speech.audio = Self.audio
+        let vm = model(api: empty)
+        await vm.onAppear()
+        #expect(vm.mode == .transcript && vm.noticeKey == "conv.speech.empty")
+        #expect(vm.draftId == nil)
+    }
+
+    @Test func otherSpeechErrorsDoNotUpload() async {
+        speech.script = []
+        speech.error = .framework(code: "speech.failed")
+        speech.audio = Self.audio
+        let vm = model()
+        await vm.onAppear()
+        #expect(api.transcribeCalls.isEmpty)
+        #expect(vm.noticeKey == "conv.speech.unavailable")
+    }
+
+    @Test func followUpAnswerUsesTheFallbackToo() async {
+        let vm = model()
+        vm.showFollowUp(.init(question: "Mấy giờ?"))
+        speech.script = []
+        speech.error = .unavailable("speech.vi.unavailable")
+        speech.audio = Self.audio
+        await vm.listenForAnswer()
+        #expect(vm.mode == .followUp(.init(question: "Mấy giờ?")))
+        #expect(vm.answerText == "nhắn anh minh là chiều nay em đến muộn")
+        #expect(vm.text.isEmpty)                                           // the request is untouched
     }
 
     @Test func micEntryListensThenShowsEditableTranscriptAndSavesDraft() async throws {
@@ -105,7 +176,7 @@ struct ConversationTests {
     // MARK: - Owner report 2026-11-10 + auto-stop (DOC-29)
 
     func fastModel() -> ConversationViewModel {
-        ConversationViewModel(draftId: nil, repository: repo, speech: speech, tts: tts, localData: local,
+        ConversationViewModel(draftId: nil, repository: repo, speech: speech, api: api, tts: tts, localData: local,
                               silenceAfterSpeech: .milliseconds(50), noSpeechTimeout: .milliseconds(80))
     }
 

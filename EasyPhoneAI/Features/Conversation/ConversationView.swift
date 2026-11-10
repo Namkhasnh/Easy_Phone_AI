@@ -284,7 +284,7 @@ private func conversationPreviewModel(draftText: String? = nil, speechError: Ser
     let speech = MockSpeechService()
     speech.error = speechError
     if speechError != nil { speech.script = [] }
-    return ConversationViewModel(draftId: id, repository: repo, speech: speech, tts: MockTTSService(),
+    return ConversationViewModel(draftId: id, repository: repo, speech: speech, api: MockAPIClient(), tts: MockTTSService(),
                                  localData: MockLocalDataRepository())
 }
 

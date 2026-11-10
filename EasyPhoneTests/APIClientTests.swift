@@ -141,6 +141,43 @@ struct APIClientTests {
         #expect(try #require(await updates.next()).remaining == 7)
     }
 
+    // MARK: - POST /v1/transcribe (1B.12b)
+
+    @Test func transcribeSendsMultipartWithoutKey() async throws {
+        let json = #"{"schemaVersion":1,"requestId":"req_t","text":"gọi cho mẹ","confidence":null}"#
+        let transport = StubTransport { _, _ in reply(200, json) }
+        let audio = Data([0, 0, 0, 0x20, 0x66, 0x74, 0x79, 0x70])
+        let result = try await makeClient(transport).transcribe(m4a: audio, meta: .vietnamese)
+
+        #expect(result.text == "gọi cho mẹ" && result.confidence == nil)
+        let request = try #require(transport.requests.first)
+        #expect(request.url?.absoluteString == "https://api.mock.invalid/v1/transcribe")
+        #expect(request.httpMethod == "POST")
+        #expect(request.value(forHTTPHeaderField: "Idempotency-Key") == nil)   // 0 units, not idempotent-metered
+        let contentType = try #require(request.value(forHTTPHeaderField: "Content-Type"))
+        #expect(contentType.hasPrefix("multipart/form-data; boundary="))
+        let boundary = String(contentType.dropFirst("multipart/form-data; boundary=".count))
+        let body = try #require(request.httpBody)
+        let text = String(decoding: body, as: UTF8.self)
+        #expect(text.contains("name=\"meta\"\r\n\r\n{"))
+        #expect(text.contains(#""locale":"vi-VN""#) && text.contains(#""schemaVersion":1"#))
+        #expect(text.contains("name=\"audio\"; filename=\"speech.m4a\"\r\nContent-Type: audio/mp4\r\n\r\n"))
+        #expect(body.range(of: audio) != nil)
+        #expect(text.hasSuffix("--\(boundary)--\r\n"))
+    }
+
+    @Test func transcribeLongRateLimitIsNotWaited() async {
+        let sleeps = SleepRecorder()
+        let transport = StubTransport { _, _ in
+            reply(429, envelope(APIErrorCode.rateLimited, retryable: true, details: #"{"retryAfterSeconds":3000}"#),
+                  headers: ["Retry-After": "3000"])
+        }
+        await #expect(throws: AppError.self) {
+            try await makeClient(transport, sleeps: sleeps).transcribe(m4a: Data([1]), meta: .vietnamese)
+        }
+        #expect(transport.requests.count == 1 && sleeps.durations.isEmpty)   // straight to the keyboard
+    }
+
     @Test func mockParseRecordsCalls() async throws {
         let mock = MockAPIClient()
         let key = IdempotencyKey()

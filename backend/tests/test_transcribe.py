@@ -166,3 +166,19 @@ def test_bad_upload_never_reaches_rate_limit(route, audio, meta, status):
 def test_listed_in_openapi(route):
     client, _ = route
     assert "/v1/transcribe" in client.get("/openapi.json").json()["paths"]
+
+
+def test_accepts_the_exact_bytes_swift_multipartbody_builds(route):
+    """Mirror of `Core/Networking/MultipartBody.swift` (meta field, then the audio file, CRLF, closing boundary)."""
+    client, calls = route
+    b = "easyphone-0b9a3c2e-5f4d-4e6a-9b1c-2d3e4f5a6b7c"
+    body = (
+        f"--{b}\r\nContent-Disposition: form-data; name=\"meta\"\r\n\r\n"
+        '{"schemaVersion":1,"locale":"vi-VN"}\r\n'
+        f"--{b}\r\nContent-Disposition: form-data; name=\"audio\"; filename=\"speech.m4a\"\r\n"
+        "Content-Type: audio/mp4\r\n\r\n"
+    ).encode() + M4A + f"\r\n--{b}--\r\n".encode()
+    r = client.post("/v1/transcribe", content=body,
+                    headers={"Content-Type": f"multipart/form-data; boundary={b}"})
+    assert r.status_code == 200, r.text
+    assert len(calls) == 1
