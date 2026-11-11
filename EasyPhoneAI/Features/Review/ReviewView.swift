@@ -24,11 +24,17 @@ struct ReviewView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { titleFocused = true }
-        .task { await viewModel.loadContactName() }
+        .task {
+            await viewModel.loadContactName()
+            viewModel.openPendingPicker()
+        }
         .sheet(isPresented: Binding(get: { viewModel.picking != nil },
                                     set: { if !$0 { viewModel.pickingFieldId = nil } })) {
             if let picking = viewModel.picking {
-                PickerSheet(ambiguity: picking.ambiguity) { candidate in Task { await viewModel.pick(candidate) } }
+                PickerSheet(ambiguity: picking.ambiguity) { candidate in
+                    let fieldId = picking.field.id                       // captured before the sheet closes
+                    Task { await viewModel.pick(candidate, fieldId: fieldId) }
+                }
             }
         }
         .onChange(of: viewModel.step?.state) { titleFocused = true }      // focus the title after each result (§9)

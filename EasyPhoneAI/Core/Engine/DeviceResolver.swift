@@ -92,8 +92,11 @@ struct DeviceResolution: Sendable, Hashable {
 
     /// One number → filled; several → `.phoneNumber` ambiguity (S06 rows "{label}: •••• 567"); none → left empty.
     func resolveNumber(of match: ContactMatch, name: String, into r: inout DeviceResolution) async {
+        // The same number written twice ("034 7676916" + "+84 34 7676916") is ONE choice, not an ambiguity (§7.3).
+        var seen = Set<String>()
         let phones = ((try? await contacts.phoneNumbers(contactId: match.id)) ?? [])
-            .compactMap { entry in PhoneNumber.normalize(entry.number).map { (entry.label, $0) } }
+            .compactMap { entry in PhoneNumber.normalize(entry.number).map { (entry.label?.isEmpty == false ? entry.label : nil, $0) } }
+            .filter { seen.insert($0.1).inserted }
         switch phones.count {
         case 1: r.values["phoneNumber"] = phones[0].1
         case 0: break   // TODO(spec): a contact without a usable number has no text; the phone row stays "Chưa có".

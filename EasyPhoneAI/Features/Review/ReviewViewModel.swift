@@ -302,12 +302,24 @@ import Observation
     }
 
     /// Row tap in S06: resolved on device (D-251), then the contact name / next ambiguity is shown.
-    func pick(_ candidate: Candidate) async {
-        guard let draft, let stepId, let fieldId = pickingFieldId else { return }
+    /// `fieldId` is captured when the sheet opens: closing the sheet clears `pickingFieldId` before this task runs
+    /// (owner iPhone test 2026-11-11: picks were lost).
+    func pick(_ candidate: Candidate, fieldId: String) async {
+        guard let draft, let stepId else { return }
         pickingFieldId = nil
         await engine.pick(candidate.id, fieldId: fieldId, stepId: stepId, in: draft)
         await loadContactName()
         if let next = step?.field("phoneNumber"), next.ambiguity != nil { pickingFieldId = next.id }   // then the number
+    }
+
+    /// S04 appears with a contact / number still to choose → S06 opens by itself (one tap less for the user).
+    // TODO(spec): UI_SCREENS S04 shows "Chọn" under the row; opening S06 at once is an owner request (2026-11-11).
+    func openPendingPicker() {
+        guard showsActionBar, pickingFieldId == nil, pendingPermission == nil, editingFieldId == nil,
+              let field = visibleFields.first(where: { ($0.type == .contactRef || $0.id == "phoneNumber")
+                                                       && $0.ambiguity != nil && !($0.ambiguity?.candidates.isEmpty ?? true) })
+        else { return }
+        pickingFieldId = field.id
     }
 
     private func resolveContacts() async {
