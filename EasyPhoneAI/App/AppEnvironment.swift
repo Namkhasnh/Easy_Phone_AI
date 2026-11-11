@@ -28,6 +28,8 @@ struct AppEnvironment: Sendable {
     let calendar: any CalendarService
     /// EventKit reminders: list, save with `easyphone:<stepId>`, complete, snooze (1C.5, D-225, D-248).
     let reminders: any RemindersService
+    /// Device contacts: Vietnamese name / nickname matching, phone numbers (1C.7, DATA_MODEL §7.2).
+    let contacts: any ContactsService
 
     @MainActor static func live(container: ModelContainer) -> AppEnvironment {
         let config = AppConfig.fromMainBundle()
@@ -44,7 +46,8 @@ struct AppEnvironment: Sendable {
                               engine: TaskEngine(repository: drafts,
                                                  executors: executors(calendar, reminders, permissions, localData)),
                               speech: LiveSpeechService(), tts: LiveTTSService(),
-                              permissions: permissions, calendar: calendar, reminders: reminders)
+                              permissions: permissions, calendar: calendar, reminders: reminders,
+                              contacts: LiveContactsService { localData.nickname(matching: $0)?.contactId })
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
@@ -58,7 +61,8 @@ struct AppEnvironment: Sendable {
                               engine: TaskEngine(repository: drafts,
                                                  executors: executors(calendar, reminders, permissions, localData)),
                               speech: MockSpeechService(), tts: MockTTSService(),
-                              permissions: permissions, calendar: calendar, reminders: reminders)
+                              permissions: permissions, calendar: calendar, reminders: reminders,
+                              contacts: MockContactsService())
     }
 
     /// One executor per kind (ARCHITECTURE §5.1); the others are added by their items (1C.5, 1C.10 – 1C.13, 1D).
