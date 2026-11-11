@@ -92,9 +92,16 @@ struct DeviceResolution: Sendable, Hashable {
 
     /// One number → filled; several → `.phoneNumber` ambiguity (S06 rows "{label}: •••• 567"); none → left empty.
     func resolveNumber(of match: ContactMatch, name: String, into r: inout DeviceResolution) async {
+        let phones = (try? await contacts.phoneNumbers(contactId: match.id)) ?? []
+        Self.addNumber(from: phones, askingFor: match.viaNickname ? match.displayName : name, into: &r)
+    }
+
+    /// Pure part of the number rule, also used for a contact picked in the iOS contact picker (1C.9c: the app may
+    /// have no Contacts access then, the picker hands over that one contact's numbers).
+    static func addNumber(from entries: [PhoneEntry], askingFor name: String, into r: inout DeviceResolution) {
         // The same number written twice ("034 7676916" + "+84 34 7676916") is ONE choice, not an ambiguity (§7.3).
         var seen = Set<String>()
-        let phones = ((try? await contacts.phoneNumbers(contactId: match.id)) ?? [])
+        let phones = entries
             .compactMap { entry in PhoneNumber.normalize(entry.number).map { (entry.label?.isEmpty == false ? entry.label : nil, $0) } }
             .filter { seen.insert($0.1).inserted }
         switch phones.count {
@@ -103,7 +110,7 @@ struct DeviceResolution: Sendable, Hashable {
         default:
             r.ambiguities["phoneNumber"] = Ambiguity(
                 kind: .phoneNumber,
-                question: UserMessage(key: "ambiguity.phoneNumber", args: [match.viaNickname ? match.displayName : name]).text,
+                question: UserMessage(key: "ambiguity.phoneNumber", args: [name]).text,
                 candidates: phones.map { label, number in
                     Candidate(id: number,
                               title: label.map { UserMessage(key: "picker.phoneLabel",

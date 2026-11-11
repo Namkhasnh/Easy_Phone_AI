@@ -49,7 +49,10 @@ struct ReviewView: View {
         .sheet(isPresented: Binding(get: { viewModel.picking != nil },
                                     set: { if !$0 { viewModel.pickingFieldId = nil } })) {
             if let picking = viewModel.picking {
-                PickerSheet(ambiguity: picking.ambiguity) { candidate in
+                PickerSheet(ambiguity: picking.ambiguity,
+                            onOpenContacts: viewModel.canOpenContacts ? { viewModel.openContacts() } : nil,
+                            limitedQuery: viewModel.limitedQuery,
+                            onLimitedShared: { Task { await viewModel.limitedShared() } }) { candidate in
                     let fieldId = picking.field.id                       // captured before the sheet closes
                     Task { await viewModel.pick(candidate, fieldId: fieldId) }
                 }
@@ -78,6 +81,12 @@ struct ReviewView: View {
                                 if let url = URL(string: "app-settings:") { openURL(url) }
                             },
                             onLater: { viewModel.dismissPermission() })
+        }
+        .background {
+            // "Chọn trong danh bạ" (1C.9c): the iOS contact picker, no Contacts access needed.
+            ContactPickerPresenter(isPresented: $viewModel.showsContactPicker) { viewModel.pickedFromContacts($0) }
+                .frame(width: 0, height: 0)
+                .accessibilityHidden(true)
         }
         .accessibilityIdentifier("screen.S04")
     }

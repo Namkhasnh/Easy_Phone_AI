@@ -114,11 +114,12 @@ struct ReviewPickerTests {
         #expect(vm.step?.state != .processing)                                 // never executed by this
     }
 
-    @Test func deniedContactsShowsDenied() async throws {
+    /// 1C.9c: denied Contacts → the iOS contact picker (needs no access) instead of the S18 denied dead end.
+    @Test func deniedContactsOpensTheSystemPicker() async throws {
         permissions.set(.contacts, .denied)
         let vm = await callDraft("anh Minh")
         await vm.tapRow(vm.visibleFields.first { $0.id == "contactId" }!)
-        #expect(vm.pendingPermission?.variant == .denied)
+        #expect(vm.showsContactPicker && vm.pendingPermission == nil)
     }
 
     @Test func pickAfterApprovalResetsIt() async throws {                     // D-101

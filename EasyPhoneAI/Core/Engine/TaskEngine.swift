@@ -254,6 +254,22 @@ import os
         apply(await resolver.numberResolution(contactId: candidateId, name: name), stepId: stepId, in: draft)
     }
 
+    /// A contact chosen in the iOS contact picker (S06 "Chọn trong danh bạ", 1C.9c): `contactId` as a user choice and its
+    /// numbers handed over by the picker (works without Contacts access). Old non-user number cleared first.
+    func pickContact(id: String, displayName: String, phones: [PhoneEntry], stepId: UUID, in draft: TaskDraft) {
+        guard edit(fieldId: "contactId", value: id, stepId: stepId, in: draft),
+              let index = draft.steps.firstIndex(where: { $0.id == stepId }) else { return }
+        if let f = draft.steps[index].fields.firstIndex(where: { $0.id == "phoneNumber" }),
+           draft.steps[index].fields[f].source != .user {
+            draft.steps[index].fields[f].value = nil
+            draft.steps[index].fields[f].ambiguity = nil
+            draft.steps[index].fields[f].source = .device(origin: "contacts")
+        }
+        var r = DeviceResolution(origin: "contacts")
+        DeviceResolver.addNumber(from: phones, askingFor: displayName, into: &r)
+        apply(r, stepId: stepId, in: draft)
+    }
+
     /// S06 event pick for calendar update / delete (D-106, D-251): `targetRef` + the event's fields.
     func pickTarget(_ event: EventSummary, stepId: UUID, in draft: TaskDraft) {
         guard let step = draft.steps.first(where: { $0.id == stepId }),

@@ -18,6 +18,10 @@ import Observation
     var pickingFieldId: String?
     /// Name of the 🔒 `contactId` for the S04 contact row (read on device, never stored in the draft).
     private(set) var contactName: String?
+    /// The iOS contact picker is shown ("Chọn trong danh bạ", 1C.9c).
+    var showsContactPicker = false
+    /// Names of contacts handed over by the iOS picker (readable even without Contacts access).
+    private var pickedNames: [String: String] = [:]
     /// S06 for the event of a calendar update / delete without `targetRef` (`ambiguity.event`).
     var eventChoice: Ambiguity?
     private var eventCandidates: [EventSummary] = []
@@ -154,7 +158,7 @@ import Observation
     /// Reads the contact name for the S04 row (on appear and after a pick).
     func loadContactName() async {
         guard let id = step?.field("contactId")?.value else { contactName = nil; return }
-        contactName = (try? await contacts.contact(id: id))?.displayName
+        contactName = (try? await contacts.contact(id: id))?.displayName ?? pickedNames[id]
     }
 
     /// The bottom bar (Xác nhận / Sửa / Hủy) is shown before execution; afterwards the result card (1A.11b).
@@ -366,10 +370,52 @@ import Observation
         case .notDetermined:
             pendingPermission = PendingPermission(capability: .contacts, variant: .explainer)
         case .denied, .restricted, .writeOnly:
-            pendingPermission = PendingPermission(capability: .contacts, variant: .denied)
+            // The iOS contact picker needs no Contacts access: offer it at once instead of a dead end.
+            // TODO(spec): S18 denied fallback for contacts is "Nhập số điện thoại"; the system picker is used (fewer taps).
+            showsContactPicker = true
         case .granted, .limited:
             await resolveContacts()
         }
+    }
+
+    /// S06 bottom actions for a contact choice (1C.9c).
+    var canOpenContacts: Bool { picking?.ambiguity.kind == .contact }
+
+    /// Limited access (iOS 18): Apple's search button for the spoken name.
+    var limitedQuery: String? {
+        guard picking?.ambiguity.kind == .contact, permissions.status(.contacts) == .limited else { return nil }
+        return step?.field("recipientName")?.value.map(NameNormalizer.matchKey)
+    }
+
+    func openContacts() {
+        pickingFieldId = nil
+        showsContactPicker = true
+    }
+
+    /// A contact shared through `ContactAccessButton`: search again (it may now be the only match).
+    func limitedShared() async {
+        pickingFieldId = nil
+        await resolveContacts()
+    }
+
+    /// "Chọn trong danh bạ" result: the picked contact + its numbers (D-251: on device, no quota).
+    func pickedFromContacts(_ contact: PickedContact) {
+        guard let draft, let stepId else { return }
+        let spoken = step?.field("recipientName")?.value
+        pickedNames[contact.id] = contact.displayName
+        engine.pickContact(id: contact.id, displayName: contact.displayName, phones: contact.phones,
+                           stepId: stepId, in: draft)
+        contactName = contact.displayName
+        offerNickname(spoken: spoken, contactId: contact.id, name: contact.displayName)
+        if step?.field("phoneNumber")?.ambiguity != nil { pickingFieldId = "phoneNumber" }
+    }
+
+    private func offerNickname(spoken: String?, contactId: String, name: String) {
+        guard let spoken, localData != nil,
+              !ContactMatcher.contains(ContactRecord(id: contactId, givenName: name, familyName: "", phoneCount: 0),
+                                       NameNormalizer.matchKey(spoken)) else { return }
+        // "mẹ" → Nguyễn Thị Lan: the word is not part of the name, so remembering it saves the pick next time.
+        nicknameOffer = NicknameOffer(nickname: spoken, contactId: contactId, contactName: name)
     }
 
     /// The S06 field and its ambiguity.
@@ -387,11 +433,8 @@ import Observation
         let spoken = step?.field("recipientName")?.value
         await engine.pick(candidate.id, fieldId: fieldId, stepId: stepId, in: draft)
         await loadContactName()
-        if fieldId == "contactId", let spoken, let name = contactName, localData != nil,
-           !ContactMatcher.contains(ContactRecord(id: candidate.id, givenName: name, familyName: "", phoneCount: 0),
-                                    NameNormalizer.matchKey(spoken)) {
-            // "mẹ" → Nguyễn Thị Lan: the word is not part of the name, so remembering it saves the pick next time.
-            nicknameOffer = NicknameOffer(nickname: spoken, contactId: candidate.id, contactName: name)
+        if fieldId == "contactId", let name = contactName {
+            offerNickname(spoken: spoken, contactId: candidate.id, name: name)
         }
         if let next = step?.field("phoneNumber"), next.ambiguity != nil { pickingFieldId = next.id }   // then the number
     }

@@ -5,6 +5,11 @@ import SwiftUI
 /// picks and closes (on device, no quota, D-251). No candidates → `picker.noMatch` text.
 struct PickerSheet: View {
     let ambiguity: Ambiguity
+    /// Contacts only: "Chọn trong danh bạ" (iOS contact picker, 1C.9c).
+    var onOpenContacts: (() -> Void)?
+    /// Contacts with limited access (iOS 18): `perm.limited.contacts` + Apple's `ContactAccessButton` for this name.
+    var limitedQuery: String?
+    var onLimitedShared: () -> Void = {}
     let onPick: (Candidate) -> Void
     @Environment(\.dismiss) private var dismiss
 
@@ -17,8 +22,6 @@ struct PickerSheet: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityAddTraits(.isHeader)
                 if ambiguity.candidates.isEmpty {
-                    // TODO(spec): "Chọn trong danh bạ" (`CNContactPickerViewController` bridge) and the limited-access
-                    // `ContactAccessButton` row come with 1C.9c.
                     // The question already is `picker.noMatch` (DeviceResolver); only the icon is added here.
                     Image(systemName: "person.crop.circle.badge.questionmark")
                         .font(.system(size: Tokens.Size.iconHero))
@@ -38,6 +41,30 @@ struct PickerSheet: View {
             }
             .padding(Tokens.Space.screenPadding)
             .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .safeAreaInset(edge: .bottom) {
+            if onOpenContacts != nil || limitedQuery != nil {
+                VStack(alignment: .leading, spacing: Tokens.Space.m) {
+                    if let query = limitedQuery {
+                        Text("perm.limited.contacts")
+                            .font(Tokens.Fonts.body)
+                            .foregroundStyle(Tokens.Colors.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        ContactAccessRow(query: query) {
+                            onLimitedShared()
+                            dismiss()
+                        }
+                    }
+                    if let onOpenContacts {
+                        SecondaryButton("picker.openContacts", systemImage: "person.crop.circle") {
+                            dismiss()
+                            onOpenContacts()
+                        }
+                    }
+                }
+                .padding(Tokens.Space.screenPadding)
+                .background(Tokens.Colors.bg)
+            }
         }
         .background(Tokens.Colors.bg)
         .presentationDetents([.medium, .large])
