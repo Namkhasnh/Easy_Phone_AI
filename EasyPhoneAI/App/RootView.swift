@@ -133,7 +133,8 @@ struct RootView: View {
             HistoryView(viewModel: HistoryViewModel(repository: env.drafts))
         case .settings:
             SettingsView(viewModel: SettingsViewModel(localData: env.localData, drafts: env.drafts, auth: env.auth,
-                                                      tts: env.tts, permissions: env.permissions))
+                                                      tts: env.tts, permissions: env.permissions,
+                                                      contacts: env.contacts))
         default:
             EmptyView()
         }

@@ -538,7 +538,8 @@ import Observation
     var editor: FieldEditorViewModel? {
         guard let id = editingFieldId, let step, let draft,
               let field = visibleFields.first(where: { $0.id == id }) else { return nil }
-        return FieldEditorViewModel(field: field, step: step, timeZoneId: draft.timeZoneId, now: now) { [weak self] value in
+        return FieldEditorViewModel(field: field, step: step, timeZoneId: draft.timeZoneId, now: now,
+                                    snoozeMorningHour: snoozeMorningHour) { [weak self] value in
             self?.edit(fieldId: id, value: value)
         }
     }

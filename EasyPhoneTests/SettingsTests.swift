@@ -53,6 +53,43 @@ struct SettingsTests {
         #expect(drafts.draft(d.id) != nil)                  // S20: drafts stay on the phone
     }
 
+    // MARK: - 1C.17 nickname rows, S05 snooze hour
+
+    func withContacts(_ access: PermissionStatus) -> SettingsViewModel {
+        let contacts = MockContactsService([ContactRecord(id: "C1", givenName: "Lan", middleName: "Thị",
+                                                          familyName: "Nguyễn", phoneCount: 1)])
+        return SettingsViewModel(localData: local, drafts: drafts, auth: auth,
+                                 permissions: MockPermissionManager([.contacts: access]), contacts: contacts)
+    }
+
+    @Test func nicknameRowShowsContactName() async {
+        let n = local.saveNickname("mẹ", contactId: "C1")
+        let vm = withContacts(.granted)
+        await vm.loadContactNames()
+        let row = vm.nicknameRow(n)
+        #expect(row.hasPrefix("mẹ → "))
+        #expect(row.contains("Lan"))
+    }
+
+    @Test func nicknameRowWithoutContactsAccessOrContactIsNicknameOnly() async {
+        let n = local.saveNickname("mẹ", contactId: "C1")
+        let gone = local.saveNickname("sếp", contactId: "deleted")
+        let denied = withContacts(.denied)
+        await denied.loadContactNames()
+        #expect(denied.nicknameRow(n) == "mẹ")
+        let granted = withContacts(.granted)
+        await granted.loadContactNames()
+        #expect(granted.nicknameRow(gone) == "sếp")
+    }
+
+    @Test func fieldEditorUsesSettingsSnoozeHour() {
+        let field = Field(id: "snoozeOption", type: .enumChoice, value: nil)
+        let step = TaskStep(order: 0, kind: .reminder, operation: .snooze, fields: [field])
+        let editor = FieldEditorViewModel(field: field, step: step, timeZoneId: "Asia/Ho_Chi_Minh",
+                                          snoozeMorningHour: 6) { _ in }
+        #expect(editor.optionLabel("tomorrowMorning").contains("6"))
+    }
+
     @Test func deleteNickname() {
         let n = local.saveNickname("sếp", contactId: "C2")
         let vm = model()

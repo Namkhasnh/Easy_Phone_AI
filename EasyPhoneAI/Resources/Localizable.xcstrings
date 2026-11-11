@@ -3194,6 +3194,18 @@
         }
       }
     },
+    "settings.nicknames.row": {
+      "comment": "UI_SCREENS S15 nickname row: nickname → contact name (TODO(spec): key not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ → %2$@"
+          }
+        }
+      }
+    },
     "settings.privacy": {
       "comment": "UI_SCREENS S15",
       "extractionState": "manual",

@@ -4,6 +4,7 @@ import SwiftUI
 struct SettingsView: View {
     @State var viewModel: SettingsViewModel
     @Environment(AppState.self) private var appState
+    @Environment(Router.self) private var router
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
 
@@ -56,14 +57,24 @@ struct SettingsView: View {
                         .foregroundStyle(Tokens.Colors.textSecondary)
                 } else {
                     ForEach(viewModel.nicknames) { nickname in
-                        // TODO(spec): "mẹ → Nguyễn Thị Lan" needs the contact name from ContactsService (1C.7).
-                        Text(verbatim: nickname.nickname)
+                        Text(verbatim: viewModel.nicknameRow(nickname))
                             .font(Tokens.Fonts.fieldValue)
                             .frame(minHeight: Tokens.Size.buttonMinHeight)
                             .swipeActions { Button("confirm.delete", role: .destructive) { viewModel.deleteNickname(nickname) } }
                     }
                 }
-                // TODO(spec): "Địa điểm đã lưu" opens S13 (1C.13).
+                Button { router.push(.places) } label: {
+                    HStack {
+                        rowText("settings.savedPlaces")
+                        Spacer(minLength: Tokens.Space.s)
+                        Image(systemName: "chevron.right")
+                            .font(Tokens.Fonts.label)
+                            .foregroundStyle(Tokens.Colors.textSecondary)
+                            .accessibilityHidden(true)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
 
             if viewModel.showsAdvanced {                       // ★ section, hidden in simple mode (P-40)
@@ -129,7 +140,12 @@ struct SettingsView: View {
                          onCancel: { viewModel.pendingConfirm = nil })
         }
         .onDisappear { viewModel.stopVoice() }
-        .onChange(of: scenePhase) { _, phase in if phase == .active { viewModel.refreshPermissions() } }
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            viewModel.refreshPermissions()
+            Task { await viewModel.loadContactNames() }
+        }
+        .task { await viewModel.loadContactNames() }
         .accessibilityIdentifier("screen.S15")
     }
 
@@ -215,6 +231,7 @@ struct SettingsView: View {
             .toolbar { ToolbarItem(placement: .topBarTrailing) { DemoDataBadge() } }
     }
     .environment(AppState())
+    .environment(Router())
 }
 
 #Preview("Dark, AX5") {
@@ -223,6 +240,7 @@ struct SettingsView: View {
                                                   auth: MockAuthService()))
     }
     .environment(AppState())
+    .environment(Router())
     .preferredColorScheme(.dark)
     .dynamicTypeSize(.accessibility5)
 }
