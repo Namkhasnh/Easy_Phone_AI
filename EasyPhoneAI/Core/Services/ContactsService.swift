@@ -46,6 +46,9 @@ protocol ContactsService: Sendable {
     /// Several results are all returned: the caller shows a picker (D-106).
     func match(name: String) async throws -> [ContactMatch]
     func phoneNumbers(contactId: String) async throws -> [PhoneEntry]
+    /// The S04 contact row (name, photo) for a stored `contactId`; nil when it was deleted or is not shared (limited).
+    // TODO(spec): not in ARCHITECTURE §4.2; S04 must show the contact name for the 🔒 `contactId` (UI_SCREENS S04).
+    func contact(id: String) async throws -> ContactMatch?
 }
 
 /// Pure DATA_MODEL §7.2 matching (unit-tested; the live and mock services both use it).

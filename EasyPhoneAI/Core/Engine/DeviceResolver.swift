@@ -81,6 +81,15 @@ struct DeviceResolution: Sendable, Hashable {
         return r
     }
 
+    /// After the user picked a contact on S06: its number (one → filled, several → `.phoneNumber` ambiguity).
+    func numberResolution(contactId: String, name: String) async -> DeviceResolution {
+        var r = DeviceResolution(origin: "contacts")
+        let match = (try? await contacts.contact(id: contactId))
+            ?? ContactMatch(id: contactId, displayName: name, phoneCount: 0)
+        await resolveNumber(of: match, name: match.displayName, into: &r)
+        return r
+    }
+
     /// One number → filled; several → `.phoneNumber` ambiguity (S06 rows "{label}: •••• 567"); none → left empty.
     func resolveNumber(of match: ContactMatch, name: String, into r: inout DeviceResolution) async {
         let phones = ((try? await contacts.phoneNumbers(contactId: match.id)) ?? [])

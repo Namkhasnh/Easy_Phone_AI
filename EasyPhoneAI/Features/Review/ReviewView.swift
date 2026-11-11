@@ -24,6 +24,13 @@ struct ReviewView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { titleFocused = true }
+        .task { await viewModel.loadContactName() }
+        .sheet(isPresented: Binding(get: { viewModel.picking != nil },
+                                    set: { if !$0 { viewModel.pickingFieldId = nil } })) {
+            if let picking = viewModel.picking {
+                PickerSheet(ambiguity: picking.ambiguity) { candidate in Task { await viewModel.pick(candidate) } }
+            }
+        }
         .onChange(of: viewModel.step?.state) { titleFocused = true }      // focus the title after each result (§9)
         .onChange(of: viewModel.didClose) { _, closed in if closed { dismiss() } }
         .onChange(of: viewModel.didFinish) { _, finished in if finished { router.popToRoot() } }
@@ -70,8 +77,9 @@ struct ReviewView: View {
             }
             ForEach(viewModel.visibleFields) { field in
                 FieldRow(field: field, kind: step.kind, displayValue: viewModel.displayValue(field),
-                         onEdit: { viewModel.tapRow(field) })
-                // TODO(spec): "Xem ảnh gốc" (S10, 1D.8) and "Chọn" (S06 picker, 1C.9) open their screens later.
+                         onEdit: { Task { await viewModel.tapRow(field) } },
+                         onChoose: { Task { await viewModel.choose(field) } })
+                // TODO(spec): "Xem ảnh gốc" (S10, 1D.8) opens its screen later.
             }
             if let original = viewModel.originalInput {
                 Text(verbatim: original)

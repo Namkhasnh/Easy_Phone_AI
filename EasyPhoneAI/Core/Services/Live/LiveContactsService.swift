@@ -38,6 +38,11 @@ actor LiveContactsService: ContactsService {
         }
     }
 
+    func contact(id: String) async throws -> ContactMatch? {
+        try ensureAccess()
+        return (try? store.unifiedContact(withIdentifier: id, keysToFetch: Self.keys)).map { Self.record($0).match }
+    }
+
     // MARK: - Internals
 
     /// `authorized` and `limited` (iOS 18) can search; `limited` sees only the contacts the user shared.

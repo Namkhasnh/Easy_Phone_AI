@@ -12,17 +12,24 @@ import Observation
     private(set) var didClose = false
     /// Set after "Xong": the View returns to Home (S02).
     private(set) var didFinish = false
-    /// S18 sheet before "Xác nhận" executes (ARCHITECTURE §5.1 step 0, D-185).
+    /// S18 sheet before "Xác nhận" executes (ARCHITECTURE §5.1 step 0, D-185), or before reading contacts (1C.9).
     var pendingPermission: PendingPermission?
+    /// S06 picker (UI_SCREENS S06, D-106): the field whose ambiguity is shown.
+    var pickingFieldId: String?
+    /// Name of the 🔒 `contactId` for the S04 contact row (read on device, never stored in the draft).
+    private(set) var contactName: String?
 
     private let engine: TaskEngine
     private let permissions: any PermissionManager
+    private let contacts: any ContactsService
     private let snoozeMorningHour: Int
     private let catalog: FieldCatalog
     private let now: () -> Date
 
     init(draftId: UUID, repository: any TaskRepository, engine: TaskEngine, permissions: any PermissionManager,
+         contacts: any ContactsService = MockContactsService(),
          snoozeMorningHour: Int = 8, catalog: FieldCatalog = .mvp, now: @escaping () -> Date = { .now }) {
+        self.contacts = contacts
         self.snoozeMorningHour = snoozeMorningHour
         self.engine = engine
         self.permissions = permissions
@@ -54,15 +61,25 @@ import Observation
         let required = Validator.requiredFieldIds(step, catalog: catalog)
         return catalog.fields(step.kind, step.operation).compactMap { spec in
             if conditionalOnly.contains(spec.id) && !required.contains(spec.id) { return nil }
-            // TODO(spec): human rows for 🔒 `contactId` (name + photo + masked number) and `calendarId` (calendar
-            // name) need the device services (1C); hidden until then.
-            if spec.type == .contactRef || spec.id == "calendarId" { return nil }
+            // TODO(spec): the 🔒 `calendarId` row (calendar name) and the contact photo are not shown yet.
+            if spec.id == "calendarId" { return nil }
             return step.field(spec.id) ?? Field(id: spec.id, type: spec.type, deviceOnly: spec.deviceOnly)
         }
     }
 
+    /// 🔒 rows (UI_SCREENS S04): `contactId` → the contact's name; a number taken from Contacts → "•••• 567" (§7.3).
     func displayValue(_ field: Field) -> String? {
-        FieldFormatter.display(field, timeZoneId: draft?.timeZoneId ?? TimeZone.current.identifier)
+        if field.type == .contactRef { return field.value == nil ? nil : contactName }
+        if field.id == "phoneNumber", let value = field.value, field.source == .device(origin: "contacts") {
+            return PhoneNumber.masked(value)
+        }
+        return FieldFormatter.display(field, timeZoneId: draft?.timeZoneId ?? TimeZone.current.identifier)
+    }
+
+    /// Reads the contact name for the S04 row (on appear and after a pick).
+    func loadContactName() async {
+        guard let id = step?.field("contactId")?.value else { contactName = nil; return }
+        contactName = (try? await contacts.contact(id: id))?.displayName
     }
 
     /// The bottom bar (Xác nhận / Sửa / Hủy) is shown before execution; afterwards the result card (1A.11b).
@@ -248,10 +265,58 @@ import Observation
         editingFieldId = (fields.first(where: \.needsReview) ?? fields.first)?.id
     }
 
-    /// Row tap → S05, except types set by pickers (S06 / S13 in 1C).
-    func tapRow(_ field: Field) {
-        // TODO(spec): `coordinate` / `placeRef` rows open S13 (1C.13), contact rows open S06 (1C.9).
-        if Self.isEditableInS05(field.type) { editingFieldId = field.id }
+    /// Row tap → S05, except types set by pickers: a field with an ambiguity or the contact row → S06.
+    func tapRow(_ field: Field) async {
+        // TODO(spec): `coordinate` / `placeRef` rows open S13 (1C.13).
+        if field.ambiguity != nil || field.type == .contactRef {
+            await choose(field)
+        } else if Self.isEditableInS05(field.type) {
+            editingFieldId = field.id
+        }
+    }
+
+    // MARK: - S06 picker (D-106, D-251)
+
+    /// "Chọn" / contact row: an existing ambiguity opens S06; an unresolved contact row first needs Contacts
+    /// (S18 step 0, D-185), then device resolution (1C.9) — which may fill it or bring an ambiguity.
+    func choose(_ field: Field) async {
+        if field.ambiguity != nil {
+            pickingFieldId = field.id
+            return
+        }
+        guard field.type == .contactRef || field.id == "phoneNumber" else { return }
+        switch permissions.status(.contacts) {
+        case .notDetermined:
+            pendingPermission = PendingPermission(capability: .contacts, variant: .explainer)
+        case .denied, .restricted, .writeOnly:
+            pendingPermission = PendingPermission(capability: .contacts, variant: .denied)
+        case .granted, .limited:
+            await resolveContacts()
+        }
+    }
+
+    /// The S06 field and its ambiguity.
+    var picking: (field: Field, ambiguity: Ambiguity)? {
+        guard let id = pickingFieldId, let field = step?.field(id), let ambiguity = field.ambiguity else { return nil }
+        return (field, ambiguity)
+    }
+
+    /// Row tap in S06: resolved on device (D-251), then the contact name / next ambiguity is shown.
+    func pick(_ candidate: Candidate) async {
+        guard let draft, let stepId, let fieldId = pickingFieldId else { return }
+        pickingFieldId = nil
+        await engine.pick(candidate.id, fieldId: fieldId, stepId: stepId, in: draft)
+        await loadContactName()
+        if let next = step?.field("phoneNumber"), next.ambiguity != nil { pickingFieldId = next.id }   // then the number
+    }
+
+    private func resolveContacts() async {
+        guard let draft else { return }
+        await engine.resolveDevice(in: draft)
+        await loadContactName()
+        if let field = step?.fields.first(where: { ($0.type == .contactRef || $0.id == "phoneNumber") && $0.ambiguity != nil }) {
+            pickingFieldId = field.id
+        }
     }
 
     static func isEditableInS05(_ type: FieldType) -> Bool {
@@ -291,13 +356,13 @@ import Observation
         await execute()
     }
 
-    /// S18 "Cho phép": the system alert, then confirm when usable; a "no" shows the denied variant (D-185).
+    /// S18 "Cho phép": the system alert, then confirm (or read contacts) when usable; a "no" shows the denied variant.
     func allowPermission() async {
         guard let pending = pendingPermission, pending.variant == .explainer else { return }
         pendingPermission = nil
         let status = await permissions.request(pending.capability)
         if status.isUsable {
-            await execute()
+            if pending.capability == .contacts { await resolveContacts() } else { await execute() }
         } else {
             pendingPermission = PendingPermission(capability: pending.capability, variant: .denied)
         }

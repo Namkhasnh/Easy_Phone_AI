@@ -237,6 +237,23 @@ import os
         save(draft)
     }
 
+    /// S06 pick (D-251: on device, no `/v1/parse`): the candidate becomes the field value as a user choice (ambiguity
+    /// cleared, approval reset if any, D-101). Picking a contact also resolves its number (`phoneNumber` cleared first).
+    func pick(_ candidateId: String, fieldId: String, stepId: UUID, in draft: TaskDraft) async {
+        guard edit(fieldId: fieldId, value: candidateId, stepId: stepId, in: draft) else { return }
+        guard fieldId == "contactId", let resolver,
+              let index = draft.steps.firstIndex(where: { $0.id == stepId }) else { return }
+        // The old contact's number no longer applies (unless the user typed one); `apply` re-validates and saves.
+        if let f = draft.steps[index].fields.firstIndex(where: { $0.id == "phoneNumber" }),
+           draft.steps[index].fields[f].source != .user {
+            draft.steps[index].fields[f].value = nil
+            draft.steps[index].fields[f].ambiguity = nil
+            draft.steps[index].fields[f].source = .device(origin: "contacts")
+        }
+        let name = draft.steps[index].field("recipientName")?.value ?? ""
+        apply(await resolver.numberResolution(contactId: candidateId, name: name), stepId: stepId, in: draft)
+    }
+
     /// The ONE question S03 asks next (D-281), or nil → open S04.
     func nextFollowUp(in draft: TaskDraft) -> FollowUpPrompt? {
         FollowUpPlanner.next(in: draft, now: now(), serviceIds: serviceIds)

@@ -109,7 +109,7 @@ struct ReviewViewModelTests {
         let vm = open([step(.sms, .open, ["recipientName": "anh Minh", "body": "Hi", "channel": "zalo"])])
         #expect(vm.visibleFields.map(\.id) == ["recipientName", "body", "channel"])
         let sms = open([step(.sms, .open, ["recipientName": "anh Minh", "body": "Hi", "channel": "sms"])])
-        #expect(sms.visibleFields.map(\.id) == ["recipientName", "phoneNumber", "body", "channel"])  // contactId: 1C row
+        #expect(sms.visibleFields.map(\.id) == ["recipientName", "contactId", "phoneNumber", "body", "channel"])  // 🔒 rows shown by name (1C.9)
     }
 
     @Test func deleteUsesDestructiveVariant() {

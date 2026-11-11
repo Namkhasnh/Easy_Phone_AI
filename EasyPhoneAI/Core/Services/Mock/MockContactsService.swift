@@ -29,6 +29,13 @@ final class MockContactsService: ContactsService {
         }
     }
 
+    func contact(id: String) async throws -> ContactMatch? {
+        try state.withLock { s in
+            guard s.access.isUsable else { throw ServiceError.permissionDenied(.contacts) }
+            return s.contacts.first { $0.id == id }?.match
+        }
+    }
+
     func phoneNumbers(contactId: String) async throws -> [PhoneEntry] {
         try state.withLock { s in
             guard s.access.isUsable else { throw ServiceError.permissionDenied(.contacts) }
