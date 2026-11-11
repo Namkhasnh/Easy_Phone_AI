@@ -30,6 +30,7 @@ struct SettingsView: View {
                 }
                 .padding(.vertical, Tokens.Space.s)
                 // TODO(spec): range of the rate slider is not specified; 0.3–0.6 around the 0.45 default (DATA_MODEL §5).
+                toggleRow("settings.autoSend", note: "settings.autoSend.note", isOn: $settings.autoSend)   // D-296
                 SecondaryButton("settings.voice.test", systemImage: "speaker.wave.2") {
                     Task { await viewModel.testVoice() }
                 }

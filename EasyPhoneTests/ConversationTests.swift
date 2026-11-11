@@ -12,6 +12,9 @@ struct ConversationTests {
     let local = MockLocalDataRepository()
     let api = MockAPIClient()
 
+    /// These tests cover the transcript / "Gửi" path; auto-send (D-296, default on) is tested on its own below.
+    init() { local.settings().autoSend = false }
+
     func model(draftId: UUID? = nil, api: MockAPIClient? = nil) -> ConversationViewModel {
         ConversationViewModel(draftId: draftId, repository: repo, speech: speech, api: api ?? self.api, tts: tts,
                               localData: local)
@@ -202,6 +205,44 @@ struct ConversationTests {
         #expect(vm.mode == .transcript)
         #expect(vm.text == "Gọi cho mẹ")
         #expect(vm.canSend)                                              // waits for "Gửi", never auto-sent
+    }
+
+    // MARK: - 1C.19 auto-send after speech ends (D-296)
+
+    @Test func autoSendOnSendsAfterSilence() async {
+        local.settings().autoSend = true
+        speech.script = [Transcript(text: "Gọi cho mẹ", isFinal: false)]
+        speech.holdsUntilStop = true
+        let vm = fastModel()
+        await vm.onAppear()                                              // listening → 2 s silence → send
+        #expect(api.parseCalls.count == 1)
+        #expect(api.parseCalls.first?.request.text == "Gọi cho mẹ")
+        #expect(api.parseCalls.first?.request.inputMode == .voice)
+        #expect(vm.reviewDraftId != nil || vm.mode != .transcript)       // moved on; nothing executed (D-100)
+    }
+
+    @Test func autoSendOnButDungShowsTranscript() async {
+        local.settings().autoSend = true
+        speech.script = [Transcript(text: "Gọi cho mẹ", isFinal: false)]
+        speech.holdsUntilStop = true
+        let vm = ConversationViewModel(draftId: nil, repository: repo, speech: speech, api: api, tts: tts, localData: local,
+                                       silenceAfterSpeech: .seconds(30), noSpeechTimeout: .seconds(30))
+        let listening = Task { await vm.onAppear() }
+        while vm.text.isEmpty { await Task.yield() }
+        await vm.stopListening()                                         // "Dừng": the user wants to read first
+        await listening.value
+        #expect(vm.mode == .transcript)
+        #expect(api.parseCalls.isEmpty)
+    }
+
+    @Test func autoSendOnNothingHeardSendsNothing() async {
+        local.settings().autoSend = true
+        speech.script = []
+        speech.holdsUntilStop = true
+        let vm = fastModel()
+        await vm.onAppear()
+        #expect(api.parseCalls.isEmpty)
+        #expect(vm.noticeKey == "conv.speech.empty")
     }
 
     @Test func noSpeechStopsAndAsksAgain() async {

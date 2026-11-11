@@ -3002,6 +3002,30 @@
         }
       }
     },
+    "settings.autoSend": {
+      "comment": "UI_SCREENS S15 (D-296)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tự gửi khi nói xong"
+          }
+        }
+      }
+    },
+    "settings.autoSend.note": {
+      "comment": "UI_SCREENS S15 (D-296)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nói xong 2 giây là Khoai tự gửi, không cần bấm “Gửi”. Bạn vẫn xem lại trước khi bấm “Xác nhận”."
+          }
+        }
+      }
+    },
     "settings.clearHistory": {
       "comment": "UI_SCREENS S15",
       "extractionState": "manual",

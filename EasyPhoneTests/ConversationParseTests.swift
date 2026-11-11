@@ -14,6 +14,8 @@ struct ConversationParseTests {
     let speech = MockSpeechService()
     let local = MockLocalDataRepository()
 
+    init() { local.settings().autoSend = false }                         // "Gửi" path; D-296 in ConversationTests
+
     static func fixture(_ name: String) throws -> ParsedDraft { try DraftBuilderTests.parsed(name) }
 
     func model(_ api: MockAPIClient, draft: TaskDraft, now: Date = evening) -> ConversationViewModel {

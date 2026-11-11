@@ -103,6 +103,10 @@ import OSLog
     /// Where a recording goes: the request (modes 1–2) or the follow-up answer (mode 4).
     private enum Target { case request, answer(FollowUp) }
     private var target: Target = .request
+    /// D-296: "Dừng" was tapped → show the transcript, never auto-send.
+    private var stoppedByUser = false
+    /// D-296: set by `finishListening` when listening ended by itself with words heard and `settings.autoSend` is on.
+    private var autoSendPending = false
 
     init(draftId: UUID?, repository: any TaskRepository, speech: any SpeechService, api: any APIClientProtocol,
          tts: any TTSService, localData: any LocalDataRepository,
@@ -241,6 +245,8 @@ import OSLog
             previousText = text
             text = ""
         }
+        stoppedByUser = false
+        autoSendPending = false
         armAutoStop(after: noSpeechTimeout)
         let task = Task { @MainActor in
             do {
@@ -259,10 +265,19 @@ import OSLog
         listenTask = task
         await task.value
         await transcribeTask?.value                           // a `/v1/transcribe` fallback started by this session
+        // D-296: auto-send when listening stopped by itself (2 s silence). Nothing runs before "Xác nhận" (D-100).
+        guard autoSendPending else { return }
+        autoSendPending = false
+        switch mode {
+        case .transcript: await send()
+        case .followUp: await sendAnswer()
+        default: break
+        }
     }
 
     /// "Dừng" / the 140pt mic: ends recording; the stream then delivers the final text.
     func stopListening() async {
+        stoppedByUser = true
         await speech.stop()
     }
 
@@ -311,6 +326,8 @@ import OSLog
             noticeKey = heardNothing ? "conv.speech.unavailable" : nil
         } else if heardNothing {
             noticeKey = "conv.speech.empty"
+        } else if !stoppedByUser, settings.autoSend {
+            autoSendPending = true
         }
         autosave()
     }
@@ -458,7 +475,7 @@ import OSLog
 
     // MARK: - Transcript ready (mode 2)
 
-    /// "Gửi": never automatic (API_CONTRACT §7.4). Saves the request (D-104), then mode 3 → `/v1/parse` (new key).
+    /// "Gửi", or automatic after listening stops by itself when `settings.autoSend` is on (D-296). Saves the request (D-104), then mode 3 → `/v1/parse` (new key).
     func send() async {
         guard canSend else { return }
         stopReading()

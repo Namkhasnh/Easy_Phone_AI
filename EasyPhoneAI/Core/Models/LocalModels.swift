@@ -52,6 +52,7 @@ import SwiftData
     var preferredMapsApp: String = "appleMaps"
     var lastSeenEntitlement: CachedEntitlement?  // display only (D-085)
     var petEnabled: Bool = true       // "Hiện bạn Khoai" (D-289)
+    var autoSend: Bool = true         // "Tự gửi khi nói xong" (D-296)
 
     init() {}
 }
