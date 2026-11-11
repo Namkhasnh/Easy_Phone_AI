@@ -11,6 +11,8 @@ final class MockAPIClient: APIClientProtocol {
     /// Answers for the next `parse` calls, in order; when empty, `parseResult` is returned.
     private let parseQueue: Mutex<[Result<ParsedDraft, AppError>]>
     private let transcribeResult: Result<TranscribeResponse, AppError>
+    /// Answer chosen from the request (UI tests type different requests); nil → queue / `parseResult`.
+    private let parseRouter: (@Sendable (ParseRequest) -> ParsedDraft?)?
     private let transcribeLog = Mutex<[Data]>([])
     private let quota = Broadcast<Quota>()
     private let blocking = Broadcast<BlockingScreen>()
@@ -18,7 +20,9 @@ final class MockAPIClient: APIClientProtocol {
     init(me: Result<MeResponse, AppError> = .success(.mock),
          parse: Result<ParsedDraft, AppError> = .success(.mockSMS),
          parseSequence: [Result<ParsedDraft, AppError>] = [],
-         transcribe: Result<TranscribeResponse, AppError> = .success(.mock)) {
+         transcribe: Result<TranscribeResponse, AppError> = .success(.mock),
+         parseRouter: (@Sendable (ParseRequest) -> ParsedDraft?)? = nil) {
+        self.parseRouter = parseRouter
         meResult = me
         parseResult = parse
         parseQueue = Mutex(parseSequence)
@@ -40,6 +44,7 @@ final class MockAPIClient: APIClientProtocol {
 
     func parse(_ request: ParseRequest, idempotencyKey: IdempotencyKey) async throws -> ParsedDraft {
         parseLog.withLock { $0.append((request, idempotencyKey)) }
+        if let routed = parseRouter?(request) { return routed }
         let next = parseQueue.withLock { $0.isEmpty ? nil : $0.removeFirst() }
         return try (next ?? parseResult).get()
     }

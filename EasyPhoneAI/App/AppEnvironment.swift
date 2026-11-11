@@ -75,11 +75,15 @@ struct AppEnvironment: Sendable {
         let system = MockSystemService()
         let places = MockPlacesService()
         let auth = scenario == .uiTest ? MockAuthService(initial: .signedIn(userId: MockAuthService.userId)) : MockAuthService()
-        return AppEnvironment(config: .mock, auth: auth, api: MockAPIClient(), drafts: drafts,
+        let api = scenario == .uiTest ? MockAPIClient(parseRouter: uiTestParse) : MockAPIClient()
+        return AppEnvironment(config: .mock, auth: auth, api: api, drafts: drafts,
                               localData: localData,
                               engine: TaskEngine(repository: drafts,
                                                  executors: executors(calendar, reminders, permissions, localData,
-                                                                      calls: MockCallService(), messages: MockMessagesService(),
+                                                                      calls: MockCallService(),
+                                                                      // Simulator cannot send SMS; the system composer
+                                                                      // cannot be driven by XCUITest either (1C.18b).
+                                                                      messages: MockMessagesService(canSendText: scenario != .uiTest),
                                                                       system: system, places: places),
                                                  serviceIds: SupportedServices.bundled.ids,
                                                  resolver: DeviceResolver(contacts: contacts, calendar: calendar,
@@ -88,6 +92,16 @@ struct AppEnvironment: Sendable {
                               speech: MockSpeechService(), tts: MockTTSService(),
                               permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts,
                               system: system, places: places)
+    }
+
+    /// `MockScenario.uiTest` `/v1/parse`: a request starting with "Gọi" → call anh Minh, anything else → `mockSMS`.
+    private static let uiTestParse: @Sendable (ParseRequest) -> ParsedDraft? = { request in
+        guard request.text.lowercased().hasPrefix("gọi") else { return .mockSMS }
+        return ParsedDraft(schemaVersion: 1, requestId: "req_uitest_call",
+                           steps: [ParsedStep(kind: "call", operation: "open", fields: [
+                               ParsedField(id: "recipientName", value: "anh Minh", confidence: 0.95, sourceQuote: "anh Minh"),
+                           ], dateCandidates: [])],
+                           followUpQuestion: nil, unsupported: nil)
     }
 
     /// One executor per kind (ARCHITECTURE §5.1); the others are added by their items (1C.5, 1C.10 – 1C.13, 1D).
