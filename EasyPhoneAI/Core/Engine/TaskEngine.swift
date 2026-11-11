@@ -304,6 +304,41 @@ import os
         apply(DeviceResolver.resolution(for: event, step: step, timeZoneId: draft.timeZoneId), stepId: stepId, in: draft)
     }
 
+    /// D-295: several events ticked for one calendar delete. The first becomes this step's target; each other one gets
+    /// its own `delete` step right after it (same draft, one tap confirms them in order on S04). Saved once.
+    /// Returns the ids of every delete step of the batch, in order.
+    @discardableResult
+    func pickTargets(_ events: [EventSummary], stepId: UUID, in draft: TaskDraft) -> [UUID] {
+        guard let first = events.first, let index = draft.steps.firstIndex(where: { $0.id == stepId }),
+              draft.steps[index].kind == .calendarEvent, draft.steps[index].operation == .delete else { return [] }
+        pickTarget(first, stepId: stepId, in: draft)
+        let baseOrder = draft.steps[index].order
+        let extra = events.dropFirst()
+        guard !extra.isEmpty else { return [stepId] }
+        for i in draft.steps.indices where draft.steps[i].order > baseOrder {
+            draft.steps[i].order += extra.count                       // keep later steps after the batch
+        }
+        var ids = [stepId]
+        for (offset, event) in extra.enumerated() {
+            let fields = FieldCatalog.mvp.fields(.calendarEvent, .delete).map {
+                Field(id: $0.id, type: $0.type, source: .device(origin: "calendar"), deviceOnly: $0.deviceOnly)
+            }
+            var step = TaskStep(order: baseOrder + offset + 1, kind: .calendarEvent, operation: .delete, fields: fields,
+                                stateChangedAt: now())
+            let resolution = DeviceResolver.resolution(for: event, step: step, timeZoneId: draft.timeZoneId)
+            for (id, value) in resolution.values {
+                if let f = step.fields.firstIndex(where: { $0.id == id }) { step.fields[f].value = value }
+            }
+            step.targetRef = resolution.targetRef
+            revalidateInPlace(&step)
+            draft.steps.append(step)
+            ids.append(step.id)
+        }
+        draft.steps.sort { $0.order < $1.order }
+        save(draft)
+        return ids
+    }
+
     /// The ONE question S03 asks next (D-281), or nil → open S04.
     func nextFollowUp(in draft: TaskDraft) -> FollowUpPrompt? {
         FollowUpPlanner.next(in: draft, now: now(), serviceIds: serviceIds)

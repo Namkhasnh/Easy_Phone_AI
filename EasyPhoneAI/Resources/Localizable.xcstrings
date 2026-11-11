@@ -2870,6 +2870,18 @@
         }
       }
     },
+    "review.batchDelete.title": {
+      "comment": "UI_SCREENS S04 (D-295)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sẽ xóa %@ lịch hẹn:"
+          }
+        }
+      }
+    },
     "review.autoConfirm.countdown": {
       "comment": "UI_SCREENS S04 (D-299)",
       "extractionState": "manual",
@@ -4270,6 +4282,30 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bạn muốn chọn lịch hẹn nào?"
+          }
+        }
+      }
+    },
+    "picker.multi.choose": {
+      "comment": "UI_SCREENS S06 (D-295)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chọn các lịch đã đánh dấu"
+          }
+        }
+      }
+    },
+    "picker.multi.hint": {
+      "comment": "UI_SCREENS S06 (D-295)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đánh dấu một hoặc nhiều lịch bạn muốn xóa."
           }
         }
       }

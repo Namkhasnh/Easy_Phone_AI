@@ -38,7 +38,9 @@ struct ReviewView: View {
         .sheet(isPresented: Binding(get: { viewModel.eventChoice != nil },
                                     set: { if !$0 { viewModel.eventChoice = nil } })) {
             if let choice = viewModel.eventChoice {
-                PickerSheet(ambiguity: choice) { candidate in viewModel.pickEvent(candidate) }
+                PickerSheet(ambiguity: choice,
+                            onPick: { candidate in viewModel.pickEvent(candidate) },
+                            onPickMany: viewModel.eventChoiceAllowsMany ? { viewModel.pickEvents($0) } : nil)
             }
         }
         .task {
@@ -197,6 +199,28 @@ struct ReviewView: View {
         .accessibilityFocused($titleFocused)
     }
 
+    /// D-295: every event the one "Xác nhận xóa" tap deletes.
+    private var batchDeleteCard: some View {
+        VStack(alignment: .leading, spacing: Tokens.Space.xs) {
+            Text(verbatim: UserMessage(key: "review.batchDelete.title", args: ["\(viewModel.batchDeleteRows.count)"]).text)
+                .font(Tokens.Fonts.body.weight(.semibold))
+                .foregroundStyle(Tokens.Colors.textPrimary)
+            ForEach(viewModel.batchDeleteRows, id: \.self) { row in
+                Label {
+                    Text(verbatim: row).fixedSize(horizontal: false, vertical: true)       // user data
+                } icon: {
+                    Image(systemName: "trash").accessibilityHidden(true)
+                }
+                .font(Tokens.Fonts.body)
+                .foregroundStyle(Tokens.Colors.textPrimary)
+            }
+        }
+        .padding(Tokens.Space.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+        .accessibilityElement(children: .combine)
+    }
+
     /// D-299: "Khoai sẽ làm sau {n} giây…" + "Để tôi xem lại" (cancels; the step stays for "Xác nhận").
     private func autoConfirmCard(_ seconds: Int) -> some View {
         VStack(alignment: .leading, spacing: Tokens.Space.s) {
@@ -224,6 +248,7 @@ struct ReviewView: View {
     private var actionBar: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.m) {
             if let seconds = viewModel.autoConfirmSeconds { autoConfirmCard(seconds) }
+            if !viewModel.batchDeleteRows.isEmpty { batchDeleteCard }
             PrimaryButton(viewModel.isDelete ? "review.delete.confirm" : "common.confirm",
                           role: viewModel.isDelete ? .destructive : nil,
                           disabledReasonKey: viewModel.disabledReasonKey.map { LocalizedStringKey($0) }) {

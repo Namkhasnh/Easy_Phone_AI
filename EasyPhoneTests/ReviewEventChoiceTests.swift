@@ -55,6 +55,44 @@ struct ReviewEventChoiceTests {
         #expect(calendar.deleted == ["ev2"])
     }
 
+    // MARK: - D-295 multi-select delete
+
+    @Test func tickBothThenOneTapDeletesBoth() async throws {
+        let vm = await deleteDraft()
+        #expect(vm.eventChoiceAllowsMany)
+        await vm.chooseEvent()
+        let choice = try #require(vm.eventChoice)
+        vm.pickEvents(choice.candidates)                                         // both ticked by the user
+        #expect(vm.batchDeleteRows.count == 2)
+        #expect(vm.batchDeleteRows.allSatisfy { $0.hasPrefix("Nha sĩ — ") })
+        #expect(vm.draft?.steps.count == 2 && vm.draft?.steps.map(\.order) == [0, 1])
+        #expect(Set(vm.draft?.steps.compactMap(\.targetRef) ?? []) == ["ev1", "ev2"])
+        #expect(calendar.deleted.isEmpty)                                      // nothing before the tap (D-108)
+        await vm.confirm()                                                       // ONE "Xác nhận xóa"
+        #expect(Set(calendar.deleted) == ["ev1", "ev2"])
+        #expect(vm.draft?.steps.allSatisfy { $0.state == .succeeded } == true)
+    }
+
+    @Test func tickOneIsTheNormalSingleDelete() async throws {
+        let vm = await deleteDraft()
+        await vm.chooseEvent()
+        let choice = try #require(vm.eventChoice)
+        vm.pickEvents([choice.candidates.first { $0.id == "ev2" }!])
+        #expect(vm.batchDeleteRows.isEmpty && vm.draft?.steps.count == 1)
+        await vm.confirm()
+        #expect(calendar.deleted == ["ev2"])
+    }
+
+    @Test func updateKeepsSinglePick() async {
+        let fields = FieldCatalog.mvp.fields(.calendarEvent, .update).map {
+            Field(id: $0.id, type: $0.type, value: ["title": "nha sĩ"][$0.id], source: .ai, deviceOnly: $0.deviceOnly)
+        }
+        let d = TaskDraft(inputMode: .voice, originalInput: "x", steps: [TaskStep(order: 0, kind: .calendarEvent, operation: .update, fields: fields)])
+        repo.save(d)
+        let vm = ReviewViewModel(draftId: d.id, repository: repo, engine: engine, permissions: permissions, calendar: calendar)
+        #expect(!vm.eventChoiceAllowsMany)
+    }
+
     /// Owner iPhone test 2026-11-11: two "đi đá bóng" tomorrow, the card was not seen → the list opens by itself.
     @Test func eventListOpensByItselfAndReasonSaysChoose() async throws {
         let vm = await deleteDraft()

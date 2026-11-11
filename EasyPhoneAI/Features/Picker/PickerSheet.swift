@@ -11,6 +11,9 @@ struct PickerSheet: View {
     var limitedQuery: String?
     var onLimitedShared: () -> Void = {}
     let onPick: (Candidate) -> Void
+    /// D-295: check boxes (none pre-checked, D-106) + "Chọn các lịch đã đánh dấu"; used for calendar delete.
+    var onPickMany: (([Candidate]) -> Void)? = nil
+    @State private var checked: Set<String> = []
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -29,21 +32,42 @@ struct PickerSheet: View {
                         .frame(maxWidth: .infinity)
                         .accessibilityHidden(true)
                 }
+                if onPickMany != nil, ambiguity.candidates.count > 1 {
+                    Text("picker.multi.hint")
+                        .font(Tokens.Fonts.body)
+                        .foregroundStyle(Tokens.Colors.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 ForEach(ambiguity.candidates) { candidate in
                     Button {
-                        onPick(candidate)
-                        dismiss()
+                        if onPickMany != nil {
+                            if !checked.insert(candidate.id).inserted { checked.remove(candidate.id) }
+                        } else {
+                            onPick(candidate)
+                            dismiss()
+                        }
                     } label: {
-                        CandidateRow(candidate: candidate, showsInitials: ambiguity.kind == .contact)
+                        CandidateRow(candidate: candidate, showsInitials: ambiguity.kind == .contact,
+                                     checked: onPickMany == nil ? nil : checked.contains(candidate.id))
                     }
                     .buttonStyle(.plain)
+                    .accessibilityAddTraits(onPickMany != nil && checked.contains(candidate.id) ? .isSelected : [])
                 }
             }
             .padding(Tokens.Space.screenPadding)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .safeAreaInset(edge: .bottom) {
-            if onOpenContacts != nil || limitedQuery != nil {
+            if let onPickMany {
+                PrimaryButton("picker.multi.choose") {
+                    let picked = ambiguity.candidates.filter { checked.contains($0.id) }   // list order
+                    dismiss()
+                    onPickMany(picked)
+                }
+                .disabled(checked.isEmpty)
+                .padding(Tokens.Space.screenPadding)
+                .background(Tokens.Colors.bg)
+            } else if onOpenContacts != nil || limitedQuery != nil {
                 VStack(alignment: .leading, spacing: Tokens.Space.m) {
                     if let query = limitedQuery {
                         Text("perm.limited.contacts")
@@ -76,6 +100,8 @@ struct PickerSheet: View {
 private struct CandidateRow: View {
     let candidate: Candidate
     let showsInitials: Bool
+    /// nil = single pick (chevron); true / false = check box (D-295), icon + state, never color only.
+    var checked: Bool? = nil
 
     var body: some View {
         HStack(spacing: Tokens.Space.m) {
@@ -100,10 +126,17 @@ private struct CandidateRow: View {
             }
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
-            Image(systemName: "chevron.right")
-                .font(Tokens.Fonts.label)
-                .foregroundStyle(Tokens.Colors.textSecondary)
-                .accessibilityHidden(true)
+            if let checked {
+                Image(systemName: checked ? "checkmark.square.fill" : "square")
+                    .font(Tokens.Fonts.title)
+                    .foregroundStyle(checked ? Tokens.Colors.primary : Tokens.Colors.textSecondary)
+                    .accessibilityHidden(true)
+            } else {
+                Image(systemName: "chevron.right")
+                    .font(Tokens.Fonts.label)
+                    .foregroundStyle(Tokens.Colors.textSecondary)
+                    .accessibilityHidden(true)
+            }
         }
         .padding(Tokens.Space.m)
         .frame(minHeight: 72)

@@ -523,6 +523,36 @@ import Observation
         engine.pickTarget(event, stepId: stepId, in: draft)
     }
 
+    // MARK: - Multi-select delete (D-295)
+
+    /// The delete steps one "Xác nhận xóa" runs, in order (set by `pickEvents`); empty = a normal single step.
+    private(set) var batchStepIds: [UUID] = []
+
+    /// S06 with check boxes for a calendar delete (D-295); update stays a single pick.
+    var eventChoiceAllowsMany: Bool { isDelete }
+
+    func pickEvents(_ candidates: [Candidate]) {
+        eventChoice = nil
+        guard let draft, let stepId else { return }
+        let events = candidates.compactMap { c in eventCandidates.first { $0.id == c.id } }
+        guard !events.isEmpty else { return }
+        let ids = engine.pickTargets(events, stepId: stepId, in: draft)
+        batchStepIds = ids.count > 1 ? ids : []
+    }
+
+    /// S04 list "Sẽ xóa {n} lịch hẹn:" — title + time of every event in the batch (D-295: shown before the one tap).
+    var batchDeleteRows: [String] {
+        guard batchStepIds.count > 1, let draft else { return [] }
+        let tz = TimeZone(identifier: draft.timeZoneId) ?? .current
+        return batchStepIds.compactMap { id in
+            guard let step = draft.steps.first(where: { $0.id == id }) else { return nil }
+            let title = step.field("title")?.value ?? ""
+            let when = step.field("startDate")?.value.flatMap(Validator.parseDateTime)
+                .map { FieldFormatter.dateTime($0, timeZone: tz) }
+            return [title, when].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " — ")
+        }
+    }
+
     /// S04 appears with a contact / number still to choose → S06 opens by itself (one tap less for the user).
     // TODO(spec): UI_SCREENS S04 shows "Chọn" under the row; opening S06 at once is an owner request (2026-11-11).
     func openPendingPicker() {
@@ -614,10 +644,16 @@ import Observation
 
     private func execute() async {
         guard let draft, let stepId else { return }
-        if case .needsUI(.composer(let recipients, let body)) = await engine.confirm(stepId: stepId, in: draft) {
+        let result = await engine.confirm(stepId: stepId, in: draft)
+        if case .needsUI(.composer(let recipients, let body)) = result {
             pendingComposer = (recipients, body)
         }
         showCopyGuideIfNeeded()
+        // D-295: the same tap deletes the other ticked events, in order; the first failure stops the batch.
+        guard batchStepIds.first == stepId, result == .finished(.succeeded) else { return }
+        for id in batchStepIds.dropFirst() {
+            guard await engine.confirm(stepId: id, in: draft) == .finished(.succeeded) else { break }
+        }
     }
 
     /// S07 right after a copy hand-off ("Đã sao chép — dán và gửi trong Zalo"), spec §6.8 AC3.
