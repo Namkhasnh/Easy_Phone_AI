@@ -27,10 +27,11 @@ struct RemindersView: View {
                         .accessibilityAddTraits(.isHeader)
                     ForEach(section.rows) { row in
                         ReminderRow(row: row, overdue: section.kind == .overdue,
-                                    completing: viewModel.completing.contains(row.id)) {
-                            Task { await viewModel.complete(row.id) }
-                        }
-                        // TODO(spec): row menu `ellipsis.circle` (Nhắc lại sau / Sửa / Xóa → S04) comes with 1C.6b.
+                                    completing: viewModel.completing.contains(row.id),
+                                    onComplete: { Task { await viewModel.complete(row.id) } },
+                                    onSnooze: { viewModel.startSnooze(row.id) },
+                                    onEdit: { viewModel.change(row.id, .update) },
+                                    onDelete: { viewModel.change(row.id, .delete) })
                     }
                 }
             }
@@ -50,6 +51,12 @@ struct RemindersView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { Task { await viewModel.load() } }
         }
+        .onChange(of: viewModel.reviewDraftId) { _, id in
+            guard let id else { return }
+            viewModel.didOpenReview()
+            router.push(.review(id))
+        }
+        .sheet(item: $viewModel.snoozing) { _ in snoozeSheet }
         .onChange(of: viewModel.newDraftId) { _, id in
             guard let id else { return }
             viewModel.didOpenNewDraft()
@@ -69,12 +76,45 @@ struct RemindersView: View {
     }
 }
 
+extension RemindersView {
+    /// "Nhắc lại lúc nào?" — 3 rows ≥ 64pt (UI_SCREENS S12); the choice goes to S04, nothing changes before "Xác nhận".
+    fileprivate var snoozeSheet: some View {
+        VStack(alignment: .leading, spacing: Tokens.Space.m) {
+            Text("reminders.snooze.title")
+                .font(Tokens.Fonts.title)
+                .foregroundStyle(Tokens.Colors.textPrimary)
+                .accessibilityAddTraits(.isHeader)
+            ForEach(RemindersViewModel.snoozeOptions, id: \.self) { option in
+                Button { viewModel.snooze(option) } label: {
+                    Text(verbatim: viewModel.snoozeLabel(option))
+                        .font(Tokens.Fonts.fieldValue)
+                        .foregroundStyle(Tokens.Colors.textPrimary)
+                        .frame(maxWidth: .infinity, minHeight: Tokens.Size.rowMinHeight, alignment: .leading)
+                        .padding(.horizontal, Tokens.Space.l)
+                        .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(Tokens.Space.screenPadding)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Tokens.Colors.bg)
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+}
+
 /// One S12 row: complete circle (44pt tap target) + title (`fieldValue`) + due time (`body`, `danger` when overdue).
 private struct ReminderRow: View {
     let row: RemindersViewModel.Row
     let overdue: Bool
     let completing: Bool
     let onComplete: () -> Void
+    let onSnooze: () -> Void
+    let onEdit: () -> Void
+    let onDelete: () -> Void
 
     var body: some View {
         HStack(alignment: .top, spacing: Tokens.Space.m) {
@@ -101,6 +141,19 @@ private struct ReminderRow: View {
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityElement(children: .combine)
+            Menu {
+                Button("reminders.snooze", systemImage: "clock.arrow.circlepath", action: onSnooze)
+                Button("common.edit", systemImage: "pencil", action: onEdit)
+                Button("confirm.delete", systemImage: "trash", role: .destructive, action: onDelete)
+            } label: {
+                Image(systemName: "ellipsis.circle")
+                    .font(.title2)
+                    .foregroundStyle(Tokens.Colors.primary)
+                    .frame(width: Tokens.Size.tapTargetMin, height: Tokens.Size.tapTargetMin)
+                    .contentShape(Rectangle())
+            }
+            // TODO(spec): the menu button has no VoiceOver key in UI_SCREENS; `reminders.menu.a11y` added (PROGRESS DOC-39).
+            .accessibilityLabel(Text(verbatim: UserMessage(key: "reminders.menu.a11y", args: [row.title]).text))
         }
         .padding(Tokens.Space.m)
         .frame(minHeight: 72)

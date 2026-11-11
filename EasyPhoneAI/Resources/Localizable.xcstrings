@@ -4045,6 +4045,18 @@
           }
         }
       }
+    },
+    "reminders.menu.a11y": {
+      "comment": "S12 row menu VoiceOver label; not in UI_SCREENS (TODO(spec), DOC-39)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tùy chọn cho “%@”"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

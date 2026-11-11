@@ -95,7 +95,8 @@ struct RootView: View {
                                                                 repository: env.drafts, engine: env.engine))
         case .reminders:
             RemindersView(viewModel: RemindersViewModel(reminders: env.reminders, permissions: env.permissions,
-                                                        repository: env.drafts, engine: env.engine))
+                                                        repository: env.drafts, engine: env.engine,
+                                                        snoozeMorningHour: env.localData.settings().snoozeMorningHour))
         case .history:
             HistoryView(viewModel: HistoryViewModel(repository: env.drafts))
         case .settings:

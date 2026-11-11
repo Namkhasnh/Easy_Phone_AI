@@ -26,6 +26,10 @@ import Observation
     private(set) var newDraftId: UUID?
     /// Ids being completed right now (the circle shows `checkmark.circle.fill` at once).
     private(set) var completing: Set<String> = []
+    /// "Nhắc lại sau" sheet for this reminder (3 choices, UI_SCREENS S12).
+    var snoozing: ReminderSummary?
+    /// Set by "Nhắc lại sau" / "Sửa" / "Xóa": the View opens S04 for this new draft (spec §6.5 AC3).
+    private(set) var reviewDraftId: UUID?
 
     private var items: [ReminderSummary] = []
     private let reminders: any RemindersService
@@ -34,9 +38,13 @@ import Observation
     private let engine: TaskEngine
     private let now: () -> Date
     private let timeZone: TimeZone
+    /// `AppSettings.snoozeMorningHour` for the "Sáng mai lúc {hour} giờ" row.
+    let snoozeMorningHour: Int
 
     init(reminders: any RemindersService, permissions: any PermissionManager, repository: any TaskRepository,
-         engine: TaskEngine, now: @escaping () -> Date = { .now }, timeZone: TimeZone = .current) {
+         engine: TaskEngine, snoozeMorningHour: Int = 8, now: @escaping () -> Date = { .now },
+         timeZone: TimeZone = .current) {
+        self.snoozeMorningHour = snoozeMorningHour
         self.reminders = reminders
         self.permissions = permissions
         self.repository = repository
@@ -131,6 +139,41 @@ import Observation
         guard let code = step?.errorCode else { return UserMessage(key: "result.failed") }
         let message = UserMessage(key: "error.\(code)", args: ReviewViewModel.errorArgs(code: code, kind: .reminder))
         return message.text == message.key ? UserMessage(key: "error.generic") : message
+    }
+
+    // MARK: - Row menu → S04 (spec §6.5 AC3: every change but "complete" is reviewed)
+
+    static let snoozeOptions = ["min15", "hour1", "tomorrowMorning"]       // DATA_MODEL §4 `snoozeOption`
+
+    /// Row text of the snooze sheet (`option.snoozeOption.<value>`).
+    func snoozeLabel(_ option: String) -> String {
+        FieldFormatter.option(fieldId: "snoozeOption", value: option,
+                              args: option == "tomorrowMorning" ? ["\(snoozeMorningHour)"] : []) ?? option
+    }
+
+    func startSnooze(_ rowId: String) {
+        snoozing = items.first { $0.id == rowId }
+    }
+
+    /// Snooze sheet row → a `reminder/snooze` step with that option → S04.
+    func snooze(_ option: String) {
+        guard let item = snoozing else { return }
+        snoozing = nil
+        open(item, .snooze, values: ["snoozeOption": option])
+    }
+
+    /// "Sửa" / "Xóa" → an update / delete step → S04 ("Xác nhận xóa" there, tap only, D-108).
+    func change(_ rowId: String, _ operation: TaskOperation) {
+        guard let item = items.first(where: { $0.id == rowId }) else { return }
+        open(item, operation)
+    }
+
+    func didOpenReview() { reviewDraftId = nil }
+
+    private func open(_ item: ReminderSummary, _ operation: TaskOperation, values: [String: String] = [:]) {
+        guard let draft = engine.startDraft(from: item, operation: operation, values: values,
+                                            timeZoneId: timeZone.identifier) else { return }
+        reviewDraftId = draft.id
     }
 
     // MARK: - Add
