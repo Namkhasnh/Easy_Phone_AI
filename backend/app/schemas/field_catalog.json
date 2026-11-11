@@ -288,6 +288,34 @@
               "fields": [
                 "contactId"
               ]
+            },
+            {
+              "when": [
+                {
+                  "type": "equals",
+                  "field": "channel",
+                  "value": "zalo"
+                }
+              ],
+              "fields": [
+                "phoneNumber"
+              ]
+            },
+            {
+              "when": [
+                {
+                  "type": "equals",
+                  "field": "channel",
+                  "value": "zalo"
+                },
+                {
+                  "type": "notPhoneNumber",
+                  "field": "recipientName"
+                }
+              ],
+              "fields": [
+                "contactId"
+              ]
             }
           ]
         }

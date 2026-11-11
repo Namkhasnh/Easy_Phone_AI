@@ -27,6 +27,7 @@
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>comgooglemaps</string>
+		<string>zalo</string>
 	</array>
 	<key>CFBundleURLTypes</key>
 	<array>

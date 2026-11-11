@@ -86,9 +86,18 @@ struct DeviceResolverTests {
         #expect(step.state == .awaitingApproval)
     }
 
-    @Test func zaloChannelSkipsContacts() async {                           // D-247
-        let step = await resolved(draft(.sms, .open, ["recipientName": "mẹ", "body": "Con về muộn", "channel": "zalo"]))
+    @Test func copyOnlyChannelSkipsContacts() async {                       // D-247
+        let step = await resolved(draft(.sms, .open, ["recipientName": "mẹ", "body": "Con về muộn", "channel": "viber"]))
         #expect(step.field("contactId")?.value == nil && step.field("phoneNumber")?.value == nil)
+        #expect(step.field("contactId")?.ambiguity == nil)
+    }
+
+    @Test func zaloChannelLooksUpTheContact() async {                       // D-297: the chat needs the number
+        let sms = await resolved(draft(.sms, .open, ["recipientName": "mẹ", "body": "Con về muộn", "channel": "sms"]))
+        let zalo = await resolved(draft(.sms, .open, ["recipientName": "mẹ", "body": "Con về muộn", "channel": "zalo"]))
+        #expect(zalo.field("contactId")?.value == sms.field("contactId")?.value)
+        #expect(zalo.field("phoneNumber")?.value == sms.field("phoneNumber")?.value)
+        #expect(zalo.field("contactId")?.value != nil || zalo.field("contactId")?.ambiguity != nil)
     }
 
     @Test func noContactsPermissionResolvesNothing() async {                // D-185: asked later on S04

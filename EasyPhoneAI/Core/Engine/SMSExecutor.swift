@@ -28,10 +28,21 @@ import Foundation
     }
 
     /// S07 path: copy, open only a verified app, hand off (never `succeeded`, D-102).
+    /// D-297: a verified service with `chatURL` (Zalo) opens the person's chat; the user pastes and taps Send there.
+    /// If that link does not open, the app itself (when installed) + the S07 guide, as before.
     private func copyPath(_ step: TaskStep, channel: String) async -> ExecutionOutcome {
         guard let service = services.service(channel), service.kinds.contains("sms") else { return .failed(code: "unsupported") }
         await system.copy(step.field("body")?.value ?? "")
+        if let raw = step.field("phoneNumber")?.value, let number = PhoneNumber.normalize(raw),
+           let chat = service.chatURL(for: number), await system.open(chat) {
+            return .handedOff(note: Self.chatNote(service.name))
+        }
         if let url = service.openURL, await system.canOpen(url) { _ = await system.open(url) }
         return .handedOff(note: UserMessage(key: "handoff.note.copy", args: [service.name]).text)
+    }
+
+    /// Hand-off note when the person's chat was opened (no S07 guide needed then).
+    static func chatNote(_ serviceName: String) -> String {
+        UserMessage(key: "handoff.note.copyChat", args: [serviceName]).text
     }
 }

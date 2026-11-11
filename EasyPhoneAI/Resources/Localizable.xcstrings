@@ -4442,6 +4442,18 @@
         }
       }
     },
+    "handoff.note.copyChat": {
+      "comment": "UI_SCREENS §10.4 hand-off note (D-297: chat opened)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã sao chép — dán vào khung chat %@ rồi bấm Gửi"
+          }
+        }
+      }
+    },
     "handoff.note.directions": {
       "comment": "UI_SCREENS §10.4 hand-off note",
       "extractionState": "manual",

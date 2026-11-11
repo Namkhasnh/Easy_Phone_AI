@@ -625,6 +625,7 @@ import Observation
         guard let step, step.kind == .sms, step.state == .handedOff,
               let channel = step.field("channel")?.value, channel != "sms",
               let service = services.service(channel) else { return }
+        guard step.handoffNote != SMSExecutor.chatNote(service.name) else { return }   // chat already open (D-297)
         copyGuide = CopyGuide(serviceName: service.name, body: step.field("body")?.value ?? "", steps: service.guideSteps)
     }
 

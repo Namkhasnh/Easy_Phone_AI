@@ -146,6 +146,12 @@ extension FieldCatalog {
                 ConditionalRequirement(when: [.equals(field: "channel", value: "sms"),
                                               .notPhoneNumber(field: "recipientName")],
                                        fields: ["contactId"]),                                           // D-253
+                // D-297: Zalo opens the person's chat (`zalo.me/<phone>`), so it needs the contact + number again.
+                ConditionalRequirement(when: [.equals(field: "channel", value: "zalo")],
+                                       fields: ["phoneNumber"]),
+                ConditionalRequirement(when: [.equals(field: "channel", value: "zalo"),
+                                              .notPhoneNumber(field: "recipientName")],
+                                       fields: ["contactId"]),
             ]),
         ]),
         KindCatalog(kind: .place, fields: [

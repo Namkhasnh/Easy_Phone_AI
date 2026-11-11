@@ -16,10 +16,13 @@ struct DeviceResolution: Sendable, Hashable {
 }
 
 /// ARCHITECTURE §5: `recipientName` → `ContactsService.match` → 1 match fills `contactId` / `phoneNumber`
-/// (`source = .device("contacts")`), else `Ambiguity(.contact)`; skipped when `channel ≠ sms` (D-247). A phone number as
+/// (`source = .device("contacts")`), else `Ambiguity(.contact)`; skipped for copy-only channels (D-247; Zalo resolves, D-297). A phone number as
 /// recipient fills `phoneNumber` only (D-253). `update` / `delete` → `CalendarService.search` → one match = `targetRef`.
 /// Reads only with usable permission; otherwise nothing is resolved and S04 asks later (D-185).
 @MainActor final class DeviceResolver {
+    /// `sms.channel` values that look up the contact + number (D-247, D-297).
+    static let contactChannels: Set<String> = ["sms", "zalo"]
+
     private let contacts: any ContactsService
     private let calendar: any CalendarService
     private let permissions: any PermissionManager
@@ -39,7 +42,8 @@ struct DeviceResolution: Sendable, Hashable {
         switch (step.kind, step.operation) {
         case (.call, _): return await resolveRecipient(step)
         case (.sms, _):
-            guard (step.field("channel")?.value ?? "sms") == "sms" else { return DeviceResolution() }   // D-247
+            // D-247: copy-only channels need no contact; D-297: Zalo opens the person's chat, so it does.
+            guard Self.contactChannels.contains(step.field("channel")?.value ?? "sms") else { return DeviceResolution() }
             return await resolveRecipient(step)
         case (.calendarEvent, .update), (.calendarEvent, .delete):
             return await resolveEvent(step, timeZoneId: timeZoneId)
