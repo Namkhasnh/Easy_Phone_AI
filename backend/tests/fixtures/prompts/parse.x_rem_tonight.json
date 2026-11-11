@@ -1,0 +1,46 @@
+{
+  "case": "x_rem_tonight",
+  "source": "1B.15b extra case (owner request 2026-11-10)",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Nhắc tôi 9 giờ tối nay khóa cửa",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Khóa cửa",
+            "confidence": 0.95,
+            "sourceQuote": "khóa cửa"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-08T21:00:00+07:00",
+            "confidence": 0.95,
+            "sourceQuote": "9 giờ tối nay"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

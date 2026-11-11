@@ -1,0 +1,49 @@
+{
+  "case": "date_next_week",
+  "source": "AI_PROMPTS §8.1 row 6",
+  "request": {
+    "schemaVersion": 1,
+    "text": "tuần sau họp",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "calendarEvent",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Họp",
+            "confidence": 0.85,
+            "sourceQuote": "họp"
+          },
+          {
+            "id": "startDate",
+            "value": null,
+            "confidence": null,
+            "sourceQuote": "tuần sau"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": "Bạn muốn họp ngày nào tuần sau?",
+    "unsupported": null
+  },
+  "liveMatch": {
+    "followUpQuestion": "present"
+  }
+}

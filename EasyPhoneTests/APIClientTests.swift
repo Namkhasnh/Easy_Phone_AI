@@ -76,6 +76,119 @@ private func makeClient(_ transport: StubTransport, auth: FakeAuth = FakeAuth(),
 
 @Suite("APIClient (API_CONTRACT §1, §2, §10)")
 struct APIClientTests {
+    // MARK: - POST /v1/parse (1B.10b)
+
+    static let parseOK = #"""
+    {"schemaVersion":1,"requestId":"req_p","steps":[{"kind":"reminder","operation":"create","fields":[
+     {"id":"title","value":"Uống thuốc","confidence":0.9,"sourceQuote":"uống thuốc"},
+     {"id":"dueDate","value":null,"confidence":null,"sourceQuote":null}],"dateCandidates":[]}],
+     "followUpQuestion":"Bạn muốn được nhắc lúc mấy giờ?","unsupported":null}
+    """#
+
+    static func parseRequest() -> ParseRequest {
+        ParseRequest(text: "Nhắc tôi uống thuốc", inputMode: .text, now: "2026-11-08T18:07:00+07:00",
+                     timezone: "Asia/Ho_Chi_Minh", locale: "vi-VN", savedPlaceLabels: ["home"], context: .none)
+    }
+
+    @Test func parsePostsJSONWithKeyAndDecodes() async throws {
+        let transport = StubTransport { _, _ in reply(200, Self.parseOK, headers: quotaHeaders) }
+        let key = IdempotencyKey()
+        let draft = try await makeClient(transport).parse(Self.parseRequest(), idempotencyKey: key)
+
+        #expect(draft.steps.first?.fields.last?.value == nil)
+        #expect(draft.followUpQuestion == "Bạn muốn được nhắc lúc mấy giờ?")
+        let request = try #require(transport.requests.first)
+        #expect(request.url?.absoluteString == "https://api.mock.invalid/v1/parse")
+        #expect(request.httpMethod == "POST")
+        #expect(request.value(forHTTPHeaderField: "Idempotency-Key") == key.value)
+        #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json; charset=utf-8")
+        #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer t0")
+        let body = try #require(request.httpBody)
+        let json = try #require(try JSONSerialization.jsonObject(with: body) as? [String: Any])
+        #expect(json["now"] as? String == "2026-11-08T18:07:00+07:00")
+        let context = try #require(json["context"] as? [String: Any])
+        #expect(Set(context.keys) == ["draftId", "answeringFieldId", "currentDraft"])  // nulls written out
+        #expect(context.values.allSatisfy { $0 is NSNull })
+    }
+
+    @Test func parseRetryReusesTheSameKey() async throws {
+        let transport = StubTransport { _, index in
+            if index == 0 { throw URLError(.timedOut) }
+            if index == 1 { return reply(503, envelope(APIErrorCode.upstreamError, retryable: true)) }
+            return reply(200, Self.parseOK)
+        }
+        let key = IdempotencyKey()
+        _ = try await makeClient(transport).parse(Self.parseRequest(), idempotencyKey: key)
+        #expect(transport.requests.count == 3)
+        #expect(Set(transport.requests.compactMap { $0.value(forHTTPHeaderField: "Idempotency-Key") }) == [key.value])
+    }
+
+    @Test(arguments: [(502, APIErrorCode.llmInvalidOutput), (503, APIErrorCode.spendCap), (402, "quota_exceeded"),
+                      (413, "payload_too_large"), (422, "invalid_input")])
+    func parseErrorsNotRetried(status: Int, code: String) async {
+        let transport = StubTransport { _, _ in reply(status, envelope(code)) }
+        await #expect(throws: AppError.self) {
+            try await makeClient(transport).parse(Self.parseRequest(), idempotencyKey: IdempotencyKey())
+        }
+        #expect(transport.requests.count == 1)
+    }
+
+    @Test func parsePublishesQuota() async throws {
+        let transport = StubTransport { _, _ in reply(200, Self.parseOK, headers: quotaHeaders) }
+        let client = makeClient(transport)
+        var updates = client.quotaUpdates.makeAsyncIterator()
+        _ = try await client.parse(Self.parseRequest(), idempotencyKey: IdempotencyKey())
+        #expect(try #require(await updates.next()).remaining == 7)
+    }
+
+    // MARK: - POST /v1/transcribe (1B.12b)
+
+    @Test func transcribeSendsMultipartWithoutKey() async throws {
+        let json = #"{"schemaVersion":1,"requestId":"req_t","text":"gọi cho mẹ","confidence":null}"#
+        let transport = StubTransport { _, _ in reply(200, json) }
+        let audio = Data([0, 0, 0, 0x20, 0x66, 0x74, 0x79, 0x70])
+        let result = try await makeClient(transport).transcribe(m4a: audio, meta: .vietnamese)
+
+        #expect(result.text == "gọi cho mẹ" && result.confidence == nil)
+        let request = try #require(transport.requests.first)
+        #expect(request.url?.absoluteString == "https://api.mock.invalid/v1/transcribe")
+        #expect(request.httpMethod == "POST")
+        #expect(request.value(forHTTPHeaderField: "Idempotency-Key") == nil)   // 0 units, not idempotent-metered
+        let contentType = try #require(request.value(forHTTPHeaderField: "Content-Type"))
+        #expect(contentType.hasPrefix("multipart/form-data; boundary="))
+        let boundary = String(contentType.dropFirst("multipart/form-data; boundary=".count))
+        let body = try #require(request.httpBody)
+        let text = String(decoding: body, as: UTF8.self)
+        #expect(text.contains("name=\"meta\"\r\n\r\n{"))
+        #expect(text.contains(#""locale":"vi-VN""#) && text.contains(#""schemaVersion":1"#))
+        #expect(text.contains("name=\"audio\"; filename=\"speech.m4a\"\r\nContent-Type: audio/mp4\r\n\r\n"))
+        #expect(body.range(of: audio) != nil)
+        #expect(text.hasSuffix("--\(boundary)--\r\n"))
+    }
+
+    @Test func transcribeLongRateLimitIsNotWaited() async {
+        let sleeps = SleepRecorder()
+        let transport = StubTransport { _, _ in
+            reply(429, envelope(APIErrorCode.rateLimited, retryable: true, details: #"{"retryAfterSeconds":3000}"#),
+                  headers: ["Retry-After": "3000"])
+        }
+        await #expect(throws: AppError.self) {
+            try await makeClient(transport, sleeps: sleeps).transcribe(m4a: Data([1]), meta: .vietnamese)
+        }
+        #expect(transport.requests.count == 1 && sleeps.durations.isEmpty)   // straight to the keyboard
+    }
+
+    @Test func mockParseRecordsCalls() async throws {
+        let mock = MockAPIClient()
+        let key = IdempotencyKey()
+        let draft = try await mock.parse(Self.parseRequest(), idempotencyKey: key)
+        #expect(draft == .mockSMS)
+        #expect(mock.parseCalls.map(\.key) == [key])
+        let failing = MockAPIClient(parse: .failure(.api(code: APIErrorCode.llmInvalidOutput, retryable: true,
+                                                          details: nil, requestId: nil)))
+        await #expect(throws: AppError.self) { try await failing.parse(Self.parseRequest(), idempotencyKey: key) }
+    }
+
     @Test func meSendsHeadersAndDecodes() async throws {
         let transport = StubTransport { _, _ in reply(200, meJSON, headers: quotaHeaders) }
         let me = try await makeClient(transport).me()

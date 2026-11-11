@@ -1,0 +1,49 @@
+{
+  "case": "date_lunar",
+  "source": "AI_PROMPTS §8.1 row 9",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Nhắc tôi mùng 5 âm lịch đi chùa",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Đi chùa",
+            "confidence": 0.9,
+            "sourceQuote": "đi chùa"
+          },
+          {
+            "id": "dueDate",
+            "value": null,
+            "confidence": null,
+            "sourceQuote": "mùng 5 âm lịch"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": "Ngày đó là ngày dương lịch nào?",
+    "unsupported": null
+  },
+  "liveMatch": {
+    "followUpQuestion": "present"
+  }
+}

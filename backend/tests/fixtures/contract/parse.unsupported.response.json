@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "requestId": "req_01JC8Z6B77",
+  "steps": [],
+  "followUpQuestion": null,
+  "unsupported": {
+    "reason": "recurringEvent",
+    "message": "Chưa hỗ trợ lịch lặp lại."
+  }
+}

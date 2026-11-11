@@ -1,0 +1,55 @@
+{
+  "case": "x_sms_number",
+  "source": "1B.15b extra case (owner request 2026-11-10)",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Nhắn tin số 0987 654 321 là tôi đã nhận hàng",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "sms",
+        "operation": "open",
+        "fields": [
+          {
+            "id": "recipientName",
+            "value": "0987 654 321",
+            "confidence": 0.95,
+            "sourceQuote": "0987 654 321"
+          },
+          {
+            "id": "body",
+            "value": "Tôi đã nhận hàng.",
+            "confidence": 0.8,
+            "sourceQuote": null
+          },
+          {
+            "id": "channel",
+            "value": "sms",
+            "confidence": 0.6,
+            "sourceQuote": null
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  },
+  "liveMatch": {
+    "body": "fuzzy"
+  }
+}

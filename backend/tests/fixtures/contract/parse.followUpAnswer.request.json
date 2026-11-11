@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "text": "8 giờ sáng mai",
+  "inputMode": "voice",
+  "now": "2026-11-08T18:10:00+07:00",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "locale": "vi-VN",
+  "savedPlaceLabels": [
+    "home",
+    "work"
+  ],
+  "context": {
+    "draftId": "0b9e3c1a-5f7d-4e2b-8a6c-3d1f2e4a5b6c",
+    "answeringFieldId": "dueDate",
+    "currentDraft": {
+      "schemaVersion": 1,
+      "requestId": "req_01JC8Z5A01",
+      "steps": [
+        {
+          "kind": "reminder",
+          "operation": "create",
+          "fields": [
+            {
+              "id": "title",
+              "value": "Uống thuốc",
+              "confidence": 0.9,
+              "sourceQuote": "uống thuốc"
+            },
+            {
+              "id": "dueDate",
+              "value": null,
+              "confidence": null,
+              "sourceQuote": null
+            }
+          ],
+          "dateCandidates": []
+        }
+      ],
+      "followUpQuestion": "Bạn muốn được nhắc lúc mấy giờ?",
+      "unsupported": null
+    }
+  }
+}

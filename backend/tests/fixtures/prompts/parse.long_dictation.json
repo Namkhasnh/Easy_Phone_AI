@@ -1,0 +1,245 @@
+{
+  "case": "long_dictation",
+  "source": "AI_PROMPTS §8.4 row 2 (backend cap, DOC-33)",
+  "request": {
+    "schemaVersion": 1,
+    "text": "mai nhắc tôi 7 giờ uống thuốc 8 giờ đi chợ 9 giờ gọi điện 10 giờ tưới cây 11 giờ nấu cơm rồi 4 giờ chiều đón cháu",
+    "inputMode": "voice",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Uống thuốc",
+            "confidence": 0.9,
+            "sourceQuote": "uống thuốc"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-09T07:00:00+07:00",
+            "confidence": 0.9,
+            "sourceQuote": null
+          }
+        ],
+        "dateCandidates": []
+      },
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Đi chợ",
+            "confidence": 0.9,
+            "sourceQuote": "đi chợ"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-09T08:00:00+07:00",
+            "confidence": 0.9,
+            "sourceQuote": null
+          }
+        ],
+        "dateCandidates": []
+      },
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Gọi điện",
+            "confidence": 0.9,
+            "sourceQuote": "gọi điện"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-09T09:00:00+07:00",
+            "confidence": 0.9,
+            "sourceQuote": null
+          }
+        ],
+        "dateCandidates": []
+      },
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Tưới cây",
+            "confidence": 0.9,
+            "sourceQuote": "tưới cây"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-09T10:00:00+07:00",
+            "confidence": 0.9,
+            "sourceQuote": null
+          }
+        ],
+        "dateCandidates": []
+      },
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Nấu cơm",
+            "confidence": 0.9,
+            "sourceQuote": "nấu cơm"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-09T11:00:00+07:00",
+            "confidence": 0.9,
+            "sourceQuote": null
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": "Mình làm 5 việc đầu trước nhé?",
+    "unsupported": null
+  },
+  "llmOutput": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Uống thuốc",
+            "confidence": 0.9,
+            "sourceQuote": "uống thuốc"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-09T07:00:00+07:00",
+            "confidence": 0.9,
+            "sourceQuote": null
+          }
+        ],
+        "dateCandidates": []
+      },
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Đi chợ",
+            "confidence": 0.9,
+            "sourceQuote": "đi chợ"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-09T08:00:00+07:00",
+            "confidence": 0.9,
+            "sourceQuote": null
+          }
+        ],
+        "dateCandidates": []
+      },
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Gọi điện",
+            "confidence": 0.9,
+            "sourceQuote": "gọi điện"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-09T09:00:00+07:00",
+            "confidence": 0.9,
+            "sourceQuote": null
+          }
+        ],
+        "dateCandidates": []
+      },
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Tưới cây",
+            "confidence": 0.9,
+            "sourceQuote": "tưới cây"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-09T10:00:00+07:00",
+            "confidence": 0.9,
+            "sourceQuote": null
+          }
+        ],
+        "dateCandidates": []
+      },
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Nấu cơm",
+            "confidence": 0.9,
+            "sourceQuote": "nấu cơm"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-09T11:00:00+07:00",
+            "confidence": 0.9,
+            "sourceQuote": null
+          }
+        ],
+        "dateCandidates": []
+      },
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Đón cháu",
+            "confidence": 0.9,
+            "sourceQuote": "đón cháu"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-09T16:00:00+07:00",
+            "confidence": 0.9,
+            "sourceQuote": null
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  },
+  "liveMatch": {
+    "steps": "≤ 5"
+  }
+}

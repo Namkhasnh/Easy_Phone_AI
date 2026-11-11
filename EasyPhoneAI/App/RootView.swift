@@ -60,11 +60,8 @@ struct RootView: View {
             ProgressView()
         case .signedOut:
             SignInView(viewModel: SignInViewModel(auth: env.auth))
-        case .signedIn(let userId):
-            // TODO(spec): S02 Home replaces this in 1B.1; until then show the signed-in user id (EXIT 0 check).
-            Text(verbatim: userId.uuidString)
-                .font(Tokens.Fonts.body)
-                .textSelection(.enabled)
+        case .signedIn:
+            HomeView(viewModel: HomeViewModel(repository: env.drafts, localData: env.localData))
         }
     }
 
@@ -86,11 +83,21 @@ struct RootView: View {
     @ViewBuilder private func destination(_ route: Route) -> some View {
         switch route {
         case .review(let draftId):
-            ReviewView(viewModel: ReviewViewModel(draftId: draftId, repository: env.drafts, engine: env.engine))
+            ReviewView(viewModel: ReviewViewModel(draftId: draftId, repository: env.drafts, engine: env.engine,
+                                                       permissions: env.permissions,
+                                                       snoozeMorningHour: env.localData.settings().snoozeMorningHour))
+        case .conversation(let draftId):
+            ConversationView(viewModel: ConversationViewModel(draftId: draftId, repository: env.drafts, speech: env.speech, api: env.api,
+                                                              tts: env.tts, localData: env.localData,
+                                                              permissions: env.permissions, engine: env.engine))
+        case .calendarToday:
+            CalendarTodayView(viewModel: CalendarTodayViewModel(calendar: env.calendar, permissions: env.permissions,
+                                                                repository: env.drafts, engine: env.engine))
         case .history:
             HistoryView(viewModel: HistoryViewModel(repository: env.drafts))
         case .settings:
-            SettingsView(viewModel: SettingsViewModel(localData: env.localData, drafts: env.drafts, auth: env.auth))
+            SettingsView(viewModel: SettingsViewModel(localData: env.localData, drafts: env.drafts, auth: env.auth,
+                                                      tts: env.tts, permissions: env.permissions))
         default:
             EmptyView()
         }

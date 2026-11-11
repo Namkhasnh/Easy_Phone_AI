@@ -1,0 +1,46 @@
+{
+  "case": "date_midnight",
+  "source": "AI_PROMPTS §8.1 row 11",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Nhắc tôi 12 giờ đêm nay tắt máy giặt",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Tắt máy giặt",
+            "confidence": 0.9,
+            "sourceQuote": "tắt máy giặt"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-09T00:00:00+07:00",
+            "confidence": 0.8,
+            "sourceQuote": "12 giờ đêm nay"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

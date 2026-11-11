@@ -15,17 +15,31 @@ import Observation
     let settings: AppSettings
     private(set) var nicknames: [Nickname] = []
     var pendingConfirm: Confirm?
+    /// S15 "Quyền truy cập": one row per capability (UI_SCREENS S15, §10.4). Re-read when the app is active again,
+    /// because the user may have changed it in iOS Settings.
+    private(set) var permissionStatuses: [(capability: Capability, status: PermissionStatus)] = []
 
     private let localData: any LocalDataRepository
     private let drafts: any TaskRepository
     private let auth: any AuthService
+    private let tts: any TTSService
+    private let permissions: any PermissionManager
 
-    init(localData: any LocalDataRepository, drafts: any TaskRepository, auth: any AuthService) {
+    init(localData: any LocalDataRepository, drafts: any TaskRepository, auth: any AuthService,
+         tts: any TTSService = MockTTSService(), permissions: any PermissionManager = MockPermissionManager()) {
+        self.permissions = permissions
         self.localData = localData
         self.drafts = drafts
         self.auth = auth
+        self.tts = tts
         settings = localData.settings()
         nicknames = localData.nicknames()
+        refreshPermissions()
+    }
+
+    /// Reads only; never asks (D-185: requests happen on first use, after S18).
+    func refreshPermissions() {
+        permissionStatuses = Capability.allCases.map { ($0, permissions.status($0)) }
     }
 
     static let snoozeHours = Array(5...11)            // picker 5–11 (S15)
@@ -40,6 +54,14 @@ import Observation
     }
 
     func save() { localData.saveSettings() }
+
+    /// "Nghe thử" (S15): speaks `settings.voice.sample` at the chosen rate. Works even when voice is off (explicit tap).
+    func testVoice() async {
+        await tts.speak(UserMessage(key: "settings.voice.sample").text, rate: settings.speechRate)
+    }
+
+    /// Leaving Settings or starting a new sample cuts the voice off (spec §6.2 AC5).
+    func stopVoice() { tts.stop() }
 
     func deleteNickname(_ nickname: Nickname) {
         localData.delete(nickname)

@@ -1,0 +1,52 @@
+{
+  "case": "x_place_save_custom",
+  "source": "1B.15b extra case (owner request 2026-11-10)",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Lưu địa chỉ 25 Nguyễn Huệ, quận 1 là nhà con trai",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "place",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "address",
+            "value": "25 Nguyễn Huệ, quận 1",
+            "confidence": 0.95,
+            "sourceQuote": "25 Nguyễn Huệ, quận 1"
+          },
+          {
+            "id": "label",
+            "value": "custom",
+            "confidence": 0.9,
+            "sourceQuote": null
+          },
+          {
+            "id": "customLabel",
+            "value": "nhà con trai",
+            "confidence": 0.9,
+            "sourceQuote": "nhà con trai"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

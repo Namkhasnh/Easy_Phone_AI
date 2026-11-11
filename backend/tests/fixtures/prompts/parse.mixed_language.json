@@ -1,0 +1,46 @@
+{
+  "case": "mixed_language",
+  "source": "AI_PROMPTS §8.4 row 3",
+  "request": {
+    "schemaVersion": 1,
+    "text": "set reminder 8am mai họp team",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Họp team",
+            "confidence": 0.9,
+            "sourceQuote": "họp team"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-09T08:00:00+07:00",
+            "confidence": 0.9,
+            "sourceQuote": "8am mai"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

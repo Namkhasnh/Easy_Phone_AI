@@ -1,0 +1,74 @@
+{
+  "case": "E5",
+  "source": "AI_PROMPTS §7 E5",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Tạo lịch họp 2 giờ chiều mai rồi nhắn chị Hoa là em sẽ đến đúng giờ",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "calendarEvent",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Họp",
+            "confidence": 0.85,
+            "sourceQuote": "họp"
+          },
+          {
+            "id": "startDate",
+            "value": "2026-11-09T14:00:00+07:00",
+            "confidence": 0.95,
+            "sourceQuote": "2 giờ chiều mai"
+          }
+        ],
+        "dateCandidates": []
+      },
+      {
+        "kind": "sms",
+        "operation": "open",
+        "fields": [
+          {
+            "id": "recipientName",
+            "value": "chị Hoa",
+            "confidence": 0.95,
+            "sourceQuote": "chị Hoa"
+          },
+          {
+            "id": "body",
+            "value": "Em sẽ đến đúng giờ ạ.",
+            "confidence": 0.8,
+            "sourceQuote": null
+          },
+          {
+            "id": "channel",
+            "value": "sms",
+            "confidence": 0.6,
+            "sourceQuote": null
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  },
+  "liveMatch": {
+    "body": "fuzzy"
+  }
+}

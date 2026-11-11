@@ -1,0 +1,55 @@
+{
+  "case": "E4",
+  "source": "AI_PROMPTS §7 E4",
+  "request": {
+    "schemaVersion": 1,
+    "text": "nhan zalo cho chi lan la con da ve toi nha",
+    "inputMode": "voice",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "sms",
+        "operation": "open",
+        "fields": [
+          {
+            "id": "recipientName",
+            "value": "chị Lan",
+            "confidence": 0.85,
+            "sourceQuote": "chi lan"
+          },
+          {
+            "id": "body",
+            "value": "Con đã về tới nhà.",
+            "confidence": 0.8,
+            "sourceQuote": null
+          },
+          {
+            "id": "channel",
+            "value": "zalo",
+            "confidence": 0.95,
+            "sourceQuote": "zalo"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  },
+  "liveMatch": {
+    "body": "fuzzy"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "case": "date_bare_hour_future",
+  "source": "AI_PROMPTS §8.1 row 10",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Nhắc tôi 2 giờ uống thuốc",
+    "inputMode": "text",
+    "now": "2026-11-08T10:00:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Uống thuốc",
+            "confidence": 0.9,
+            "sourceQuote": "uống thuốc"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-08T14:00:00+07:00",
+            "confidence": 0.6,
+            "sourceQuote": "2 giờ"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

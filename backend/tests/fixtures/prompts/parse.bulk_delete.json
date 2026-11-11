@@ -1,0 +1,32 @@
+{
+  "case": "bulk_delete",
+  "source": "AI_PROMPTS §8.4 row 6, D-280",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Xóa hết lịch tuần này",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [],
+    "followUpQuestion": null,
+    "unsupported": {
+      "reason": "bulkAction",
+      "message": "Chưa hỗ trợ xóa nhiều lịch cùng lúc."
+    }
+  },
+  "liveMatch": {
+    "message": "startsWith Chưa hỗ trợ"
+  }
+}

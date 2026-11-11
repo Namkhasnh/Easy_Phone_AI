@@ -19,6 +19,8 @@ from app.config import Settings, get_settings
 from app.main import create_app
 from app.repositories import profiles, subscriptions, usage
 
+APP_HEADERS = {"X-Client-Version": "1.0(1)"}  # what the app sends today (MARKETING_VERSION 1.0)
+
 pytestmark = pytest.mark.db
 
 URL = os.environ.get("TEST_DATABASE_URL", "")
@@ -108,7 +110,7 @@ def make_client(user_id: str) -> TestClient:
     app.dependency_overrides[get_settings] = lambda: Settings(DATABASE_URL=SecretStr(URL))
     app.dependency_overrides[deps.current_user] = lambda: CurrentUser(id=user_id)
     app.dependency_overrides[deps.clock] = lambda: NOW
-    return TestClient(app, raise_server_exceptions=False)
+    return TestClient(app, raise_server_exceptions=False, headers=APP_HEADERS)
 
 
 def test_me_end_to_end_creates_profile(uid):

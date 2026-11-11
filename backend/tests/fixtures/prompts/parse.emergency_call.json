@@ -1,0 +1,40 @@
+{
+  "case": "emergency_call",
+  "source": "AI_PROMPTS §8.4 row 4",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Gọi 115",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "call",
+        "operation": "open",
+        "fields": [
+          {
+            "id": "recipientName",
+            "value": "115",
+            "confidence": 0.95,
+            "sourceQuote": "115"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "case": "x_cal_dinner",
+  "source": "1B.15b extra case (owner request 2026-11-10)",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Thứ Sáu 7 giờ đi ăn tối với gia đình",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "calendarEvent",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Đi ăn tối với gia đình",
+            "confidence": 0.9,
+            "sourceQuote": "đi ăn tối với gia đình"
+          },
+          {
+            "id": "startDate",
+            "value": "2026-11-13T19:00:00+07:00",
+            "confidence": 0.8,
+            "sourceQuote": "Thứ Sáu 7 giờ"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

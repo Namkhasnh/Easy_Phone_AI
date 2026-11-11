@@ -1,0 +1,58 @@
+{
+  "case": "x_cal_alert",
+  "source": "1B.15b extra case (owner request 2026-11-10)",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Mai 2 giờ chiều khám tim ở bệnh viện Chợ Rẫy, nhắc trước 30 phút",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "calendarEvent",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Khám tim",
+            "confidence": 0.9,
+            "sourceQuote": "khám tim"
+          },
+          {
+            "id": "startDate",
+            "value": "2026-11-09T14:00:00+07:00",
+            "confidence": 0.95,
+            "sourceQuote": "Mai 2 giờ chiều"
+          },
+          {
+            "id": "location",
+            "value": "Bệnh viện Chợ Rẫy",
+            "confidence": 0.9,
+            "sourceQuote": "bệnh viện Chợ Rẫy"
+          },
+          {
+            "id": "alertMinutesBefore",
+            "value": "30",
+            "confidence": 0.95,
+            "sourceQuote": "nhắc trước 30 phút"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

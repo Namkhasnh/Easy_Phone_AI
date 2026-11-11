@@ -12,14 +12,20 @@ import Observation
     private(set) var didClose = false
     /// Set after "Xong": the View returns to Home (S02).
     private(set) var didFinish = false
+    /// S18 sheet before "Xác nhận" executes (ARCHITECTURE §5.1 step 0, D-185).
+    var pendingPermission: PendingPermission?
 
     private let engine: TaskEngine
+    private let permissions: any PermissionManager
+    private let snoozeMorningHour: Int
     private let catalog: FieldCatalog
     private let now: () -> Date
 
-    init(draftId: UUID, repository: any TaskRepository, engine: TaskEngine, catalog: FieldCatalog = .mvp,
-         now: @escaping () -> Date = { .now }) {
+    init(draftId: UUID, repository: any TaskRepository, engine: TaskEngine, permissions: any PermissionManager,
+         snoozeMorningHour: Int = 8, catalog: FieldCatalog = .mvp, now: @escaping () -> Date = { .now }) {
+        self.snoozeMorningHour = snoozeMorningHour
         self.engine = engine
+        self.permissions = permissions
         self.catalog = catalog
         self.now = now
         draft = repository.draft(draftId)
@@ -148,7 +154,7 @@ import Observation
                               primary: markDone,
                               secondary: canRetry ? ResultButton(title: UserMessage(key: "common.retry").text, action: .retry) : later)
         case .failed:
-            // TODO(spec): `permission.<c>.denied` → Primary `perm.<c>.fallback` + "Tôi đã làm xong" comes with S18 (1C.1).
+            // TODO(spec): `permission.<c>.denied` → Primary `perm.<c>.fallback` + "Tôi đã làm xong" comes with the executors that re-check permission (1C.3, 1C.5).
             return ResultCard(state: .failed, message: UserMessage(key: "result.failed").text, detail: errorMessage(step),
                               primary: ResultButton(title: UserMessage(key: "common.retry").text, action: .retry),
                               secondary: ResultButton(title: UserMessage(key: "common.cancel").text, action: .cancel))
@@ -178,8 +184,8 @@ import Observation
         case (.reminder, .create): UserMessage(key: "result.reminder.created")
         case (.reminder, .complete): UserMessage(key: "result.reminder.completed")
         case (.reminder, .snooze):
-            // TODO(spec): the snoozed-to time comes from the executor (1C.5); the step's `dueDate` is shown until then.
-            UserMessage(key: "result.reminder.snoozed", args: [step.field("dueDate").flatMap(displayValue) ?? ""])
+            // The snoozed-to time is recomputed with the executor's rule at the moment the step succeeded.
+            UserMessage(key: "result.reminder.snoozed", args: [snoozedTo(step) ?? ""])
         case (.sms, _): UserMessage(key: "result.sms.sent")
         case (.place, .create):
             UserMessage(key: "result.place.saved",
@@ -190,6 +196,14 @@ import Observation
             // TODO(spec): no result text for reminder update / delete; the state label "Đã xong" is shown.
             UserMessage(key: TaskState.succeeded.labelKey)
         }
+    }
+
+    func snoozedTo(_ step: TaskStep) -> String? {
+        let tz = TimeZone(identifier: draft?.timeZoneId ?? "") ?? .current
+        guard let option = step.field("snoozeOption")?.value,
+              let date = RemindersExecutor.snoozeDate(option, from: step.stateChangedAt, morningHour: snoozeMorningHour,
+                                                      timeZone: tz) else { return nil }
+        return FieldFormatter.dateTime(date, timeZone: tz)
     }
 
     private func handOffMessage(_ step: TaskStep) -> String {
@@ -206,12 +220,24 @@ import Observation
         }
     }
 
-    /// `error.<code>` (D-249); unknown code → `error.generic` (UI_SCREENS §8).
-    private func errorMessage(_ step: TaskStep) -> String? {
+    /// `error.<code>` (D-249); unknown code → `error.generic` (UI_SCREENS §8). Fills `{feature}` / `{app}`.
+    func errorMessage(_ step: TaskStep) -> String? {
         guard let code = step.errorCode else { return nil }
         let key = "error.\(code)"
-        let text = UserMessage(key: key).text
+        let text = UserMessage(key: key, args: Self.errorArgs(code: code, kind: step.kind)).text
         return text == key ? UserMessage(key: "error.generic").text : text
+    }
+
+    static func errorArgs(code: String, kind: TaskKind) -> [String] {
+        if let capability = Capability.allCases.first(where: { code == "permission.\($0.rawValue).denied" }) {
+            // TODO(spec): `{feature}` = `perm.<c>.feature` (PROGRESS DOC-37).
+            return [UserMessage(key: "perm.\(capability.rawValue).feature").text]
+        }
+        if code == "eventkit.saveFailed" {
+            // TODO(spec): `{app}` names: only `app.phone` is in UI_SCREENS; `app.calendar` / `app.reminders` added.
+            return [UserMessage(key: kind == .reminder ? "app.reminders" : "app.calendar").text]
+        }
+        return []
     }
 
     // MARK: - Intents
@@ -246,8 +272,43 @@ import Observation
         engine.edit(fieldId: fieldId, value: value, stepId: stepId, in: draft)
     }
 
-    /// "Xác nhận". Step 0 (permission explainer, D-185) comes with `PermissionManager` (1C.1).
+    /// "Xác nhận". Step 0 (ARCHITECTURE §5.1, D-185): a capability never asked → S18 explainer first;
+    /// denied / restricted → S18 denied variant. Otherwise the engine confirms (it re-checks everything).
     func confirm() async {
+        guard let step else { return }
+        if let capability = Capability.required(for: step.kind) {
+            switch permissions.status(capability) {
+            case .notDetermined:
+                pendingPermission = PendingPermission(capability: capability, variant: .explainer)
+                return
+            case .denied, .restricted:
+                pendingPermission = PendingPermission(capability: capability, variant: .denied)
+                return
+            case .granted, .limited, .writeOnly:
+                break
+            }
+        }
+        await execute()
+    }
+
+    /// S18 "Cho phép": the system alert, then confirm when usable; a "no" shows the denied variant (D-185).
+    func allowPermission() async {
+        guard let pending = pendingPermission, pending.variant == .explainer else { return }
+        pendingPermission = nil
+        let status = await permissions.request(pending.capability)
+        if status.isUsable {
+            await execute()
+        } else {
+            pendingPermission = PendingPermission(capability: pending.capability, variant: .denied)
+        }
+    }
+
+    /// S18 "Để sau" / "Mở Cài đặt" / swipe down: nothing runs; the step stays `awaitingApproval` (D-100).
+    func dismissPermission() {
+        pendingPermission = nil
+    }
+
+    private func execute() async {
         guard let draft, let stepId else { return }
         _ = await engine.confirm(stepId: stepId, in: draft)
         // TODO(spec): `.needsUI` (SMS composer, ARCHITECTURE §5.3) is presented from 1C.11.

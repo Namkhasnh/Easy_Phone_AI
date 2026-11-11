@@ -1,0 +1,32 @@
+{
+  "case": "booking",
+  "source": "AI_PROMPTS §8.4 row 5, D-160",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Đặt Grab về nhà",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [],
+    "followUpQuestion": null,
+    "unsupported": {
+      "reason": "booking",
+      "message": "Chưa hỗ trợ đặt xe."
+    }
+  },
+  "liveMatch": {
+    "message": "startsWith Chưa hỗ trợ"
+  }
+}

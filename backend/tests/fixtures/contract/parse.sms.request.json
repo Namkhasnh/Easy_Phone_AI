@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "text": "Nhắn anh Minh là chiều nay em đến muộn",
+  "inputMode": "voice",
+  "now": "2026-11-08T18:07:00+07:00",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "locale": "vi-VN",
+  "savedPlaceLabels": [
+    "home",
+    "work"
+  ],
+  "context": {
+    "draftId": null,
+    "answeringFieldId": null,
+    "currentDraft": null
+  }
+}

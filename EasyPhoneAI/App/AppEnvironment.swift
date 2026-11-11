@@ -3,7 +3,7 @@ import SwiftUI
 
 /// Dependency container (ARCHITECTURE §3). Built once in `EasyPhoneApp`, injected via `.environment(\.appEnv, …)`.
 /// Service properties are added by the item that builds each service (protocol + Live + Mock, D-206):
-/// device services (1C), `speech`/`tts` (1B),
+/// device services (1C),
 /// `ocr` (1D), `purchases` (1F). Debug vs Release never changes the wiring (D-208).
 struct AppEnvironment: Sendable {
     /// Build configuration from `Config/*.xcconfig` (0.7, D-207).
@@ -18,22 +18,56 @@ struct AppEnvironment: Sendable {
     let localData: any LocalDataRepository
     /// The only writer of task steps (ARCHITECTURE §5); executors are added per kind in 1C / 1D.
     let engine: TaskEngine
+    /// Speech-to-text, vi-VN on device (1B.2, ARCHITECTURE §4.3).
+    let speech: any SpeechService
+    /// Text-to-speech, vi-VN on device (1B.3, ARCHITECTURE §4.3).
+    let tts: any TTSService
+    /// Status + request for the 8 capabilities; asked only after the S18 explainer (1C.1, D-185).
+    let permissions: any PermissionManager
+    /// EventKit events: conflicts, search, save with `easyphone:<stepId>` (1C.2, D-225).
+    let calendar: any CalendarService
+    /// EventKit reminders: list, save with `easyphone:<stepId>`, complete, snooze (1C.5, D-225, D-248).
+    let reminders: any RemindersService
 
     @MainActor static func live(container: ModelContainer) -> AppEnvironment {
         let config = AppConfig.fromMainBundle()
         let auth = LiveAuthService(config: config)
         let drafts = LiveTaskRepository(container: container)
+        let permissions = LivePermissionManager()
+        let calendar = LiveCalendarService()
+        let reminders = LiveRemindersService()
+        let localData = LiveLocalDataRepository(container: container)
         return AppEnvironment(config: config, auth: auth,
                               api: APIClient(config: config, auth: auth, client: .fromMainBundle()),
                               drafts: drafts,
-                              localData: LiveLocalDataRepository(container: container),
-                              engine: TaskEngine(repository: drafts))
+                              localData: localData,
+                              engine: TaskEngine(repository: drafts,
+                                                 executors: executors(calendar, reminders, permissions, localData)),
+                              speech: LiveSpeechService(), tts: LiveTTSService(),
+                              permissions: permissions, calendar: calendar, reminders: reminders)
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
         let drafts = MockTaskRepository()
+        let permissions = MockPermissionManager()
+        let calendar = MockCalendarService()
+        let reminders = MockRemindersService()
+        let localData = MockLocalDataRepository()
         return AppEnvironment(config: .mock, auth: MockAuthService(), api: MockAPIClient(), drafts: drafts,
-                              localData: MockLocalDataRepository(), engine: TaskEngine(repository: drafts))
+                              localData: localData,
+                              engine: TaskEngine(repository: drafts,
+                                                 executors: executors(calendar, reminders, permissions, localData)),
+                              speech: MockSpeechService(), tts: MockTTSService(),
+                              permissions: permissions, calendar: calendar, reminders: reminders)
+    }
+
+    /// One executor per kind (ARCHITECTURE §5.1); the others are added by their items (1C.5, 1C.10 – 1C.13, 1D).
+    private static func executors(_ calendar: any CalendarService, _ reminders: any RemindersService,
+                                  _ permissions: any PermissionManager,
+                                  _ localData: any LocalDataRepository) -> [TaskKind: any StepExecutor] {
+        [.calendarEvent: CalendarExecutor(calendar: calendar, permissions: permissions),
+         .reminder: RemindersExecutor(reminders: reminders, permissions: permissions,
+                                      morningHour: { localData.settings().snoozeMorningHour })]
     }
 }
 

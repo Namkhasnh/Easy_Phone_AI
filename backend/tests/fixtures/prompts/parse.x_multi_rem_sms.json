@@ -1,0 +1,74 @@
+{
+  "case": "x_multi_rem_sms",
+  "source": "1B.15b extra case (owner request 2026-11-10)",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Nhắc tôi 5 giờ chiều mai đón cháu và nhắn mẹ là con về muộn",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Đón cháu",
+            "confidence": 0.95,
+            "sourceQuote": "đón cháu"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-09T17:00:00+07:00",
+            "confidence": 0.95,
+            "sourceQuote": "5 giờ chiều mai"
+          }
+        ],
+        "dateCandidates": []
+      },
+      {
+        "kind": "sms",
+        "operation": "open",
+        "fields": [
+          {
+            "id": "recipientName",
+            "value": "mẹ",
+            "confidence": 0.95,
+            "sourceQuote": "mẹ"
+          },
+          {
+            "id": "body",
+            "value": "Con về muộn ạ.",
+            "confidence": 0.8,
+            "sourceQuote": null
+          },
+          {
+            "id": "channel",
+            "value": "sms",
+            "confidence": 0.6,
+            "sourceQuote": null
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  },
+  "liveMatch": {
+    "body": "fuzzy"
+  }
+}

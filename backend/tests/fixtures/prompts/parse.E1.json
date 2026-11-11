@@ -1,0 +1,58 @@
+{
+  "case": "E1",
+  "source": "AI_PROMPTS §7 E1",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Mai 9 giờ sáng khám răng ở nha khoa An Bình, nhắc trước 1 tiếng",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "calendarEvent",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Khám răng",
+            "confidence": 0.9,
+            "sourceQuote": "khám răng"
+          },
+          {
+            "id": "startDate",
+            "value": "2026-11-09T09:00:00+07:00",
+            "confidence": 0.95,
+            "sourceQuote": "Mai 9 giờ sáng"
+          },
+          {
+            "id": "location",
+            "value": "Nha khoa An Bình",
+            "confidence": 0.9,
+            "sourceQuote": "nha khoa An Bình"
+          },
+          {
+            "id": "alertMinutesBefore",
+            "value": "60",
+            "confidence": 0.95,
+            "sourceQuote": "nhắc trước 1 tiếng"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

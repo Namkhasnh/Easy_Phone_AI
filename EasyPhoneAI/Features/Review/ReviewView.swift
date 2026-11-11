@@ -5,6 +5,7 @@ struct ReviewView: View {
     @State var viewModel: ReviewViewModel
     @Environment(\.dismiss) private var dismiss
     @Environment(Router.self) private var router
+    @Environment(\.openURL) private var openURL
     @AccessibilityFocusState private var titleFocused: Bool
 
     var body: some View {
@@ -36,6 +37,16 @@ struct ReviewView: View {
         .sheet(isPresented: Binding(get: { viewModel.editingFieldId != nil },
                                     set: { if !$0 { viewModel.editingFieldId = nil } })) {
             if let editor = viewModel.editor { FieldEditorView(viewModel: editor) }
+        }
+        .sheet(item: $viewModel.pendingPermission) { pending in
+            PermissionSheet(pending: pending,
+                            onAllow: { Task { await viewModel.allowPermission() } },
+                            onOpenSettings: {
+                                viewModel.dismissPermission()
+                                // = UIApplication.openSettingsURLString, without importing UIKit (D-014)
+                                if let url = URL(string: "app-settings:") { openURL(url) }
+                            },
+                            onLater: { viewModel.dismissPermission() })
         }
         .accessibilityIdentifier("screen.S04")
     }
@@ -155,7 +166,8 @@ private enum ReviewPreviewData {
         let repo = MockTaskRepository(drafts: [draft])
         let engine = TaskEngine(repository: repo)
         for step in draft.steps { engine.revalidate(stepId: step.id, in: draft) }
-        return ReviewViewModel(draftId: draft.id, repository: repo, engine: engine)
+        return ReviewViewModel(draftId: draft.id, repository: repo, engine: engine,
+                               permissions: MockPermissionManager())
     }
 
     static func reminder(_ catalog: FieldCatalog) -> TaskDraft {

@@ -1,0 +1,40 @@
+{
+  "case": "name_phone_number",
+  "source": "AI_PROMPTS §8.2, D-253",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Gọi số 0901 234 567",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "call",
+        "operation": "open",
+        "fields": [
+          {
+            "id": "recipientName",
+            "value": "0901 234 567",
+            "confidence": 0.95,
+            "sourceQuote": "0901 234 567"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

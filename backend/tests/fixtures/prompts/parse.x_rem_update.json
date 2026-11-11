@@ -1,0 +1,46 @@
+{
+  "case": "x_rem_update",
+  "source": "1B.15b extra case (owner request 2026-11-10)",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Đổi lời nhắc tưới cây sang 6 giờ sáng mai",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "update",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Tưới cây",
+            "confidence": 0.85,
+            "sourceQuote": "tưới cây"
+          },
+          {
+            "id": "dueDate",
+            "value": "2026-11-09T06:00:00+07:00",
+            "confidence": 0.95,
+            "sourceQuote": "6 giờ sáng mai"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

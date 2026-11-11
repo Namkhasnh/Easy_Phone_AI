@@ -7,7 +7,7 @@ import asyncpg
 from fastapi import APIRouter, Depends, Response
 
 from app.deps import AuthedUser, Settings, authed_user, clock, db, get_settings
-from app.schemas.me import MeResponse, Quota, Subscription, iso
+from app.schemas.me import MeResponse, Quota, Subscription
 from app.services import quota
 
 router = APIRouter(prefix="/v1")
@@ -23,9 +23,7 @@ async def me(
 ) -> MeResponse:
     ent = await quota.entitlement(conn, user.id, settings, now)
     q, sub = ent.quota, ent.subscription
-    response.headers["X-Quota-Limit"] = str(q.limit)
-    response.headers["X-Quota-Remaining"] = str(q.remaining)
-    response.headers["X-Quota-Resets-At"] = iso(q.resets_at)
+    response.headers.update(quota.quota_headers(q))
     tz = ZoneInfo(settings.QUOTA_DAY_TZ)
     return MeResponse(
         schemaVersion=settings.SCHEMA_VERSION,

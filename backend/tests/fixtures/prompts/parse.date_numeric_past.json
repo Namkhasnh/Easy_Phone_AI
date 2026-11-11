@@ -1,0 +1,49 @@
+{
+  "case": "date_numeric_past",
+  "source": "AI_PROMPTS §8.1 row 7",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Nhắc tôi 5/11 9 giờ đóng tiền điện",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Đóng tiền điện",
+            "confidence": 0.9,
+            "sourceQuote": "đóng tiền điện"
+          },
+          {
+            "id": "dueDate",
+            "value": "2027-11-05T09:00:00+07:00",
+            "confidence": 0.5,
+            "sourceQuote": "5/11 9 giờ"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  },
+  "liveMatch": {
+    "confidence": "≤ 0.6"
+  }
+}

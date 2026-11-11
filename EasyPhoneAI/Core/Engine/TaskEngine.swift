@@ -25,6 +25,21 @@ import os
         self.now = now
     }
 
+    // MARK: - Start from a device item (S11 "Sửa" / "Xóa")
+
+    /// New draft with one update / delete step for `event`, saved and validated (→ `awaitingApproval` when complete).
+    /// Nothing is executed until "Xác nhận" on S04 (D-100). Recurring events are refused (spec §6.4 AC5).
+    func startDraft(from event: EventSummary, operation: TaskOperation,
+                    timeZoneId: String = TimeZone.current.identifier) -> TaskDraft? {
+        guard !event.isRecurring, operation == .update || operation == .delete else { return nil }
+        // TODO(spec): S11 drafts have no spoken / typed input; `originalInput` stays empty, `inputMode = .text`.
+        let draft = TaskDraft(inputMode: .text, originalInput: "", timeZoneId: timeZoneId,
+                              steps: [DraftBuilder.step(from: event, operation: operation, timeZoneId: timeZoneId)])
+        repository.save(draft)
+        revalidate(stepId: draft.steps[0].id, in: draft)
+        return draft
+    }
+
     // MARK: - Confirm & execute (ARCHITECTURE §5.1)
 
     /// "Xác nhận" (D-100). Step 0 (permission explainer, D-185) is done by the ViewModel before calling this.
@@ -145,6 +160,55 @@ import os
         return issues
     }
 
+    // MARK: - Parse results (ARCHITECTURE §6.2, DATA_MODEL §6.2)
+
+    /// First `/v1/parse` answer for `draft`: builds the steps (DraftBuilder), stores `serverRequestId` and the
+    /// backend's `followUpQuestion` (D-281 decides later whether it is used), then validates each step →
+    /// `needsInfo` / `awaitingApproval`. Saved once (D-104). Returns `false` (nothing changes) when the draft already
+    /// has steps or the answer builds none (`unsupported`, or every step dropped) — the caller shows "Chưa hỗ trợ".
+    @discardableResult
+    func applyParsed(_ parsed: ParsedDraft, to draft: TaskDraft,
+                     defaults: DraftBuilder.Defaults = .init()) -> Bool {
+        guard draft.steps.isEmpty else {
+            logger.warning("applyParsed: draft already has steps")
+            return false
+        }
+        var steps = DraftBuilder.steps(from: parsed, now: now(), defaults: defaults)
+        guard !steps.isEmpty else { return false }
+        let llmTarget = FollowUpPlanner.llmTarget(of: steps)
+        for i in steps.indices { revalidateInPlace(&steps[i]) }
+        draft.steps = steps
+        draft.serverRequestId = parsed.requestId
+        setFollowUpWording(parsed.followUpQuestion, llmTarget: llmTarget, in: draft)
+        save(draft)
+        return true
+    }
+
+    /// The ONE question S03 asks next (D-281), or nil → open S04.
+    func nextFollowUp(in draft: TaskDraft) -> FollowUpPrompt? {
+        FollowUpPlanner.next(in: draft, now: now(), serviceIds: serviceIds)
+    }
+
+    /// D-281: keep the backend wording only when it targets the field the app asks about.
+    private func setFollowUpWording(_ question: String?, llmTarget: FollowUpPlanner.Target?, in draft: TaskDraft) {
+        let appTarget = FollowUpPlanner.target(in: draft, now: now(), serviceIds: serviceIds)
+        draft.followUpQuestion = FollowUpPlanner.wording(question, llmTarget: llmTarget, appTarget: appTarget)
+    }
+
+    /// A typed / spoken follow-up answer (`/v1/parse` with `context`): merged without overwriting `.user` fields
+    /// (API_CONTRACT §7.1 Example B), then re-validated. Saved once.
+    func mergeAnswer(_ parsed: ParsedDraft, into draft: TaskDraft, defaults: DraftBuilder.Defaults = .init()) {
+        var steps = DraftBuilder.merge(parsed, into: draft.steps, defaults: defaults)
+        let llmTarget = FollowUpPlanner.llmTarget(of: steps.filter { DraftBuilder.mergeableStates.contains($0.state) })
+        for i in steps.indices where DraftBuilder.mergeableStates.contains(steps[i].state) {
+            revalidateInPlace(&steps[i])
+        }
+        draft.steps = steps
+        draft.serverRequestId = parsed.requestId ?? draft.serverRequestId
+        setFollowUpWording(parsed.followUpQuestion, llmTarget: llmTarget, in: draft)
+        save(draft)
+    }
+
     // MARK: - Editing (D-101, D-104)
 
     /// Sets one field from a user edit: `source = .user`, `confidence = nil` (DATA_MODEL §1.7), ambiguity resolved
@@ -176,6 +240,9 @@ import os
         }
         revalidateInPlace(&step)
         draft.steps[index] = step
+        // The backend wording was about the state before this edit (e.g. a chip pick, D-251); later questions use
+        // the catalog text (D-281).
+        draft.followUpQuestion = nil
         save(draft)
         return true
     }

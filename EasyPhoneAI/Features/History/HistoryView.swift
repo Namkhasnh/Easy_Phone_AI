@@ -15,7 +15,7 @@ struct HistoryView: View {
                     ForEach(viewModel.sections) { section in
                         Section {
                             ForEach(section.rows) { row in
-                                Button { router.push(.review(row.id)) } label: { rowView(row) }
+                                Button { router.push(.review(row.id)) } label: { DraftRowView(row: row) }
                                     .buttonStyle(.plain)
                                     .listRowBackground(Tokens.Colors.surface)
                                     .swipeActions(edge: .trailing) {
@@ -41,40 +41,6 @@ struct HistoryView: View {
         .navigationTitle(Text("history.title"))
         .onAppear { viewModel.load() }
         .accessibilityIdentifier("screen.S14")
-    }
-
-    /// Row ≥ 72pt: kind icon + summary + relative time + StateBadge (+ "{done}/{total} bước").
-    private func rowView(_ row: HistoryViewModel.Row) -> some View {
-        HStack(alignment: .top, spacing: Tokens.Space.m) {
-            Image(systemName: row.symbol)
-                .font(Tokens.Fonts.title)
-                .foregroundStyle(Tokens.Colors.primary)
-                .frame(width: Tokens.Size.iconRow)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: Tokens.Space.xs) {
-                Text(verbatim: row.summary)
-                    .font(Tokens.Fonts.fieldValue)
-                    .foregroundStyle(Tokens.Colors.textPrimary)
-                Text(verbatim: row.time)
-                    .font(Tokens.Fonts.label)
-                    .foregroundStyle(Tokens.Colors.textSecondary)
-                StateBadge(state: row.badgeState, args: row.badgeArgs)
-                if let steps = row.stepsText {
-                    Text(verbatim: steps)
-                        .font(Tokens.Fonts.label)
-                        .foregroundStyle(Tokens.Colors.textSecondary)
-                }
-            }
-            .fixedSize(horizontal: false, vertical: true)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            Image(systemName: "chevron.right")
-                .font(Tokens.Fonts.label)
-                .foregroundStyle(Tokens.Colors.textSecondary)
-                .accessibilityHidden(true)
-        }
-        .padding(.vertical, Tokens.Space.s)
-        .frame(minHeight: 72)
-        .contentShape(Rectangle())
     }
 }
 

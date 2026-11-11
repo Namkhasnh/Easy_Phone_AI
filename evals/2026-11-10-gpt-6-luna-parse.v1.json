@@ -1,0 +1,350 @@
+{
+ "model": "gpt-6-luna",
+ "promptVersion": 1,
+ "date": "2026-11-10",
+ "results": [
+  {
+   "case": "E1",
+   "group": "examples E1–E8",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3138,
+   "tokens_in": 3100,
+   "tokens_out": 250,
+   "cost_usd": 0.000435
+  },
+  {
+   "case": "E2",
+   "group": "examples E1–E8",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2845,
+   "tokens_in": 3090,
+   "tokens_out": 200,
+   "cost_usd": 0.000409
+  },
+  {
+   "case": "E3",
+   "group": "examples E1–E8",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2199,
+   "tokens_in": 3084,
+   "tokens_out": 99,
+   "cost_usd": 0.000358
+  },
+  {
+   "case": "E4",
+   "group": "examples E1–E8",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3069,
+   "tokens_in": 3092,
+   "tokens_out": 251,
+   "cost_usd": 0.000435
+  },
+  {
+   "case": "E5",
+   "group": "examples E1–E8",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 4244,
+   "tokens_in": 3101,
+   "tokens_out": 407,
+   "cost_usd": 0.000514
+  },
+  {
+   "case": "E6",
+   "group": "examples E1–E8",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3109,
+   "tokens_in": 3088,
+   "tokens_out": 182,
+   "cost_usd": 0.0004
+  },
+  {
+   "case": "E7",
+   "group": "examples E1–E8",
+   "passed": false,
+   "fails": [
+    "step0.startDate: missing"
+   ],
+   "error": null,
+   "latency_ms": 5605,
+   "tokens_in": 3088,
+   "tokens_out": 532,
+   "cost_usd": 0.000575
+  },
+  {
+   "case": "E8",
+   "group": "examples E1–E8",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2481,
+   "tokens_in": 3090,
+   "tokens_out": 86,
+   "cost_usd": 0.000352
+  },
+  {
+   "case": "booking",
+   "group": "§8.4 other",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2487,
+   "tokens_in": 3085,
+   "tokens_out": 82,
+   "cost_usd": 0.00035
+  },
+  {
+   "case": "bulk_delete",
+   "group": "§8.4 other",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1780,
+   "tokens_in": 3086,
+   "tokens_out": 73,
+   "cost_usd": 0.000345
+  },
+  {
+   "case": "confirm_alone",
+   "group": "§8.4 other",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1751,
+   "tokens_in": 3082,
+   "tokens_out": 78,
+   "cost_usd": 0.000347
+  },
+  {
+   "case": "date_bare_hour_future",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3674,
+   "tokens_in": 3088,
+   "tokens_out": 294,
+   "cost_usd": 0.000456
+  },
+  {
+   "case": "date_day_month_order",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3438,
+   "tokens_in": 3095,
+   "tokens_out": 290,
+   "cost_usd": 0.000454
+  },
+  {
+   "case": "date_friday_today",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3646,
+   "tokens_in": 3092,
+   "tokens_out": 343,
+   "cost_usd": 0.000481
+  },
+  {
+   "case": "date_lunar",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2865,
+   "tokens_in": 3092,
+   "tokens_out": 185,
+   "cost_usd": 0.000402
+  },
+  {
+   "case": "date_midnight",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3165,
+   "tokens_in": 3094,
+   "tokens_out": 254,
+   "cost_usd": 0.000436
+  },
+  {
+   "case": "date_next_week",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3913,
+   "tokens_in": 3085,
+   "tokens_out": 264,
+   "cost_usd": 0.00044
+  },
+  {
+   "case": "date_numeric_past",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 4506,
+   "tokens_in": 3093,
+   "tokens_out": 350,
+   "cost_usd": 0.000484
+  },
+  {
+   "case": "date_sunday_future",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 4136,
+   "tokens_in": 3092,
+   "tokens_out": 347,
+   "cost_usd": 0.000483
+  },
+  {
+   "case": "date_sunday_passed",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3669,
+   "tokens_in": 3092,
+   "tokens_out": 296,
+   "cost_usd": 0.000457
+  },
+  {
+   "case": "date_this_friday_past",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 5939,
+   "tokens_in": 3094,
+   "tokens_out": 485,
+   "cost_usd": 0.000552
+  },
+  {
+   "case": "date_weekend",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 5455,
+   "tokens_in": 3086,
+   "tokens_out": 515,
+   "cost_usd": 0.000566
+  },
+  {
+   "case": "emergency_call",
+   "group": "§8.4 other",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2231,
+   "tokens_in": 3084,
+   "tokens_out": 83,
+   "cost_usd": 0.00035
+  },
+  {
+   "case": "inject_current_draft",
+   "group": "§8.3 injection",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3339,
+   "tokens_in": 3195,
+   "tokens_out": 268,
+   "cost_usd": 0.000454
+  },
+  {
+   "case": "long_dictation",
+   "group": "§8.4 other",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 8574,
+   "tokens_in": 3122,
+   "tokens_out": 972,
+   "cost_usd": 0.000798
+  },
+  {
+   "case": "mixed_language",
+   "group": "§8.4 other",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2760,
+   "tokens_in": 3089,
+   "tokens_out": 199,
+   "cost_usd": 0.000408
+  },
+  {
+   "case": "name_nickname",
+   "group": "§8.2 names",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1933,
+   "tokens_in": 3085,
+   "tokens_out": 96,
+   "cost_usd": 0.000356
+  },
+  {
+   "case": "name_phone_number",
+   "group": "§8.2 names",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2049,
+   "tokens_in": 3090,
+   "tokens_out": 109,
+   "cost_usd": 0.000364
+  },
+  {
+   "case": "name_plain",
+   "group": "§8.2 names",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2847,
+   "tokens_in": 3087,
+   "tokens_out": 206,
+   "cost_usd": 0.000412
+  },
+  {
+   "case": "name_two_recipients",
+   "group": "§8.2 names",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3396,
+   "tokens_in": 3090,
+   "tokens_out": 267,
+   "cost_usd": 0.000442
+  },
+  {
+   "case": "name_unclear",
+   "group": "§8.2 names",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3565,
+   "tokens_in": 3087,
+   "tokens_out": 215,
+   "cost_usd": 0.000416
+  }
+ ]
+}

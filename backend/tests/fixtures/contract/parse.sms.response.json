@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "requestId": "req_01JC8Z4K3M",
+  "steps": [
+    {
+      "kind": "sms",
+      "operation": "open",
+      "fields": [
+        {
+          "id": "recipientName",
+          "value": "anh Minh",
+          "confidence": 0.95,
+          "sourceQuote": "anh Minh"
+        },
+        {
+          "id": "body",
+          "value": "Chiều nay em đến muộn nhé.",
+          "confidence": 0.85,
+          "sourceQuote": null
+        },
+        {
+          "id": "channel",
+          "value": "sms",
+          "confidence": 0.6,
+          "sourceQuote": null
+        }
+      ],
+      "dateCandidates": []
+    }
+  ],
+  "followUpQuestion": null,
+  "unsupported": null
+}

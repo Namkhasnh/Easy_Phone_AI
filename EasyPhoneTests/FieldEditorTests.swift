@@ -92,7 +92,8 @@ struct FieldEditorTests {
         let draft = TaskDraft(inputMode: .text, originalInput: "x", timeZoneId: Self.tz, steps: [step])
         repo.save(draft)
         engine.revalidate(stepId: step.id, in: draft)
-        let review = ReviewViewModel(draftId: draft.id, repository: repo, engine: engine, now: { Self.now })
+        let review = ReviewViewModel(draftId: draft.id, repository: repo, engine: engine,
+                                     permissions: MockPermissionManager(), now: { Self.now })
         #expect(review.step?.state == .needsInfo)
 
         review.tapRow(review.visibleFields.first { $0.id == "dueDate" }!)

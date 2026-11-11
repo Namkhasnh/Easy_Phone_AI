@@ -20,7 +20,7 @@ struct RetryPolicy: Sendable {
     var jitter: @Sendable () -> Double = { Double.random(in: 0...0.5) }
     /// `429`: wait `Retry-After`, max 1 attempt.
     var maxRateLimitWaits = 1
-    // TODO(spec): no upper bound on `Retry-After` in the docs; clamp so one call cannot hang for minutes.
+    // TODO(spec): no upper bound on `Retry-After` in the docs; a longer wait is not retried at all (no hang, no 2nd 429).
     var maxRetryAfter: Double = 30
 
     func decide(_ error: AppError, retryAfter: Double?, counts: inout Counts) -> Decision {
@@ -34,7 +34,10 @@ struct RetryPolicy: Sendable {
             guard counts.rateLimited < maxRateLimitWaits else { return .stop }
             counts.rateLimited += 1
             let wait = retryAfter ?? details?.retryAfterSeconds.map(Double.init) ?? 1
-            return .retry(after: .seconds(min(max(wait, 0), maxRetryAfter)))
+            // Waiting less than the server asked only earns a second 429 (e.g. transcribe: 50 min) → stop now,
+            // so the caller falls back at once (transcribe → keyboard, ARCHITECTURE §9.2).
+            guard wait <= maxRetryAfter else { return .stop }
+            return .retry(after: .seconds(max(wait, 0)))
         }
         // 402, 403, 413, 422, 426, 502, 503 spend_cap, other 4xx, decoding, service: never (ARCHITECTURE §10).
         return .stop

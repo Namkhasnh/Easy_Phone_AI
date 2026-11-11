@@ -34,6 +34,16 @@ enum FieldFormatter {
                     args: [weekday(date, tz: timeZone), format(date, "dd/MM", timeZone), format(date, "HH:mm", timeZone)]).text
     }
 
+    /// Date part of `common.dateTimeFormat`: "{weekday}, {dd/MM}" (S11 header).
+    static func day(_ date: Date, timeZone: TimeZone) -> String {
+        "\(weekday(date, tz: timeZone)), \(format(date, "dd/MM", timeZone))"
+    }
+
+    /// Time part of `common.dateTimeFormat`: "HH:mm" (24 h, S11 time column).
+    static func time(_ date: Date, timeZone: TimeZone) -> String {
+        format(date, "HH:mm", timeZone)
+    }
+
     /// `option.<fieldId>.<value>` (UI_SCREENS §10.3), nil when the catalog has no such key.
     static func option(fieldId: String, value: String, args: [String] = []) -> String? {
         let key = "option.\(fieldId).\(value)"
