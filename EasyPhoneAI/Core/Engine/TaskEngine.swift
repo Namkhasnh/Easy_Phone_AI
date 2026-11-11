@@ -234,6 +234,7 @@ import os
         if let ref = resolution.targetRef { step.targetRef = ref }
         revalidateInPlace(&step)
         draft.steps[index] = step
+        propagateLinks(from: stepId, fieldIds: Set(resolution.values.keys), in: draft)
         save(draft)
     }
 
@@ -359,11 +360,55 @@ import os
         }
         revalidateInPlace(&step)
         draft.steps[index] = step
+        propagateLinks(from: stepId, fieldIds: [fieldId], in: draft)
         // The backend wording was about the state before this edit (e.g. a chip pick, D-251); later questions use
         // the catalog text (D-281).
         draft.followUpQuestion = nil
         save(draft)
         return true
+    }
+
+    // MARK: - Linked steps (DATA_MODEL §3.3, D-120)
+
+    /// Copies the current value of each source field into every field linked to it (`.linked(stepId:fieldId:)`,
+    /// the link is kept) and gives that step `userEdited` (approval reset, D-101), then re-validates it. Follows
+    /// chains (A → B → C); each (step, field) is visited once. Caller saves.
+    private func propagateLinks(from stepId: UUID, fieldIds: Set<String>, in draft: TaskDraft) {
+        var queue = fieldIds.map { (stepId, $0) }
+        var visited = Set(fieldIds.map { "\(stepId)/\($0)" })
+        while !queue.isEmpty {
+            let (sourceStep, sourceField) = queue.removeFirst()
+            guard let source = draft.steps.first(where: { $0.id == sourceStep })?.field(sourceField) else { continue }
+            let value = source.value                                  // nil (cleared) is copied too
+            for index in draft.steps.indices where draft.steps[index].id != sourceStep {
+                var step = draft.steps[index]
+                let linked = step.fields.indices.filter {
+                    step.fields[$0].source == .linked(stepId: sourceStep, fieldId: sourceField)
+                        && step.fields[$0].value != value
+                }
+                guard !linked.isEmpty else { continue }
+                // TODO(spec): DATA_MODEL §3.3 does not say what happens to a linked step that already ran or is
+                // running; like a user edit (no `userEdited` row, §1.5) it is left unchanged.
+                guard Self.editableStates.contains(step.state) else {
+                    logger.warning("linked update skipped in state \(step.state.rawValue, privacy: .public)")
+                    continue
+                }
+                for f in linked {
+                    step.fields[f].value = value
+                    step.fields[f].confidence = nil
+                    step.fields[f].ambiguity = nil
+                }
+                if step.state == .succeeded { Self.turnIntoUpdate(&step) }  // D-290, same as a user edit
+                if step.state != .draft {
+                    guard applyInPlace(.userEdited, to: &step) else { continue }
+                }
+                revalidateInPlace(&step)
+                draft.steps[index] = step
+                for f in linked where visited.insert("\(step.id)/\(step.fields[f].id)").inserted {
+                    queue.append((step.id, step.fields[f].id))
+                }
+            }
+        }
     }
 
     // MARK: - User actions without fields
