@@ -45,7 +45,9 @@ struct ReviewView: View {
             await viewModel.loadContactName()
             viewModel.openPendingPicker()
             await viewModel.openPendingEventChoice()
+            viewModel.startAutoConfirmIfAllowed()                       // D-299, only when the toggle is on
         }
+        .onDisappear { viewModel.cancelAutoConfirm() }
         .sheet(isPresented: Binding(get: { viewModel.picking != nil },
                                     set: { if !$0 { viewModel.pickingFieldId = nil } }),
                onDismiss: { viewModel.pickerSheetDismissed() }) {
@@ -195,9 +197,33 @@ struct ReviewView: View {
         .accessibilityFocused($titleFocused)
     }
 
+    /// D-299: "Khoai sẽ làm sau {n} giây…" + "Để tôi xem lại" (cancels; the step stays for "Xác nhận").
+    private func autoConfirmCard(_ seconds: Int) -> some View {
+        VStack(alignment: .leading, spacing: Tokens.Space.s) {
+            Label {
+                Text(verbatim: UserMessage(key: "review.autoConfirm.countdown", args: ["\(seconds)"]).text)
+                    .fixedSize(horizontal: false, vertical: true)
+            } icon: {
+                Image(systemName: "timer").accessibilityHidden(true)
+            }
+            .font(Tokens.Fonts.body.weight(.semibold))
+            .foregroundStyle(Tokens.Colors.textPrimary)
+            .accessibilityAddTraits(.updatesFrequently)
+            SecondaryButton("review.autoConfirm.stop", systemImage: "hand.raised") { viewModel.cancelAutoConfirm() }
+        }
+        .padding(Tokens.Space.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+        .onAppear {
+            AccessibilityNotification.Announcement(
+                UserMessage(key: "review.autoConfirm.countdown", args: ["\(seconds)"]).text).post()
+        }
+    }
+
     /// Xác nhận (or destructive "Xác nhận xóa") · Sửa (D-182, D-108); "Hủy" is in the nav bar (D-292).
     private var actionBar: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.m) {
+            if let seconds = viewModel.autoConfirmSeconds { autoConfirmCard(seconds) }
             PrimaryButton(viewModel.isDelete ? "review.delete.confirm" : "common.confirm",
                           role: viewModel.isDelete ? .destructive : nil,
                           disabledReasonKey: viewModel.disabledReasonKey.map { LocalizedStringKey($0) }) {

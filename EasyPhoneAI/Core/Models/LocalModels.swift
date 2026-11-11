@@ -53,6 +53,7 @@ import SwiftData
     var lastSeenEntitlement: CachedEntitlement?  // display only (D-085)
     var petEnabled: Bool = true       // "Hiện bạn Khoai" (D-289)
     var autoSend: Bool = true         // "Tự gửi khi nói xong" (D-296)
+    var autoConfirm: Bool = false     // "Làm luôn, không cần xác nhận" (D-299), safe kinds only
 
     init() {}
 }

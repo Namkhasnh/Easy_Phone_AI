@@ -80,6 +80,7 @@ struct SettingsView: View {
 
             if viewModel.showsAdvanced {                       // ★ section, hidden in simple mode (P-40)
                 Section(header: header("settings.advanced")) {
+                    toggleRow("settings.autoConfirm", note: "settings.autoConfirm.note", isOn: $settings.autoConfirm)  // D-299
                     Picker(selection: $settings.snoozeMorningHour) {
                         ForEach(SettingsViewModel.snoozeHours, id: \.self) { hour in
                             Text(verbatim: UserMessage(key: "settings.snoozeHour.value", args: ["\(hour)"]).text).tag(hour)

@@ -2870,6 +2870,30 @@
         }
       }
     },
+    "review.autoConfirm.countdown": {
+      "comment": "UI_SCREENS S04 (D-299)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Khoai sẽ làm sau %@ giây…"
+          }
+        }
+      }
+    },
+    "review.autoConfirm.stop": {
+      "comment": "UI_SCREENS S04 (D-299)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Để tôi xem lại"
+          }
+        }
+      }
+    },
     "review.delete.confirm": {
       "comment": "UI_SCREENS S04",
       "extractionState": "manual",
@@ -2998,6 +3022,30 @@
           "stringUnit": {
             "state": "translated",
             "value": "Yêu cầu AI của bạn được xử lý bởi một nhà cung cấp AI bên thứ ba (OpenAI). Danh bạ và lịch được xử lý trên điện thoại."
+          }
+        }
+      }
+    },
+    "settings.autoConfirm": {
+      "comment": "UI_SCREENS S15 ★ (D-299)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Làm luôn, không cần xác nhận"
+          }
+        }
+      }
+    },
+    "settings.autoConfirm.note": {
+      "comment": "UI_SCREENS S15 ★ (D-299)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tạo lịch, lời nhắc, lưu địa điểm, chỉ đường, mở cuộc gọi hoặc tin nhắn: Khoai tự làm sau 3 giây. Xóa và sửa vẫn luôn cần bấm “Xác nhận”."
           }
         }
       }

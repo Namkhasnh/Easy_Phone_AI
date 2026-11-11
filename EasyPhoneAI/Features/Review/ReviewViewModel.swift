@@ -49,12 +49,20 @@ import Observation
     private let snoozeMorningHour: Int
     private let catalog: FieldCatalog
     private let now: () -> Date
+    /// D-299 countdown: seconds left before the safe step runs by itself; nil = no countdown.
+    private(set) var autoConfirmSeconds: Int?
+    private var autoConfirmTask: Task<Void, Never>?
+    private var autoConfirmTried = false
+    private let autoConfirmTick: Duration
+    static let autoConfirmDelay = 3
 
     init(draftId: UUID, repository: any TaskRepository, engine: TaskEngine, permissions: any PermissionManager,
          contacts: any ContactsService = MockContactsService(),
          calendar: any CalendarService = MockCalendarService(), localData: (any LocalDataRepository)? = nil,
          system: any SystemService = MockSystemService(), services: SupportedServices = .bundled,
-         snoozeMorningHour: Int = 8, catalog: FieldCatalog = .mvp, now: @escaping () -> Date = { .now }) {
+         snoozeMorningHour: Int = 8, catalog: FieldCatalog = .mvp, now: @escaping () -> Date = { .now },
+         autoConfirmTick: Duration = .seconds(1)) {
+        self.autoConfirmTick = autoConfirmTick
         self.contacts = contacts
         self.calendar = calendar
         self.localData = localData
@@ -355,12 +363,14 @@ import Observation
 
     /// "Sửa": the first field needing review, else the first editable field (P-37).
     func startEdit() {
+        cancelAutoConfirm()
         let fields = visibleFields.filter { Self.isEditableInS05($0.type) }
         editingFieldId = (fields.first(where: \.needsReview) ?? fields.first)?.id
     }
 
     /// Row tap → S05, except types set by pickers: a field with an ambiguity or the contact row → S06.
     func tapRow(_ field: Field) async {
+        cancelAutoConfirm()
         // TODO(spec): `coordinate` / `placeRef` rows open S13 (1C.13).
         if field.ambiguity != nil || field.type == .contactRef {
             await choose(field)
@@ -375,6 +385,7 @@ import Observation
     /// (S18 step 0, D-185), then device resolution (1C.9) — which may fill it or bring an ambiguity.
     func choose(_ field: Field) async {
         if field.ambiguity != nil {
+            cancelAutoConfirm()
             pickingFieldId = field.id
             return
         }
@@ -555,6 +566,7 @@ import Observation
     }
 
     func edit(fieldId: String, value: String?) {
+        cancelAutoConfirm()
         guard let draft, let stepId else { return }
         engine.edit(fieldId: fieldId, value: value, stepId: stepId, in: draft)
     }
@@ -649,8 +661,55 @@ import Observation
         }
     }
 
+    // MARK: - Auto-confirm (D-299, owner 2026-11-12)
+
+    /// Kinds that may run after the countdown; delete / update / complete / snooze always need the tap (D-108).
+    static func isAutoConfirmable(_ kind: TaskKind, _ operation: TaskOperation) -> Bool {
+        switch (kind, operation) {
+        case (.calendarEvent, .create), (.reminder, .create), (.place, .create), (.place, .open),
+             (.call, .open), (.sms, .open): true
+        default: false
+        }
+    }
+
+    /// Toggle on, fresh step ready to run, nothing open on top, permission already usable (no S18 on a timer).
+    var canAutoConfirm: Bool {
+        guard localData?.settings().autoConfirm == true, let step, step.state == .awaitingApproval, step.attempt == 0,
+              Self.isAutoConfirmable(step.kind, step.operation), blocker == nil, !needsEventChoice,
+              pickingFieldId == nil, editingFieldId == nil, pendingPermission == nil, eventChoice == nil else { return false }
+        if let capability = Capability.required(for: step.kind) { return permissions.status(capability).isUsable }
+        return true
+    }
+
+    /// Called once when S04 appears (after the pickers had their chance to open).
+    // TODO(spec): D-299 does not restart the countdown after an S06 pick / S05 edit; the user taps "Xác nhận" then.
+    func startAutoConfirmIfAllowed() {
+        guard !autoConfirmTried, canAutoConfirm else { return }
+        autoConfirmTried = true
+        autoConfirmSeconds = Self.autoConfirmDelay
+        autoConfirmTask = Task { @MainActor [weak self] in
+            while let self, let left = self.autoConfirmSeconds, left > 0 {
+                try? await Task.sleep(for: self.autoConfirmTick)
+                guard !Task.isCancelled, self.autoConfirmSeconds != nil else { return }
+                self.autoConfirmSeconds = left - 1
+            }
+            guard !Task.isCancelled, let self, self.autoConfirmSeconds == 0 else { return }
+            self.autoConfirmSeconds = nil
+            guard self.canAutoConfirm else { return }
+            await self.confirm()
+        }
+    }
+
+    /// "Để tôi xem lại", any edit / pick, "Hủy", or leaving S04.
+    func cancelAutoConfirm() {
+        autoConfirmTask?.cancel()
+        autoConfirmTask = nil
+        autoConfirmSeconds = nil
+    }
+
     /// "Hủy": cancels the step (draft kept, D-104) and leaves the screen.
     func cancel() {
+        cancelAutoConfirm()
         guard let draft, let stepId else { return }
         engine.cancel(stepId: stepId, in: draft)
         didClose = true
