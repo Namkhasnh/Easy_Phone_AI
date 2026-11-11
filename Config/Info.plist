@@ -24,6 +24,10 @@
 	<string>EasyPhoneK đọc ảnh bạn chọn để lấy thông tin như ngày hẹn, địa chỉ.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>EasyPhoneK dùng vị trí để tìm địa điểm gần bạn.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>comgooglemaps</string>
+	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

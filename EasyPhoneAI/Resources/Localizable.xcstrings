@@ -4309,6 +4309,18 @@
           }
         }
       }
+    },
+    "handoff.note.directions": {
+      "comment": "UI_SCREENS §10.4 hand-off note",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cần xem đường đi trong %@"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
