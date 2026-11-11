@@ -20,6 +20,7 @@ struct CalendarTodayTests {
                answer: PermissionStatus = .granted) -> (CalendarTodayViewModel, MockPermissionManager) {
         let perms = MockPermissionManager([.calendar: access], answer: answer)
         return (CalendarTodayViewModel(calendar: MockCalendarService(events), permissions: perms, repository: repo,
+                                       engine: TaskEngine(repository: repo, now: { Self.now }),
                                        now: { Self.now }, timeZone: Self.tz), perms)
     }
 
@@ -79,5 +80,90 @@ struct CalendarTodayTests {
                     "calendar.delete", "calendar.recurringUnsupported", "calendar.limitedNote"] {
             #expect(UserMessage(key: key).text != key, "missing \(key)")
         }
+    }
+}
+
+/// 1C.4b — S11 detail sheet, "Sửa" / "Xóa" → S04 (UI_SCREENS S11, spec §6.4 AC3–AC5, D-100, D-108).
+@MainActor
+@Suite("S11 detail → S04")
+struct CalendarTodayDetailTests {
+    static let tz = TimeZone(identifier: "Asia/Ho_Chi_Minh")!
+    static let now = Validator.parseDateTime("2026-11-13T08:00:00+07:00")!
+    static func at(_ h: Double) -> Date { Validator.parseDateTime("2026-11-13T00:00:00+07:00")! + h * 3600 }
+
+    let repo = MockTaskRepository()
+    let permissions = MockPermissionManager()
+    let calendar: MockCalendarService
+    let engine: TaskEngine
+
+    init() {
+        calendar = MockCalendarService([
+            EventSummary(id: "ev-1", title: "Khám răng", start: Self.at(14), end: Self.at(15), isAllDay: false,
+                         location: "Nha khoa Hoa Sen", alertMinutesBefore: 60, calendarId: "cal-1", calendarName: "Nhà",
+                         isRecurring: false),
+            EventSummary(id: "ev-r", title: "Tập dưỡng sinh", start: Self.at(6), end: Self.at(7), isAllDay: false,
+                         isRecurring: true),
+        ])
+        engine = TaskEngine(repository: repo,
+                            executors: [.calendarEvent: CalendarExecutor(calendar: calendar, permissions: permissions)],
+                            now: { Self.now })
+    }
+
+    func model() async -> CalendarTodayViewModel {
+        let vm = CalendarTodayViewModel(calendar: calendar, permissions: permissions, repository: repo, engine: engine,
+                                        now: { Self.now }, timeZone: Self.tz)
+        await vm.load()
+        return vm
+    }
+
+    @Test func detailShowsReadOnlyFieldsWithoutLockedIds() async {
+        let vm = await model()
+        vm.select("ev-1")
+        let rows = vm.detailRows
+        #expect(rows.map(\.labelKey) == ["field.calendarEvent.title", "field.calendarEvent.startDate",
+                                         "field.calendarEvent.endDate", "field.calendarEvent.location",
+                                         "field.calendarEvent.alertMinutesBefore"])          // no calendarId 🔒, no allDay=false
+        #expect(rows[0].value == "Khám răng")
+        #expect(rows[1].value == "Thứ Sáu, 13/11 lúc 14:00")
+        #expect(vm.canChangeSelected)
+        #expect(vm.openInCalendarURL?.scheme == "calshow")
+    }
+
+    @Test func editOpensAnUpdateDraftAndChangesNothingYet() async throws {
+        let vm = await model()
+        vm.select("ev-1")
+        vm.change(.update)
+        #expect(vm.selected == nil)
+        let draft = try #require(vm.reviewDraftId.flatMap(repo.draft))
+        let step = draft.steps[0]
+        #expect(step.kind == .calendarEvent && step.operation == .update && step.targetRef == "ev-1")
+        #expect(step.state == .awaitingApproval)
+        #expect(step.field("calendarId")?.value == "cal-1" && step.field("title")?.source == .device(origin: "calendar"))
+        #expect(calendar.saveCount == 0)                                     // D-100: nothing before "Xác nhận"
+    }
+
+    @Test func deleteGoesThroughReviewThenRemovesTheEvent() async throws {
+        let vm = await model()
+        vm.select("ev-1")
+        vm.change(.delete)
+        let draft = try #require(vm.reviewDraftId.flatMap(repo.draft))
+        let review = ReviewViewModel(draftId: draft.id, repository: repo, engine: engine, permissions: permissions)
+        #expect(review.isDelete && review.blocker == nil)                    // "Xác nhận xóa", tap only (D-108)
+        #expect(calendar.deleted.isEmpty)
+        await review.confirm()
+        #expect(review.step?.state == .succeeded)
+        #expect(review.step?.resultEvidence == "ek:deleted:ev-1")
+        #expect(calendar.deleted == ["ev-1"])
+        await vm.load()
+        #expect(vm.rows.map(\.id) == ["ev-r"])
+    }
+
+    @Test func recurringCannotBeChanged() async {
+        let vm = await model()
+        vm.select("ev-r")
+        #expect(!vm.canChangeSelected)
+        vm.change(.delete)
+        #expect(vm.reviewDraftId == nil && vm.selected != nil)               // spec §6.4 AC5
+        #expect(engine.startDraft(from: calendar.all.first { $0.isRecurring }!, operation: .update) == nil)
     }
 }

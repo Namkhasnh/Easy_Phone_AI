@@ -91,7 +91,7 @@ struct RootView: View {
                                                               permissions: env.permissions, engine: env.engine))
         case .calendarToday:
             CalendarTodayView(viewModel: CalendarTodayViewModel(calendar: env.calendar, permissions: env.permissions,
-                                                                repository: env.drafts))
+                                                                repository: env.drafts, engine: env.engine))
         case .history:
             HistoryView(viewModel: HistoryViewModel(repository: env.drafts))
         case .settings:

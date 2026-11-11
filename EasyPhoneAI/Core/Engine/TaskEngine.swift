@@ -25,6 +25,21 @@ import os
         self.now = now
     }
 
+    // MARK: - Start from a device item (S11 "Sửa" / "Xóa")
+
+    /// New draft with one update / delete step for `event`, saved and validated (→ `awaitingApproval` when complete).
+    /// Nothing is executed until "Xác nhận" on S04 (D-100). Recurring events are refused (spec §6.4 AC5).
+    func startDraft(from event: EventSummary, operation: TaskOperation,
+                    timeZoneId: String = TimeZone.current.identifier) -> TaskDraft? {
+        guard !event.isRecurring, operation == .update || operation == .delete else { return nil }
+        // TODO(spec): S11 drafts have no spoken / typed input; `originalInput` stays empty, `inputMode = .text`.
+        let draft = TaskDraft(inputMode: .text, originalInput: "", timeZoneId: timeZoneId,
+                              steps: [DraftBuilder.step(from: event, operation: operation, timeZoneId: timeZoneId)])
+        repository.save(draft)
+        revalidate(stepId: draft.steps[0].id, in: draft)
+        return draft
+    }
+
     // MARK: - Confirm & execute (ARCHITECTURE §5.1)
 
     /// "Xác nhận" (D-100). Step 0 (permission explainer, D-185) is done by the ViewModel before calling this.

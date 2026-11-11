@@ -17,15 +17,22 @@ import Observation
     var pendingPermission: PendingPermission?
     /// Set by "Thêm lịch hẹn": the View opens S03 in typing mode for this draft.
     private(set) var newDraftId: UUID?
+    /// Detail sheet (UI_SCREENS S11): the tapped event.
+    var selected: EventSummary?
+    /// Set by "Sửa" / "Xóa": the View opens S04 for this new update / delete draft.
+    private(set) var reviewDraftId: UUID?
+    private var events: [EventSummary] = []
 
     private let calendar: any CalendarService
     private let permissions: any PermissionManager
     private let repository: any TaskRepository
+    private let engine: TaskEngine
     private let now: () -> Date
     private let timeZone: TimeZone
 
     init(calendar: any CalendarService, permissions: any PermissionManager, repository: any TaskRepository,
-         now: @escaping () -> Date = { .now }, timeZone: TimeZone = .current) {
+         engine: TaskEngine, now: @escaping () -> Date = { .now }, timeZone: TimeZone = .current) {
+        self.engine = engine
         self.calendar = calendar
         self.permissions = permissions
         self.repository = repository
@@ -52,6 +59,7 @@ import Observation
         }
         do {
             let events = try await calendar.events(in: today)
+            self.events = events
             let conflicts = CalendarSearch.conflictingIds(events)
             rows = events.map { e in
                 Row(id: e.id,
@@ -92,6 +100,42 @@ import Observation
     }
 
     func didOpenNewDraft() { newDraftId = nil }
+
+    // MARK: - Detail sheet
+
+    func select(_ rowId: String) {
+        selected = events.first { $0.id == rowId }
+    }
+
+    /// Read-only rows: catalog order, 🔒 / empty values hidden, values formatted like S04 (`FieldFormatter`).
+    var detailRows: [(labelKey: String, value: String)] {
+        guard let selected else { return [] }
+        let tz = timeZone.identifier
+        return DraftBuilder.step(from: selected, operation: .update, timeZoneId: tz).fields.compactMap { field in
+            guard !field.deviceOnly, field.id != "allDay" || selected.isAllDay,
+                  let value = FieldFormatter.display(field, timeZoneId: tz), !value.isEmpty else { return nil }
+            return (field.labelKey(kind: .calendarEvent), value)
+        }
+    }
+
+    /// Recurring → `calendar.recurringUnsupported` instead of "Sửa" / "Xóa" (spec §6.4 AC5).
+    var canChangeSelected: Bool { selected.map { !$0.isRecurring } ?? false }
+
+    /// "Sửa" / "Xóa": a new update / delete step → S04. Nothing changes in Calendar before "Xác nhận" (D-100).
+    func change(_ operation: TaskOperation) {
+        guard let selected, let draft = engine.startDraft(from: selected, operation: operation,
+                                                          timeZoneId: timeZone.identifier) else { return }
+        self.selected = nil
+        reviewDraftId = draft.id
+    }
+
+    func didOpenReview() { reviewDraftId = nil }
+
+    /// "Mở trong Lịch" (spec §6.4 AC4): the Calendar app at the event's start.
+    // TODO(spec): no doc names the URL; `calshow:<seconds since 2001-01-01>` opens Calendar at that time.
+    var openInCalendarURL: URL? {
+        selected.flatMap { URL(string: "calshow:\(Int($0.start.timeIntervalSinceReferenceDate))") }
+    }
 
     private var today: DateInterval {
         var cal = Calendar(identifier: .gregorian)

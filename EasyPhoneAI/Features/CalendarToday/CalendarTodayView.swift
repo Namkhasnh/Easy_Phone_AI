@@ -26,8 +26,8 @@ struct CalendarTodayView: View {
                         .padding(.top, Tokens.Space.xl)
                 }
                 ForEach(viewModel.rows) { row in
-                    // TODO(spec): tap → detail sheet with "Sửa" / "Xóa" / "Mở trong Lịch" comes with 1C.4b.
-                    EventRow(row: row)
+                    Button { viewModel.select(row.id) } label: { EventRow(row: row) }
+                        .buttonStyle(.plain)
                 }
             }
             .padding(Tokens.Space.screenPadding)
@@ -41,7 +41,7 @@ struct CalendarTodayView: View {
                 .overlay(alignment: .top) { Divider() }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .task { await viewModel.load() }
+        .onAppear { Task { await viewModel.load() } }               // also after S04 (edit / delete) pops back
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { Task { await viewModel.load() } }      // back from iOS Settings / Calendar
         }
@@ -50,6 +50,12 @@ struct CalendarTodayView: View {
             viewModel.didOpenNewDraft()
             router.push(.conversation(id))
         }
+        .onChange(of: viewModel.reviewDraftId) { _, id in
+            guard let id else { return }
+            viewModel.didOpenReview()
+            router.push(.review(id))
+        }
+        .sheet(item: $viewModel.selected) { _ in detailSheet }
         .sheet(item: $viewModel.pendingPermission) { pending in
             PermissionSheet(pending: pending,
                             onAllow: { Task { await viewModel.allowPermission() } },
@@ -61,6 +67,51 @@ struct CalendarTodayView: View {
                             onLater: { viewModel.dismissPermission() })
         }
         .accessibilityIdentifier("screen.S11")
+    }
+}
+
+extension CalendarTodayView {
+    /// Detail sheet: read-only fields + Primary "Sửa" + Secondary "Xóa" (danger text) + link "Mở trong Lịch".
+    fileprivate var detailSheet: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.l) {
+                ForEach(viewModel.detailRows, id: \.labelKey) { row in
+                    VStack(alignment: .leading, spacing: Tokens.Space.xs) {
+                        Text(LocalizedStringKey(row.labelKey))
+                            .font(Tokens.Fonts.label)
+                            .foregroundStyle(Tokens.Colors.textSecondary)
+                        Text(verbatim: row.value)
+                            .font(Tokens.Fonts.fieldValue)
+                            .foregroundStyle(Tokens.Colors.textPrimary)
+                    }
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityElement(children: .combine)
+                }
+                if !viewModel.canChangeSelected {
+                    Text("calendar.recurringUnsupported")
+                        .font(Tokens.Fonts.body)
+                        .foregroundStyle(Tokens.Colors.textPrimary)
+                }
+                if let url = viewModel.openInCalendarURL {
+                    TextLinkButton("result.openInCalendar") { openURL(url) }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Tokens.Space.screenPadding)
+        }
+        .safeAreaInset(edge: .bottom) {
+            if viewModel.canChangeSelected {
+                VStack(spacing: Tokens.Space.m) {
+                    PrimaryButton("common.edit") { viewModel.change(.update) }
+                    SecondaryButton("calendar.delete", role: .destructive) { viewModel.change(.delete) }
+                }
+                .padding(Tokens.Space.screenPadding)
+                .background(Tokens.Colors.bg)
+            }
+        }
+        .background(Tokens.Colors.bg)
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 }
 
@@ -103,8 +154,9 @@ private struct EventRow: View {
 
 @MainActor
 private func calendarPreviewModel(_ events: [EventSummary], access: PermissionStatus = .granted) -> CalendarTodayViewModel {
-    CalendarTodayViewModel(calendar: MockCalendarService(events), permissions: MockPermissionManager([.calendar: access]),
-                           repository: MockTaskRepository())
+    let repo = MockTaskRepository()
+    return CalendarTodayViewModel(calendar: MockCalendarService(events), permissions: MockPermissionManager([.calendar: access]),
+                                  repository: repo, engine: TaskEngine(repository: repo))
 }
 
 @MainActor

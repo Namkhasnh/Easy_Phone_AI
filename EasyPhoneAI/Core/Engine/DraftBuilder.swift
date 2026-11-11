@@ -16,6 +16,31 @@ enum DraftBuilder {
         var dateQuestion: String = String(localized: "ambiguity.date")
     }
 
+    // MARK: - Build from a device event (S11 "Sửa" / "Xóa")
+
+    /// An update / delete step for an existing EventKit event (UI_SCREENS S11): every catalog field filled from the
+    /// event with `source = .device("calendar")`, `targetRef` = its identifier (🔒, D-056). Pure; `state = draft`.
+    static func step(from event: EventSummary, operation: TaskOperation, timeZoneId: String,
+                     catalog: FieldCatalog = .mvp) -> TaskStep {
+        let tz = TimeZone(identifier: timeZoneId) ?? .current
+        func iso(_ date: Date) -> String {
+            let f = ISO8601DateFormatter()
+            f.timeZone = tz
+            f.formatOptions = [.withInternetDateTime]
+            return f.string(from: date)
+        }
+        let values: [String: String?] = [
+            "title": event.title, "startDate": iso(event.start), "endDate": iso(event.end),
+            "allDay": event.isAllDay ? "true" : "false", "location": event.location, "notes": event.notes,
+            "alertMinutesBefore": event.alertMinutesBefore.map(String.init), "calendarId": event.calendarId,
+        ]
+        let fields = catalog.fields(.calendarEvent, operation).map { spec in
+            Field(id: spec.id, type: spec.type, value: values[spec.id] ?? nil, source: .device(origin: "calendar"),
+                  deviceOnly: spec.deviceOnly)
+        }
+        return TaskStep(order: 0, kind: .calendarEvent, operation: operation, fields: fields, targetRef: event.id)
+    }
+
     // MARK: - Build (first answer)
 
     /// New steps for `parsed`. `unsupported` → no steps (spec §11). A step whose `kind` / `operation` is unknown or not
