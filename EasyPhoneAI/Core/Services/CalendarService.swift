@@ -98,3 +98,17 @@ enum CalendarSearch {
         return events.sorted { abs($0.start.timeIntervalSince(near)) < abs($1.start.timeIntervalSince(near)) }
     }
 }
+
+extension CalendarSearch {
+    /// Ids of timed events that overlap another timed event of the list (S11 "Trùng giờ", spec §6.4 AC2).
+    static func conflictingIds(_ events: [EventSummary]) -> Set<String> {
+        var ids = Set<String>()
+        for (i, a) in events.enumerated() {
+            for b in events[(i + 1)...] where a.overlaps(start: b.start, end: b.end) && !b.isAllDay {
+                ids.insert(a.id)
+                ids.insert(b.id)
+            }
+        }
+        return ids
+    }
+}
