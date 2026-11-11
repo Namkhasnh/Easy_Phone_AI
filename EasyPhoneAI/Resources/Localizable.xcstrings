@@ -4225,6 +4225,18 @@
           }
         }
       }
+    },
+    "handoff.note.call": {
+      "comment": "UI_SCREENS §10.4 hand-off note",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cần hoàn tất cuộc gọi"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
