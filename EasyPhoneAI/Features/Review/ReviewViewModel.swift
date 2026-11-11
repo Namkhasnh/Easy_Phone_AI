@@ -18,6 +18,8 @@ import Observation
     var pickingFieldId: String?
     /// Name of the 🔒 `contactId` for the S04 contact row (read on device, never stored in the draft).
     private(set) var contactName: String?
+    /// The prefilled system SMS composer (ARCHITECTURE §5.3); the step stays `processing` while it is open.
+    private(set) var pendingComposer: (recipients: [String], body: String)?
     /// The iOS contact picker is shown ("Chọn trong danh bạ", 1C.9c).
     var showsContactPicker = false
     /// Names of contacts handed over by the iOS picker (readable even without Contacts access).
@@ -576,8 +578,17 @@ import Observation
 
     private func execute() async {
         guard let draft, let stepId else { return }
-        _ = await engine.confirm(stepId: stepId, in: draft)
-        // TODO(spec): `.needsUI` (SMS composer, ARCHITECTURE §5.3) is presented from 1C.11.
+        if case .needsUI(.composer(let recipients, let body)) = await engine.confirm(stepId: stepId, in: draft) {
+            pendingComposer = (recipients, body)
+        }
+    }
+
+    /// Composer delegate (or the sheet closed without one = cancelled): `.sent` → succeeded with `msg:sent:<date>`,
+    /// `.cancelled` → back to `awaitingApproval` (D-222), `.failed` → failed (ARCHITECTURE §5.3).
+    func composerFinished(_ result: ComposerResult) {
+        guard pendingComposer != nil, let draft, let stepId else { return }
+        pendingComposer = nil
+        engine.composerFinished(stepId: stepId, result: result, in: draft)
     }
 
     /// Result card buttons. `done` / `later` are navigation; the View handles them (`didClose` / pop to Home).

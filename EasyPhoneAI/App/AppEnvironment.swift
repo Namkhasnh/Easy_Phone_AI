@@ -46,7 +46,7 @@ struct AppEnvironment: Sendable {
                               localData: localData,
                               engine: TaskEngine(repository: drafts,
                                                  executors: executors(calendar, reminders, permissions, localData,
-                                                                      calls: LiveCallService()),
+                                                                      calls: LiveCallService(), messages: LiveMessagesService()),
                                                  resolver: DeviceResolver(contacts: contacts, calendar: calendar,
                                                                           permissions: permissions)),
                               speech: LiveSpeechService(), tts: LiveTTSService(),
@@ -64,7 +64,7 @@ struct AppEnvironment: Sendable {
                               localData: localData,
                               engine: TaskEngine(repository: drafts,
                                                  executors: executors(calendar, reminders, permissions, localData,
-                                                                      calls: MockCallService()),
+                                                                      calls: MockCallService(), messages: MockMessagesService()),
                                                  resolver: DeviceResolver(contacts: contacts, calendar: calendar,
                                                                           permissions: permissions)),
                               speech: MockSpeechService(), tts: MockTTSService(),
@@ -75,9 +75,11 @@ struct AppEnvironment: Sendable {
     private static func executors(_ calendar: any CalendarService, _ reminders: any RemindersService,
                                   _ permissions: any PermissionManager,
                                   _ localData: any LocalDataRepository,
-                                  calls: any CallService) -> [TaskKind: any StepExecutor] {
+                                  calls: any CallService,
+                                  messages: any MessagesService) -> [TaskKind: any StepExecutor] {
         [.calendarEvent: CalendarExecutor(calendar: calendar, permissions: permissions),
          .call: CallExecutor(calls: calls),
+         .sms: SMSExecutor(messages: messages),
          .reminder: RemindersExecutor(reminders: reminders, permissions: permissions,
                                       morningHour: { localData.settings().snoozeMorningHour })]
     }

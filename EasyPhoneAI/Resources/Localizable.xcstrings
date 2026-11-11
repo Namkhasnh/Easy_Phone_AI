@@ -4237,6 +4237,18 @@
           }
         }
       }
+    },
+    "error.messages.cannotSend": {
+      "comment": "UI_SCREENS §8",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Điện thoại này chưa gửi được tin nhắn. Bạn có thể sao chép nội dung."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

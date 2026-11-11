@@ -82,6 +82,14 @@ struct ReviewView: View {
                             },
                             onLater: { viewModel.dismissPermission() })
         }
+        .sheet(isPresented: Binding(get: { viewModel.pendingComposer != nil },
+                                    set: { if !$0 { viewModel.composerFinished(.cancelled) } })) {
+            if let composer = viewModel.pendingComposer {
+                // ARCHITECTURE §5.3: the user taps Send in the system UI (D-103); closing it = cancelled (D-222).
+                MessageComposerView(recipients: composer.recipients, body: composer.body) { viewModel.composerFinished($0) }
+                    .ignoresSafeArea()
+            }
+        }
         .background {
             // "Chọn trong danh bạ" (1C.9c): the iOS contact picker, no Contacts access needed.
             ContactPickerPresenter(isPresented: $viewModel.showsContactPicker) { viewModel.pickedFromContacts($0) }
