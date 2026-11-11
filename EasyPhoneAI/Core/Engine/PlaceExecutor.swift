@@ -50,6 +50,12 @@ import Foundation
         }
     }
 
+    /// Launch verification (DATA_MODEL §3.5): create → the `SavedPlace` (id = step id) exists. Directions never.
+    func evidenceOnLaunch(_ step: TaskStep) async -> String? {
+        guard step.operation == .create, localData.savedPlaces().contains(where: { $0.id == step.id }) else { return nil }
+        return Self.evidence(step.id)
+    }
+
     static func evidence(_ id: UUID) -> String { "local:place:\(id.uuidString)" }
 
     static func place(from step: TaskStep) -> PlaceResult? {

@@ -18,6 +18,14 @@ enum ExecutionOutcome: Sendable, Hashable {
 /// Executors do the permission check (§5.1 step 4), the idempotency lookup (D-105) and re-read verification.
 @MainActor protocol StepExecutor: Sendable {
     func execute(_ step: TaskStep, draft: TaskDraft) async -> ExecutionOutcome
+    /// Launch verification (D-125, DATA_MODEL §3.5): evidence that this `unknown` step's action did happen, or nil
+    /// (stays `unknown`). Read-only: never creates, edits or deletes anything.
+    func evidenceOnLaunch(_ step: TaskStep) async -> String?
+}
+
+extension StepExecutor {
+    /// Default: not verifiable (call, SMS, directions, hand-offs — D-102: never evidence).
+    func evidenceOnLaunch(_ step: TaskStep) async -> String? { nil }
 }
 
 /// `MessageComposeResult` mapped by the composer bridge (1C.11); no MessageUI import here (D-015).

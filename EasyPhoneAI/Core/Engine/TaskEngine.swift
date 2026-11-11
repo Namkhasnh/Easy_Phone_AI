@@ -368,6 +368,29 @@ import os
         return true
     }
 
+    // MARK: - Launch verification (ARCHITECTURE §5.4, D-125)
+
+    /// App was killed while this step ran: `processing` → `interrupted` → `unknown` (spec §5.2).
+    @discardableResult
+    func interrupt(stepId: UUID, in draft: TaskDraft) -> Bool { apply(.interrupted, stepId: stepId, in: draft) }
+
+    /// `unknown` → `actionVerified` (`succeeded`, evidence stored, D-124) when the executor finds evidence; else
+    /// stays `unknown` (the user may "Thử lại" or "Tôi đã làm xong", D-243). Returns true when verified.
+    @discardableResult
+    func verifyOnLaunch(stepId: UUID, in draft: TaskDraft) async -> Bool {
+        guard let step = draft.steps.first(where: { $0.id == stepId }), step.state == .unknown,
+              let executor = executors[step.kind],
+              let evidence = await executor.evidenceOnLaunch(step), !evidence.isEmpty,
+              let index = draft.steps.firstIndex(where: { $0.id == stepId }),
+              draft.steps[index].state == .unknown else { return false }
+        var updated = draft.steps[index]
+        updated.resultEvidence = evidence
+        guard applyInPlace(.actionVerified, to: &updated) else { return false }
+        draft.steps[index] = updated
+        save(draft)
+        return true
+    }
+
     // MARK: - Linked steps (DATA_MODEL §3.3, D-120)
 
     /// Copies the current value of each source field into every field linked to it (`.linked(stepId:fieldId:)`,

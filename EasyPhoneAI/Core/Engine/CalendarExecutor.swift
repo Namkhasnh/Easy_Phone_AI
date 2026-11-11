@@ -87,6 +87,34 @@ import os
         return .verified(evidence: Self.evidence(id))
     }
 
+    // MARK: - Launch verification (D-125, DATA_MODEL §3.5)
+
+    /// create: stored evidence or `easyphone:<stepId>` found; update: target exists and fields match; delete: target
+    /// gone. Needs full access (write-only cannot read) — else nil, the step stays `unknown`.
+    func evidenceOnLaunch(_ step: TaskStep) async -> String? {
+        guard permissions.status(.calendar) == .granted else { return nil }
+        do {
+            switch step.operation {
+            case .create:
+                if let id = Self.eventId(step.resultEvidence), try await calendar.find(identifier: id) != nil {
+                    return Self.evidence(id)
+                }
+                return try await calendar.find(stepTag: StepTag.make(step.id)).map { Self.evidence($0.id) }
+            case .update:
+                guard let target = step.targetRef, let input = Self.input(from: step),
+                      let saved = try await calendar.find(identifier: target), Self.matches(saved, input) else { return nil }
+                return Self.evidence(saved.id)
+            case .delete:
+                guard let target = step.targetRef, try await calendar.find(identifier: target) == nil else { return nil }
+                return "ek:deleted:\(target)"
+            default:
+                return nil
+            }
+        } catch {
+            return nil
+        }
+    }
+
     // MARK: - Pure helpers
 
     static func evidence(_ id: String) -> String { "ek:event:\(id)" }

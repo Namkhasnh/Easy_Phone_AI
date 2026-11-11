@@ -101,6 +101,41 @@ import os
         return .verified(evidence: Self.evidence(id))
     }
 
+    // MARK: - Launch verification (D-125, DATA_MODEL §3.5)
+
+    /// create: evidence / `easyphone:<stepId>` found; update: title + due match; delete: gone; complete:
+    /// `isCompleted == completed`. Without full access → nil (stays `unknown`).
+    // TODO(spec): snooze cannot be verified on launch — the target date was computed from "now" at execution time.
+    func evidenceOnLaunch(_ step: TaskStep) async -> String? {
+        guard permissions.status(.reminders) == .granted else { return nil }
+        do {
+            switch step.operation {
+            case .create:
+                if let id = Self.reminderId(step.resultEvidence), try await reminders.find(identifier: id) != nil {
+                    return Self.evidence(id)
+                }
+                return try await reminders.find(stepTag: StepTag.make(step.id)).map { Self.evidence($0.id) }
+            case .update:
+                guard let target = step.targetRef, let input = Self.input(from: step),
+                      let saved = try await reminders.find(identifier: target),
+                      saved.title == input.title, saved.dueDate == input.dueDate else { return nil }
+                return Self.evidence(saved.id)
+            case .delete:
+                guard let target = step.targetRef, try await reminders.find(identifier: target) == nil else { return nil }
+                return Self.evidence(target)
+            case .complete:
+                guard let target = step.targetRef, let raw = step.field("completed")?.value,
+                      let saved = try await reminders.find(identifier: target),
+                      saved.isCompleted == (raw == "true") else { return nil }
+                return Self.evidence(target)
+            default:
+                return nil
+            }
+        } catch {
+            return nil
+        }
+    }
+
     // MARK: - Pure helpers
 
     static func evidence(_ id: String) -> String { "ek:reminder:\(id)" }
