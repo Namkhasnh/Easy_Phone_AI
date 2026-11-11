@@ -270,6 +270,32 @@ import os
         apply(r, stepId: stepId, in: draft)
     }
 
+    /// S06 place pick (`.place` ambiguity on `coordinate`): the candidate's name / address / coordinate as user choices.
+    func pickPlace(_ candidate: Candidate, stepId: UUID, in draft: TaskDraft) {
+        guard edit(fieldId: "coordinate", value: candidate.id, stepId: stepId, in: draft) else { return }
+        edit(fieldId: "name", value: candidate.title, stepId: stepId, in: draft)
+        if let address = candidate.subtitle { edit(fieldId: "address", value: address, stepId: stepId, in: draft) }
+    }
+
+    /// New draft with one place step from S13 (save / directions), saved and validated; S04 confirms (D-100).
+    func startDraft(from place: PlaceResult, operation: TaskOperation, mapsApp: String,
+                    timeZoneId: String = TimeZone.current.identifier) -> TaskDraft? {
+        guard operation == .create || operation == .open else { return nil }
+        var values = DeviceResolver.placeValues(name: place.name, address: place.address, coordinate: place.coordinate)
+        values["query"] = place.name
+        if operation == .open { values["mapsApp"] = mapsApp }
+        let fields = FieldCatalog.mvp.fields(.place, operation).map {
+            Field(id: $0.id, type: $0.type, value: values[$0.id],
+                  source: values[$0.id] == nil ? .user : .device(origin: "maps"), deviceOnly: $0.deviceOnly)
+        }
+        // TODO(spec): S13 drafts have no spoken / typed input; `originalInput` stays empty, `inputMode = .text`.
+        let draft = TaskDraft(inputMode: .text, originalInput: "", timeZoneId: timeZoneId,
+                              steps: [TaskStep(order: 0, kind: .place, operation: operation, fields: fields)])
+        repository.save(draft)
+        revalidate(stepId: draft.steps[0].id, in: draft)
+        return draft
+    }
+
     /// S06 event pick for calendar update / delete (D-106, D-251): `targetRef` + the event's fields.
     func pickTarget(_ event: EventSummary, stepId: UUID, in draft: TaskDraft) {
         guard let step = draft.steps.first(where: { $0.id == stepId }),

@@ -4321,6 +4321,114 @@
           }
         }
       }
+    },
+    "places.title": {
+      "comment": "UI_SCREENS S13",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Địa điểm"
+          }
+        }
+      }
+    },
+    "places.search": {
+      "comment": "UI_SCREENS S13",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tìm địa chỉ hoặc tên địa điểm"
+          }
+        }
+      }
+    },
+    "places.noResults": {
+      "comment": "UI_SCREENS S13",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không tìm thấy địa điểm. Bạn thử gõ tên khác nhé."
+          }
+        }
+      }
+    },
+    "places.save": {
+      "comment": "UI_SCREENS S13",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lưu địa điểm"
+          }
+        }
+      }
+    },
+    "places.directions": {
+      "comment": "UI_SCREENS S13",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chỉ đường"
+          }
+        }
+      }
+    },
+    "places.saved.title": {
+      "comment": "UI_SCREENS S13",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Địa điểm đã lưu"
+          }
+        }
+      }
+    },
+    "places.saved.empty": {
+      "comment": "UI_SCREENS S13",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn chưa lưu địa điểm nào. Hãy lưu Nhà hoặc Chỗ làm để dùng nhanh hơn."
+          }
+        }
+      }
+    },
+    "places.customLabel.placeholder": {
+      "comment": "UI_SCREENS S13",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ví dụ: Nhà con gái"
+          }
+        }
+      }
+    },
+    "places.locationDenied": {
+      "comment": "UI_SCREENS S13",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn vẫn tìm được địa chỉ bằng cách gõ tên."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

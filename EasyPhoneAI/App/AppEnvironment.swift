@@ -56,7 +56,8 @@ struct AppEnvironment: Sendable {
                                                                       system: system, places: places),
                                                  serviceIds: SupportedServices.bundled.ids,
                                                  resolver: DeviceResolver(contacts: contacts, calendar: calendar,
-                                                                          permissions: permissions)),
+                                                                          permissions: permissions, places: places,
+                                                                          savedPlaces: { localData.savedPlaces() })),
                               speech: LiveSpeechService(), tts: LiveTTSService(),
                               permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts,
                               system: system, places: places)
@@ -79,7 +80,8 @@ struct AppEnvironment: Sendable {
                                                                       system: system, places: places),
                                                  serviceIds: SupportedServices.bundled.ids,
                                                  resolver: DeviceResolver(contacts: contacts, calendar: calendar,
-                                                                          permissions: permissions)),
+                                                                          permissions: permissions, places: places,
+                                                                          savedPlaces: { localData.savedPlaces() })),
                               speech: MockSpeechService(), tts: MockTTSService(),
                               permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts,
                               system: system, places: places)

@@ -90,6 +90,8 @@ import Observation
             if conditionalOnly.contains(spec.id) && !required.contains(spec.id) { return nil }
             // TODO(spec): the 🔒 `calendarId` row (calendar name) and the contact photo are not shown yet.
             if spec.id == "calendarId" { return nil }
+            // TODO(spec): S04 says `coordinate` → small map; the filled coordinate row is hidden (name + address show it).
+            if spec.id == "coordinate", let f = step.field("coordinate"), f.value != nil, f.ambiguity == nil { return nil }
             return step.field(spec.id) ?? Field(id: spec.id, type: spec.type, deviceOnly: spec.deviceOnly)
         }
     }
@@ -439,6 +441,10 @@ import Observation
     func pick(_ candidate: Candidate, fieldId: String) async {
         guard let draft, let stepId else { return }
         pickingFieldId = nil
+        if fieldId == "coordinate" {                                          // S06 place pick (1C.13b)
+            engine.pickPlace(candidate, stepId: stepId, in: draft)
+            return
+        }
         let spoken = step?.field("recipientName")?.value
         await engine.pick(candidate.id, fieldId: fieldId, stepId: stepId, in: draft)
         await loadContactName()
@@ -500,7 +506,7 @@ import Observation
     // TODO(spec): UI_SCREENS S04 shows "Chọn" under the row; opening S06 at once is an owner request (2026-11-11).
     func openPendingPicker() {
         guard showsActionBar, pickingFieldId == nil, pendingPermission == nil, editingFieldId == nil,
-              let field = visibleFields.first(where: { ($0.type == .contactRef || $0.id == "phoneNumber")
+              let field = visibleFields.first(where: { ($0.type == .contactRef || $0.id == "phoneNumber" || $0.id == "coordinate")
                                                        && $0.ambiguity != nil && !($0.ambiguity?.candidates.isEmpty ?? true) })
         else { return }
         pickingFieldId = field.id

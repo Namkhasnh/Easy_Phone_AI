@@ -23,11 +23,16 @@ struct DeviceResolution: Sendable, Hashable {
     private let contacts: any ContactsService
     private let calendar: any CalendarService
     private let permissions: any PermissionManager
+    private let places: (any PlacesService)?
+    private let savedPlaces: (@MainActor () -> [SavedPlace])?
 
-    nonisolated init(contacts: any ContactsService, calendar: any CalendarService, permissions: any PermissionManager) {
+    nonisolated init(contacts: any ContactsService, calendar: any CalendarService, permissions: any PermissionManager,
+                     places: (any PlacesService)? = nil, savedPlaces: (@MainActor () -> [SavedPlace])? = nil) {
         self.contacts = contacts
         self.calendar = calendar
         self.permissions = permissions
+        self.places = places
+        self.savedPlaces = savedPlaces
     }
 
     func resolve(_ step: TaskStep, timeZoneId: String) async -> DeviceResolution {
@@ -38,6 +43,8 @@ struct DeviceResolution: Sendable, Hashable {
             return await resolveRecipient(step)
         case (.calendarEvent, .update), (.calendarEvent, .delete):
             return await resolveEvent(step, timeZoneId: timeZoneId)
+        case (.place, .open), (.place, .create):
+            return await resolvePlace(step)
         default:
             // TODO(spec): reminder update / delete / complete / snooze by voice need a reminder search (RemindersService
             // has none in ARCHITECTURE §4.2); they come from S12 with `targetRef` set.
@@ -118,6 +125,40 @@ struct DeviceResolution: Sendable, Hashable {
                                   ?? PhoneNumber.masked(number))
                 })
         }
+    }
+
+    // MARK: - Places (directions / save)
+
+    /// AI_PROMPTS: "về nhà" → `query = home`, "chỗ làm" → `work`, a custom label → its text. A saved place fills the
+    /// destination (`.device("savedPlace")`); else `MKLocalSearch`: one result fills it, several → `.place` ambiguity
+    /// on `coordinate` (S06, D-106). Search needs no permission (location is optional).
+    private func resolvePlace(_ step: TaskStep) async -> DeviceResolution {
+        var r = DeviceResolution(origin: "savedPlace")
+        guard step.field("coordinate")?.value == nil, let query = step.field("query")?.value, !query.isEmpty else { return r }
+        let key = NameNormalizer.normalize(query)
+        if let saved = savedPlaces?().first(where: {
+            $0.label == key || ($0.customLabel.map(NameNormalizer.normalize) == key && $0.label == "custom")
+        }) {
+            r.values = Self.placeValues(name: saved.name, address: saved.address,
+                                        coordinate: Coordinate(latitude: saved.latitude, longitude: saved.longitude))
+            return r
+        }
+        r.origin = "maps"
+        guard let places, let found = try? await places.search(query, near: nil) else { return r }
+        switch found.count {
+        case 0: break    // TODO(spec): no place found has no S04 text; the destination rows stay "Chưa có".
+        case 1: r.values = Self.placeValues(name: found[0].name, address: found[0].address, coordinate: found[0].coordinate)
+        default:
+            r.ambiguities["coordinate"] = Ambiguity(
+                kind: .place, question: UserMessage(key: "ambiguity.place").text,
+                // TODO(spec): S06 shows at most 8 places (no limit in the docs).
+                candidates: found.prefix(8).map { Candidate(id: $0.coordinate.encoded, title: $0.name, subtitle: $0.address) })
+        }
+        return r
+    }
+
+    static func placeValues(name: String, address: String, coordinate: Coordinate) -> [String: String] {
+        ["name": name, "address": address, "coordinate": coordinate.encoded]
     }
 
     // MARK: - Calendar (update / delete)
