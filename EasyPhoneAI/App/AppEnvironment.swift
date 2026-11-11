@@ -65,14 +65,17 @@ struct AppEnvironment: Sendable {
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
         let drafts = MockTaskRepository()
-        let permissions = MockPermissionManager()
+        let permissions = scenario == .uiTest
+            ? MockPermissionManager(Dictionary(uniqueKeysWithValues: Capability.allCases.map { ($0, .granted) }))
+            : MockPermissionManager()
         let calendar = MockCalendarService()
         let reminders = MockRemindersService()
         let localData = MockLocalDataRepository()
-        let contacts = MockContactsService()
+        let contacts = scenario == .uiTest ? MockContactsService.uiTest : MockContactsService()
         let system = MockSystemService()
         let places = MockPlacesService()
-        return AppEnvironment(config: .mock, auth: MockAuthService(), api: MockAPIClient(), drafts: drafts,
+        let auth = scenario == .uiTest ? MockAuthService(initial: .signedIn(userId: MockAuthService.userId)) : MockAuthService()
+        return AppEnvironment(config: .mock, auth: auth, api: MockAPIClient(), drafts: drafts,
                               localData: localData,
                               engine: TaskEngine(repository: drafts,
                                                  executors: executors(calendar, reminders, permissions, localData,
@@ -105,9 +108,18 @@ struct AppEnvironment: Sendable {
 }
 
 /// Mock scenarios for previews and tests (ARCHITECTURE §13).
-/// Cases `offline`, `quotaExceeded`, `permissionDenied`, `threeMinh`, `uiTest` are added with the mocks that need them.
-enum MockScenario: Sendable, Hashable {
+/// Cases `offline`, `quotaExceeded`, `permissionDenied`, `threeMinh` are added with the mocks that need them.
+enum MockScenario: String, Sendable, Hashable {
     case `default`
+    /// XCUITest (1C.18): signed in, every permission granted, contact "Nguyễn Văn Minh" with one mobile number,
+    /// `/v1/parse` answers `ParsedDraft.mockSMS`. Selected by the launch argument `-uiTestScenario uiTest`.
+    case uiTest
+
+    /// `-uiTestScenario <name>` (ARCHITECTURE §13). Launch arguments cannot be set by a user on a device, so
+    /// this never changes the wiring of a normal launch (D-208).
+    static func fromLaunchArguments(_ defaults: UserDefaults = .standard) -> MockScenario? {
+        defaults.string(forKey: "uiTestScenario").flatMap(MockScenario.init(rawValue:))
+    }
 }
 
 extension EnvironmentValues {

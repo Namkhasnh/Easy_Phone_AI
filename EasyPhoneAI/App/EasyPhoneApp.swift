@@ -11,13 +11,15 @@ import SwiftUI
     private let modelContainer: ModelContainer
 
     init() {
+        // XCUITest (ARCHITECTURE §13): `-uiTestScenario <name>` → mocks + in-memory store, never real device data.
+        let scenario = MockScenario.fromLaunchArguments()
         do {
-            modelContainer = try ModelContainerFactory.make()
+            modelContainer = try ModelContainerFactory.make(inMemory: scenario != nil)
         } catch {
             // TODO(spec): store open failure (corrupt / migration) has no screen; drafts must never be lost (D-104).
             fatalError("SwiftData container failed: \(error)")
         }
-        let env = AppEnvironment.live(container: modelContainer)
+        let env = scenario.map { AppEnvironment.mock($0) } ?? AppEnvironment.live(container: modelContainer)
         self.env = env
         _handoff = State(initialValue: HandoffPromptCoordinator(repository: env.drafts, engine: env.engine))
         launchVerifier = LaunchVerifier(repository: env.drafts, engine: env.engine)

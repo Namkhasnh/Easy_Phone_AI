@@ -18,6 +18,13 @@ final class MockContactsService: ContactsService {
         state = Mutex(State(contacts: contacts, phones: phones, nicknames: nicknames, access: access))
     }
 
+    /// `MockScenario.uiTest`: one "anh Minh" with one mobile number (Dữ liệu mẫu, D-189).
+    static var uiTest: MockContactsService {
+        MockContactsService([ContactRecord(id: "uitest-minh", givenName: "Minh", middleName: "Văn", familyName: "Nguyễn",
+                                           phoneCount: 1)],
+                            phones: ["uitest-minh": [PhoneEntry(label: "di động", number: "+84901234567")]])
+    }
+
     func setAccess(_ access: PermissionStatus) { state.withLock { $0.access = access } }
 
     func match(name: String) async throws -> [ContactMatch] {
