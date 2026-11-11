@@ -23,27 +23,38 @@ struct ContactPickerPresenter: UIViewControllerRepresentable {
 
     func updateUIViewController(_ host: UIViewController, context: Context) {
         context.coordinator.parent = self
-        guard isPresented, host.presentedViewController == nil else { return }
+        guard isPresented, !context.coordinator.isPresenting else { return }
+        context.coordinator.isPresenting = true
         let picker = CNContactPickerViewController()
         picker.delegate = context.coordinator
         picker.displayedPropertyKeys = [CNContactPhoneNumbersKey]
         picker.predicateForEnablingContact = NSPredicate(format: "phoneNumbers.@count > 0")   // a number is needed
-        DispatchQueue.main.async { host.present(picker, animated: true) }
+        DispatchQueue.main.async {
+            // Present from the top-most controller: the hidden host may sit under another presented sheet (BUG-006).
+            var top: UIViewController = host.view.window?.rootViewController ?? host
+            while let presented = top.presentedViewController, !presented.isBeingDismissed { top = presented }
+            guard !(top is CNContactPickerViewController) else { return }
+            top.present(picker, animated: true)
+        }
     }
 
     func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
 
     @MainActor final class Coordinator: NSObject, @preconcurrency CNContactPickerDelegate {
         var parent: ContactPickerPresenter
+        /// One picker at a time (it is no longer presented by `host`, so `presentedViewController` cannot tell).
+        var isPresenting = false
 
         init(parent: ContactPickerPresenter) { self.parent = parent }
 
         func contactPicker(_ picker: CNContactPickerViewController, didSelect contact: CNContact) {
+            isPresenting = false
             parent.isPresented = false
             parent.onPick(Self.picked(contact))
         }
 
         func contactPickerDidCancel(_ picker: CNContactPickerViewController) {
+            isPresenting = false
             parent.isPresented = false
         }
 

@@ -24,6 +24,9 @@ import Observation
     private(set) var pendingComposer: (recipients: [String], body: String)?
     /// The iOS contact picker is shown ("Chọn trong danh bạ", 1C.9c).
     var showsContactPicker = false
+    /// "Chọn trong danh bạ" was tapped on S06: the iOS picker opens only once the S06 sheet is fully gone
+    /// (BUG-006: presenting while the sheet was still closing left the picker frozen / off screen).
+    private(set) var contactPickerAfterSheet = false
     /// Names of contacts handed over by the iOS picker (readable even without Contacts access).
     private var pickedNames: [String: String] = [:]
     /// S06 for the event of a calendar update / delete without `targetRef` (`ambiguity.event`).
@@ -399,7 +402,14 @@ import Observation
     }
 
     func openContacts() {
+        contactPickerAfterSheet = true
         pickingFieldId = nil
+    }
+
+    /// The S06 sheet finished closing (`onDismiss`): now the iOS contact picker can be presented.
+    func pickerSheetDismissed() {
+        guard contactPickerAfterSheet else { return }
+        contactPickerAfterSheet = false
         showsContactPicker = true
     }
 

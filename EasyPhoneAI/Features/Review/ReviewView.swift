@@ -47,7 +47,8 @@ struct ReviewView: View {
             await viewModel.openPendingEventChoice()
         }
         .sheet(isPresented: Binding(get: { viewModel.picking != nil },
-                                    set: { if !$0 { viewModel.pickingFieldId = nil } })) {
+                                    set: { if !$0 { viewModel.pickingFieldId = nil } }),
+               onDismiss: { viewModel.pickerSheetDismissed() }) {
             if let picking = viewModel.picking {
                 PickerSheet(ambiguity: picking.ambiguity,
                             onOpenContacts: viewModel.canOpenContacts ? { viewModel.openContacts() } : nil,

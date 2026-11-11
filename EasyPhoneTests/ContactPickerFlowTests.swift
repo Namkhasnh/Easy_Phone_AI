@@ -37,7 +37,12 @@ struct ContactPickerFlowTests {
         vm.pickingFieldId = "contactId"
         #expect(vm.canOpenContacts)
         vm.openContacts()
-        #expect(vm.showsContactPicker && vm.pickingFieldId == nil)
+        #expect(!vm.showsContactPicker && vm.pickingFieldId == nil)      // BUG-006: not while S06 is closing
+        vm.pickerSheetDismissed()
+        #expect(vm.showsContactPicker)
+        vm.showsContactPicker = false
+        vm.pickerSheetDismissed()                                         // a normal S06 close opens nothing
+        #expect(!vm.showsContactPicker)
         vm.pickedFromContacts(Self.lan)
         #expect(vm.step?.field("contactId")?.value == "lan")
         #expect(vm.step?.field("phoneNumber")?.value == "+84903333444")
