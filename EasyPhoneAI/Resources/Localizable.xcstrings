@@ -4057,6 +4057,138 @@
           }
         }
       }
+    },
+    "ambiguity.contact.sms": {
+      "comment": "UI_SCREENS S06",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn muốn nhắn %@ nào?"
+          }
+        }
+      }
+    },
+    "ambiguity.contact.call": {
+      "comment": "UI_SCREENS S06",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn muốn gọi %@ nào?"
+          }
+        }
+      }
+    },
+    "ambiguity.phoneNumber": {
+      "comment": "UI_SCREENS S06",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn muốn dùng số nào của %@?"
+          }
+        }
+      }
+    },
+    "ambiguity.place": {
+      "comment": "UI_SCREENS S06",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn muốn chọn địa điểm nào?"
+          }
+        }
+      }
+    },
+    "ambiguity.event": {
+      "comment": "UI_SCREENS S06",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn muốn chọn lịch hẹn nào?"
+          }
+        }
+      }
+    },
+    "picker.noMatch": {
+      "comment": "UI_SCREENS S06",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mình chưa tìm thấy người này, bạn chọn trong danh bạ nhé"
+          }
+        }
+      }
+    },
+    "picker.openContacts": {
+      "comment": "UI_SCREENS S06",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chọn trong danh bạ"
+          }
+        }
+      }
+    },
+    "picker.phoneLabel": {
+      "comment": "UI_SCREENS S06",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: •••• %2$@"
+          }
+        }
+      }
+    },
+    "picker.saveNickname": {
+      "comment": "UI_SCREENS S06",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lưu “%1$@” là %2$@ để lần sau mình nhận ra?"
+          }
+        }
+      }
+    },
+    "picker.saveNickname.yes": {
+      "comment": "UI_SCREENS S06",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lưu"
+          }
+        }
+      }
+    },
+    "picker.saveNickname.no": {
+      "comment": "UI_SCREENS S06",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không cần"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

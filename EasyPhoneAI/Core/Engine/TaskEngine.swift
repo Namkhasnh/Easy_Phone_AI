@@ -10,6 +10,7 @@ import os
     private let executors: [TaskKind: any StepExecutor]
     private let now: @MainActor () -> Date
     private let serviceIds: Set<String>
+    private let resolver: DeviceResolver?
     private let logger = Logger(subsystem: "vn.namkhanh.easyphone", category: "taskEngine")
 
     /// `nonisolated` so `AppEnvironment.mock()` (also the `@Entry` default) can build it off the main actor.
@@ -17,8 +18,10 @@ import os
         repository: any TaskRepository,
         executors: [TaskKind: any StepExecutor] = [:],   // one per kind, added in 1C / 1D
         serviceIds: Set<String> = [],                   // SupportedServices.json ids (1C.12)
+        resolver: DeviceResolver? = nil,                // contacts / calendar lookups (1C.9)
         now: @escaping @MainActor () -> Date = { .now }
     ) {
+        self.resolver = resolver
         self.repository = repository
         self.executors = executors
         self.serviceIds = serviceIds
@@ -198,6 +201,40 @@ import os
         setFollowUpWording(parsed.followUpQuestion, llmTarget: llmTarget, in: draft)
         save(draft)
         return true
+    }
+
+    /// DATA_MODEL §6.2 "run device resolution" for every step still open: contacts, calendar `targetRef`
+    /// (ARCHITECTURE §5). Call after `applyParsed` / `mergeAnswer`. Saved once.
+    func resolveDevice(in draft: TaskDraft) async {
+        guard let resolver else { return }
+        for step in draft.steps where DraftBuilder.mergeableStates.contains(step.state) {
+            let resolution = await resolver.resolve(step, timeZoneId: draft.timeZoneId)
+            guard !resolution.isEmpty else { continue }
+            apply(resolution, stepId: step.id, in: draft)
+        }
+    }
+
+    /// Writes a device resolution into one step (values + ambiguities + `targetRef`), then re-validates.
+    /// Fields the user set (`source = .user`) are never overwritten.
+    func apply(_ resolution: DeviceResolution, stepId: UUID, in draft: TaskDraft) {
+        guard let index = draft.steps.firstIndex(where: { $0.id == stepId }),
+              DraftBuilder.mergeableStates.contains(draft.steps[index].state) else { return }
+        var step = draft.steps[index]
+        for (id, value) in resolution.values {
+            guard let f = step.fields.firstIndex(where: { $0.id == id }), step.fields[f].source != .user else { continue }
+            step.fields[f].value = value
+            step.fields[f].source = .device(origin: resolution.origin)
+            step.fields[f].confidence = nil
+            step.fields[f].ambiguity = nil
+        }
+        for (id, ambiguity) in resolution.ambiguities {
+            guard let f = step.fields.firstIndex(where: { $0.id == id }) else { continue }
+            step.fields[f].ambiguity = ambiguity
+        }
+        if let ref = resolution.targetRef { step.targetRef = ref }
+        revalidateInPlace(&step)
+        draft.steps[index] = step
+        save(draft)
     }
 
     /// The ONE question S03 asks next (D-281), or nil → open S04.

@@ -487,7 +487,7 @@ import OSLog
                 let parsed = try await self.api.parse(request, idempotencyKey: key)
                 guard !Task.isCancelled, self.mode == .working else { return }   // "Hủy" already left
                 self.workingReturnMode = nil
-                self.handle(parsed, isAnswer: isAnswer, draft: draft, returnMode: returnMode)
+                await self.handle(parsed, isAnswer: isAnswer, draft: draft, returnMode: returnMode)
             } catch {
                 guard !Task.isCancelled, self.mode == .working else { return }
                 self.workingReturnMode = nil
@@ -504,7 +504,7 @@ import OSLog
         return localData.savedPlaces().map(\.label).filter { seen.insert($0).inserted }
     }
 
-    private func handle(_ parsed: ParsedDraft, isAnswer: Bool, draft: TaskDraft, returnMode: Mode) {
+    private func handle(_ parsed: ParsedDraft, isAnswer: Bool, draft: TaskDraft, returnMode: Mode) async {
         let defaults = DraftBuilder.Defaults(mapsApp: settings.preferredMapsApp)
         if isAnswer {
             guard parsed.unsupported == nil else {
@@ -515,17 +515,23 @@ import OSLog
                 return
             }
             engine.mergeAnswer(parsed, into: draft, defaults: defaults)
-            advance(draft)
+            await resolveThenAdvance(draft)
             return
         }
         if let u = parsed.unsupported {
             showUnsupported(.init(reason: u.reason, message: u.message))
         } else if engine.applyParsed(parsed, to: draft, defaults: defaults) {
-            advance(draft)
+            await resolveThenAdvance(draft)
         } else {
             // Every step dropped on device (unknown kind / pair, D-150): nothing to review → "Chưa hỗ trợ" (spec §11).
             showUnsupported(.init(reason: "other", message: nil))
         }
+    }
+
+    /// Contacts / calendar lookups on device (1C.9), then the next question or S04. Mode 3 stays on meanwhile.
+    private func resolveThenAdvance(_ draft: TaskDraft) async {
+        await engine.resolveDevice(in: draft)
+        advance(draft)
     }
 
     /// The next ONE question (D-281) or S04 when nothing S03 can ask is left.

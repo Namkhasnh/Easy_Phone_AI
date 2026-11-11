@@ -39,15 +39,17 @@ struct AppEnvironment: Sendable {
         let calendar = LiveCalendarService()
         let reminders = LiveRemindersService()
         let localData = LiveLocalDataRepository(container: container)
+        let contacts = LiveContactsService { localData.nickname(matching: $0)?.contactId }
         return AppEnvironment(config: config, auth: auth,
                               api: APIClient(config: config, auth: auth, client: .fromMainBundle()),
                               drafts: drafts,
                               localData: localData,
                               engine: TaskEngine(repository: drafts,
-                                                 executors: executors(calendar, reminders, permissions, localData)),
+                                                 executors: executors(calendar, reminders, permissions, localData),
+                                                 resolver: DeviceResolver(contacts: contacts, calendar: calendar,
+                                                                          permissions: permissions)),
                               speech: LiveSpeechService(), tts: LiveTTSService(),
-                              permissions: permissions, calendar: calendar, reminders: reminders,
-                              contacts: LiveContactsService { localData.nickname(matching: $0)?.contactId })
+                              permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts)
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
@@ -56,13 +58,15 @@ struct AppEnvironment: Sendable {
         let calendar = MockCalendarService()
         let reminders = MockRemindersService()
         let localData = MockLocalDataRepository()
+        let contacts = MockContactsService()
         return AppEnvironment(config: .mock, auth: MockAuthService(), api: MockAPIClient(), drafts: drafts,
                               localData: localData,
                               engine: TaskEngine(repository: drafts,
-                                                 executors: executors(calendar, reminders, permissions, localData)),
+                                                 executors: executors(calendar, reminders, permissions, localData),
+                                                 resolver: DeviceResolver(contacts: contacts, calendar: calendar,
+                                                                          permissions: permissions)),
                               speech: MockSpeechService(), tts: MockTTSService(),
-                              permissions: permissions, calendar: calendar, reminders: reminders,
-                              contacts: MockContactsService())
+                              permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts)
     }
 
     /// One executor per kind (ARCHITECTURE §5.1); the others are added by their items (1C.5, 1C.10 – 1C.13, 1D).
