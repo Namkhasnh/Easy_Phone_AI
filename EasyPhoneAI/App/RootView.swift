@@ -93,6 +93,9 @@ struct RootView: View {
         case .calendarToday:
             CalendarTodayView(viewModel: CalendarTodayViewModel(calendar: env.calendar, permissions: env.permissions,
                                                                 repository: env.drafts, engine: env.engine))
+        case .reminders:
+            RemindersView(viewModel: RemindersViewModel(reminders: env.reminders, permissions: env.permissions,
+                                                        repository: env.drafts, engine: env.engine))
         case .history:
             HistoryView(viewModel: HistoryViewModel(repository: env.drafts))
         case .settings:

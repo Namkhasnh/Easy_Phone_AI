@@ -3937,6 +3937,114 @@
           }
         }
       }
+    },
+    "reminders.title": {
+      "comment": "UI_SCREENS S12",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lời nhắc"
+          }
+        }
+      }
+    },
+    "reminders.overdue": {
+      "comment": "UI_SCREENS S12",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quá hạn"
+          }
+        }
+      }
+    },
+    "reminders.upcoming": {
+      "comment": "UI_SCREENS S12",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sắp tới"
+          }
+        }
+      }
+    },
+    "reminders.empty": {
+      "comment": "UI_SCREENS S12",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn chưa có lời nhắc nào."
+          }
+        }
+      }
+    },
+    "reminders.add": {
+      "comment": "UI_SCREENS S12",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thêm lời nhắc"
+          }
+        }
+      }
+    },
+    "reminders.complete.a11y": {
+      "comment": "UI_SCREENS S12",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đánh dấu “%@” là đã xong"
+          }
+        }
+      }
+    },
+    "reminders.completed.toast": {
+      "comment": "UI_SCREENS S12",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã đánh dấu xong"
+          }
+        }
+      }
+    },
+    "reminders.snooze": {
+      "comment": "UI_SCREENS S12",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nhắc lại sau"
+          }
+        }
+      }
+    },
+    "reminders.snooze.title": {
+      "comment": "UI_SCREENS S12",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nhắc lại lúc nào?"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

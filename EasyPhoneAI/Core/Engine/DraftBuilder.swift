@@ -41,6 +41,26 @@ enum DraftBuilder {
         return TaskStep(order: 0, kind: .calendarEvent, operation: operation, fields: fields, targetRef: event.id)
     }
 
+    /// A reminder step on an existing EventKit reminder (S12: complete / snooze / update / delete). Fields of the
+    /// operation filled from the reminder (`source = .device("reminders")`) plus `values` (app-built, e.g.
+    /// `completed`, or the picked `snoozeOption`); `targetRef` = its identifier (🔒, D-056). Pure; `state = draft`.
+    static func step(from reminder: ReminderSummary, operation: TaskOperation, values extra: [String: String] = [:],
+                     timeZoneId: String, catalog: FieldCatalog = .mvp) -> TaskStep {
+        let tz = TimeZone(identifier: timeZoneId) ?? .current
+        let f = ISO8601DateFormatter()
+        f.timeZone = tz
+        f.formatOptions = [.withInternetDateTime]
+        var values: [String: String] = ["title": reminder.title]
+        values["dueDate"] = reminder.dueDate.map(f.string(from:))
+        values["notes"] = reminder.notes
+        values.merge(extra) { _, new in new }
+        let fields = catalog.fields(.reminder, operation).map { spec in
+            Field(id: spec.id, type: spec.type, value: values[spec.id],
+                  source: extra[spec.id] != nil ? .user : .device(origin: "reminders"), deviceOnly: spec.deviceOnly)
+        }
+        return TaskStep(order: 0, kind: .reminder, operation: operation, fields: fields, targetRef: reminder.id)
+    }
+
     // MARK: - Build (first answer)
 
     /// New steps for `parsed`. `unsupported` → no steps (spec §11). A step whose `kind` / `operation` is unknown or not

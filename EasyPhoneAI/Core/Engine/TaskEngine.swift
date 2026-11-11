@@ -40,6 +40,22 @@ import os
         return draft
     }
 
+    /// New draft with one step on an existing reminder (S12), saved and validated. Only `complete` may be confirmed
+    /// right away by the caller (one tap, D-107); every other operation goes to S04 first (spec §6.5 AC3).
+    func startDraft(from reminder: ReminderSummary, operation: TaskOperation, values: [String: String] = [:],
+                    timeZoneId: String = TimeZone.current.identifier) -> TaskDraft? {
+        guard !reminder.isRecurring, TaskKind.reminder.allowedOperations.contains(operation), operation != .create else {
+            return nil
+        }
+        // TODO(spec): S12 drafts have no spoken / typed input; `originalInput` stays empty, `inputMode = .text`.
+        let draft = TaskDraft(inputMode: .text, originalInput: "", timeZoneId: timeZoneId,
+                              steps: [DraftBuilder.step(from: reminder, operation: operation, values: values,
+                                                        timeZoneId: timeZoneId)])
+        repository.save(draft)
+        revalidate(stepId: draft.steps[0].id, in: draft)
+        return draft
+    }
+
     // MARK: - Confirm & execute (ARCHITECTURE §5.1)
 
     /// "Xác nhận" (D-100). Step 0 (permission explainer, D-185) is done by the ViewModel before calling this.
