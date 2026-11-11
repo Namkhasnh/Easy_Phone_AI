@@ -4189,6 +4189,42 @@
           }
         }
       }
+    },
+    "review.row.time": {
+      "comment": "UI_SCREENS S04 compact layout (D-292)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thời gian"
+          }
+        }
+      }
+    },
+    "review.moreDetails": {
+      "comment": "UI_SCREENS S04 compact layout (D-292)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thêm chi tiết"
+          }
+        }
+      }
+    },
+    "review.lessDetails": {
+      "comment": "UI_SCREENS S04 compact layout (D-292)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ẩn bớt"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

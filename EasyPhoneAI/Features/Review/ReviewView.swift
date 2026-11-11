@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// S04 Review (UI_SCREENS S04). Focus order: title → badge → banner → fields → buttons.
+/// S04 Review (UI_SCREENS S04, compact layout D-292). Focus order: summary → banner → choices → fields → buttons.
 struct ReviewView: View {
     @State var viewModel: ReviewViewModel
     @Environment(\.dismiss) private var dismiss
@@ -22,7 +22,18 @@ struct ReviewView: View {
                 resultCard(card)
             }
         }
+        .navigationTitle(Text(LocalizedStringKey(viewModel.titleKey ?? "")))
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if viewModel.showsActionBar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    // D-292: "Hủy" moved from the bottom bar (draft kept, D-104).
+                    Button("common.cancel") { viewModel.cancel() }
+                        .font(Tokens.Fonts.label)
+                        .tint(Tokens.Colors.primary)
+                }
+            }
+        }
         .onAppear { titleFocused = true }
         .sheet(isPresented: Binding(get: { viewModel.eventChoice != nil },
                                     set: { if !$0 { viewModel.eventChoice = nil } })) {
@@ -71,19 +82,13 @@ struct ReviewView: View {
         .accessibilityIdentifier("screen.S04")
     }
 
+    /// D-292 compact layout: summary card → choice cards → one-line rows → "Thêm chi tiết" → original input.
     private func content(_ step: TaskStep) -> some View {
-        VStack(alignment: .leading, spacing: Tokens.Space.l) {
-            if let key = viewModel.titleKey {
-                Text(LocalizedStringKey(key))
-                    .font(Tokens.Fonts.title)
-                    .foregroundStyle(Tokens.Colors.textPrimary)
-                    .accessibilityAddTraits(.isHeader)
-                    .accessibilityFocused($titleFocused)
-            }
+        VStack(alignment: .leading, spacing: Tokens.Space.m) {
             if let position = viewModel.stepPosition {
                 StepIndicator(current: position.current, total: position.total)
             }
-            StateBadge(step: step)
+            summaryCard(step)
             // TODO(spec): calendar conflict card (`review.conflict.*`) needs CalendarService (1C.2).
             if let banner = viewModel.banner {
                 Banner(message: banner, style: .warning)
@@ -101,12 +106,6 @@ struct ReviewView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Tokens.Colors.warningBg, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
             }
-            ForEach(viewModel.visibleFields) { field in
-                FieldRow(field: field, kind: step.kind, displayValue: viewModel.displayValue(field),
-                         onEdit: { Task { await viewModel.tapRow(field) } },
-                         onChoose: { Task { await viewModel.choose(field) } })
-                // TODO(spec): "Xem ảnh gốc" (S10, 1D.8) opens its screen later.
-            }
             if let offer = viewModel.nicknameOffer {
                 // UI_SCREENS S06 inline offer `picker.saveNickname` (spec §6.6 AC3); stored on the phone only.
                 VStack(alignment: .leading, spacing: Tokens.Space.m) {
@@ -121,6 +120,16 @@ struct ReviewView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
             }
+            ForEach(viewModel.primaryFields) { field in row(field, step) }
+            let details = viewModel.detailFields
+            if !details.isEmpty {
+                TextLinkButton(viewModel.showsDetails ? "review.lessDetails" : "review.moreDetails") {
+                    viewModel.showsDetails.toggle()
+                }
+                if viewModel.showsDetails {
+                    ForEach(details) { field in row(field, step) }
+                }
+            }
             if let original = viewModel.originalInput {
                 Text(verbatim: original)
                     .font(Tokens.Fonts.body)
@@ -132,7 +141,39 @@ struct ReviewView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// Xác nhận (or destructive "Xác nhận xóa") · Sửa · Hủy (D-182, D-108).
+    private func row(_ field: Field, _ step: TaskStep) -> some View {
+        FieldRow(field: field, kind: step.kind, displayValue: viewModel.displayValue(field), compact: true,
+                 labelKey: viewModel.labelKey(field),
+                 onEdit: { Task { await viewModel.tapRow(field) } },
+                 onChoose: { Task { await viewModel.choose(field) } })
+        // TODO(spec): "Xem ảnh gốc" (S10, 1D.8) opens its screen later.
+    }
+
+    /// D-292 summary card: state badge, the main value in bold, one time line. Gets VoiceOver focus (UI_SCREENS §9).
+    private func summaryCard(_ step: TaskStep) -> some View {
+        VStack(alignment: .leading, spacing: Tokens.Space.s) {
+            StateBadge(step: step)
+            if let title = viewModel.summaryTitle {
+                Text(verbatim: title)
+                    .font(Tokens.Fonts.title)
+                    .foregroundStyle(Tokens.Colors.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if let time = viewModel.summaryTime {
+                Label { Text(verbatim: time) } icon: { Image(systemName: "clock").accessibilityHidden(true) }
+                    .font(Tokens.Fonts.body)
+                    .foregroundStyle(Tokens.Colors.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(Tokens.Space.l)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+        .accessibilityElement(children: .combine)
+        .accessibilityFocused($titleFocused)
+    }
+
+    /// Xác nhận (or destructive "Xác nhận xóa") · Sửa (D-182, D-108); "Hủy" is in the nav bar (D-292).
     private var actionBar: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.m) {
             PrimaryButton(viewModel.isDelete ? "review.delete.confirm" : "common.confirm",
@@ -148,7 +189,6 @@ struct ReviewView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             SecondaryButton("common.edit") { viewModel.startEdit() }
-            SecondaryButton("common.cancel") { viewModel.cancel() }
         }
         .padding(Tokens.Space.screenPadding)
         .background(Tokens.Colors.bg)

@@ -81,8 +81,69 @@ import Observation
         }
     }
 
+    // MARK: - Compact layout (D-292)
+
+    /// "Thêm chi tiết" is open.
+    var showsDetails = false
+
+    /// Rows shown at once (D-292): required, filled (a `false` switch does not count), needs review or ambiguous, and
+    /// the contact row. Calendar `endDate` is folded into the "Thời gian" row of `startDate`.
+    var primaryFields: [Field] { visibleFields.filter(isPrimary) }
+
+    /// Everything else, under "Thêm chi tiết".
+    var detailFields: [Field] { visibleFields.filter { !isPrimary($0) } }
+
+    private func isPrimary(_ field: Field) -> Bool {
+        if isCalendarTime, field.id == "endDate" { return false }
+        if field.required || field.needsReview || field.ambiguity != nil || field.type == .contactRef { return true }
+        guard let value = field.value, !value.isEmpty else { return false }
+        return !(field.type == .bool && value == "false")
+    }
+
+    private var isCalendarTime: Bool { step?.kind == .calendarEvent && step?.field("startDate") != nil }
+
+    /// `review.row.time` for the merged calendar start–end row, else `field.<kind>.<id>`.
+    func labelKey(_ field: Field) -> String? {
+        isCalendarTime && field.id == "startDate" ? "review.row.time" : nil
+    }
+
+    /// Summary card (D-292): the main value of the step, bold.
+    var summaryTitle: String? {
+        guard let step else { return nil }
+        for id in ["title", "recipientName", "name", "query", "label"] {
+            if let field = step.field(id), let text = displayValue(field), !text.isEmpty { return text }
+        }
+        return nil
+    }
+
+    /// Summary card time line: calendar start–end, reminder due date.
+    var summaryTime: String? {
+        guard let step else { return nil }
+        switch step.kind {
+        case .calendarEvent: return step.field("startDate").flatMap(displayValue)
+        case .reminder: return step.field("dueDate").flatMap(displayValue)
+        default: return nil
+        }
+    }
+
+    /// "Thứ Năm, 12/11 lúc 09:30–10:30" (same day) or "… lúc 09:30 – Thứ Sáu, 13/11 lúc 10:30".
+    private func timeRange(_ step: TaskStep) -> String? {
+        let tz = TimeZone(identifier: draft?.timeZoneId ?? "") ?? .current
+        guard let start = step.field("startDate")?.value.flatMap(Validator.parseDateTime) else { return nil }
+        let allDay = step.field("allDay")?.value == "true"
+        if allDay { return "\(FieldFormatter.day(start, timeZone: tz)) · \(UserMessage(key: "calendar.allDay").text)" }
+        let from = FieldFormatter.dateTime(start, timeZone: tz)
+        guard let end = step.field("endDate")?.value.flatMap(Validator.parseDateTime), end > start else { return from }
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = tz
+        return cal.isDate(start, inSameDayAs: end)
+            ? "\(from)–\(FieldFormatter.time(end, timeZone: tz))"
+            : "\(from) – \(FieldFormatter.dateTime(end, timeZone: tz))"
+    }
+
     /// 🔒 rows (UI_SCREENS S04): `contactId` → the contact's name; a number taken from Contacts → "•••• 567" (§7.3).
     func displayValue(_ field: Field) -> String? {
+        if isCalendarTime, field.id == "startDate", let step { return timeRange(step) }
         if field.type == .contactRef { return field.value == nil ? nil : contactName }
         if field.id == "phoneNumber", let value = field.value, field.source == .device(origin: "contacts") {
             return PhoneNumber.masked(value)
