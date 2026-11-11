@@ -74,6 +74,8 @@ import OSLog
     private(set) var prompt: FollowUpPrompt?
     /// Set when nothing is left to ask: the View replaces S03 with S04 of this draft.
     private(set) var reviewDraftId: UUID?
+    /// D-294: "xem lịch ngày mai" → the View opens S11 for this day (`YYYY-MM-DD`). Nothing is executed.
+    private(set) var calendarDay: String?
     /// S18 before the mic starts: microphone, then speech (D-185). The recording waits for the answer.
     var pendingPermission: PendingPermission?
     private var pendingTarget: Target?
@@ -535,7 +537,9 @@ import OSLog
             await resolveThenAdvance(draft)
             return
         }
-        if let u = parsed.unsupported {
+        if let u = parsed.unsupported, u.reason == "viewCalendar" {
+            calendarDay = u.date ?? Self.dayString(now(), timeZoneId: draft.timeZoneId)
+        } else if let u = parsed.unsupported {
             showUnsupported(.init(reason: u.reason, message: u.message))
         } else if engine.applyParsed(parsed, to: draft, defaults: defaults) {
             await resolveThenAdvance(draft)
@@ -543,6 +547,14 @@ import OSLog
             // Every step dropped on device (unknown kind / pair, D-150): nothing to review → "Chưa hỗ trợ" (spec §11).
             showUnsupported(.init(reason: "other", message: nil))
         }
+    }
+
+    static func dayString(_ date: Date, timeZoneId: String) -> String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(identifier: timeZoneId) ?? .current
+        f.dateFormat = "yyyy-MM-dd"
+        return f.string(from: date)
     }
 
     /// Contacts / calendar lookups on device (1C.9), then the next question or S04. Mode 3 stays on meanwhile.

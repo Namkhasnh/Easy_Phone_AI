@@ -197,19 +197,31 @@ def _clean_step(step: dict, kinds: dict[str, dict], enabled: list[str], req: Par
             "dateCandidates": _clean_candidates(step, date_ids, tz, today)}
 
 
-def _unsupported(reason: str, message: str | None = None) -> dict:
+def _unsupported(reason: str, message: str | None = None, day: str | None = None) -> dict:
     return {"steps": [], "followUpQuestion": None,
-            "unsupported": {"reason": reason, "message": message or FALLBACK_UNSUPPORTED_MESSAGE}}
+            "unsupported": {"reason": reason, "message": message or FALLBACK_UNSUPPORTED_MESSAGE, "date": day}}
+
+
+def _view_day(value: object, today: date) -> str:
+    """D-294: a valid YYYY-MM-DD from the LLM, else today (the user asked to see a day; never fail for it)."""
+    if isinstance(value, str):
+        try:
+            return date.fromisoformat(value.strip()).isoformat()
+        except ValueError:
+            pass
+    return today.isoformat()
 
 
 def post_process(raw: dict, req: ParseRequest, settings: Settings) -> dict:
     """`ParsedDraftLLM` → the same shape, cleaned. Never raises for bad values; it nulls or drops them."""
-    if raw.get("unsupported"):
-        u = raw["unsupported"]
-        return _unsupported(u["reason"], u.get("message"))  # §9.5: unsupported ⇒ steps []
-    kinds = {k["kind"]: k for k in load_catalog()["kinds"]}
     tz = ZoneInfo(req.timezone)
     today = req.now.astimezone(tz).date()
+    if raw.get("unsupported"):
+        u = raw["unsupported"]
+        if u["reason"] == "viewCalendar":  # D-294: open S11 for that day, nothing to execute
+            return _unsupported("viewCalendar", u.get("message"), _view_day(u.get("date"), today))
+        return _unsupported(u["reason"], u.get("message"))  # §9.5: unsupported ⇒ steps []
+    kinds = {k["kind"]: k for k in load_catalog()["kinds"]}
     llm_steps = raw.get("steps", [])
     steps = [s for s in (_clean_step(s, kinds, settings.ENABLED_KINDS, req, tz, today) for s in llm_steps) if s]
     if not llm_steps:

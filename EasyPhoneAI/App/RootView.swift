@@ -123,6 +123,10 @@ struct RootView: View {
         case .calendarToday:
             CalendarTodayView(viewModel: CalendarTodayViewModel(calendar: env.calendar, permissions: env.permissions,
                                                                 repository: env.drafts, engine: env.engine))
+        case .calendarDay(let day):
+            CalendarTodayView(viewModel: CalendarTodayViewModel(calendar: env.calendar, permissions: env.permissions,
+                                                                repository: env.drafts, engine: env.engine,
+                                                                day: day))
         case .reminders:
             RemindersView(viewModel: RemindersViewModel(reminders: env.reminders, permissions: env.permissions,
                                                         repository: env.drafts, engine: env.engine,

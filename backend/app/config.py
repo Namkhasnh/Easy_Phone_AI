@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     MODEL_VISION: str = "gpt-6-luna"  # D-052
     MODEL_TRANSCRIBE: str = "gpt-4o-mini-transcribe"  # D-052
     MODEL_SUMMARIZE: str = "gpt-6-luna"  # Phase 2 only (D-052)
-    PROMPT_VERSION_PARSE: int = 1
+    PROMPT_VERSION_PARSE: int = 2  # v2: viewCalendar (D-294)
     PROMPT_VERSION_EXTRACT: int = 1
     PROMPT_VERSION_REPAIR: int = 1
     LLM_TEMPERATURE: float | None = None  # AI_PROMPTS §0.2: sent only when set (some models reject it)

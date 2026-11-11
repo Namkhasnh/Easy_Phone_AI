@@ -583,7 +583,8 @@
           "additionalProperties": false,
           "required": [
             "reason",
-            "message"
+            "message",
+            "date"
           ],
           "properties": {
             "reason": {
@@ -597,11 +598,18 @@
                 "multiPageOcr",
                 "bulkAction",
                 "phaseNotEnabled",
+                "viewCalendar",
                 "other"
               ]
             },
             "message": {
               "type": "string"
+            },
+            "date": {
+              "type": [
+                "string",
+                "null"
+              ]
             }
           }
         },

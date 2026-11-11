@@ -23,7 +23,8 @@
     "followUpQuestion": null,
     "unsupported": {
       "reason": "bulkAction",
-      "message": "Chưa hỗ trợ xóa nhiều lịch cùng lúc."
+      "message": "Chưa hỗ trợ xóa nhiều lịch cùng lúc.",
+      "date": null
     }
   },
   "liveMatch": {

@@ -3926,6 +3926,78 @@
         }
       }
     },
+    "calendar.empty.day": {
+      "comment": "UI_SCREENS S11 (D-294)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ngày này bạn không có lịch hẹn nào."
+          }
+        }
+      }
+    },
+    "calendar.nextDay": {
+      "comment": "UI_SCREENS S11 (D-294)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hôm sau"
+          }
+        }
+      }
+    },
+    "calendar.previousDay": {
+      "comment": "UI_SCREENS S11 (D-294)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hôm trước"
+          }
+        }
+      }
+    },
+    "calendar.title.other": {
+      "comment": "UI_SCREENS S11 (D-294)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lịch hẹn"
+          }
+        }
+      }
+    },
+    "calendar.title.tomorrow": {
+      "comment": "UI_SCREENS S11 (D-294)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lịch ngày mai"
+          }
+        }
+      }
+    },
+    "calendar.title.yesterday": {
+      "comment": "UI_SCREENS S11 (D-294)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lịch hôm qua"
+          }
+        }
+      }
+    },
     "calendar.title": {
       "comment": "UI_SCREENS S11",
       "extractionState": "manual",
