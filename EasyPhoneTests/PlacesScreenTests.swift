@@ -27,7 +27,7 @@ struct PlacesScreenTests {
         let draft = try #require(vm.reviewDraftId.flatMap(repo.draft))
         let step = draft.steps[0]
         #expect(step.operation == .open && step.state == .awaitingApproval)
-        #expect(step.field("mapsApp")?.value == "appleMaps")                  // S15 default
+        #expect(step.field("mapsApp")?.value == "googleMaps")                 // S15 default (D-298)
         #expect(places.opened.isEmpty)                                         // nothing before "Xác nhận" (D-100)
         _ = await engine.confirm(stepId: step.id, in: draft)
         #expect(places.opened.first?.place == Self.benThanh)

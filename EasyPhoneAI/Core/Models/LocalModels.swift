@@ -49,7 +49,7 @@ import SwiftData
     var speechRate: Double = 0.45     // AVSpeechUtterance rate
     var simpleMode: Bool = false      // "Chế độ đơn giản"
     var snoozeMorningHour: Int = 8
-    var preferredMapsApp: String = "appleMaps"
+    var preferredMapsApp: String = "googleMaps"   // D-298 (owner): Google Maps by default; not installed → Apple Maps
     var lastSeenEntitlement: CachedEntitlement?  // display only (D-085)
     var petEnabled: Bool = true       // "Hiện bạn Khoai" (D-289)
     var autoSend: Bool = true         // "Tự gửi khi nói xong" (D-296)

@@ -11,7 +11,7 @@ enum DraftBuilder {
     /// Defaults the app fills when the LLM gave no value (DATA_MODEL §4 "Notes").
     struct Defaults: Sendable, Hashable {
         /// `place.mapsApp` — from `AppSettings.preferredMapsApp` (DATA_MODEL §5).
-        var mapsApp: String = "appleMaps"
+        var mapsApp: String = "googleMaps"    // D-298
         /// `ambiguity.date` = "Bạn muốn chọn ngày nào?" (UI_SCREENS §10). Injected so the builder stays pure.
         var dateQuestion: String = String(localized: "ambiguity.date")
     }
