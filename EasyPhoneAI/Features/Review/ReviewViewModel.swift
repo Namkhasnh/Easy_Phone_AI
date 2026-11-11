@@ -110,11 +110,12 @@ import Observation
     }
 
     var disabledReasonKey: String? {
+        if needsEventChoice { return "review.disabled.ambiguity" }      // which event: a choice, not an empty field
         switch blocker {
-        case .missing: "review.disabled.missing"
-        case .ambiguity: "review.disabled.ambiguity"
-        case .previousStep: "review.disabled.previousStep"
-        case .notConfirmable, nil: nil
+        case .missing: return "review.disabled.missing"
+        case .ambiguity: return "review.disabled.ambiguity"
+        case .previousStep: return "review.disabled.previousStep"
+        case .notConfirmable, nil: return nil
         }
     }
 
@@ -390,6 +391,15 @@ import Observation
                                                        && $0.ambiguity != nil && !($0.ambiguity?.candidates.isEmpty ?? true) })
         else { return }
         pickingFieldId = field.id
+    }
+
+    /// Same for a calendar update / delete that still needs its event: with read access the list opens by itself
+    /// (owner iPhone test 2026-11-11: the card was below the fields and not seen). No access → the card's "Chọn" asks.
+    func openPendingEventChoice() async {
+        guard needsEventChoice, eventChoice == nil, pendingPermission == nil, permissions.status(.calendar) == .granted
+        else { return }
+        await loadEventChoice()
+        if eventChoice?.candidates.isEmpty == true { eventChoice = nil }   // nothing to pick: keep the card
     }
 
     private func resolveContacts() async {

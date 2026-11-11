@@ -33,6 +33,7 @@ struct ReviewView: View {
         .task {
             await viewModel.loadContactName()
             viewModel.openPendingPicker()
+            await viewModel.openPendingEventChoice()
         }
         .sheet(isPresented: Binding(get: { viewModel.picking != nil },
                                     set: { if !$0 { viewModel.pickingFieldId = nil } })) {
@@ -87,12 +88,6 @@ struct ReviewView: View {
             if let banner = viewModel.banner {
                 Banner(message: banner, style: .warning)
             }
-            ForEach(viewModel.visibleFields) { field in
-                FieldRow(field: field, kind: step.kind, displayValue: viewModel.displayValue(field),
-                         onEdit: { Task { await viewModel.tapRow(field) } },
-                         onChoose: { Task { await viewModel.choose(field) } })
-                // TODO(spec): "Xem ảnh gốc" (S10, 1D.8) opens its screen later.
-            }
             if viewModel.needsEventChoice {
                 // UI_SCREENS S06 `ambiguity.event`: which event to change / delete (D-106, never auto-picked).
                 VStack(alignment: .leading, spacing: Tokens.Space.m) {
@@ -105,6 +100,12 @@ struct ReviewView: View {
                 .padding(Tokens.Space.l)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Tokens.Colors.warningBg, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+            }
+            ForEach(viewModel.visibleFields) { field in
+                FieldRow(field: field, kind: step.kind, displayValue: viewModel.displayValue(field),
+                         onEdit: { Task { await viewModel.tapRow(field) } },
+                         onChoose: { Task { await viewModel.choose(field) } })
+                // TODO(spec): "Xem ảnh gốc" (S10, 1D.8) opens its screen later.
             }
             if let offer = viewModel.nicknameOffer {
                 // UI_SCREENS S06 inline offer `picker.saveNickname` (spec §6.6 AC3); stored on the phone only.

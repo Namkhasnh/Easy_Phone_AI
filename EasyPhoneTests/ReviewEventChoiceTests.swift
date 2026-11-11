@@ -55,6 +55,22 @@ struct ReviewEventChoiceTests {
         #expect(calendar.deleted == ["ev2"])
     }
 
+    /// Owner iPhone test 2026-11-11: two "đi đá bóng" tomorrow, the card was not seen → the list opens by itself.
+    @Test func eventListOpensByItselfAndReasonSaysChoose() async throws {
+        let vm = await deleteDraft()
+        #expect(vm.disabledReasonKey == "review.disabled.ambiguity")
+        await vm.openPendingEventChoice()
+        #expect(vm.eventChoice?.candidates.count == 2)
+        let none = MockCalendarService()
+        let e = TaskEngine(repository: repo, now: { Self.now })
+        let d = TaskDraft(inputMode: .text, originalInput: "x", steps: [TaskStep(order: 0, kind: .calendarEvent, operation: .delete,
+            fields: FieldCatalog.mvp.fields(.calendarEvent, .delete).map { Field(id: $0.id, type: $0.type, value: $0.id == "title" ? "họp" : nil) })])
+        repo.save(d)
+        let empty = ReviewViewModel(draftId: d.id, repository: repo, engine: e, permissions: permissions, calendar: none)
+        await empty.openPendingEventChoice()
+        #expect(empty.eventChoice == nil && empty.needsEventChoice)            // nothing found → the card stays
+    }
+
     @Test func calendarPermissionFirst() async throws {
         permissions.set(.calendar, .notDetermined)
         let vm = await deleteDraft()
