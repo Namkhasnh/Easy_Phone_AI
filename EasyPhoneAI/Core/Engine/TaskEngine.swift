@@ -254,6 +254,13 @@ import os
         apply(await resolver.numberResolution(contactId: candidateId, name: name), stepId: stepId, in: draft)
     }
 
+    /// S06 event pick for calendar update / delete (D-106, D-251): `targetRef` + the event's fields.
+    func pickTarget(_ event: EventSummary, stepId: UUID, in draft: TaskDraft) {
+        guard let step = draft.steps.first(where: { $0.id == stepId }),
+              step.kind == .calendarEvent, step.operation == .update || step.operation == .delete else { return }
+        apply(DeviceResolver.resolution(for: event, step: step, timeZoneId: draft.timeZoneId), stepId: stepId, in: draft)
+    }
+
     /// The ONE question S03 asks next (D-281), or nil → open S04.
     func nextFollowUp(in draft: TaskDraft) -> FollowUpPrompt? {
         FollowUpPlanner.next(in: draft, now: now(), serviceIds: serviceIds)

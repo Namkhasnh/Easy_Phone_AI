@@ -130,9 +130,14 @@ struct DeviceResolution: Sendable, Hashable {
         }
         // D-106: exactly one match only; several / none → S04 "Chọn lịch hẹn" → S06 (1C.9b).
         guard found.count == 1 else { return r }
-        let event = found[0]
+        return Self.resolution(for: found[0], step: step, timeZoneId: timeZoneId)
+    }
+
+    /// `targetRef` = the event; S04 shows the real event, not the AI's hints, so the user confirms what will change:
+    /// delete → every field from the event, update → only fields still empty (the AI values are the new ones).
+    static func resolution(for event: EventSummary, step: TaskStep, timeZoneId: String) -> DeviceResolution {
+        var r = DeviceResolution(origin: "calendar")
         r.targetRef = event.id
-        // S04 shows the real event, not the AI's hints (title, times), so the user confirms what will change.
         for field in DraftBuilder.step(from: event, operation: step.operation, timeZoneId: timeZoneId).fields
         where field.value != nil && step.field(field.id)?.source != .user {
             if step.operation == .delete || step.field(field.id)?.value == nil { r.values[field.id] = field.value }

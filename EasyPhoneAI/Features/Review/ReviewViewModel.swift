@@ -18,18 +18,32 @@ import Observation
     var pickingFieldId: String?
     /// Name of the 🔒 `contactId` for the S04 contact row (read on device, never stored in the draft).
     private(set) var contactName: String?
+    /// S06 for the event of a calendar update / delete without `targetRef` (`ambiguity.event`).
+    var eventChoice: Ambiguity?
+    private var eventCandidates: [EventSummary] = []
+    /// `picker.saveNickname` offer after a contact was picked for a word that is not in its name (spec §6.6 AC3).
+    struct NicknameOffer: Equatable { let nickname: String; let contactId: String; let contactName: String }
+    private(set) var nicknameOffer: NicknameOffer?
+    /// What the S18 explainer was shown for (the same capability can be needed to confirm or to read).
+    private enum PermissionPurpose { case confirm, readContacts, readEvents }
+    private var permissionPurpose: PermissionPurpose = .confirm
 
     private let engine: TaskEngine
     private let permissions: any PermissionManager
     private let contacts: any ContactsService
+    private let calendar: any CalendarService
+    private let localData: (any LocalDataRepository)?
     private let snoozeMorningHour: Int
     private let catalog: FieldCatalog
     private let now: () -> Date
 
     init(draftId: UUID, repository: any TaskRepository, engine: TaskEngine, permissions: any PermissionManager,
          contacts: any ContactsService = MockContactsService(),
+         calendar: any CalendarService = MockCalendarService(), localData: (any LocalDataRepository)? = nil,
          snoozeMorningHour: Int = 8, catalog: FieldCatalog = .mvp, now: @escaping () -> Date = { .now }) {
         self.contacts = contacts
+        self.calendar = calendar
+        self.localData = localData
         self.snoozeMorningHour = snoozeMorningHour
         self.engine = engine
         self.permissions = permissions
@@ -285,6 +299,7 @@ import Observation
             return
         }
         guard field.type == .contactRef || field.id == "phoneNumber" else { return }
+        permissionPurpose = .readContacts
         switch permissions.status(.contacts) {
         case .notDetermined:
             pendingPermission = PendingPermission(capability: .contacts, variant: .explainer)
@@ -307,9 +322,64 @@ import Observation
     func pick(_ candidate: Candidate, fieldId: String) async {
         guard let draft, let stepId else { return }
         pickingFieldId = nil
+        let spoken = step?.field("recipientName")?.value
         await engine.pick(candidate.id, fieldId: fieldId, stepId: stepId, in: draft)
         await loadContactName()
+        if fieldId == "contactId", let spoken, let name = contactName, localData != nil,
+           !ContactMatcher.contains(ContactRecord(id: candidate.id, givenName: name, familyName: "", phoneCount: 0),
+                                    NameNormalizer.matchKey(spoken)) {
+            // "mẹ" → Nguyễn Thị Lan: the word is not part of the name, so remembering it saves the pick next time.
+            nicknameOffer = NicknameOffer(nickname: spoken, contactId: candidate.id, contactName: name)
+        }
         if let next = step?.field("phoneNumber"), next.ambiguity != nil { pickingFieldId = next.id }   // then the number
+    }
+
+    /// "Lưu": the nickname is stored on the phone only (spec §6.6 AC3, DATA_MODEL §5) for the next match (§7.2).
+    func saveNickname() {
+        guard let offer = nicknameOffer else { return }
+        localData?.saveNickname(offer.nickname, contactId: offer.contactId)
+        nicknameOffer = nil
+    }
+
+    func dismissNicknameOffer() { nicknameOffer = nil }
+
+    // MARK: - Event choice (calendar update / delete without `targetRef`)
+
+    /// The step needs the user to say which event (no single match on the spoken day, or no calendar access then).
+    var needsEventChoice: Bool {
+        guard let step, showsActionBar, step.kind == .calendarEvent, step.targetRef == nil else { return false }
+        return step.operation == .update || step.operation == .delete
+    }
+
+    /// "Chọn" under `ambiguity.event`: needs calendar read access (S18 step 0), then S06 with the matching events.
+    func chooseEvent() async {
+        permissionPurpose = .readEvents
+        switch permissions.status(.calendar) {
+        case .notDetermined: pendingPermission = PendingPermission(capability: .calendar, variant: .explainer)
+        case .granted: await loadEventChoice()
+        default: pendingPermission = PendingPermission(capability: .calendar, variant: .denied)
+        }
+    }
+
+    private func loadEventChoice() async {
+        guard let step else { return }
+        let near = step.field("startDate")?.value.flatMap(Validator.parseDateTime)
+        let tz = TimeZone(identifier: draft?.timeZoneId ?? "") ?? .current
+        // Wider than the resolver's same-day rule: ±30 days around the spoken date, else the next year.
+        // TODO(spec): S06 for events has no window rule; `CalendarService.search` windows are used.
+        eventCandidates = (try? await calendar.search(title: step.field("title")?.value, near: near)) ?? []
+        eventChoice = Ambiguity(kind: .other, question: UserMessage(key: "ambiguity.event").text,
+                                candidates: eventCandidates.map {
+                                    Candidate(id: $0.id, title: $0.title,
+                                              subtitle: $0.isAllDay ? FieldFormatter.day($0.start, timeZone: tz)
+                                                                    : FieldFormatter.dateTime($0.start, timeZone: tz))
+                                })
+    }
+
+    func pickEvent(_ candidate: Candidate) {
+        eventChoice = nil
+        guard let draft, let stepId, let event = eventCandidates.first(where: { $0.id == candidate.id }) else { return }
+        engine.pickTarget(event, stepId: stepId, in: draft)
     }
 
     /// S04 appears with a contact / number still to choose → S06 opens by itself (one tap less for the user).
@@ -353,6 +423,7 @@ import Observation
     /// denied / restricted → S18 denied variant. Otherwise the engine confirms (it re-checks everything).
     func confirm() async {
         guard let step else { return }
+        permissionPurpose = .confirm
         if let capability = Capability.required(for: step.kind) {
             switch permissions.status(capability) {
             case .notDetermined:
@@ -374,7 +445,11 @@ import Observation
         pendingPermission = nil
         let status = await permissions.request(pending.capability)
         if status.isUsable {
-            if pending.capability == .contacts { await resolveContacts() } else { await execute() }
+            switch permissionPurpose {
+            case .readContacts: await resolveContacts()
+            case .readEvents: if status == .granted { await loadEventChoice() }
+            case .confirm: await execute()
+            }
         } else {
             pendingPermission = PendingPermission(capability: pending.capability, variant: .denied)
         }

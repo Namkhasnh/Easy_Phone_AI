@@ -24,6 +24,12 @@ struct ReviewView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { titleFocused = true }
+        .sheet(isPresented: Binding(get: { viewModel.eventChoice != nil },
+                                    set: { if !$0 { viewModel.eventChoice = nil } })) {
+            if let choice = viewModel.eventChoice {
+                PickerSheet(ambiguity: choice) { candidate in viewModel.pickEvent(candidate) }
+            }
+        }
         .task {
             await viewModel.loadContactName()
             viewModel.openPendingPicker()
@@ -86,6 +92,33 @@ struct ReviewView: View {
                          onEdit: { Task { await viewModel.tapRow(field) } },
                          onChoose: { Task { await viewModel.choose(field) } })
                 // TODO(spec): "Xem ảnh gốc" (S10, 1D.8) opens its screen later.
+            }
+            if viewModel.needsEventChoice {
+                // UI_SCREENS S06 `ambiguity.event`: which event to change / delete (D-106, never auto-picked).
+                VStack(alignment: .leading, spacing: Tokens.Space.m) {
+                    Text("ambiguity.event")
+                        .font(Tokens.Fonts.body)
+                        .foregroundStyle(Tokens.Colors.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    SecondaryButton("common.choose") { Task { await viewModel.chooseEvent() } }
+                }
+                .padding(Tokens.Space.l)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Tokens.Colors.warningBg, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+            }
+            if let offer = viewModel.nicknameOffer {
+                // UI_SCREENS S06 inline offer `picker.saveNickname` (spec §6.6 AC3); stored on the phone only.
+                VStack(alignment: .leading, spacing: Tokens.Space.m) {
+                    Text(verbatim: UserMessage(key: "picker.saveNickname", args: [offer.nickname, offer.contactName]).text)
+                        .font(Tokens.Fonts.body)
+                        .foregroundStyle(Tokens.Colors.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    SecondaryButton("picker.saveNickname.yes") { viewModel.saveNickname() }
+                    TextLinkButton("picker.saveNickname.no") { viewModel.dismissNicknameOffer() }
+                }
+                .padding(Tokens.Space.l)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
             }
             if let original = viewModel.originalInput {
                 Text(verbatim: original)
