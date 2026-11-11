@@ -18,6 +18,8 @@ import Observation
     var pickingFieldId: String?
     /// Name of the 🔒 `contactId` for the S04 contact row (read on device, never stored in the draft).
     private(set) var contactName: String?
+    /// S07 after a copy hand-off (Zalo…, D-162).
+    var copyGuide: CopyGuide?
     /// The prefilled system SMS composer (ARCHITECTURE §5.3); the step stays `processing` while it is open.
     private(set) var pendingComposer: (recipients: [String], body: String)?
     /// The iOS contact picker is shown ("Chọn trong danh bạ", 1C.9c).
@@ -39,6 +41,8 @@ import Observation
     private let contacts: any ContactsService
     private let calendar: any CalendarService
     private let localData: (any LocalDataRepository)?
+    private let system: any SystemService
+    private let services: SupportedServices
     private let snoozeMorningHour: Int
     private let catalog: FieldCatalog
     private let now: () -> Date
@@ -46,10 +50,13 @@ import Observation
     init(draftId: UUID, repository: any TaskRepository, engine: TaskEngine, permissions: any PermissionManager,
          contacts: any ContactsService = MockContactsService(),
          calendar: any CalendarService = MockCalendarService(), localData: (any LocalDataRepository)? = nil,
+         system: any SystemService = MockSystemService(), services: SupportedServices = .bundled,
          snoozeMorningHour: Int = 8, catalog: FieldCatalog = .mvp, now: @escaping () -> Date = { .now }) {
         self.contacts = contacts
         self.calendar = calendar
         self.localData = localData
+        self.system = system
+        self.services = services
         self.snoozeMorningHour = snoozeMorningHour
         self.engine = engine
         self.permissions = permissions
@@ -581,6 +588,27 @@ import Observation
         if case .needsUI(.composer(let recipients, let body)) = await engine.confirm(stepId: stepId, in: draft) {
             pendingComposer = (recipients, body)
         }
+        showCopyGuideIfNeeded()
+    }
+
+    /// S07 right after a copy hand-off ("Đã sao chép — dán và gửi trong Zalo"), spec §6.8 AC3.
+    private func showCopyGuideIfNeeded() {
+        guard let step, step.kind == .sms, step.state == .handedOff,
+              let channel = step.field("channel")?.value, channel != "sms",
+              let service = services.service(channel) else { return }
+        copyGuide = CopyGuide(serviceName: service.name, body: step.field("body")?.value ?? "", steps: service.guideSteps)
+    }
+
+    /// S07 "Đã xong": the user says it was sent (`handedOff` → `userMarkedDone`, D-242). Never automatic.
+    func copyGuideDone() {
+        copyGuide = nil
+        perform(.markDone)
+    }
+
+    /// S07 "Sao chép lại".
+    func copyAgain() async {
+        guard let body = copyGuide?.body else { return }
+        await system.copy(body)
     }
 
     /// Composer delegate (or the sheet closed without one = cancelled): `.sent` → succeeded with `msg:sent:<date>`,

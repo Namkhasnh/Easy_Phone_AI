@@ -4249,6 +4249,66 @@
           }
         }
       }
+    },
+    "copy.title": {
+      "comment": "UI_SCREENS S07",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gửi qua %@"
+          }
+        }
+      }
+    },
+    "copy.status": {
+      "comment": "UI_SCREENS S07",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã sao chép — dán và gửi trong %@"
+          }
+        }
+      }
+    },
+    "copy.stepsTitle": {
+      "comment": "UI_SCREENS S07",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn làm theo các bước sau:"
+          }
+        }
+      }
+    },
+    "copy.again": {
+      "comment": "UI_SCREENS S07",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sao chép lại"
+          }
+        }
+      }
+    },
+    "handoff.note.copy": {
+      "comment": "UI_SCREENS §10.4 hand-off note",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã sao chép — dán và gửi trong %@"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

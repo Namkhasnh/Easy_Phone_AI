@@ -82,6 +82,10 @@ struct ReviewView: View {
                             },
                             onLater: { viewModel.dismissPermission() })
         }
+        .sheet(item: $viewModel.copyGuide) { guide in
+            CopyGuideSheet(guide: guide, onDone: { viewModel.copyGuideDone() },
+                           onCopyAgain: { Task { await viewModel.copyAgain() } })
+        }
         .sheet(isPresented: Binding(get: { viewModel.pendingComposer != nil },
                                     set: { if !$0 { viewModel.composerFinished(.cancelled) } })) {
             if let composer = viewModel.pendingComposer {

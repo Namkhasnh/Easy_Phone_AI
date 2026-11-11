@@ -30,6 +30,8 @@ struct AppEnvironment: Sendable {
     let reminders: any RemindersService
     /// Device contacts: Vietnamese name / nickname matching, phone numbers (1C.7, DATA_MODEL §7.2).
     let contacts: any ContactsService
+    /// Open other apps / clipboard (ARCHITECTURE §4.2, D-293).
+    let system: any SystemService
 
     @MainActor static func live(container: ModelContainer) -> AppEnvironment {
         let config = AppConfig.fromMainBundle()
@@ -40,17 +42,21 @@ struct AppEnvironment: Sendable {
         let reminders = LiveRemindersService()
         let localData = LiveLocalDataRepository(container: container)
         let contacts = LiveContactsService { localData.nickname(matching: $0)?.contactId }
+        let system = LiveSystemService()
         return AppEnvironment(config: config, auth: auth,
                               api: APIClient(config: config, auth: auth, client: .fromMainBundle()),
                               drafts: drafts,
                               localData: localData,
                               engine: TaskEngine(repository: drafts,
                                                  executors: executors(calendar, reminders, permissions, localData,
-                                                                      calls: LiveCallService(), messages: LiveMessagesService()),
+                                                                      calls: LiveCallService(), messages: LiveMessagesService(),
+                                                                      system: system),
+                                                 serviceIds: SupportedServices.bundled.ids,
                                                  resolver: DeviceResolver(contacts: contacts, calendar: calendar,
                                                                           permissions: permissions)),
                               speech: LiveSpeechService(), tts: LiveTTSService(),
-                              permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts)
+                              permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts,
+                              system: system)
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
@@ -60,15 +66,19 @@ struct AppEnvironment: Sendable {
         let reminders = MockRemindersService()
         let localData = MockLocalDataRepository()
         let contacts = MockContactsService()
+        let system = MockSystemService()
         return AppEnvironment(config: .mock, auth: MockAuthService(), api: MockAPIClient(), drafts: drafts,
                               localData: localData,
                               engine: TaskEngine(repository: drafts,
                                                  executors: executors(calendar, reminders, permissions, localData,
-                                                                      calls: MockCallService(), messages: MockMessagesService()),
+                                                                      calls: MockCallService(), messages: MockMessagesService(),
+                                                                      system: system),
+                                                 serviceIds: SupportedServices.bundled.ids,
                                                  resolver: DeviceResolver(contacts: contacts, calendar: calendar,
                                                                           permissions: permissions)),
                               speech: MockSpeechService(), tts: MockTTSService(),
-                              permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts)
+                              permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts,
+                              system: system)
     }
 
     /// One executor per kind (ARCHITECTURE §5.1); the others are added by their items (1C.5, 1C.10 – 1C.13, 1D).
@@ -76,10 +86,11 @@ struct AppEnvironment: Sendable {
                                   _ permissions: any PermissionManager,
                                   _ localData: any LocalDataRepository,
                                   calls: any CallService,
-                                  messages: any MessagesService) -> [TaskKind: any StepExecutor] {
+                                  messages: any MessagesService,
+                                  system: any SystemService) -> [TaskKind: any StepExecutor] {
         [.calendarEvent: CalendarExecutor(calendar: calendar, permissions: permissions),
          .call: CallExecutor(calls: calls),
-         .sms: SMSExecutor(messages: messages),
+         .sms: SMSExecutor(messages: messages, system: system),
          .reminder: RemindersExecutor(reminders: reminders, permissions: permissions,
                                       morningHour: { localData.settings().snoozeMorningHour })]
     }

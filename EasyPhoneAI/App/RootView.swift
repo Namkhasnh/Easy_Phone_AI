@@ -86,6 +86,7 @@ struct RootView: View {
             ReviewView(viewModel: ReviewViewModel(draftId: draftId, repository: env.drafts, engine: env.engine,
                                                        permissions: env.permissions, contacts: env.contacts,
                                                        calendar: env.calendar, localData: env.localData,
+                                                       system: env.system,
                                                        snoozeMorningHour: env.localData.settings().snoozeMorningHour))
         case .conversation(let draftId):
             ConversationView(viewModel: ConversationViewModel(draftId: draftId, repository: env.drafts, speech: env.speech, api: env.api,
