@@ -22,7 +22,9 @@ import os
 
     func execute(_ step: TaskStep, draft: TaskDraft) async -> ExecutionOutcome {
         // 4. Reminders have no write-only mode: anything but full access → `permission.reminders.denied` (D-249).
-        guard permissions.status(.reminders) == .granted else {
+        let access = permissions.status(.reminders)
+        guard access == .granted else {
+            logger.notice("reminders not usable at execute: \(access.rawValue, privacy: .public)")
             return .failed(code: ServiceError.permissionDenied(.reminders).code)
         }
         do {

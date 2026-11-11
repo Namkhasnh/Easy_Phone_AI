@@ -1,3 +1,4 @@
+import OSLog
 import AVFoundation
 import Contacts
 import CoreLocation
@@ -21,12 +22,20 @@ final class LivePermissionManager: PermissionManager {
         }
     }
 
+    private static let logger = Logger(subsystem: "vn.namkhanh.easyphone", category: "permissions")
+
     func request(_ capability: Capability) async -> PermissionStatus {
         // Never re-prompt: iOS shows its alert only once; afterwards the answer is "Mở Cài đặt" (D-185).
         guard status(capability) == .notDetermined else { return status(capability) }
         switch capability {
         case .calendar: _ = try? await EKEventStore().requestFullAccessToEvents()
-        case .reminders: _ = try? await EKEventStore().requestFullAccessToReminders()
+        case .reminders:
+            do {
+                let ok = try await EKEventStore().requestFullAccessToReminders()
+                Self.logger.notice("reminders request answered: \(ok, privacy: .public)")
+            } catch {
+                Self.logger.error("reminders request failed: \((error as NSError).code, privacy: .public)")
+            }
         case .contacts: _ = try? await CNContactStore().requestAccess(for: .contacts)
         case .microphone: _ = await AVAudioApplication.requestRecordPermission()
         case .speech:
@@ -37,7 +46,9 @@ final class LivePermissionManager: PermissionManager {
         case .photos: _ = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
         case .location: await LocationAuthorizer.requestWhenInUse()
         }
-        return status(capability)
+        let result = status(capability)
+        Self.logger.notice("request \(capability.rawValue, privacy: .public) → \(result.rawValue, privacy: .public), raw reminders \(EKEventStore.authorizationStatus(for: .reminder).rawValue, privacy: .public)")
+        return result
     }
 
     // MARK: - Framework status → PermissionStatus (pure)
