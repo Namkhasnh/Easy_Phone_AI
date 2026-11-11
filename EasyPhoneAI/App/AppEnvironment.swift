@@ -35,30 +35,39 @@ struct AppEnvironment: Sendable {
         let drafts = LiveTaskRepository(container: container)
         let permissions = LivePermissionManager()
         let calendar = LiveCalendarService()
+        let reminders = LiveRemindersService()
+        let localData = LiveLocalDataRepository(container: container)
         return AppEnvironment(config: config, auth: auth,
                               api: APIClient(config: config, auth: auth, client: .fromMainBundle()),
                               drafts: drafts,
-                              localData: LiveLocalDataRepository(container: container),
-                              engine: TaskEngine(repository: drafts, executors: executors(calendar, permissions)),
+                              localData: localData,
+                              engine: TaskEngine(repository: drafts,
+                                                 executors: executors(calendar, reminders, permissions, localData)),
                               speech: LiveSpeechService(), tts: LiveTTSService(),
-                              permissions: permissions, calendar: calendar, reminders: LiveRemindersService())
+                              permissions: permissions, calendar: calendar, reminders: reminders)
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
         let drafts = MockTaskRepository()
         let permissions = MockPermissionManager()
         let calendar = MockCalendarService()
+        let reminders = MockRemindersService()
+        let localData = MockLocalDataRepository()
         return AppEnvironment(config: .mock, auth: MockAuthService(), api: MockAPIClient(), drafts: drafts,
-                              localData: MockLocalDataRepository(),
-                              engine: TaskEngine(repository: drafts, executors: executors(calendar, permissions)),
+                              localData: localData,
+                              engine: TaskEngine(repository: drafts,
+                                                 executors: executors(calendar, reminders, permissions, localData)),
                               speech: MockSpeechService(), tts: MockTTSService(),
-                              permissions: permissions, calendar: calendar, reminders: MockRemindersService())
+                              permissions: permissions, calendar: calendar, reminders: reminders)
     }
 
     /// One executor per kind (ARCHITECTURE §5.1); the others are added by their items (1C.5, 1C.10 – 1C.13, 1D).
-    private static func executors(_ calendar: any CalendarService,
-                                  _ permissions: any PermissionManager) -> [TaskKind: any StepExecutor] {
-        [.calendarEvent: CalendarExecutor(calendar: calendar, permissions: permissions)]
+    private static func executors(_ calendar: any CalendarService, _ reminders: any RemindersService,
+                                  _ permissions: any PermissionManager,
+                                  _ localData: any LocalDataRepository) -> [TaskKind: any StepExecutor] {
+        [.calendarEvent: CalendarExecutor(calendar: calendar, permissions: permissions),
+         .reminder: RemindersExecutor(reminders: reminders, permissions: permissions,
+                                      morningHour: { localData.settings().snoozeMorningHour })]
     }
 }
 

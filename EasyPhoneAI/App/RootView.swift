@@ -84,7 +84,8 @@ struct RootView: View {
         switch route {
         case .review(let draftId):
             ReviewView(viewModel: ReviewViewModel(draftId: draftId, repository: env.drafts, engine: env.engine,
-                                                       permissions: env.permissions))
+                                                       permissions: env.permissions,
+                                                       snoozeMorningHour: env.localData.settings().snoozeMorningHour))
         case .conversation(let draftId):
             ConversationView(viewModel: ConversationViewModel(draftId: draftId, repository: env.drafts, speech: env.speech, api: env.api,
                                                               tts: env.tts, localData: env.localData,

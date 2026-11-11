@@ -17,11 +17,13 @@ import Observation
 
     private let engine: TaskEngine
     private let permissions: any PermissionManager
+    private let snoozeMorningHour: Int
     private let catalog: FieldCatalog
     private let now: () -> Date
 
     init(draftId: UUID, repository: any TaskRepository, engine: TaskEngine, permissions: any PermissionManager,
-         catalog: FieldCatalog = .mvp, now: @escaping () -> Date = { .now }) {
+         snoozeMorningHour: Int = 8, catalog: FieldCatalog = .mvp, now: @escaping () -> Date = { .now }) {
+        self.snoozeMorningHour = snoozeMorningHour
         self.engine = engine
         self.permissions = permissions
         self.catalog = catalog
@@ -182,8 +184,8 @@ import Observation
         case (.reminder, .create): UserMessage(key: "result.reminder.created")
         case (.reminder, .complete): UserMessage(key: "result.reminder.completed")
         case (.reminder, .snooze):
-            // TODO(spec): the snoozed-to time comes from the executor (1C.5); the step's `dueDate` is shown until then.
-            UserMessage(key: "result.reminder.snoozed", args: [step.field("dueDate").flatMap(displayValue) ?? ""])
+            // The snoozed-to time is recomputed with the executor's rule at the moment the step succeeded.
+            UserMessage(key: "result.reminder.snoozed", args: [snoozedTo(step) ?? ""])
         case (.sms, _): UserMessage(key: "result.sms.sent")
         case (.place, .create):
             UserMessage(key: "result.place.saved",
@@ -194,6 +196,14 @@ import Observation
             // TODO(spec): no result text for reminder update / delete; the state label "Đã xong" is shown.
             UserMessage(key: TaskState.succeeded.labelKey)
         }
+    }
+
+    func snoozedTo(_ step: TaskStep) -> String? {
+        let tz = TimeZone(identifier: draft?.timeZoneId ?? "") ?? .current
+        guard let option = step.field("snoozeOption")?.value,
+              let date = RemindersExecutor.snoozeDate(option, from: step.stateChangedAt, morningHour: snoozeMorningHour,
+                                                      timeZone: tz) else { return nil }
+        return FieldFormatter.dateTime(date, timeZone: tz)
     }
 
     private func handOffMessage(_ step: TaskStep) -> String {
