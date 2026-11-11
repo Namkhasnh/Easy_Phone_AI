@@ -417,6 +417,13 @@ import os
     @discardableResult func retry(stepId: UUID, in draft: TaskDraft) -> Bool { apply(.retry, stepId: stepId, in: draft) }
     @discardableResult func markDone(stepId: UUID, in draft: TaskDraft) -> Bool { apply(.userMarkedDone, stepId: stepId, in: draft) }
 
+    /// S08 was shown for this hand-off (D-242: asked once). Not a state change; saved.
+    func markHandoffPromptShown(stepId: UUID, in draft: TaskDraft) {
+        guard let index = draft.steps.firstIndex(where: { $0.id == stepId }) else { return }
+        draft.steps[index].handoffPromptShown = true
+        save(draft)
+    }
+
     // MARK: - Internals
 
     static let editableStates: Set<TaskState> = [.draft, .needsInfo, .awaitingApproval, .succeeded]
@@ -450,6 +457,9 @@ import os
         }
         if to == .awaitingApproval {
             step.approvedSnapshotHash = nil                           // cleared whenever it enters awaitingApproval
+        }
+        if to == .handedOff {
+            step.handoffPromptShown = false                           // a new hand-off is asked about once (D-242)
         }
         if to == .processing {
             step.attempt += 1                                         // each processing entry (idempotency, D-105)

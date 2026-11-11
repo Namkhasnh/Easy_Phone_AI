@@ -4226,6 +4226,54 @@
         }
       }
     },
+    "handoff.call": {
+      "comment": "UI_SCREENS S08",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn đã gọi xong chưa?"
+          }
+        }
+      }
+    },
+    "handoff.copyMessage": {
+      "comment": "UI_SCREENS S08",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn đã gửi tin nhắn trong %@ chưa?"
+          }
+        }
+      }
+    },
+    "handoff.directions": {
+      "comment": "UI_SCREENS S08",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn đã đi tới nơi chưa?"
+          }
+        }
+      }
+    },
+    "handoff.notYet.toast": {
+      "comment": "UI_SCREENS S08",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Việc này vẫn nằm trong “Việc chưa xong”."
+          }
+        }
+      }
+    },
     "handoff.note.call": {
       "comment": "UI_SCREENS §10.4 hand-off note",
       "extractionState": "manual",

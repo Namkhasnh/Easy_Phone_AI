@@ -7,6 +7,9 @@ struct RootView: View {
     @Environment(Router.self) private var router
     @Environment(AppState.self) private var appState
     @Environment(\.appEnv) private var env
+    @Environment(HandoffPromptCoordinator.self) private var handoff
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var toast: ToastModel?
 
     var body: some View {
         @Bindable var router = router
@@ -32,6 +35,27 @@ struct RootView: View {
             }
         }
         .fullScreenCover(isPresented: isBlocked) { blockingCover }
+        // S08 (D-242): asked once per hand-off, only when signed in (the prompt sits over any screen).
+        .onChange(of: scenePhase, initial: true) { _, phase in
+            switch phase {
+            case .background: handoff.didEnterBackground()
+            case .active: if case .signedIn = appState.session { handoff.didBecomeActive() }
+            default: break
+            }
+        }
+        .onChange(of: appState.session) { _, session in
+            if case .signedIn = session, scenePhase == .active { handoff.didBecomeActive() }
+        }
+        .sheet(item: handoffPrompt) { prompt in
+            HandoffPromptSheet(prompt: prompt, onDone: handoff.answerDone, onNotYet: handoff.answerNotYet)
+                .onAppear(perform: handoff.didShow)
+        }
+        .onChange(of: handoff.toast) { _, message in
+            guard let message else { return }
+            toast = ToastModel(message: message)
+            handoff.toast = nil
+        }
+        .toast($toast)
         .task(id: appState.session) {
             await loadAccount()
         }
@@ -63,6 +87,10 @@ struct RootView: View {
         case .signedIn:
             HomeView(viewModel: HomeViewModel(repository: env.drafts, localData: env.localData))
         }
+    }
+
+    private var handoffPrompt: Binding<HandoffPrompt?> {
+        Binding(get: { handoff.prompt }, set: { if $0 == nil { handoff.dismissed() } })
     }
 
     /// UI_SCREENS §4: any 426 → S19, blocking. Never cleared by the user; only a newer build removes it.
@@ -117,5 +145,6 @@ struct RootView: View {
         .environment(AppState())
         .environment(Router())
         .environment(\.appEnv, .mock())
+        .environment(HandoffPromptCoordinator(repository: MockTaskRepository(), engine: AppEnvironment.mock().engine))
         .modelContainer(try! ModelContainerFactory.make(inMemory: true))   // preview only
 }

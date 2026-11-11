@@ -29,8 +29,7 @@ struct DraftRowBuilder {
         // "StateBadge of the draft's group step": the first step (by order) whose group is the draft's group.
         let groupStep = draft.steps.sorted { $0.order < $1.order }
             .first { $0.state.historyGroup == draft.overallStatus } ?? current
-        let stepTitle = UserMessage(key: "step.\(current.kind.rawValue).\(current.operation.rawValue)").text
-        let summary = mainValue(current).map { UserMessage(key: "history.summary", args: [stepTitle, $0]).text } ?? stepTitle
+        let summary = Self.summary(current)
         return DraftRow(id: draft.id, symbol: Self.symbol(current.kind), summary: summary,
                         time: relativeTime(draft.updatedAt), badgeState: groupStep.state,
                         badgeArgs: StateBadge.labelArgs(groupStep),
@@ -55,7 +54,13 @@ struct DraftRowBuilder {
     }
 
     // TODO(spec): `{mainValue}` of `history.summary` is only shown by example ("anh Minh"); per-kind field chosen here.
-    private func mainValue(_ step: TaskStep) -> String? {
+    /// "{step title}: {main value}" (`history.summary`), or the step title alone. Also the S08 body (D-242).
+    static func summary(_ step: TaskStep) -> String {
+        let stepTitle = UserMessage(key: "step.\(step.kind.rawValue).\(step.operation.rawValue)").text
+        return mainValue(step).map { UserMessage(key: "history.summary", args: [stepTitle, $0]).text } ?? stepTitle
+    }
+
+    private static func mainValue(_ step: TaskStep) -> String? {
         let id: [String] = switch step.kind {
         case .call, .sms: ["recipientName"]
         case .place: ["name", "query"]
