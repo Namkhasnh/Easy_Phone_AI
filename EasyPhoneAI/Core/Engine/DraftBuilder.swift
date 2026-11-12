@@ -215,3 +215,45 @@ enum DraftBuilder {
         return result
     }
 }
+
+// MARK: - Build from a photo (S09 → S04, 1D.7)
+
+extension DraftBuilder {
+    /// Phase 1D `nextAction` options; `ride` waits for Phase 3 (D-150 rule for Phase 3, D-142).
+    static let ocrNextActions: Set<String> = ["calendarEvent", "reminder", "copyContactInfo"]
+
+    /// The `ocr.create` step (DATA_MODEL §4): `extractedText` = the whole text read from the photo (= `originalInput`),
+    /// then the `/v1/extract` fields, each with its UTF-16 span into that text (§1.7), and the suggested `nextAction`.
+    /// `extract == nil` (the call failed) → only `extractedText`; the user can still type the rest. Pure; `state = draft`.
+    static func ocrStep(text: String, extract: ExtractResponse?, now: Date, catalog: FieldCatalog = .mvp) -> TaskStep {
+        let extracted = Dictionary((extract?.fields ?? []).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let fields = catalog.fields(.ocr, .create).map { spec -> Field in
+            var field = Field(id: spec.id, type: spec.type, source: .ai, deviceOnly: spec.deviceOnly)
+            switch spec.id {
+            case "extractedText":
+                // TODO(spec): DATA_MODEL §1.7 has no source for the whole OCR text; `.device("ocr")` (read on device or
+                // by `/v1/ocr`), no confidence, so the row is not marked "needs review".
+                field.value = cleaned(text) == nil ? nil : text   // exactly `originalInput`: spans index into it
+                field.source = .device(origin: "ocr")
+            case "nextAction":
+                if let action = extract?.suggestedNextAction, ocrNextActions.contains(action), !extracted.isEmpty {
+                    field.value = action
+                }
+            default:
+                guard let e = extracted[spec.id], let value = cleaned(e.value) else { break }
+                field.value = value
+                field.confidence = min(1, max(0, e.confidence))
+                if let span = e.span, span.start >= 0, span.end > span.start, span.end <= text.utf16.count {
+                    field.source = .ocr(span: SourceSpan(start: span.start, end: span.end))  // box: 1D.8 (S10)
+                } else {
+                    // TODO(spec): a field with `span: null` (API_CONTRACT §7.2) has no `.ocr(span:)`; kept as `.ai`
+                    // (confidence ≤ 0.5 from the backend → still "needs review").
+                    field.confidence = min(field.confidence ?? 0.5, 0.5)
+                }
+            }
+            return field
+        }
+        let step = TaskStep(order: 0, kind: .ocr, operation: .create, state: .draft, fields: fields, stateChangedAt: now)
+        return Validator.applyRequired(step, catalog: catalog)
+    }
+}

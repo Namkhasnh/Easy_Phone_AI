@@ -12,9 +12,10 @@ struct OCRImageStoreTests {
     let library = MockPhotoLibraryService()
     let local = MockLocalDataRepository()
 
-    func model() -> OCRCaptureViewModel {
+    func model(ocr: any OCRService = MockOCRService()) -> OCRCaptureViewModel {
         OCRCaptureViewModel(permissions: MockPermissionManager([.camera: .granted]), cameraAvailable: true,
-                            repository: repo, images: images, photoLibrary: library, localData: local)
+                            repository: repo, images: images, photoLibrary: library, localData: local, ocr: ocr,
+                            engine: TaskEngine(repository: repo))
     }
 
     static let photo = Data([0xFF, 0xD8, 0x01])
@@ -24,14 +25,14 @@ struct OCRImageStoreTests {
         await vm.received(Self.photo, fromCamera: false)
         let id = try #require(vm.draftId)
         let draft = try #require(repo.draft(id))
-        #expect(draft.inputMode == .photo && draft.steps.isEmpty)
+        #expect(draft.inputMode == .photo && draft.steps.map(\.kind) == [.ocr])        // 1D.7a: read → ocr step
         #expect(draft.imageLocalPath == "ocr/\(id.uuidString).jpg")                 // relative, device only
         #expect(images.stored[draft.imageLocalPath!] == Self.photo)
         #expect(vm.mode == .read)                                                // MockOCRService sample text
     }
 
     @Test func retakeDeletesTheUnreadPhoto() async throws {
-        let vm = model()
+        let vm = model(ocr: MockOCRService(.success(OCRResult(lines: [], source: .device))))   // no text → "Chụp lại"
         await vm.received(Self.photo, fromCamera: true)
         let path = try #require(repo.draft(vm.draftId!)?.imageLocalPath)
         await vm.retake()

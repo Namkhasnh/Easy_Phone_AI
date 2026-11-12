@@ -8,6 +8,7 @@ struct OCRCaptureView: View {
     @State var viewModel: OCRCaptureViewModel
     @State private var libraryItem: PhotosPickerItem?
     @Environment(\.openURL) private var openURL
+    @Environment(Router.self) private var router
 
     var body: some View {
         ScrollView {
@@ -84,6 +85,9 @@ struct OCRCaptureView: View {
             .background(Tokens.Colors.bg)
         }
         .navigationBarTitleDisplayMode(.inline)
+        .onChange(of: viewModel.reviewDraftId) { _, id in
+            if let id { router.replaceLast(with: .review(id)) }   // S09 step 3 → S04 with the `ocr` step
+        }
         .photosPicker(isPresented: $viewModel.showsLibrary, selection: $libraryItem, matching: .images)
         .onChange(of: libraryItem) { _, item in
             guard let item else { return }
@@ -149,4 +153,5 @@ struct OCRCaptureView: View {
         OCRCaptureView(viewModel: OCRCaptureViewModel(permissions: MockPermissionManager(), cameraAvailable: true))
             .toolbar { ToolbarItem(placement: .topBarTrailing) { DemoDataBadge() } }
     }
+    .environment(Router())
 }

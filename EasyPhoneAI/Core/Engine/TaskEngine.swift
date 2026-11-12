@@ -203,6 +203,23 @@ import os
         return true
     }
 
+    /// S09 → S04 (1D.7): the photo draft gets its one `ocr.create` step from the text read and the `/v1/extract` result
+    /// (`nil` when that call failed). Validated (→ `awaitingApproval`: only `extractedText` is required) and saved once.
+    /// Returns `false` when the draft already has steps (a second extract never replaces what the user saw).
+    @discardableResult
+    func applyExtract(_ extract: ExtractResponse?, text: String, to draft: TaskDraft) -> Bool {
+        guard draft.steps.isEmpty else {
+            logger.warning("applyExtract: draft already has steps")
+            return false
+        }
+        var step = DraftBuilder.ocrStep(text: text, extract: extract, now: now())
+        revalidateInPlace(&step)
+        draft.steps = [step]
+        draft.serverRequestId = extract?.requestId
+        save(draft)
+        return true
+    }
+
     /// DATA_MODEL §6.2 "run device resolution" for every step still open: contacts, calendar `targetRef`
     /// (ARCHITECTURE §5). Call after `applyParsed` / `mergeAnswer`. Saved once.
     func resolveDevice(in draft: TaskDraft) async {

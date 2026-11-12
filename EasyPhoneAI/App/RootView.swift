@@ -138,7 +138,7 @@ struct RootView: View {
                                                           cameraAvailable: CameraPicker.isAvailable,
                                                           repository: env.drafts, images: env.images,
                                                           photoLibrary: env.photoLibrary, localData: env.localData,
-                                                          ocr: env.ocr))
+                                                          ocr: env.ocr, api: env.api, engine: env.engine))
         case .history:
             HistoryView(viewModel: HistoryViewModel(repository: env.drafts))
         case .settings:
