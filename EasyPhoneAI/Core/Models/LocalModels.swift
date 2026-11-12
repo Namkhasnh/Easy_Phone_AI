@@ -54,6 +54,7 @@ import SwiftData
     var petEnabled: Bool = true       // "Hiện bạn Khoai" (D-289)
     var autoSend: Bool = true         // "Tự gửi khi nói xong" (D-296)
     var autoConfirm: Bool = false     // "Làm luôn, không cần xác nhận" (D-299), safe kinds only
+    var savePhotos: Bool = false      // "Lưu ảnh chụp vào Ảnh" (D-301), camera photos only
 
     init() {}
 }

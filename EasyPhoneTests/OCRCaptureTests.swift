@@ -44,12 +44,12 @@ struct OCRCaptureTests {
         #expect(vm.showsLibrary && vm.pendingPermission == nil && perms.requested.isEmpty)
     }
 
-    @Test func photoReceivedThenRetake() {
+    @Test func photoReceivedThenRetake() async {
         let vm = OCRCaptureViewModel(permissions: MockPermissionManager([.camera: .granted]), cameraAvailable: true)
         vm.chooseCamera()
-        vm.received(Data([0xFF, 0xD8]))
+        await vm.received(Data([0xFF, 0xD8]), fromCamera: true)
         #expect(vm.mode == .captured && vm.imageData == Data([0xFF, 0xD8]) && !vm.showsCamera)
-        vm.retake()
+        await vm.retake()
         #expect(vm.mode == .choosing && vm.imageData == nil)
     }
 

@@ -3482,6 +3482,30 @@
         }
       }
     },
+    "settings.savePhotos": {
+      "comment": "UI_SCREENS S15 (D-301)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lưu ảnh chụp vào Ảnh"
+          }
+        }
+      }
+    },
+    "settings.savePhotos.note": {
+      "comment": "UI_SCREENS S15 (D-301)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ảnh giấy tờ chụp trong app sẽ được lưu thêm vào app Ảnh của iPhone. Ảnh chọn từ thư viện không bị lưu lại lần nữa."
+          }
+        }
+      }
+    },
     "settings.savedPlaces": {
       "comment": "UI_SCREENS S15",
       "extractionState": "manual",

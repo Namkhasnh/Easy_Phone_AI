@@ -27,10 +27,13 @@ import Observation
     private let tts: any TTSService
     private let permissions: any PermissionManager
     private let contacts: any ContactsService
+    private let photoLibrary: any PhotoLibraryService
 
     init(localData: any LocalDataRepository, drafts: any TaskRepository, auth: any AuthService,
          tts: any TTSService = MockTTSService(), permissions: any PermissionManager = MockPermissionManager(),
-         contacts: any ContactsService = MockContactsService()) {
+         contacts: any ContactsService = MockContactsService(),
+         photoLibrary: any PhotoLibraryService = MockPhotoLibraryService()) {
+        self.photoLibrary = photoLibrary
         self.permissions = permissions
         self.contacts = contacts
         self.localData = localData
@@ -58,6 +61,15 @@ import Observation
         guard let name = contactNames[nickname.id] else { return nickname.nickname }
         // TODO(spec): UI_SCREENS S15 shows the row only by example; key `settings.nicknames.row` added (PROGRESS §5.2).
         return UserMessage(key: "settings.nicknames.row", args: [nickname.nickname, name]).text
+    }
+
+    /// D-301 "Lưu ảnh chụp vào Ảnh": turning it on is the user's own request, so the add-only alert comes now (the row's
+    /// note explains it); a "no" turns the switch back off.
+    func savePhotosChanged() async {
+        if settings.savePhotos, !(await photoLibrary.requestAddAccess()) {
+            settings.savePhotos = false
+        }
+        save()
     }
 
     /// Reads only; never asks (D-185: requests happen on first use, after S18).

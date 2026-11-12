@@ -34,6 +34,10 @@ struct AppEnvironment: Sendable {
     let system: any SystemService
     /// MapKit search + directions hand-off (1C.13, spec §6.9).
     let places: any PlacesService
+    /// OCR photos in `Application Support/ocr/` (1D.2, ARCHITECTURE §6.4).
+    let images: any ImageStore
+    /// Optional copy of camera photos in the Photos library (D-301).
+    let photoLibrary: any PhotoLibraryService
 
     @MainActor static func live(container: ModelContainer) -> AppEnvironment {
         let config = AppConfig.fromMainBundle()
@@ -60,7 +64,8 @@ struct AppEnvironment: Sendable {
                                                                           savedPlaces: { localData.savedPlaces() })),
                               speech: LiveSpeechService(), tts: LiveTTSService(),
                               permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts,
-                              system: system, places: places)
+                              system: system, places: places,
+                              images: LiveImageStore(), photoLibrary: LivePhotoLibraryService())
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
@@ -91,7 +96,8 @@ struct AppEnvironment: Sendable {
                                                                           savedPlaces: { localData.savedPlaces() })),
                               speech: MockSpeechService(), tts: MockTTSService(),
                               permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts,
-                              system: system, places: places)
+                              system: system, places: places,
+                              images: MockImageStore(), photoLibrary: MockPhotoLibraryService())
     }
 
     /// `MockScenario.uiTest` `/v1/parse`: a request starting with "Gọi" → call anh Minh, anything else → `mockSMS`.

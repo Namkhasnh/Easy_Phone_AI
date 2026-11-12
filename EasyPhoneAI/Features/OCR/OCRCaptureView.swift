@@ -33,6 +33,9 @@ struct OCRCaptureView: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .accessibilityAddTraits(.isHeader)
                 }
+                if viewModel.saveFailed {
+                    Banner(message: UserMessage(key: "ocr.noText.body"), style: .warning)
+                }
                 tipsCard
             }
             .padding(Tokens.Space.screenPadding)
@@ -42,7 +45,7 @@ struct OCRCaptureView: View {
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: Tokens.Space.m) {
                 if viewModel.mode == .captured {
-                    SecondaryButton("ocr.retake", systemImage: "arrow.counterclockwise") { viewModel.retake() }
+                    SecondaryButton("ocr.retake", systemImage: "arrow.counterclockwise") { Task { await viewModel.retake() } }
                 } else {
                     if viewModel.cameraAvailable {
                         PrimaryButton("ocr.source.camera") { viewModel.chooseCamera() }
@@ -58,12 +61,15 @@ struct OCRCaptureView: View {
         .onChange(of: libraryItem) { _, item in
             guard let item else { return }
             Task {
-                if let data = try? await item.loadTransferable(type: Data.self) { viewModel.received(data) }
+                if let data = try? await item.loadTransferable(type: Data.self) {
+                    await viewModel.received(data, fromCamera: false)
+                }
                 libraryItem = nil
             }
         }
         .fullScreenCover(isPresented: $viewModel.showsCamera) {
-            CameraPicker(onPhoto: { viewModel.received($0) }, onCancel: { viewModel.showsCamera = false })
+            CameraPicker(onPhoto: { data in Task { await viewModel.received(data, fromCamera: true) } },
+                         onCancel: { viewModel.showsCamera = false })
                 .ignoresSafeArea()
         }
         .sheet(item: $viewModel.pendingPermission) { pending in

@@ -22,6 +22,8 @@
 	<string>EasyPhoneK dùng camera để chụp giấy tờ và đọc chữ giúp bạn.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>EasyPhoneK đọc ảnh bạn chọn để lấy thông tin như ngày hẹn, địa chỉ.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>EasyPhoneK lưu ảnh giấy tờ bạn chụp vào app Ảnh khi bạn bật “Lưu ảnh chụp vào Ảnh”.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>EasyPhoneK dùng vị trí để tìm địa điểm gần bạn.</string>
 	<key>LSApplicationQueriesSchemes</key>

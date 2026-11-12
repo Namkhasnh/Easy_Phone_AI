@@ -135,13 +135,15 @@ struct RootView: View {
             PlacesView(viewModel: PlacesViewModel(places: env.places, localData: env.localData, engine: env.engine))
         case .ocr:
             OCRCaptureView(viewModel: OCRCaptureViewModel(permissions: env.permissions,
-                                                          cameraAvailable: CameraPicker.isAvailable))
+                                                          cameraAvailable: CameraPicker.isAvailable,
+                                                          repository: env.drafts, images: env.images,
+                                                          photoLibrary: env.photoLibrary, localData: env.localData))
         case .history:
             HistoryView(viewModel: HistoryViewModel(repository: env.drafts))
         case .settings:
             SettingsView(viewModel: SettingsViewModel(localData: env.localData, drafts: env.drafts, auth: env.auth,
                                                       tts: env.tts, permissions: env.permissions,
-                                                      contacts: env.contacts))
+                                                      contacts: env.contacts, photoLibrary: env.photoLibrary))
         default:
             EmptyView()
         }

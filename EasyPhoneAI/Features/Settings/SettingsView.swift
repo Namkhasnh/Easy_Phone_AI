@@ -106,6 +106,14 @@ struct SettingsView: View {
             }
 
             Section(header: header("settings.data")) {
+                VStack(alignment: .leading, spacing: Tokens.Space.xs) {          // D-301
+                    Toggle(isOn: $settings.savePhotos) { rowText("settings.savePhotos") }
+                        .onChange(of: settings.savePhotos) { Task { await viewModel.savePhotosChanged() } }
+                    Text("settings.savePhotos.note")
+                        .font(Tokens.Fonts.body)
+                        .foregroundStyle(Tokens.Colors.textSecondary)
+                }
+                .padding(.vertical, Tokens.Space.xs)
                 actionRow("settings.clearHistory", danger: true) { viewModel.pendingConfirm = .clearHistory }
                 actionRow("settings.clearMemory", danger: true) { viewModel.pendingConfirm = .clearMemory }
             }
