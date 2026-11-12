@@ -46,6 +46,7 @@ struct ContractFixtureTests {
         case "error": reencoded = try JSONEncoder().encode(Self.decode(APIErrorEnvelope.self, name))
         case "parse": reencoded = try JSONEncoder().encode(Self.decode(ParsedDraft.self, name))
         case "transcribe": reencoded = try JSONEncoder().encode(Self.decode(TranscribeResponse.self, name))
+        case "ocr": reencoded = try JSONEncoder().encode(Self.decode(OCRResponse.self, name))
         default:
             Issue.record("no DTO mapped for \(name)")
             return
@@ -90,6 +91,7 @@ struct ContractFixtureTests {
         #expect(MeResponse.mock == (try Self.decode(MeResponse.self, "me.free.response.json")))
         #expect(HealthResponse.mock == (try Self.decode(HealthResponse.self, "health.ok.response.json")))
         #expect(ParsedDraft.mockSMS == (try Self.decode(ParsedDraft.self, "parse.sms.response.json")))
+        #expect(OCRResponse.mock == (try Self.decode(OCRResponse.self, "ocr.ok.response.json")))
     }
 
     static var requestFixtureNames: [String] {

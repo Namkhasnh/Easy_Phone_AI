@@ -14,6 +14,8 @@ final class MockAPIClient: APIClientProtocol {
     /// Answer chosen from the request (UI tests type different requests); nil → queue / `parseResult`.
     private let parseRouter: (@Sendable (ParseRequest) -> ParsedDraft?)?
     private let transcribeLog = Mutex<[Data]>([])
+    private let ocrResult: Result<OCRResponse, AppError>
+    private let ocrLog = Mutex<[(jpeg: Data, key: IdempotencyKey)]>([])
     private let quota = Broadcast<Quota>()
     private let blocking = Broadcast<BlockingScreen>()
 
@@ -21,8 +23,10 @@ final class MockAPIClient: APIClientProtocol {
          parse: Result<ParsedDraft, AppError> = .success(.mockSMS),
          parseSequence: [Result<ParsedDraft, AppError>] = [],
          transcribe: Result<TranscribeResponse, AppError> = .success(.mock),
-         parseRouter: (@Sendable (ParseRequest) -> ParsedDraft?)? = nil) {
+         parseRouter: (@Sendable (ParseRequest) -> ParsedDraft?)? = nil,
+         ocr: Result<OCRResponse, AppError> = .success(.mock)) {
         self.parseRouter = parseRouter
+        ocrResult = ocr
         meResult = me
         parseResult = parse
         parseQueue = Mutex(parseSequence)
@@ -53,6 +57,22 @@ final class MockAPIClient: APIClientProtocol {
         transcribeLog.withLock { $0.append(m4a) }
         return try transcribeResult.get()
     }
+
+    /// Every `ocr` call so far (tests check the key and that the saved JPEG was sent).
+    var ocrCalls: [(jpeg: Data, key: IdempotencyKey)] { ocrLog.withLock { $0 } }
+
+    func ocr(jpeg: Data, meta: MediaMeta, idempotencyKey: IdempotencyKey) async throws -> OCRResponse {
+        ocrLog.withLock { $0.append((jpeg, idempotencyKey)) }
+        return try ocrResult.get()
+    }
+}
+
+/// = `ocr.ok.response.json` (API_CONTRACT §7.3 example).
+extension OCRResponse {
+    static let mock = OCRResponse(schemaVersion: 1, requestId: "req_01JC8Z8D22",
+                                  text: "PHÒNG KHÁM NHA KHOA AN BÌNH\nLịch hẹn: 09:30 ngày 14/11/2026",
+                                  lines: [.init(text: "PHÒNG KHÁM NHA KHOA AN BÌNH", box: OCRBox(x: 0.08, y: 0.86, width: 0.84, height: 0.05)),
+                                          .init(text: "Lịch hẹn: 09:30 ngày 14/11/2026", box: OCRBox(x: 0.08, y: 0.78, width: 0.70, height: 0.04))])
 }
 
 /// = `transcribe.ok.response.json`.

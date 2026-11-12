@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     PROMPT_VERSION_PARSE: int = 3  # v2: viewCalendar (D-294); v3: callType FaceTime (D-300)
     PROMPT_VERSION_EXTRACT: int = 1
     PROMPT_VERSION_REPAIR: int = 1
+    PROMPT_VERSION_OCR: int = 1  # 1D.4 `/v1/ocr`
     LLM_TEMPERATURE: float | None = None  # AI_PROMPTS §0.2: sent only when set (some models reject it)
     # USD per 1M tokens [input, output], for `usage_events.cost_usd` + the spend cap (D-087).
     # Values = OpenAI list prices read 2026-11-10 at D-052 (developers.openai.com/api/docs/pricing); cached input
@@ -38,6 +39,8 @@ class Settings(BaseSettings):
     # Transcription billed by duration (no token usage in the response): USD per audio minute.
     TRANSCRIBE_USD_PER_MINUTE: float = 0.006  # fallback only; 2× the 2026-11-10 list estimate ($0.003), spend cap trips early
     TRANSCRIBE_MAX_BYTES: int = 2 * 1024 * 1024  # API_CONTRACT §7.4: ≤ 2 MB
+    OCR_MAX_BYTES: int = 4 * 1024 * 1024  # API_CONTRACT §7.3: ≤ 4 MB
+    OCR_MAX_PIXELS: int = 2048  # long side ≤ 2048 px
     TRANSCRIBE_MAX_SECONDS: int = 60  # ≤ 60 s; also the cost estimate when the response has no usage
     # A model without a price is charged at this (high) rate, so the spend cap can only trip early, never late.
     UNKNOWN_MODEL_PRICE_USD_PER_1M: list[float] = [10.0, 40.0]

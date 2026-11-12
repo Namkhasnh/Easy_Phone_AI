@@ -52,8 +52,9 @@ struct AppEnvironment: Sendable {
         let contacts = LiveContactsService { localData.nickname(matching: $0)?.contactId }
         let system = LiveSystemService()
         let places = LivePlacesService(system: system)
+        let api = APIClient(config: config, auth: auth, client: .fromMainBundle())
         return AppEnvironment(config: config, auth: auth,
-                              api: APIClient(config: config, auth: auth, client: .fromMainBundle()),
+                              api: api,
                               drafts: drafts,
                               localData: localData,
                               engine: TaskEngine(repository: drafts,
@@ -68,8 +69,7 @@ struct AppEnvironment: Sendable {
                               permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts,
                               system: system, places: places,
                               images: LiveImageStore(), photoLibrary: LivePhotoLibraryService(),
-                              // TODO(spec): the `/v1/ocr` fallback is wired to APIClient in 1D.4.
-                              ocr: RoutingOCRService(device: VisionOCRService(), remote: UnavailableRemoteOCR()))
+                              ocr: RoutingOCRService(device: VisionOCRService(), remote: APIRemoteOCR(api: api)))
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {

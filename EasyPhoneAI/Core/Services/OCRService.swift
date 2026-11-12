@@ -74,7 +74,19 @@ struct RoutingOCRService: OCRService {
     }
 }
 
-/// Until `/v1/ocr` exists (1D.4): the fallback is not available yet.
+/// No fallback (previews / tests that must never spend a unit).
 struct UnavailableRemoteOCR: RemoteOCR {
     func recognize(_ jpeg: Data) async throws -> OCRResult { throw ServiceError.unavailable("ocr.fallbackUnavailable") }
+}
+
+/// `RemoteOCR` = `POST /v1/ocr` (1 unit). A new key per call (D-245); `AppError`s (offline, 402…) pass through and
+/// `RoutingOCRService` keeps the Vision result when it has one.
+// TODO(spec): a 402 quota_exceeded here has no S09 text; the "no text" mode is shown when Vision read nothing.
+struct APIRemoteOCR: RemoteOCR {
+    let api: any APIClientProtocol
+
+    func recognize(_ jpeg: Data) async throws -> OCRResult {
+        let response = try await api.ocr(jpeg: jpeg, meta: .vietnamese, idempotencyKey: IdempotencyKey())
+        return OCRResult(lines: response.lines.map { OCRLine(text: $0.text, box: $0.box, confidence: nil) }, source: .server)
+    }
 }

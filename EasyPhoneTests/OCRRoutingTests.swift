@@ -79,3 +79,32 @@ struct OCRRoutingTests {
         #expect(vm.mode == .noText)
     }
 }
+
+/// 1D.4 — `APIRemoteOCR` = `/v1/ocr` (own key per call, D-245), boxes kept for S10.
+@MainActor
+@Suite("APIRemoteOCR")
+struct APIRemoteOCRTests {
+    @Test func callsOcrWithTheJpegAndANewKeyEachTime() async throws {
+        let api = MockAPIClient()
+        let remote = APIRemoteOCR(api: api)
+        let out = try await remote.recognize(Data([0xFF, 0xD8]))
+        #expect(out.source == .server && out.text == OCRResponse.mock.text)
+        #expect(out.lines.first?.box == OCRBox(x: 0.08, y: 0.86, width: 0.84, height: 0.05))
+        _ = try await remote.recognize(Data([0xFF, 0xD8]))
+        #expect(api.ocrCalls.count == 2 && api.ocrCalls[0].jpeg == Data([0xFF, 0xD8]))
+        #expect(api.ocrCalls[0].key != api.ocrCalls[1].key)
+    }
+
+    @Test func weakVisionPlusServerUsesTheServerText() async throws {
+        let api = MockAPIClient()
+        let routing = RoutingOCRService(device: MockOCRService(.success(OCRRoutingTests.weak)), remote: APIRemoteOCR(api: api))
+        let out = try await routing.recognize(Data([1]))
+        #expect(out.source == .server && api.ocrCalls.count == 1)
+    }
+
+    @Test func offlineServerKeepsWeakVisionText() async throws {
+        let api = MockAPIClient(ocr: .failure(.network(.offline)))
+        let routing = RoutingOCRService(device: MockOCRService(.success(OCRRoutingTests.weak)), remote: APIRemoteOCR(api: api))
+        #expect(try await routing.recognize(Data([1])).text == "L1ch h3n")
+    }
+}

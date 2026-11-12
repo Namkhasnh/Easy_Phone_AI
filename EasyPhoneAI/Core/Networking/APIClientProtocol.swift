@@ -1,7 +1,7 @@
 import Foundation
 
 /// All backend calls (ARCHITECTURE §4.1, API_CONTRACT §10). Live = `APIClient` actor, mock = `MockAPIClient` (D-206).
-/// Throws `AppError` (or `CancellationError`). Methods for `/v1/extract`, `/v1/ocr`,
+/// Throws `AppError` (or `CancellationError`). Methods for `/v1/extract`,
 /// `/v1/billing/verify`, `DELETE /v1/me` are added by the item that builds each endpoint.
 protocol APIClientProtocol: Sendable {
     func health() async throws -> HealthResponse
@@ -12,6 +12,9 @@ protocol APIClientProtocol: Sendable {
     /// `POST /v1/transcribe` (API_CONTRACT §7.4): m4a ≤ 60 s / 2 MB, 0 units, rate-limited (429 → keyboard).
     /// The result is shown as editable text and never sent to `/v1/parse` by itself.
     func transcribe(m4a: Data, meta: MediaMeta) async throws -> TranscribeResponse
+    /// `POST /v1/ocr` (API_CONTRACT §7.3, 1 unit, fallback only, D-061): JPEG ≤ 4 MB, long side ≤ 2048 px (the app's
+    /// `ImageStore` copy already is). Own key per call (D-245); `/v1/extract` then uses a new one.
+    func ocr(jpeg: Data, meta: MediaMeta, idempotencyKey: IdempotencyKey) async throws -> OCRResponse
     /// From `X-Quota-*` headers after every response that carries them (D-234). Display only (D-085).
     var quotaUpdates: AsyncStream<Quota> { get }
     // TODO(spec): not in ARCHITECTURE §4.1 — lets any `426` reach `AppState.blockingScreen` (S19) without every
