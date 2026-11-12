@@ -1921,6 +1921,126 @@
         }
       }
     },
+    "ocr.nextAction.title": {
+      "comment": "UI_SCREENS S09",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn muốn làm gì với thông tin này?"
+          }
+        }
+      }
+    },
+    "ocr.noText.body": {
+      "comment": "UI_SCREENS S09",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ảnh có thể bị mờ, tối hoặc chụp nghiêng. Bạn chụp lại nhé."
+          }
+        }
+      }
+    },
+    "ocr.noText.title": {
+      "comment": "UI_SCREENS S09",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mình chưa đọc được chữ trong ảnh"
+          }
+        }
+      }
+    },
+    "ocr.oneImageNote": {
+      "comment": "UI_SCREENS S09",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mỗi lần chỉ đọc một ảnh."
+          }
+        }
+      }
+    },
+    "ocr.otherPhoto": {
+      "comment": "UI_SCREENS S09",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chọn ảnh khác"
+          }
+        }
+      }
+    },
+    "ocr.reading": {
+      "comment": "UI_SCREENS S09",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mình đang đọc chữ trong ảnh…"
+          }
+        }
+      }
+    },
+    "ocr.retake": {
+      "comment": "UI_SCREENS S09",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chụp lại"
+          }
+        }
+      }
+    },
+    "ocr.source.camera": {
+      "comment": "UI_SCREENS S09",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chụp ảnh"
+          }
+        }
+      }
+    },
+    "ocr.source.library": {
+      "comment": "UI_SCREENS S09",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chọn ảnh có sẵn"
+          }
+        }
+      }
+    },
+    "ocr.tips": {
+      "comment": "UI_SCREENS S09",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đặt giấy trên mặt phẳng, đủ sáng, chụp thẳng và rõ chữ."
+          }
+        }
+      }
+    },
     "option.callType.facetimeAudio": {
       "comment": "call.callType options (D-300)",
       "extractionState": "manual",

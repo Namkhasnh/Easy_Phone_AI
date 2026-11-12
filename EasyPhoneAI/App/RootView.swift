@@ -133,6 +133,9 @@ struct RootView: View {
                                                         snoozeMorningHour: env.localData.settings().snoozeMorningHour))
         case .places:
             PlacesView(viewModel: PlacesViewModel(places: env.places, localData: env.localData, engine: env.engine))
+        case .ocr:
+            OCRCaptureView(viewModel: OCRCaptureViewModel(permissions: env.permissions,
+                                                          cameraAvailable: CameraPicker.isAvailable))
         case .history:
             HistoryView(viewModel: HistoryViewModel(repository: env.drafts))
         case .settings:
