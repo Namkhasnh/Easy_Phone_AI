@@ -38,6 +38,8 @@ struct AppEnvironment: Sendable {
     let images: any ImageStore
     /// Optional copy of camera photos in the Photos library (D-301).
     let photoLibrary: any PhotoLibraryService
+    /// Text from the photo: Vision first, `/v1/ocr` fallback (1D.3, ARCHITECTURE §4.3, D-061).
+    let ocr: any OCRService
 
     @MainActor static func live(container: ModelContainer) -> AppEnvironment {
         let config = AppConfig.fromMainBundle()
@@ -65,7 +67,9 @@ struct AppEnvironment: Sendable {
                               speech: LiveSpeechService(), tts: LiveTTSService(),
                               permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts,
                               system: system, places: places,
-                              images: LiveImageStore(), photoLibrary: LivePhotoLibraryService())
+                              images: LiveImageStore(), photoLibrary: LivePhotoLibraryService(),
+                              // TODO(spec): the `/v1/ocr` fallback is wired to APIClient in 1D.4.
+                              ocr: RoutingOCRService(device: VisionOCRService(), remote: UnavailableRemoteOCR()))
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
@@ -97,7 +101,8 @@ struct AppEnvironment: Sendable {
                               speech: MockSpeechService(), tts: MockTTSService(),
                               permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts,
                               system: system, places: places,
-                              images: MockImageStore(), photoLibrary: MockPhotoLibraryService())
+                              images: MockImageStore(), photoLibrary: MockPhotoLibraryService(),
+                              ocr: MockOCRService())
     }
 
     /// `MockScenario.uiTest` `/v1/parse`: a request starting with "Gọi" → call anh Minh, anything else → `mockSMS`.

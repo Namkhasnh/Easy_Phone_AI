@@ -137,7 +137,8 @@ struct RootView: View {
             OCRCaptureView(viewModel: OCRCaptureViewModel(permissions: env.permissions,
                                                           cameraAvailable: CameraPicker.isAvailable,
                                                           repository: env.drafts, images: env.images,
-                                                          photoLibrary: env.photoLibrary, localData: env.localData))
+                                                          photoLibrary: env.photoLibrary, localData: env.localData,
+                                                          ocr: env.ocr))
         case .history:
             HistoryView(viewModel: HistoryViewModel(repository: env.drafts))
         case .settings:

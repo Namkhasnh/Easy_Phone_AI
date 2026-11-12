@@ -48,7 +48,7 @@ struct OCRCaptureTests {
         let vm = OCRCaptureViewModel(permissions: MockPermissionManager([.camera: .granted]), cameraAvailable: true)
         vm.chooseCamera()
         await vm.received(Data([0xFF, 0xD8]), fromCamera: true)
-        #expect(vm.mode == .captured && vm.imageData == Data([0xFF, 0xD8]) && !vm.showsCamera)
+        #expect(vm.mode == .read && vm.imageData == Data([0xFF, 0xD8]) && !vm.showsCamera)
         await vm.retake()
         #expect(vm.mode == .choosing && vm.imageData == nil)
     }

@@ -27,7 +27,7 @@ struct OCRImageStoreTests {
         #expect(draft.inputMode == .photo && draft.steps.isEmpty)
         #expect(draft.imageLocalPath == "ocr/\(id.uuidString).jpg")                 // relative, device only
         #expect(images.stored[draft.imageLocalPath!] == Self.photo)
-        #expect(vm.mode == .captured)
+        #expect(vm.mode == .read)                                                // MockOCRService sample text
     }
 
     @Test func retakeDeletesTheUnreadPhoto() async throws {

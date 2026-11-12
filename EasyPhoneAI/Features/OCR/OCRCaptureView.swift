@@ -12,14 +12,8 @@ struct OCRCaptureView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Tokens.Space.l) {
-                if let data = viewModel.imageData, let image = CameraPicker.thumbnail(data) {
-                    image
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: .infinity, maxHeight: 420)
-                        .clipShape(RoundedRectangle(cornerRadius: Tokens.Radius.card))
-                        .accessibilityHidden(true)
-                } else {
+                switch viewModel.mode {
+                case .choosing:
                     // Owner 2026-11-12: the iOS dialog covered the tips and left the screen empty → hero + 2 buttons.
                     Image(systemName: "doc.text.viewfinder")
                         .font(.system(size: Tokens.Size.iconHero * 1.6))
@@ -32,11 +26,34 @@ struct OCRCaptureView: View {
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
                         .accessibilityAddTraits(.isHeader)
+                    if viewModel.saveFailed {
+                        Banner(message: UserMessage(key: "ocr.noText.body"), style: .warning)
+                    }
+                    tipsCard
+                case .reading:
+                    photo(maxHeight: 280)
+                    HStack(spacing: Tokens.Space.s) {
+                        ProgressView().tint(Tokens.Colors.primary)
+                        Text("ocr.reading")
+                            .font(Tokens.Fonts.body)
+                            .foregroundStyle(Tokens.Colors.textPrimary)
+                    }
+                    .accessibilityElement(children: .combine)
+                case .read:
+                    photo(maxHeight: 220)
+                    Text(verbatim: viewModel.readText)                       // text read from the photo (data)
+                        .font(Tokens.Fonts.fieldValue)
+                        .foregroundStyle(Tokens.Colors.textPrimary)
+                        .textSelection(.enabled)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(Tokens.Space.m)
+                        .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+                case .noText:
+                    // spec §6.3 AC5: no text / blurry → retake, no `/v1/extract` call.
+                    EmptyState(systemImage: "doc.text.magnifyingglass", titleKey: "ocr.noText.title", bodyKey: "ocr.noText.body")
+                        .padding(.top, Tokens.Space.xl)
                 }
-                if viewModel.saveFailed {
-                    Banner(message: UserMessage(key: "ocr.noText.body"), style: .warning)
-                }
-                tipsCard
             }
             .padding(Tokens.Space.screenPadding)
             .frame(maxWidth: .infinity)
@@ -44,13 +61,23 @@ struct OCRCaptureView: View {
         .background(Tokens.Colors.bg)
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: Tokens.Space.m) {
-                if viewModel.mode == .captured {
-                    SecondaryButton("ocr.retake", systemImage: "arrow.counterclockwise") { Task { await viewModel.retake() } }
-                } else {
+                switch viewModel.mode {
+                case .choosing:
                     if viewModel.cameraAvailable {
                         PrimaryButton("ocr.source.camera") { viewModel.chooseCamera() }
                     }
                     SecondaryButton("ocr.source.library", systemImage: "photo.on.rectangle") { viewModel.chooseLibrary() }
+                case .reading:
+                    EmptyView()
+                case .read:
+                    SecondaryButton("ocr.retake", systemImage: "arrow.counterclockwise") { Task { await viewModel.retake() } }
+                case .noText:
+                    PrimaryButton("ocr.retake") {
+                        Task { await viewModel.retake(); viewModel.cameraAvailable ? viewModel.chooseCamera() : viewModel.chooseLibrary() }
+                    }
+                    SecondaryButton("ocr.otherPhoto", systemImage: "photo.on.rectangle") {
+                        Task { await viewModel.retake(); viewModel.chooseLibrary() }
+                    }
                 }
             }
             .padding(Tokens.Space.screenPadding)
@@ -84,6 +111,17 @@ struct OCRCaptureView: View {
                             onFallback: { viewModel.useLibraryInstead() })
         }
         .accessibilityIdentifier("screen.S09")
+    }
+
+    @ViewBuilder private func photo(maxHeight: CGFloat) -> some View {
+        if let data = viewModel.imageData, let image = CameraPicker.thumbnail(data) {
+            image
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity, maxHeight: maxHeight)
+                .clipShape(RoundedRectangle(cornerRadius: Tokens.Radius.card))
+                .accessibilityHidden(true)
+        }
     }
 
     private var tipsCard: some View {
