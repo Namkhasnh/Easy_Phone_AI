@@ -81,6 +81,17 @@ actor APIClient: APIClientProtocol {
                                        body: form.finish(), contentType: contentType))
     }
 
+    func extract(_ request: ExtractRequest, idempotencyKey: IdempotencyKey) async throws -> ExtractResponse {
+        let body: Data
+        do {
+            body = try JSONEncoder().encode(request)
+        } catch {
+            throw AppError.decoding(requestId: nil)
+        }
+        return try await send(Endpoint(method: "POST", path: "/v1/extract", authorized: true,
+                                       body: body, idempotencyKey: idempotencyKey))
+    }
+
     func ocr(jpeg: Data, meta: MediaMeta, idempotencyKey: IdempotencyKey) async throws -> OCRResponse {
         var form = MultipartBody()
         let metaJSON: Data

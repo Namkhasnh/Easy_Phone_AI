@@ -47,6 +47,7 @@ struct ContractFixtureTests {
         case "parse": reencoded = try JSONEncoder().encode(Self.decode(ParsedDraft.self, name))
         case "transcribe": reencoded = try JSONEncoder().encode(Self.decode(TranscribeResponse.self, name))
         case "ocr": reencoded = try JSONEncoder().encode(Self.decode(OCRResponse.self, name))
+        case "extract": reencoded = try JSONEncoder().encode(Self.decode(ExtractResponse.self, name))
         default:
             Issue.record("no DTO mapped for \(name)")
             return
@@ -92,6 +93,7 @@ struct ContractFixtureTests {
         #expect(HealthResponse.mock == (try Self.decode(HealthResponse.self, "health.ok.response.json")))
         #expect(ParsedDraft.mockSMS == (try Self.decode(ParsedDraft.self, "parse.sms.response.json")))
         #expect(OCRResponse.mock == (try Self.decode(OCRResponse.self, "ocr.ok.response.json")))
+        #expect(ExtractResponse.mock == (try Self.decode(ExtractResponse.self, "extract.appointment.response.json")))
     }
 
     static var requestFixtureNames: [String] {
@@ -108,6 +110,7 @@ struct ContractFixtureTests {
         let encoded: Data
         switch name.split(separator: ".").first {
         case "parse": encoded = try JSONEncoder().encode(Self.decode(ParseRequest.self, name))
+        case "extract": encoded = try JSONEncoder().encode(Self.decode(ExtractRequest.self, name))
         default:
             Issue.record("no DTO mapped for \(name)")
             return
@@ -115,6 +118,17 @@ struct ContractFixtureTests {
         let a = try JSONSerialization.jsonObject(with: raw) as? NSDictionary
         let b = try JSONSerialization.jsonObject(with: encoded) as? NSDictionary
         #expect(a == b)
+    }
+
+    /// 1D.5 — spans are UTF-16 offsets: the same substring in Swift (`NSString` / UTF-16) as on the backend.
+    @Test func extractSpansAreUtf16() throws {
+        let req = try Self.decode(ExtractRequest.self, "extract.appointment.request.json")
+        let res = try Self.decode(ExtractResponse.self, "extract.appointment.response.json")
+        let text = req.ocrText as NSString
+        for field in res.fields where field.id != "title" && field.id != "dateTime" {
+            let span = try #require(field.span)
+            #expect(text.substring(with: NSRange(location: span.start, length: span.end - span.start)) == field.value)
+        }
     }
 
     @Test func parseFixturesTyped() throws {
