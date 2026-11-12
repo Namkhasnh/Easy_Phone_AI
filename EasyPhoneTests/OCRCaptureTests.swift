@@ -6,9 +6,9 @@ import Testing
 @MainActor
 @Suite("S09 photo capture")
 struct OCRCaptureTests {
-    @Test func opensWithTheSourceDialog() {
+    @Test func opensChoosing() {
         let vm = OCRCaptureViewModel(permissions: MockPermissionManager(), cameraAvailable: true)
-        #expect(vm.showsSourceDialog && vm.mode == .choosing && vm.imageData == nil)
+        #expect(vm.mode == .choosing && vm.imageData == nil && !vm.showsCamera && !vm.showsLibrary)
     }
 
     @Test func cameraNeverAskedShowsExplainerThenCamera() async {
@@ -50,7 +50,7 @@ struct OCRCaptureTests {
         vm.received(Data([0xFF, 0xD8]))
         #expect(vm.mode == .captured && vm.imageData == Data([0xFF, 0xD8]) && !vm.showsCamera)
         vm.retake()
-        #expect(vm.mode == .choosing && vm.imageData == nil && vm.showsSourceDialog)
+        #expect(vm.mode == .choosing && vm.imageData == nil)
     }
 
     @Test func s09StringsExist() {

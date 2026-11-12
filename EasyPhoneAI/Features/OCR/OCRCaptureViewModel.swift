@@ -9,8 +9,6 @@ import Observation
     private(set) var mode: Mode = .choosing
     /// JPEG of the chosen photo (🔒 stays on the device, D-056).
     private(set) var imageData: Data?
-    /// The source dialog ("Chụp ảnh" / "Chọn ảnh có sẵn" / "Hủy").
-    var showsSourceDialog = true
     var showsCamera = false
     var showsLibrary = false
     var pendingPermission: PendingPermission?
@@ -67,6 +65,5 @@ import Observation
     func retake() {
         imageData = nil
         mode = .choosing
-        showsSourceDialog = true
     }
 }
