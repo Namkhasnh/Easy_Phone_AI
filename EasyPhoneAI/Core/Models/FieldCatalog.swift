@@ -127,6 +127,9 @@ extension FieldCatalog {
             FieldSpec(id: "recipientName", type: .text),
             FieldSpec(id: "contactId", type: .contactRef, deviceOnly: true),
             FieldSpec(id: "phoneNumber", type: .phone, deviceOnly: true),
+            // D-300: phone call (default) or FaceTime audio / video.
+            FieldSpec(id: "callType", type: .enumChoice, options: ["phone", "facetimeAudio", "facetimeVideo"],
+                      operations: [.open]),
         ], required: [
             RequiredRule(operation: .open, fields: ["recipientName", "phoneNumber"], conditional: [
                 ConditionalRequirement(when: [.notPhoneNumber(field: "recipientName")], fields: ["contactId"]), // D-253

@@ -45,6 +45,34 @@ struct CallExecutorTests {
         #expect(calls.calls == ["+84901234567"])
     }
 
+    // MARK: - D-300 FaceTime
+
+    @Test func callTypeDefaultsToPhone() {
+        let spec = FieldCatalog.mvp.fields(.call, .open).first { $0.id == "callType" }!
+        #expect(DraftBuilder.defaultValue(spec, kind: .call, operation: .open) == "phone")
+        #expect(CallType.phone.url("+84903333444") == URL(string: "tel://+84903333444"))
+        #expect(CallType.facetimeAudio.url("+84903333444") == URL(string: "facetime-audio://+84903333444"))
+        #expect(CallType.facetimeVideo.url("+84903333444") == URL(string: "facetime://+84903333444"))
+    }
+
+    @Test(arguments: [("facetimeAudio", CallType.facetimeAudio), ("facetimeVideo", CallType.facetimeVideo)])
+    func faceTimeOpensFaceTimeAndIsHandedOff(raw: String, type: CallType) async {
+        let calls = MockCallService()
+        let d = draft(["recipientName": "bôm", "contactId": "b", "phoneNumber": "+84347676916", "callType": raw])
+        #expect(await run(d, calls) == .finished(.handedOff))                   // never succeeded (D-102)
+        #expect(calls.calls == ["+84347676916"] && calls.types == [type])
+        #expect(d.steps[0].handoffNote == "Cần hoàn tất cuộc gọi FaceTime")
+        let vm = ReviewViewModel(draftId: d.id, repository: repo, engine: TaskEngine(repository: repo), permissions: MockPermissionManager())
+        #expect(vm.resultCard?.message == "Cần hoàn tất cuộc gọi trong FaceTime.")
+    }
+
+    @Test func unknownCallTypeIsAPhoneCall() async {
+        let calls = MockCallService()
+        let d = draft(["recipientName": "mẹ", "contactId": "lan", "phoneNumber": "+84903333444"])
+        _ = await run(d, calls)
+        #expect(calls.types == [.phone])
+    }
+
     @Test func cannotOpenFails() async {
         let calls = MockCallService(fails: true)
         let d = draft(["recipientName": "mẹ", "contactId": "lan", "phoneNumber": "+84903333444"])

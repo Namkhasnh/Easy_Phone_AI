@@ -188,6 +188,20 @@
           "type": "phone",
           "deviceOnly": true,
           "appBuilt": false
+        },
+        {
+          "id": "callType",
+          "type": "enumChoice",
+          "deviceOnly": false,
+          "appBuilt": false,
+          "options": [
+            "phone",
+            "facetimeAudio",
+            "facetimeVideo"
+          ],
+          "operations": [
+            "open"
+          ]
         }
       ],
       "required": [

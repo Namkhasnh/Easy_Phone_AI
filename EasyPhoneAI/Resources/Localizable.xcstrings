@@ -1153,6 +1153,18 @@
         }
       }
     },
+    "field.call.callType": {
+      "comment": "DATA_MODEL §4 call.callType (D-300)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kiểu gọi"
+          }
+        }
+      }
+    },
     "field.call.contactId": {
       "comment": "UI_SCREENS §10.2",
       "extractionState": "manual",
@@ -1909,6 +1921,42 @@
         }
       }
     },
+    "option.callType.facetimeAudio": {
+      "comment": "call.callType options (D-300)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FaceTime âm thanh"
+          }
+        }
+      }
+    },
+    "option.callType.facetimeVideo": {
+      "comment": "call.callType options (D-300)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FaceTime video"
+          }
+        }
+      }
+    },
+    "option.callType.phone": {
+      "comment": "call.callType options (D-300)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Điện thoại"
+          }
+        }
+      }
+    },
     "option.alertMinutesBefore.0": {
       "comment": "UI_SCREENS §10.3",
       "extractionState": "manual",
@@ -2638,6 +2686,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Chỉ được thêm mới"
+          }
+        }
+      }
+    },
+    "result.facetime.handedOff": {
+      "comment": "UI_SCREENS S04 result (D-300)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cần hoàn tất cuộc gọi trong FaceTime."
           }
         }
       }
@@ -4462,6 +4522,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Việc này vẫn nằm trong “Việc chưa xong”."
+          }
+        }
+      }
+    },
+    "handoff.note.facetime": {
+      "comment": "UI_SCREENS §10.4 hand-off note (D-300)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cần hoàn tất cuộc gọi FaceTime"
           }
         }
       }

@@ -51,7 +51,7 @@ def test_catalog_lines_hide_locked_and_app_built_fields():
     assert "reminder.create: title*, dueDate*, notes" in lines
     assert "reminder.snooze: title, dueDate, notes, snoozeOption*" in lines
     assert "reminder.complete: title, dueDate, notes" in lines  # `completed` is appBuilt
-    assert "call.open: recipientName*" in lines
+    assert "call.open: recipientName*, callType" in lines  # D-300
     assert "contactId" not in text and "calendarId" not in text  # D-056
     # 🔒 phoneNumber of call/sms is hidden; ocr.phoneNumber is a value read from the photo (not 🔒)
     assert all("phoneNumber" not in l for l in lines if not l.startswith("ocr."))

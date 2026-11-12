@@ -120,6 +120,7 @@ enum DraftBuilder {
         case (.calendarEvent, "allDay"): return "false"
         case (.calendarEvent, "alertMinutesBefore"): return "60"
         case (.sms, "channel"): return "sms"                       // built in, default (DATA_MODEL §4)
+        case (.call, "callType"): return "phone"                   // D-300: FaceTime only when the user says so
         case (.place, "mapsApp"): return defaults.mapsApp
         case (.reminder, "completed"): return "true"               // D-248: `true` = mark done; undo is app-built
         default: return nil

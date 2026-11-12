@@ -13,9 +13,10 @@ import Foundation
             // TODO(spec): no error key for a missing / invalid number at execute time (Validator blocks it before).
             return .failed(code: "call.cannotOpen")
         }
+        let type = CallType(rawValue: step.field("callType")?.value ?? "") ?? .phone      // D-300
         do {
-            try await calls.start(e164: number)
-            return .handedOff(note: UserMessage(key: "handoff.note.call").text)
+            try await calls.start(e164: number, type: type)
+            return .handedOff(note: UserMessage(key: type == .phone ? "handoff.note.call" : "handoff.note.facetime").text)
         } catch let error as ServiceError {
             return .failed(code: error.code)
         } catch {

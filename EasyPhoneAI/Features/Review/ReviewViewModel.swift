@@ -327,7 +327,9 @@ import Observation
 
     private func handOffMessage(_ step: TaskStep) -> String {
         switch (step.kind, step.operation) {
-        case (.call, _): return UserMessage(key: "result.call.handedOff").text
+        case (.call, _):
+            let facetime = (step.field("callType")?.value ?? "phone") != "phone"           // D-300
+            return UserMessage(key: facetime ? "result.facetime.handedOff" : "result.call.handedOff").text
         case (.place, .open):
             let app = step.field("mapsApp").flatMap(displayValue) ?? ""
             return UserMessage(key: "result.directions.handedOff", args: [app]).text

@@ -242,7 +242,8 @@
                     "id": {
                       "type": "string",
                       "enum": [
-                        "recipientName"
+                        "recipientName",
+                        "callType"
                       ]
                     },
                     "value": {
