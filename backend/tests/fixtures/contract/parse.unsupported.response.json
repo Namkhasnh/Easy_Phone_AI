@@ -5,6 +5,7 @@
   "followUpQuestion": null,
   "unsupported": {
     "reason": "recurringEvent",
-    "message": "Chưa hỗ trợ lịch lặp lại."
+    "message": "Chưa hỗ trợ lịch lặp lại.",
+    "date": null
   }
 }

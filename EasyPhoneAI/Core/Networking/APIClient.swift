@@ -81,6 +81,33 @@ actor APIClient: APIClientProtocol {
                                        body: form.finish(), contentType: contentType))
     }
 
+    func extract(_ request: ExtractRequest, idempotencyKey: IdempotencyKey) async throws -> ExtractResponse {
+        let body: Data
+        do {
+            body = try JSONEncoder().encode(request)
+        } catch {
+            throw AppError.decoding(requestId: nil)
+        }
+        return try await send(Endpoint(method: "POST", path: "/v1/extract", authorized: true,
+                                       body: body, idempotencyKey: idempotencyKey))
+    }
+
+    func ocr(jpeg: Data, meta: MediaMeta, idempotencyKey: IdempotencyKey) async throws -> OCRResponse {
+        var form = MultipartBody()
+        let metaJSON: Data
+        do {
+            metaJSON = try JSONEncoder().encode(meta)
+        } catch {
+            throw AppError.decoding(requestId: nil)
+        }
+        form.addField("meta", String(decoding: metaJSON, as: UTF8.self))
+        form.addFile("image", filename: "photo.jpg", mimeType: "image/jpeg", jpeg)
+        let contentType = form.contentType
+        // Same key for every automatic retry inside `send` (D-245); the image is never logged.
+        return try await send(Endpoint(method: "POST", path: "/v1/ocr", authorized: true, body: form.finish(),
+                                       contentType: contentType, idempotencyKey: idempotencyKey))
+    }
+
     // MARK: - Pipeline
 
     private func send<Response: Decodable & Sendable>(_ endpoint: Endpoint) async throws -> Response {

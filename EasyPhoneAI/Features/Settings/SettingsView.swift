@@ -4,6 +4,7 @@ import SwiftUI
 struct SettingsView: View {
     @State var viewModel: SettingsViewModel
     @Environment(AppState.self) private var appState
+    @Environment(Router.self) private var router
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
 
@@ -29,6 +30,7 @@ struct SettingsView: View {
                 }
                 .padding(.vertical, Tokens.Space.s)
                 // TODO(spec): range of the rate slider is not specified; 0.3–0.6 around the 0.45 default (DATA_MODEL §5).
+                toggleRow("settings.autoSend", note: "settings.autoSend.note", isOn: $settings.autoSend)   // D-296
                 SecondaryButton("settings.voice.test", systemImage: "speaker.wave.2") {
                     Task { await viewModel.testVoice() }
                 }
@@ -56,18 +58,29 @@ struct SettingsView: View {
                         .foregroundStyle(Tokens.Colors.textSecondary)
                 } else {
                     ForEach(viewModel.nicknames) { nickname in
-                        // TODO(spec): "mẹ → Nguyễn Thị Lan" needs the contact name from ContactsService (1C.7).
-                        Text(verbatim: nickname.nickname)
+                        Text(verbatim: viewModel.nicknameRow(nickname))
                             .font(Tokens.Fonts.fieldValue)
                             .frame(minHeight: Tokens.Size.buttonMinHeight)
                             .swipeActions { Button("confirm.delete", role: .destructive) { viewModel.deleteNickname(nickname) } }
                     }
                 }
-                // TODO(spec): "Địa điểm đã lưu" opens S13 (1C.13).
+                Button { router.push(.places) } label: {
+                    HStack {
+                        rowText("settings.savedPlaces")
+                        Spacer(minLength: Tokens.Space.s)
+                        Image(systemName: "chevron.right")
+                            .font(Tokens.Fonts.label)
+                            .foregroundStyle(Tokens.Colors.textSecondary)
+                            .accessibilityHidden(true)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
 
             if viewModel.showsAdvanced {                       // ★ section, hidden in simple mode (P-40)
                 Section(header: header("settings.advanced")) {
+                    toggleRow("settings.autoConfirm", note: "settings.autoConfirm.note", isOn: $settings.autoConfirm)  // D-299
                     Picker(selection: $settings.snoozeMorningHour) {
                         ForEach(SettingsViewModel.snoozeHours, id: \.self) { hour in
                             Text(verbatim: UserMessage(key: "settings.snoozeHour.value", args: ["\(hour)"]).text).tag(hour)
@@ -93,6 +106,14 @@ struct SettingsView: View {
             }
 
             Section(header: header("settings.data")) {
+                VStack(alignment: .leading, spacing: Tokens.Space.xs) {          // D-301
+                    Toggle(isOn: $settings.savePhotos) { rowText("settings.savePhotos") }
+                        .onChange(of: settings.savePhotos) { Task { await viewModel.savePhotosChanged() } }
+                    Text("settings.savePhotos.note")
+                        .font(Tokens.Fonts.body)
+                        .foregroundStyle(Tokens.Colors.textSecondary)
+                }
+                .padding(.vertical, Tokens.Space.xs)
                 actionRow("settings.clearHistory", danger: true) { viewModel.pendingConfirm = .clearHistory }
                 actionRow("settings.clearMemory", danger: true) { viewModel.pendingConfirm = .clearMemory }
             }
@@ -129,7 +150,12 @@ struct SettingsView: View {
                          onCancel: { viewModel.pendingConfirm = nil })
         }
         .onDisappear { viewModel.stopVoice() }
-        .onChange(of: scenePhase) { _, phase in if phase == .active { viewModel.refreshPermissions() } }
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            viewModel.refreshPermissions()
+            Task { await viewModel.loadContactNames() }
+        }
+        .task { await viewModel.loadContactNames() }
         .accessibilityIdentifier("screen.S15")
     }
 
@@ -215,6 +241,7 @@ struct SettingsView: View {
             .toolbar { ToolbarItem(placement: .topBarTrailing) { DemoDataBadge() } }
     }
     .environment(AppState())
+    .environment(Router())
 }
 
 #Preview("Dark, AX5") {
@@ -223,6 +250,7 @@ struct SettingsView: View {
                                                   auth: MockAuthService()))
     }
     .environment(AppState())
+    .environment(Router())
     .preferredColorScheme(.dark)
     .dynamicTypeSize(.accessibility5)
 }

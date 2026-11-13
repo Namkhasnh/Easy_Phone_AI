@@ -37,7 +37,7 @@ struct LiveLocalDataRepositoryTests {
     @Test func settingsIsOneRowWithDefaults() throws {
         let s = repo.settings()
         #expect(s.voiceEnabled && !s.simpleMode)
-        #expect(s.speechRate == 0.45 && s.snoozeMorningHour == 8 && s.preferredMapsApp == "appleMaps")
+        #expect(s.speechRate == 0.45 && s.snoozeMorningHour == 8 && s.preferredMapsApp == "googleMaps")
         #expect(s.lastSeenEntitlement == nil)
         s.snoozeMorningHour = 7
         repo.saveSettings()

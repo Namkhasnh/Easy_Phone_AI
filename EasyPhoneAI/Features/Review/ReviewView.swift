@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// S04 Review (UI_SCREENS S04). Focus order: title → badge → banner → fields → buttons.
+/// S04 Review (UI_SCREENS S04, compact layout D-292). Focus order: summary → banner → choices → fields → buttons.
 struct ReviewView: View {
     @State var viewModel: ReviewViewModel
     @Environment(\.dismiss) private var dismiss
@@ -22,8 +22,47 @@ struct ReviewView: View {
                 resultCard(card)
             }
         }
+        .navigationTitle(Text(LocalizedStringKey(viewModel.titleKey ?? "")))
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if viewModel.showsActionBar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    // D-292: "Hủy" moved from the bottom bar (draft kept, D-104).
+                    Button("common.cancel") { viewModel.cancel() }
+                        .font(Tokens.Fonts.label)
+                        .tint(Tokens.Colors.primary)
+                }
+            }
+        }
         .onAppear { titleFocused = true }
+        .sheet(isPresented: Binding(get: { viewModel.eventChoice != nil },
+                                    set: { if !$0 { viewModel.eventChoice = nil } })) {
+            if let choice = viewModel.eventChoice {
+                PickerSheet(ambiguity: choice,
+                            onPick: { candidate in viewModel.pickEvent(candidate) },
+                            onPickMany: viewModel.eventChoiceAllowsMany ? { viewModel.pickEvents($0) } : nil)
+            }
+        }
+        .task {
+            await viewModel.loadContactName()
+            viewModel.openPendingPicker()
+            await viewModel.openPendingEventChoice()
+            viewModel.startAutoConfirmIfAllowed()                       // D-299, only when the toggle is on
+        }
+        .onDisappear { viewModel.cancelAutoConfirm() }
+        .sheet(isPresented: Binding(get: { viewModel.picking != nil },
+                                    set: { if !$0 { viewModel.pickingFieldId = nil } }),
+               onDismiss: { viewModel.pickerSheetDismissed() }) {
+            if let picking = viewModel.picking {
+                PickerSheet(ambiguity: picking.ambiguity,
+                            onOpenContacts: viewModel.canOpenContacts ? { viewModel.openContacts() } : nil,
+                            limitedQuery: viewModel.limitedQuery,
+                            onLimitedShared: { Task { await viewModel.limitedShared() } }) { candidate in
+                    let fieldId = picking.field.id                       // captured before the sheet closes
+                    Task { await viewModel.pick(candidate, fieldId: fieldId) }
+                }
+            }
+        }
         .onChange(of: viewModel.step?.state) { titleFocused = true }      // focus the title after each result (§9)
         .onChange(of: viewModel.didClose) { _, closed in if closed { dismiss() } }
         .onChange(of: viewModel.didFinish) { _, finished in if finished { router.popToRoot() } }
@@ -48,30 +87,74 @@ struct ReviewView: View {
                             },
                             onLater: { viewModel.dismissPermission() })
         }
+        .sheet(item: $viewModel.copyGuide) { guide in
+            CopyGuideSheet(guide: guide, onDone: { viewModel.copyGuideDone() },
+                           onCopyAgain: { Task { await viewModel.copyAgain() } })
+        }
+        .sheet(isPresented: Binding(get: { viewModel.pendingComposer != nil },
+                                    set: { if !$0 { viewModel.composerFinished(.cancelled) } })) {
+            if let composer = viewModel.pendingComposer {
+                // ARCHITECTURE §5.3: the user taps Send in the system UI (D-103); closing it = cancelled (D-222).
+                MessageComposerView(recipients: composer.recipients, body: composer.body) { viewModel.composerFinished($0) }
+                    .ignoresSafeArea()
+            }
+        }
+        .background {
+            // "Chọn trong danh bạ" (1C.9c): the iOS contact picker, no Contacts access needed.
+            ContactPickerPresenter(isPresented: $viewModel.showsContactPicker) { viewModel.pickedFromContacts($0) }
+                .frame(width: 0, height: 0)
+                .accessibilityHidden(true)
+        }
         .accessibilityIdentifier("screen.S04")
     }
 
+    /// D-292 compact layout: summary card → choice cards → one-line rows → "Thêm chi tiết" → original input.
     private func content(_ step: TaskStep) -> some View {
-        VStack(alignment: .leading, spacing: Tokens.Space.l) {
-            if let key = viewModel.titleKey {
-                Text(LocalizedStringKey(key))
-                    .font(Tokens.Fonts.title)
-                    .foregroundStyle(Tokens.Colors.textPrimary)
-                    .accessibilityAddTraits(.isHeader)
-                    .accessibilityFocused($titleFocused)
-            }
+        VStack(alignment: .leading, spacing: Tokens.Space.m) {
             if let position = viewModel.stepPosition {
                 StepIndicator(current: position.current, total: position.total)
             }
-            StateBadge(step: step)
+            summaryCard(step)
             // TODO(spec): calendar conflict card (`review.conflict.*`) needs CalendarService (1C.2).
             if let banner = viewModel.banner {
                 Banner(message: banner, style: .warning)
             }
-            ForEach(viewModel.visibleFields) { field in
-                FieldRow(field: field, kind: step.kind, displayValue: viewModel.displayValue(field),
-                         onEdit: { viewModel.tapRow(field) })
-                // TODO(spec): "Xem ảnh gốc" (S10, 1D.8) and "Chọn" (S06 picker, 1C.9) open their screens later.
+            if viewModel.needsEventChoice {
+                // UI_SCREENS S06 `ambiguity.event`: which event to change / delete (D-106, never auto-picked).
+                VStack(alignment: .leading, spacing: Tokens.Space.m) {
+                    Text("ambiguity.event")
+                        .font(Tokens.Fonts.body)
+                        .foregroundStyle(Tokens.Colors.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    SecondaryButton("common.choose") { Task { await viewModel.chooseEvent() } }
+                }
+                .padding(Tokens.Space.l)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Tokens.Colors.warningBg, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+            }
+            if let offer = viewModel.nicknameOffer {
+                // UI_SCREENS S06 inline offer `picker.saveNickname` (spec §6.6 AC3); stored on the phone only.
+                VStack(alignment: .leading, spacing: Tokens.Space.m) {
+                    Text(verbatim: UserMessage(key: "picker.saveNickname", args: [offer.nickname, offer.contactName]).text)
+                        .font(Tokens.Fonts.body)
+                        .foregroundStyle(Tokens.Colors.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    SecondaryButton("picker.saveNickname.yes") { viewModel.saveNickname() }
+                    TextLinkButton("picker.saveNickname.no") { viewModel.dismissNicknameOffer() }
+                }
+                .padding(Tokens.Space.l)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+            }
+            ForEach(viewModel.primaryFields) { field in row(field, step) }
+            let details = viewModel.detailFields
+            if !details.isEmpty {
+                TextLinkButton(viewModel.showsDetails ? "review.lessDetails" : "review.moreDetails") {
+                    viewModel.showsDetails.toggle()
+                }
+                if viewModel.showsDetails {
+                    ForEach(details) { field in row(field, step) }
+                }
             }
             if let original = viewModel.originalInput {
                 Text(verbatim: original)
@@ -84,9 +167,88 @@ struct ReviewView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// Xác nhận (or destructive "Xác nhận xóa") · Sửa · Hủy (D-182, D-108).
+    private func row(_ field: Field, _ step: TaskStep) -> some View {
+        FieldRow(field: field, kind: step.kind, displayValue: viewModel.displayValue(field), compact: true,
+                 labelKey: viewModel.labelKey(field),
+                 onEdit: { Task { await viewModel.tapRow(field) } },
+                 onChoose: { Task { await viewModel.choose(field) } })
+        // TODO(spec): "Xem ảnh gốc" (S10, 1D.8) opens its screen later.
+    }
+
+    /// D-292 summary card: state badge, the main value in bold, one time line. Gets VoiceOver focus (UI_SCREENS §9).
+    private func summaryCard(_ step: TaskStep) -> some View {
+        VStack(alignment: .leading, spacing: Tokens.Space.s) {
+            StateBadge(step: step)
+            if let title = viewModel.summaryTitle {
+                Text(verbatim: title)
+                    .font(Tokens.Fonts.title)
+                    .foregroundStyle(Tokens.Colors.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if let time = viewModel.summaryTime {
+                Label { Text(verbatim: time) } icon: { Image(systemName: "clock").accessibilityHidden(true) }
+                    .font(Tokens.Fonts.body)
+                    .foregroundStyle(Tokens.Colors.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(Tokens.Space.l)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+        .accessibilityElement(children: .combine)
+        .accessibilityFocused($titleFocused)
+    }
+
+    /// D-295: every event the one "Xác nhận xóa" tap deletes.
+    private var batchDeleteCard: some View {
+        VStack(alignment: .leading, spacing: Tokens.Space.xs) {
+            Text(verbatim: UserMessage(key: "review.batchDelete.title", args: ["\(viewModel.batchDeleteRows.count)"]).text)
+                .font(Tokens.Fonts.body.weight(.semibold))
+                .foregroundStyle(Tokens.Colors.textPrimary)
+            ForEach(viewModel.batchDeleteRows, id: \.self) { row in
+                Label {
+                    Text(verbatim: row).fixedSize(horizontal: false, vertical: true)       // user data
+                } icon: {
+                    Image(systemName: "trash").accessibilityHidden(true)
+                }
+                .font(Tokens.Fonts.body)
+                .foregroundStyle(Tokens.Colors.textPrimary)
+            }
+        }
+        .padding(Tokens.Space.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+        .accessibilityElement(children: .combine)
+    }
+
+    /// D-299: "Khoai sẽ làm sau {n} giây…" + "Để tôi xem lại" (cancels; the step stays for "Xác nhận").
+    private func autoConfirmCard(_ seconds: Int) -> some View {
+        VStack(alignment: .leading, spacing: Tokens.Space.s) {
+            Label {
+                Text(verbatim: UserMessage(key: "review.autoConfirm.countdown", args: ["\(seconds)"]).text)
+                    .fixedSize(horizontal: false, vertical: true)
+            } icon: {
+                Image(systemName: "timer").accessibilityHidden(true)
+            }
+            .font(Tokens.Fonts.body.weight(.semibold))
+            .foregroundStyle(Tokens.Colors.textPrimary)
+            .accessibilityAddTraits(.updatesFrequently)
+            SecondaryButton("review.autoConfirm.stop", systemImage: "hand.raised") { viewModel.cancelAutoConfirm() }
+        }
+        .padding(Tokens.Space.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+        .onAppear {
+            AccessibilityNotification.Announcement(
+                UserMessage(key: "review.autoConfirm.countdown", args: ["\(seconds)"]).text).post()
+        }
+    }
+
+    /// Xác nhận (or destructive "Xác nhận xóa") · Sửa (D-182, D-108); "Hủy" is in the nav bar (D-292).
     private var actionBar: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.m) {
+            if let seconds = viewModel.autoConfirmSeconds { autoConfirmCard(seconds) }
+            if !viewModel.batchDeleteRows.isEmpty { batchDeleteCard }
             PrimaryButton(viewModel.isDelete ? "review.delete.confirm" : "common.confirm",
                           role: viewModel.isDelete ? .destructive : nil,
                           disabledReasonKey: viewModel.disabledReasonKey.map { LocalizedStringKey($0) }) {
@@ -100,7 +262,6 @@ struct ReviewView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             SecondaryButton("common.edit") { viewModel.startEdit() }
-            SecondaryButton("common.cancel") { viewModel.cancel() }
         }
         .padding(Tokens.Space.screenPadding)
         .background(Tokens.Colors.bg)

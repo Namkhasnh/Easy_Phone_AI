@@ -187,22 +187,11 @@ enum Validator {
         return cal.date(from: comps)
     }
 
-    /// D-253: `recipientName` is a phone number (DATA_MODEL §7.3: strip spaces / dots / dashes, VN local or E.164).
-    // TODO(spec): full phone normalization + masking is 1C.8; this check only recognises the §7.3 forms.
-    static func isPhoneNumber(_ value: String?) -> Bool {
-        guard let value else { return false }
-        let stripped = value.filter { !" .-".contains($0) }
-        return stripped.wholeMatch(of: /0[0-9]{9}/) != nil
-            || stripped.wholeMatch(of: /\+[1-9][0-9]{6,14}/) != nil
-    }
+    /// D-253: `recipientName` is a phone number (DATA_MODEL §7.3, `PhoneNumber`).
+    static func isPhoneNumber(_ value: String?) -> Bool { PhoneNumber.isPhone(value) }
 
-    /// DATA_MODEL §7.3: strip spaces / dots / dashes; VN local `0xxxxxxxxx` → `+84xxxxxxxxx`.
-    /// Returns nil when the result is not E.164. (Masking + the full test set: 1C.8.)
-    static func normalizePhone(_ value: String) -> String? {
-        let stripped = value.filter { !" .-".contains($0) }
-        let e164 = stripped.wholeMatch(of: /0[0-9]{9}/) != nil ? "+84" + stripped.dropFirst() : stripped
-        return isEncoded(e164, as: .phone) ? e164 : nil
-    }
+    /// DATA_MODEL §7.3 → E.164, nil when not a phone number (`PhoneNumber.normalize`).
+    static func normalizePhone(_ value: String) -> String? { PhoneNumber.normalize(value) }
 
     /// S05 inline check of one edited value (UI_SCREENS S05): encoding of any non-empty value (required or not)
     /// plus the §7.1 cross-field rules for that field. Empty → nil (the Review row then shows "Chưa có").

@@ -37,6 +37,27 @@ struct CalendarTodayTests {
         #expect(!vm.isEmpty)
     }
 
+    // MARK: - D-294 other days
+
+    @Test func dayFromVoiceShowsTomorrowAndArrowsMove() async {
+        let perms = MockPermissionManager([.calendar: .granted])
+        let vm = CalendarTodayViewModel(calendar: MockCalendarService([Self.event("a", "Khám răng", 9, 10),
+                                                                       Self.event("t", "Nha sĩ", 33, 34)]),
+                                        permissions: perms, repository: repo,
+                                        engine: TaskEngine(repository: repo, now: { Self.now }),
+                                        now: { Self.now }, timeZone: Self.tz, day: "2026-11-14")
+        await vm.load()
+        #expect(vm.titleKey == "calendar.title.tomorrow")
+        #expect(vm.rows.map(\.id) == ["t"])
+        #expect(vm.rows.first?.time == "09:00")
+        await vm.move(by: -1)
+        #expect(vm.titleKey == "calendar.title" && vm.rows.map(\.id) == ["a"])
+        await vm.move(by: -1)
+        #expect(vm.titleKey == "calendar.title.yesterday" && vm.isEmpty && vm.emptyKey == "calendar.empty.day")
+        await vm.move(by: 5)
+        #expect(vm.titleKey == "calendar.title.other")
+    }
+
     @Test func emptyDayShowsEmptyState() async {
         let (vm, _) = model([])
         #expect(!vm.isEmpty)                                                        // not before loading

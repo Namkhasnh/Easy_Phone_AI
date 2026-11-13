@@ -29,9 +29,17 @@ import Observation
     private let engine: TaskEngine
     private let now: () -> Date
     private let timeZone: TimeZone
+    /// D-294: days from today shown (◀ ▶); 0 = today.
+    private(set) var dayOffset = 0
 
     init(calendar: any CalendarService, permissions: any PermissionManager, repository: any TaskRepository,
-         engine: TaskEngine, now: @escaping () -> Date = { .now }, timeZone: TimeZone = .current) {
+         engine: TaskEngine, now: @escaping () -> Date = { .now }, timeZone: TimeZone = .current,
+         day: String? = nil) {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = timeZone
+        if let day, let parsed = Self.parseDay(day, timeZone: timeZone) {
+            dayOffset = cal.dateComponents([.day], from: cal.startOfDay(for: now()), to: parsed).day ?? 0
+        }
         self.engine = engine
         self.calendar = calendar
         self.permissions = permissions
@@ -40,8 +48,38 @@ import Observation
         self.timeZone = timeZone
     }
 
-    var dayText: String { FieldFormatter.day(now(), timeZone: timeZone) }
+    var dayText: String { FieldFormatter.day(shownDay.start, timeZone: timeZone) }
     var isEmpty: Bool { loaded && rows.isEmpty }
+
+    /// "Lịch hôm nay" / "Lịch ngày mai" / "Lịch hôm qua" / "Lịch hẹn" (+ `dayText` under it).
+    // TODO(spec): UI_SCREENS S11 only has "Lịch hôm nay"; the other titles / empty text are D-294 additions.
+    var titleKey: String {
+        switch dayOffset {
+        case 0: "calendar.title"
+        case 1: "calendar.title.tomorrow"
+        case -1: "calendar.title.yesterday"
+        default: "calendar.title.other"
+        }
+    }
+
+    var emptyKey: String { dayOffset == 0 ? "calendar.empty" : "calendar.empty.day" }
+
+    /// ◀ / ▶ (D-294).
+    func move(by days: Int) async {
+        dayOffset += days
+        selected = nil
+        rows = []
+        loaded = false
+        await load()
+    }
+
+    static func parseDay(_ day: String, timeZone: TimeZone) -> Date? {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = timeZone
+        f.dateFormat = "yyyy-MM-dd"
+        return f.date(from: day)
+    }
 
     /// On appear and when the app is active again. Never asks without the explainer (D-185).
     func load() async {
@@ -58,7 +96,7 @@ import Observation
             break
         }
         do {
-            let events = try await calendar.events(in: today)
+            let events = try await calendar.events(in: shownDay)
             self.events = events
             let conflicts = CalendarSearch.conflictingIds(events)
             rows = events.map { e in
@@ -137,10 +175,11 @@ import Observation
         selected.flatMap { URL(string: "calshow:\(Int($0.start.timeIntervalSinceReferenceDate))") }
     }
 
-    private var today: DateInterval {
+    private var shownDay: DateInterval {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = timeZone
-        let start = cal.startOfDay(for: now())
+        let today = cal.startOfDay(for: now())
+        let start = cal.date(byAdding: .day, value: dayOffset, to: today) ?? today
         return DateInterval(start: start, end: cal.date(byAdding: .day, value: 1, to: start) ?? start + 86_400)
     }
 }

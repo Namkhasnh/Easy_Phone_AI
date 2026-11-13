@@ -14,6 +14,8 @@ struct ConversationParseTests {
     let speech = MockSpeechService()
     let local = MockLocalDataRepository()
 
+    init() { local.settings().autoSend = false }                         // "Gửi" path; D-296 in ConversationTests
+
     static func fixture(_ name: String) throws -> ParsedDraft { try DraftBuilderTests.parsed(name) }
 
     func model(_ api: MockAPIClient, draft: TaskDraft, now: Date = evening) -> ConversationViewModel {
@@ -71,6 +73,24 @@ struct ConversationParseTests {
         guard case .unsupported(let u) = vm.mode else { Issue.record("mode \(vm.mode)"); return }
         #expect(u.reason == "recurringEvent")
         #expect(draft.steps.isEmpty)
+    }
+
+    @Test func viewCalendarOpensThatDayNotChuaHoTro() async {               // D-294
+        let view = ParsedDraft(schemaVersion: 1, requestId: "req_view", steps: [], followUpQuestion: nil,
+                               unsupported: ParsedUnsupported(reason: "viewCalendar", message: "Mở lịch của bạn.",
+                                                              date: "2026-11-09"))
+        let draft = typed("Cho tôi xem lịch trình ngày mai")
+        let vm = model(MockAPIClient(parse: .success(view)), draft: draft)
+        await vm.onAppear()
+        #expect(vm.calendarDay == "2026-11-09")
+        if case .unsupported = vm.mode { Issue.record("must not show Chưa hỗ trợ") }
+        #expect(draft.steps.isEmpty)                                           // nothing to execute
+
+        let noDay = ParsedDraft(schemaVersion: 1, requestId: "req_view2", steps: [], followUpQuestion: nil,
+                                unsupported: ParsedUnsupported(reason: "viewCalendar", message: "Mở lịch của bạn."))
+        let vm2 = model(MockAPIClient(parse: .success(noDay)), draft: typed("Xem lịch"))
+        await vm2.onAppear()
+        #expect(vm2.calendarDay == "2026-11-08")                               // today in the draft timezone
     }
 
     @Test func everyStepDroppedIsUnsupported() async {

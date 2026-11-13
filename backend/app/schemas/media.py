@@ -1,4 +1,4 @@
-"""Media endpoints (`/v1/transcribe` now, `/v1/ocr` in 1D): multipart `meta` part + responses (API_CONTRACT §7.3–7.4)."""
+"""Media endpoints `/v1/ocr`, `/v1/transcribe`: multipart `meta` part + responses (API_CONTRACT §7.3–7.4)."""
 
 from typing import Literal
 
@@ -11,6 +11,27 @@ class MediaMeta(BaseModel):
     model_config = ConfigDict(extra="forbid")
     schemaVersion: Literal[1]
     locale: Literal["vi-VN", "en-US"]
+
+
+class OCRBox(BaseModel):
+    """Vision `NormalizedRect` space: 0–1, origin bottom-left (API_CONTRACT §7.3)."""
+
+    x: float = Field(ge=0, le=1)
+    y: float = Field(ge=0, le=1)
+    width: float = Field(ge=0, le=1)
+    height: float = Field(ge=0, le=1)
+
+
+class OCRLine(BaseModel):
+    text: str
+    box: OCRBox
+
+
+class OCRResponse(BaseModel):
+    schemaVersion: int
+    requestId: str
+    text: str  # `lines[].text` joined by "\n"
+    lines: list[OCRLine]
 
 
 class TranscribeResponse(BaseModel):

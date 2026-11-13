@@ -11,7 +11,7 @@ enum DraftBuilder {
     /// Defaults the app fills when the LLM gave no value (DATA_MODEL §4 "Notes").
     struct Defaults: Sendable, Hashable {
         /// `place.mapsApp` — from `AppSettings.preferredMapsApp` (DATA_MODEL §5).
-        var mapsApp: String = "appleMaps"
+        var mapsApp: String = "googleMaps"    // D-298
         /// `ambiguity.date` = "Bạn muốn chọn ngày nào?" (UI_SCREENS §10). Injected so the builder stays pure.
         var dateQuestion: String = String(localized: "ambiguity.date")
     }
@@ -39,6 +39,26 @@ enum DraftBuilder {
                   deviceOnly: spec.deviceOnly)
         }
         return TaskStep(order: 0, kind: .calendarEvent, operation: operation, fields: fields, targetRef: event.id)
+    }
+
+    /// A reminder step on an existing EventKit reminder (S12: complete / snooze / update / delete). Fields of the
+    /// operation filled from the reminder (`source = .device("reminders")`) plus `values` (app-built, e.g.
+    /// `completed`, or the picked `snoozeOption`); `targetRef` = its identifier (🔒, D-056). Pure; `state = draft`.
+    static func step(from reminder: ReminderSummary, operation: TaskOperation, values extra: [String: String] = [:],
+                     timeZoneId: String, catalog: FieldCatalog = .mvp) -> TaskStep {
+        let tz = TimeZone(identifier: timeZoneId) ?? .current
+        let f = ISO8601DateFormatter()
+        f.timeZone = tz
+        f.formatOptions = [.withInternetDateTime]
+        var values: [String: String] = ["title": reminder.title]
+        values["dueDate"] = reminder.dueDate.map(f.string(from:))
+        values["notes"] = reminder.notes
+        values.merge(extra) { _, new in new }
+        let fields = catalog.fields(.reminder, operation).map { spec in
+            Field(id: spec.id, type: spec.type, value: values[spec.id],
+                  source: extra[spec.id] != nil ? .user : .device(origin: "reminders"), deviceOnly: spec.deviceOnly)
+        }
+        return TaskStep(order: 0, kind: .reminder, operation: operation, fields: fields, targetRef: reminder.id)
     }
 
     // MARK: - Build (first answer)
@@ -100,6 +120,7 @@ enum DraftBuilder {
         case (.calendarEvent, "allDay"): return "false"
         case (.calendarEvent, "alertMinutesBefore"): return "60"
         case (.sms, "channel"): return "sms"                       // built in, default (DATA_MODEL §4)
+        case (.call, "callType"): return "phone"                   // D-300: FaceTime only when the user says so
         case (.place, "mapsApp"): return defaults.mapsApp
         case (.reminder, "completed"): return "true"               // D-248: `true` = mark done; undo is app-built
         default: return nil
@@ -192,5 +213,47 @@ enum DraftBuilder {
             result[index] = Validator.applyRequired(step, catalog: catalog)
         }
         return result
+    }
+}
+
+// MARK: - Build from a photo (S09 → S04, 1D.7)
+
+extension DraftBuilder {
+    /// Phase 1D `nextAction` options; `ride` waits for Phase 3 (D-150 rule for Phase 3, D-142).
+    static let ocrNextActions: Set<String> = ["calendarEvent", "reminder", "copyContactInfo"]
+
+    /// The `ocr.create` step (DATA_MODEL §4): `extractedText` = the whole text read from the photo (= `originalInput`),
+    /// then the `/v1/extract` fields, each with its UTF-16 span into that text (§1.7), and the suggested `nextAction`.
+    /// `extract == nil` (the call failed) → only `extractedText`; the user can still type the rest. Pure; `state = draft`.
+    static func ocrStep(text: String, extract: ExtractResponse?, now: Date, catalog: FieldCatalog = .mvp) -> TaskStep {
+        let extracted = Dictionary((extract?.fields ?? []).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let fields = catalog.fields(.ocr, .create).map { spec -> Field in
+            var field = Field(id: spec.id, type: spec.type, source: .ai, deviceOnly: spec.deviceOnly)
+            switch spec.id {
+            case "extractedText":
+                // TODO(spec): DATA_MODEL §1.7 has no source for the whole OCR text; `.device("ocr")` (read on device or
+                // by `/v1/ocr`), no confidence, so the row is not marked "needs review".
+                field.value = cleaned(text) == nil ? nil : text   // exactly `originalInput`: spans index into it
+                field.source = .device(origin: "ocr")
+            case "nextAction":
+                if let action = extract?.suggestedNextAction, ocrNextActions.contains(action), !extracted.isEmpty {
+                    field.value = action
+                }
+            default:
+                guard let e = extracted[spec.id], let value = cleaned(e.value) else { break }
+                field.value = value
+                field.confidence = min(1, max(0, e.confidence))
+                if let span = e.span, span.start >= 0, span.end > span.start, span.end <= text.utf16.count {
+                    field.source = .ocr(span: SourceSpan(start: span.start, end: span.end))  // box: 1D.8 (S10)
+                } else {
+                    // TODO(spec): a field with `span: null` (API_CONTRACT §7.2) has no `.ocr(span:)`; kept as `.ai`
+                    // (confidence ≤ 0.5 from the backend → still "needs review").
+                    field.confidence = min(field.confidence ?? 0.5, 0.5)
+                }
+            }
+            return field
+        }
+        let step = TaskStep(order: 0, kind: .ocr, operation: .create, state: .draft, fields: fields, stateChangedAt: now)
+        return Validator.applyRequired(step, catalog: catalog)
     }
 }

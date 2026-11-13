@@ -188,6 +188,20 @@
           "type": "phone",
           "deviceOnly": true,
           "appBuilt": false
+        },
+        {
+          "id": "callType",
+          "type": "enumChoice",
+          "deviceOnly": false,
+          "appBuilt": false,
+          "options": [
+            "phone",
+            "facetimeAudio",
+            "facetimeVideo"
+          ],
+          "operations": [
+            "open"
+          ]
         }
       ],
       "required": [
@@ -279,6 +293,34 @@
                   "type": "equals",
                   "field": "channel",
                   "value": "sms"
+                },
+                {
+                  "type": "notPhoneNumber",
+                  "field": "recipientName"
+                }
+              ],
+              "fields": [
+                "contactId"
+              ]
+            },
+            {
+              "when": [
+                {
+                  "type": "equals",
+                  "field": "channel",
+                  "value": "zalo"
+                }
+              ],
+              "fields": [
+                "phoneNumber"
+              ]
+            },
+            {
+              "when": [
+                {
+                  "type": "equals",
+                  "field": "channel",
+                  "value": "zalo"
                 },
                 {
                   "type": "notPhoneNumber",

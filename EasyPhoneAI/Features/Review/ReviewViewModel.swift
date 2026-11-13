@@ -12,17 +12,62 @@ import Observation
     private(set) var didClose = false
     /// Set after "Xong": the View returns to Home (S02).
     private(set) var didFinish = false
-    /// S18 sheet before "Xác nhận" executes (ARCHITECTURE §5.1 step 0, D-185).
+    /// S18 sheet before "Xác nhận" executes (ARCHITECTURE §5.1 step 0, D-185), or before reading contacts (1C.9).
     var pendingPermission: PendingPermission?
+    /// S06 picker (UI_SCREENS S06, D-106): the field whose ambiguity is shown.
+    var pickingFieldId: String?
+    /// Name of the 🔒 `contactId` for the S04 contact row (read on device, never stored in the draft).
+    private(set) var contactName: String?
+    /// S07 after a copy hand-off (Zalo…, D-162).
+    var copyGuide: CopyGuide?
+    /// The prefilled system SMS composer (ARCHITECTURE §5.3); the step stays `processing` while it is open.
+    private(set) var pendingComposer: (recipients: [String], body: String)?
+    /// The iOS contact picker is shown ("Chọn trong danh bạ", 1C.9c).
+    var showsContactPicker = false
+    /// "Chọn trong danh bạ" was tapped on S06: the iOS picker opens only once the S06 sheet is fully gone
+    /// (BUG-006: presenting while the sheet was still closing left the picker frozen / off screen).
+    private(set) var contactPickerAfterSheet = false
+    /// Names of contacts handed over by the iOS picker (readable even without Contacts access).
+    private var pickedNames: [String: String] = [:]
+    /// S06 for the event of a calendar update / delete without `targetRef` (`ambiguity.event`).
+    var eventChoice: Ambiguity?
+    private var eventCandidates: [EventSummary] = []
+    /// `picker.saveNickname` offer after a contact was picked for a word that is not in its name (spec §6.6 AC3).
+    struct NicknameOffer: Equatable { let nickname: String; let contactId: String; let contactName: String }
+    private(set) var nicknameOffer: NicknameOffer?
+    /// What the S18 explainer was shown for (the same capability can be needed to confirm or to read).
+    private enum PermissionPurpose { case confirm, readContacts, readEvents }
+    private var permissionPurpose: PermissionPurpose = .confirm
 
     private let engine: TaskEngine
     private let permissions: any PermissionManager
+    private let contacts: any ContactsService
+    private let calendar: any CalendarService
+    private let localData: (any LocalDataRepository)?
+    private let system: any SystemService
+    private let services: SupportedServices
     private let snoozeMorningHour: Int
     private let catalog: FieldCatalog
     private let now: () -> Date
+    /// D-299 countdown: seconds left before the safe step runs by itself; nil = no countdown.
+    private(set) var autoConfirmSeconds: Int?
+    private var autoConfirmTask: Task<Void, Never>?
+    private var autoConfirmTried = false
+    private let autoConfirmTick: Duration
+    static let autoConfirmDelay = 3
 
     init(draftId: UUID, repository: any TaskRepository, engine: TaskEngine, permissions: any PermissionManager,
-         snoozeMorningHour: Int = 8, catalog: FieldCatalog = .mvp, now: @escaping () -> Date = { .now }) {
+         contacts: any ContactsService = MockContactsService(),
+         calendar: any CalendarService = MockCalendarService(), localData: (any LocalDataRepository)? = nil,
+         system: any SystemService = MockSystemService(), services: SupportedServices = .bundled,
+         snoozeMorningHour: Int = 8, catalog: FieldCatalog = .mvp, now: @escaping () -> Date = { .now },
+         autoConfirmTick: Duration = .seconds(1)) {
+        self.autoConfirmTick = autoConfirmTick
+        self.contacts = contacts
+        self.calendar = calendar
+        self.localData = localData
+        self.system = system
+        self.services = services
         self.snoozeMorningHour = snoozeMorningHour
         self.engine = engine
         self.permissions = permissions
@@ -54,15 +99,88 @@ import Observation
         let required = Validator.requiredFieldIds(step, catalog: catalog)
         return catalog.fields(step.kind, step.operation).compactMap { spec in
             if conditionalOnly.contains(spec.id) && !required.contains(spec.id) { return nil }
-            // TODO(spec): human rows for 🔒 `contactId` (name + photo + masked number) and `calendarId` (calendar
-            // name) need the device services (1C); hidden until then.
-            if spec.type == .contactRef || spec.id == "calendarId" { return nil }
+            // TODO(spec): the 🔒 `calendarId` row (calendar name) and the contact photo are not shown yet.
+            if spec.id == "calendarId" { return nil }
+            // TODO(spec): S04 says `coordinate` → small map; the filled coordinate row is hidden (name + address show it).
+            if spec.id == "coordinate", let f = step.field("coordinate"), f.value != nil, f.ambiguity == nil { return nil }
             return step.field(spec.id) ?? Field(id: spec.id, type: spec.type, deviceOnly: spec.deviceOnly)
         }
     }
 
+    // MARK: - Compact layout (D-292)
+
+    /// "Thêm chi tiết" is open.
+    var showsDetails = false
+
+    /// Rows shown at once (D-292): required, filled (a `false` switch does not count), needs review or ambiguous, and
+    /// the contact row. Calendar `endDate` is folded into the "Thời gian" row of `startDate`.
+    var primaryFields: [Field] { visibleFields.filter(isPrimary) }
+
+    /// Everything else, under "Thêm chi tiết".
+    var detailFields: [Field] { visibleFields.filter { !isPrimary($0) } }
+
+    private func isPrimary(_ field: Field) -> Bool {
+        if isCalendarTime, field.id == "endDate" { return false }
+        if field.required || field.needsReview || field.ambiguity != nil || field.type == .contactRef { return true }
+        guard let value = field.value, !value.isEmpty else { return false }
+        return !(field.type == .bool && value == "false")
+    }
+
+    private var isCalendarTime: Bool { step?.kind == .calendarEvent && step?.field("startDate") != nil }
+
+    /// `review.row.time` for the merged calendar start–end row, else `field.<kind>.<id>`.
+    func labelKey(_ field: Field) -> String? {
+        isCalendarTime && field.id == "startDate" ? "review.row.time" : nil
+    }
+
+    /// Summary card (D-292): the main value of the step, bold.
+    var summaryTitle: String? {
+        guard let step else { return nil }
+        for id in ["title", "recipientName", "name", "query", "label"] {
+            if let field = step.field(id), let text = displayValue(field), !text.isEmpty { return text }
+        }
+        return nil
+    }
+
+    /// Summary card time line: calendar start–end, reminder due date.
+    var summaryTime: String? {
+        guard let step else { return nil }
+        switch step.kind {
+        case .calendarEvent: return step.field("startDate").flatMap(displayValue)
+        case .reminder: return step.field("dueDate").flatMap(displayValue)
+        default: return nil
+        }
+    }
+
+    /// "Thứ Năm, 12/11 lúc 09:30–10:30" (same day) or "… lúc 09:30 – Thứ Sáu, 13/11 lúc 10:30".
+    private func timeRange(_ step: TaskStep) -> String? {
+        let tz = TimeZone(identifier: draft?.timeZoneId ?? "") ?? .current
+        guard let start = step.field("startDate")?.value.flatMap(Validator.parseDateTime) else { return nil }
+        let allDay = step.field("allDay")?.value == "true"
+        if allDay { return "\(FieldFormatter.day(start, timeZone: tz)) · \(UserMessage(key: "calendar.allDay").text)" }
+        let from = FieldFormatter.dateTime(start, timeZone: tz)
+        guard let end = step.field("endDate")?.value.flatMap(Validator.parseDateTime), end > start else { return from }
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = tz
+        return cal.isDate(start, inSameDayAs: end)
+            ? "\(from)–\(FieldFormatter.time(end, timeZone: tz))"
+            : "\(from) – \(FieldFormatter.dateTime(end, timeZone: tz))"
+    }
+
+    /// 🔒 rows (UI_SCREENS S04): `contactId` → the contact's name; a number taken from Contacts → "•••• 567" (§7.3).
     func displayValue(_ field: Field) -> String? {
-        FieldFormatter.display(field, timeZoneId: draft?.timeZoneId ?? TimeZone.current.identifier)
+        if isCalendarTime, field.id == "startDate", let step { return timeRange(step) }
+        if field.type == .contactRef { return field.value == nil ? nil : contactName }
+        if field.id == "phoneNumber", let value = field.value, field.source == .device(origin: "contacts") {
+            return PhoneNumber.masked(value)
+        }
+        return FieldFormatter.display(field, timeZoneId: draft?.timeZoneId ?? TimeZone.current.identifier)
+    }
+
+    /// Reads the contact name for the S04 row (on appear and after a pick).
+    func loadContactName() async {
+        guard let id = step?.field("contactId")?.value else { contactName = nil; return }
+        contactName = (try? await contacts.contact(id: id))?.displayName ?? pickedNames[id]
     }
 
     /// The bottom bar (Xác nhận / Sửa / Hủy) is shown before execution; afterwards the result card (1A.11b).
@@ -79,11 +197,12 @@ import Observation
     }
 
     var disabledReasonKey: String? {
+        if needsEventChoice { return "review.disabled.ambiguity" }      // which event: a choice, not an empty field
         switch blocker {
-        case .missing: "review.disabled.missing"
-        case .ambiguity: "review.disabled.ambiguity"
-        case .previousStep: "review.disabled.previousStep"
-        case .notConfirmable, nil: nil
+        case .missing: return "review.disabled.missing"
+        case .ambiguity: return "review.disabled.ambiguity"
+        case .previousStep: return "review.disabled.previousStep"
+        case .notConfirmable, nil: return nil
         }
     }
 
@@ -208,7 +327,9 @@ import Observation
 
     private func handOffMessage(_ step: TaskStep) -> String {
         switch (step.kind, step.operation) {
-        case (.call, _): return UserMessage(key: "result.call.handedOff").text
+        case (.call, _):
+            let facetime = (step.field("callType")?.value ?? "phone") != "phone"           // D-300
+            return UserMessage(key: facetime ? "result.facetime.handedOff" : "result.call.handedOff").text
         case (.place, .open):
             let app = step.field("mapsApp").flatMap(displayValue) ?? ""
             return UserMessage(key: "result.directions.handedOff", args: [app]).text
@@ -244,14 +365,222 @@ import Observation
 
     /// "Sửa": the first field needing review, else the first editable field (P-37).
     func startEdit() {
+        cancelAutoConfirm()
         let fields = visibleFields.filter { Self.isEditableInS05($0.type) }
         editingFieldId = (fields.first(where: \.needsReview) ?? fields.first)?.id
     }
 
-    /// Row tap → S05, except types set by pickers (S06 / S13 in 1C).
-    func tapRow(_ field: Field) {
-        // TODO(spec): `coordinate` / `placeRef` rows open S13 (1C.13), contact rows open S06 (1C.9).
-        if Self.isEditableInS05(field.type) { editingFieldId = field.id }
+    /// Row tap → S05, except types set by pickers: a field with an ambiguity or the contact row → S06.
+    func tapRow(_ field: Field) async {
+        cancelAutoConfirm()
+        // TODO(spec): `coordinate` / `placeRef` rows open S13 (1C.13).
+        if field.ambiguity != nil || field.type == .contactRef {
+            await choose(field)
+        } else if Self.isEditableInS05(field.type) {
+            editingFieldId = field.id
+        }
+    }
+
+    // MARK: - S06 picker (D-106, D-251)
+
+    /// "Chọn" / contact row: an existing ambiguity opens S06; an unresolved contact row first needs Contacts
+    /// (S18 step 0, D-185), then device resolution (1C.9) — which may fill it or bring an ambiguity.
+    func choose(_ field: Field) async {
+        if field.ambiguity != nil {
+            cancelAutoConfirm()
+            pickingFieldId = field.id
+            return
+        }
+        guard field.type == .contactRef || field.id == "phoneNumber" else { return }
+        permissionPurpose = .readContacts
+        switch permissions.status(.contacts) {
+        case .notDetermined:
+            pendingPermission = PendingPermission(capability: .contacts, variant: .explainer)
+        case .denied, .restricted, .writeOnly:
+            // The iOS contact picker needs no Contacts access: offer it at once instead of a dead end.
+            // TODO(spec): S18 denied fallback for contacts is "Nhập số điện thoại"; the system picker is used (fewer taps).
+            showsContactPicker = true
+        case .granted, .limited:
+            await resolveContacts()
+        }
+    }
+
+    /// S06 bottom actions for a contact choice (1C.9c).
+    var canOpenContacts: Bool { picking?.ambiguity.kind == .contact }
+
+    /// Limited access (iOS 18): Apple's search button for the spoken name.
+    var limitedQuery: String? {
+        guard picking?.ambiguity.kind == .contact, permissions.status(.contacts) == .limited else { return nil }
+        return step?.field("recipientName")?.value.map(NameNormalizer.matchKey)
+    }
+
+    func openContacts() {
+        contactPickerAfterSheet = true
+        pickingFieldId = nil
+    }
+
+    /// The S06 sheet finished closing (`onDismiss`): now the iOS contact picker can be presented.
+    func pickerSheetDismissed() {
+        guard contactPickerAfterSheet else { return }
+        contactPickerAfterSheet = false
+        showsContactPicker = true
+    }
+
+    /// A contact shared through `ContactAccessButton`: search again (it may now be the only match).
+    func limitedShared() async {
+        pickingFieldId = nil
+        await resolveContacts()
+    }
+
+    /// "Chọn trong danh bạ" result: the picked contact + its numbers (D-251: on device, no quota).
+    func pickedFromContacts(_ contact: PickedContact) {
+        guard let draft, let stepId else { return }
+        let spoken = step?.field("recipientName")?.value
+        pickedNames[contact.id] = contact.displayName
+        engine.pickContact(id: contact.id, displayName: contact.displayName, phones: contact.phones,
+                           stepId: stepId, in: draft)
+        contactName = contact.displayName
+        offerNickname(spoken: spoken, contactId: contact.id, name: contact.displayName)
+        if step?.field("phoneNumber")?.ambiguity != nil { pickingFieldId = "phoneNumber" }
+    }
+
+    private func offerNickname(spoken: String?, contactId: String, name: String) {
+        guard let spoken, localData != nil,
+              !ContactMatcher.contains(ContactRecord(id: contactId, givenName: name, familyName: "", phoneCount: 0),
+                                       NameNormalizer.matchKey(spoken)) else { return }
+        // "mẹ" → Nguyễn Thị Lan: the word is not part of the name, so remembering it saves the pick next time.
+        nicknameOffer = NicknameOffer(nickname: spoken, contactId: contactId, contactName: name)
+    }
+
+    /// The S06 field and its ambiguity.
+    var picking: (field: Field, ambiguity: Ambiguity)? {
+        guard let id = pickingFieldId, let field = step?.field(id), let ambiguity = field.ambiguity else { return nil }
+        return (field, ambiguity)
+    }
+
+    /// Row tap in S06: resolved on device (D-251), then the contact name / next ambiguity is shown.
+    /// `fieldId` is captured when the sheet opens: closing the sheet clears `pickingFieldId` before this task runs
+    /// (owner iPhone test 2026-11-11: picks were lost).
+    func pick(_ candidate: Candidate, fieldId: String) async {
+        guard let draft, let stepId else { return }
+        pickingFieldId = nil
+        if fieldId == "coordinate" {                                          // S06 place pick (1C.13b)
+            engine.pickPlace(candidate, stepId: stepId, in: draft)
+            return
+        }
+        let spoken = step?.field("recipientName")?.value
+        await engine.pick(candidate.id, fieldId: fieldId, stepId: stepId, in: draft)
+        await loadContactName()
+        if fieldId == "contactId", let name = contactName {
+            offerNickname(spoken: spoken, contactId: candidate.id, name: name)
+        }
+        if let next = step?.field("phoneNumber"), next.ambiguity != nil { pickingFieldId = next.id }   // then the number
+    }
+
+    /// "Lưu": the nickname is stored on the phone only (spec §6.6 AC3, DATA_MODEL §5) for the next match (§7.2).
+    func saveNickname() {
+        guard let offer = nicknameOffer else { return }
+        localData?.saveNickname(offer.nickname, contactId: offer.contactId)
+        nicknameOffer = nil
+    }
+
+    func dismissNicknameOffer() { nicknameOffer = nil }
+
+    // MARK: - Event choice (calendar update / delete without `targetRef`)
+
+    /// The step needs the user to say which event (no single match on the spoken day, or no calendar access then).
+    var needsEventChoice: Bool {
+        guard let step, showsActionBar, step.kind == .calendarEvent, step.targetRef == nil else { return false }
+        return step.operation == .update || step.operation == .delete
+    }
+
+    /// "Chọn" under `ambiguity.event`: needs calendar read access (S18 step 0), then S06 with the matching events.
+    func chooseEvent() async {
+        permissionPurpose = .readEvents
+        switch permissions.status(.calendar) {
+        case .notDetermined: pendingPermission = PendingPermission(capability: .calendar, variant: .explainer)
+        case .granted: await loadEventChoice()
+        default: pendingPermission = PendingPermission(capability: .calendar, variant: .denied)
+        }
+    }
+
+    private func loadEventChoice() async {
+        guard let step else { return }
+        let near = step.field("startDate")?.value.flatMap(Validator.parseDateTime)
+        let tz = TimeZone(identifier: draft?.timeZoneId ?? "") ?? .current
+        // Wider than the resolver's same-day rule: ±30 days around the spoken date, else the next year.
+        // TODO(spec): S06 for events has no window rule; `CalendarService.search` windows are used.
+        eventCandidates = (try? await calendar.search(title: step.field("title")?.value, near: near)) ?? []
+        eventChoice = Ambiguity(kind: .other, question: UserMessage(key: "ambiguity.event").text,
+                                candidates: eventCandidates.map {
+                                    Candidate(id: $0.id, title: $0.title,
+                                              subtitle: $0.isAllDay ? FieldFormatter.day($0.start, timeZone: tz)
+                                                                    : FieldFormatter.dateTime($0.start, timeZone: tz))
+                                })
+    }
+
+    func pickEvent(_ candidate: Candidate) {
+        eventChoice = nil
+        guard let draft, let stepId, let event = eventCandidates.first(where: { $0.id == candidate.id }) else { return }
+        engine.pickTarget(event, stepId: stepId, in: draft)
+    }
+
+    // MARK: - Multi-select delete (D-295)
+
+    /// The delete steps one "Xác nhận xóa" runs, in order (set by `pickEvents`); empty = a normal single step.
+    private(set) var batchStepIds: [UUID] = []
+
+    /// S06 with check boxes for a calendar delete (D-295); update stays a single pick.
+    var eventChoiceAllowsMany: Bool { isDelete }
+
+    func pickEvents(_ candidates: [Candidate]) {
+        eventChoice = nil
+        guard let draft, let stepId else { return }
+        let events = candidates.compactMap { c in eventCandidates.first { $0.id == c.id } }
+        guard !events.isEmpty else { return }
+        let ids = engine.pickTargets(events, stepId: stepId, in: draft)
+        batchStepIds = ids.count > 1 ? ids : []
+    }
+
+    /// S04 list "Sẽ xóa {n} lịch hẹn:" — title + time of every event in the batch (D-295: shown before the one tap).
+    var batchDeleteRows: [String] {
+        guard batchStepIds.count > 1, let draft else { return [] }
+        let tz = TimeZone(identifier: draft.timeZoneId) ?? .current
+        return batchStepIds.compactMap { id in
+            guard let step = draft.steps.first(where: { $0.id == id }) else { return nil }
+            let title = step.field("title")?.value ?? ""
+            let when = step.field("startDate")?.value.flatMap(Validator.parseDateTime)
+                .map { FieldFormatter.dateTime($0, timeZone: tz) }
+            return [title, when].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " — ")
+        }
+    }
+
+    /// S04 appears with a contact / number still to choose → S06 opens by itself (one tap less for the user).
+    // TODO(spec): UI_SCREENS S04 shows "Chọn" under the row; opening S06 at once is an owner request (2026-11-11).
+    func openPendingPicker() {
+        guard showsActionBar, pickingFieldId == nil, pendingPermission == nil, editingFieldId == nil,
+              let field = visibleFields.first(where: { ($0.type == .contactRef || $0.id == "phoneNumber" || $0.id == "coordinate")
+                                                       && $0.ambiguity != nil && !($0.ambiguity?.candidates.isEmpty ?? true) })
+        else { return }
+        pickingFieldId = field.id
+    }
+
+    /// Same for a calendar update / delete that still needs its event: with read access the list opens by itself
+    /// (owner iPhone test 2026-11-11: the card was below the fields and not seen). No access → the card's "Chọn" asks.
+    func openPendingEventChoice() async {
+        guard needsEventChoice, eventChoice == nil, pendingPermission == nil, permissions.status(.calendar) == .granted
+        else { return }
+        await loadEventChoice()
+        if eventChoice?.candidates.isEmpty == true { eventChoice = nil }   // nothing to pick: keep the card
+    }
+
+    private func resolveContacts() async {
+        guard let draft else { return }
+        await engine.resolveDevice(in: draft)
+        await loadContactName()
+        if let field = step?.fields.first(where: { ($0.type == .contactRef || $0.id == "phoneNumber") && $0.ambiguity != nil }) {
+            pickingFieldId = field.id
+        }
     }
 
     static func isEditableInS05(_ type: FieldType) -> Bool {
@@ -262,12 +591,14 @@ import Observation
     var editor: FieldEditorViewModel? {
         guard let id = editingFieldId, let step, let draft,
               let field = visibleFields.first(where: { $0.id == id }) else { return nil }
-        return FieldEditorViewModel(field: field, step: step, timeZoneId: draft.timeZoneId, now: now) { [weak self] value in
+        return FieldEditorViewModel(field: field, step: step, timeZoneId: draft.timeZoneId, now: now,
+                                    snoozeMorningHour: snoozeMorningHour) { [weak self] value in
             self?.edit(fieldId: id, value: value)
         }
     }
 
     func edit(fieldId: String, value: String?) {
+        cancelAutoConfirm()
         guard let draft, let stepId else { return }
         engine.edit(fieldId: fieldId, value: value, stepId: stepId, in: draft)
     }
@@ -276,6 +607,7 @@ import Observation
     /// denied / restricted → S18 denied variant. Otherwise the engine confirms (it re-checks everything).
     func confirm() async {
         guard let step else { return }
+        permissionPurpose = .confirm
         if let capability = Capability.required(for: step.kind) {
             switch permissions.status(capability) {
             case .notDetermined:
@@ -291,13 +623,17 @@ import Observation
         await execute()
     }
 
-    /// S18 "Cho phép": the system alert, then confirm when usable; a "no" shows the denied variant (D-185).
+    /// S18 "Cho phép": the system alert, then confirm (or read contacts) when usable; a "no" shows the denied variant.
     func allowPermission() async {
         guard let pending = pendingPermission, pending.variant == .explainer else { return }
         pendingPermission = nil
         let status = await permissions.request(pending.capability)
         if status.isUsable {
-            await execute()
+            switch permissionPurpose {
+            case .readContacts: await resolveContacts()
+            case .readEvents: if status == .granted { await loadEventChoice() }
+            case .confirm: await execute()
+            }
         } else {
             pendingPermission = PendingPermission(capability: pending.capability, variant: .denied)
         }
@@ -310,8 +646,45 @@ import Observation
 
     private func execute() async {
         guard let draft, let stepId else { return }
-        _ = await engine.confirm(stepId: stepId, in: draft)
-        // TODO(spec): `.needsUI` (SMS composer, ARCHITECTURE §5.3) is presented from 1C.11.
+        let result = await engine.confirm(stepId: stepId, in: draft)
+        if case .needsUI(.composer(let recipients, let body)) = result {
+            pendingComposer = (recipients, body)
+        }
+        showCopyGuideIfNeeded()
+        // D-295: the same tap deletes the other ticked events, in order; the first failure stops the batch.
+        guard batchStepIds.first == stepId, result == .finished(.succeeded) else { return }
+        for id in batchStepIds.dropFirst() {
+            guard await engine.confirm(stepId: id, in: draft) == .finished(.succeeded) else { break }
+        }
+    }
+
+    /// S07 right after a copy hand-off ("Đã sao chép — dán và gửi trong Zalo"), spec §6.8 AC3.
+    private func showCopyGuideIfNeeded() {
+        guard let step, step.kind == .sms, step.state == .handedOff,
+              let channel = step.field("channel")?.value, channel != "sms",
+              let service = services.service(channel) else { return }
+        guard step.handoffNote != SMSExecutor.chatNote(service.name) else { return }   // chat already open (D-297)
+        copyGuide = CopyGuide(serviceName: service.name, body: step.field("body")?.value ?? "", steps: service.guideSteps)
+    }
+
+    /// S07 "Đã xong": the user says it was sent (`handedOff` → `userMarkedDone`, D-242). Never automatic.
+    func copyGuideDone() {
+        copyGuide = nil
+        perform(.markDone)
+    }
+
+    /// S07 "Sao chép lại".
+    func copyAgain() async {
+        guard let body = copyGuide?.body else { return }
+        await system.copy(body)
+    }
+
+    /// Composer delegate (or the sheet closed without one = cancelled): `.sent` → succeeded with `msg:sent:<date>`,
+    /// `.cancelled` → back to `awaitingApproval` (D-222), `.failed` → failed (ARCHITECTURE §5.3).
+    func composerFinished(_ result: ComposerResult) {
+        guard pendingComposer != nil, let draft, let stepId else { return }
+        pendingComposer = nil
+        engine.composerFinished(stepId: stepId, result: result, in: draft)
     }
 
     /// Result card buttons. `done` / `later` are navigation; the View handles them (`didClose` / pop to Home).
@@ -327,8 +700,55 @@ import Observation
         }
     }
 
+    // MARK: - Auto-confirm (D-299, owner 2026-11-12)
+
+    /// Kinds that may run after the countdown; delete / update / complete / snooze always need the tap (D-108).
+    static func isAutoConfirmable(_ kind: TaskKind, _ operation: TaskOperation) -> Bool {
+        switch (kind, operation) {
+        case (.calendarEvent, .create), (.reminder, .create), (.place, .create), (.place, .open),
+             (.call, .open), (.sms, .open): true
+        default: false
+        }
+    }
+
+    /// Toggle on, fresh step ready to run, nothing open on top, permission already usable (no S18 on a timer).
+    var canAutoConfirm: Bool {
+        guard localData?.settings().autoConfirm == true, let step, step.state == .awaitingApproval, step.attempt == 0,
+              Self.isAutoConfirmable(step.kind, step.operation), blocker == nil, !needsEventChoice,
+              pickingFieldId == nil, editingFieldId == nil, pendingPermission == nil, eventChoice == nil else { return false }
+        if let capability = Capability.required(for: step.kind) { return permissions.status(capability).isUsable }
+        return true
+    }
+
+    /// Called once when S04 appears (after the pickers had their chance to open).
+    // TODO(spec): D-299 does not restart the countdown after an S06 pick / S05 edit; the user taps "Xác nhận" then.
+    func startAutoConfirmIfAllowed() {
+        guard !autoConfirmTried, canAutoConfirm else { return }
+        autoConfirmTried = true
+        autoConfirmSeconds = Self.autoConfirmDelay
+        autoConfirmTask = Task { @MainActor [weak self] in
+            while let self, let left = self.autoConfirmSeconds, left > 0 {
+                try? await Task.sleep(for: self.autoConfirmTick)
+                guard !Task.isCancelled, self.autoConfirmSeconds != nil else { return }
+                self.autoConfirmSeconds = left - 1
+            }
+            guard !Task.isCancelled, let self, self.autoConfirmSeconds == 0 else { return }
+            self.autoConfirmSeconds = nil
+            guard self.canAutoConfirm else { return }
+            await self.confirm()
+        }
+    }
+
+    /// "Để tôi xem lại", any edit / pick, "Hủy", or leaving S04.
+    func cancelAutoConfirm() {
+        autoConfirmTask?.cancel()
+        autoConfirmTask = nil
+        autoConfirmSeconds = nil
+    }
+
     /// "Hủy": cancels the step (draft kept, D-104) and leaves the screen.
     func cancel() {
+        cancelAutoConfirm()
         guard let draft, let stepId else { return }
         engine.cancel(stepId: stepId, in: draft)
         didClose = true

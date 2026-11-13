@@ -4,10 +4,14 @@ import SwiftUI
 /// Empty → "Chưa có". `needsReview` (D-126) → `warningBg` + `exclamationmark.triangle` + "Kiểm tra lại".
 /// OCR source → "Xem ảnh gốc". Ambiguity → its question + "Chọn" (D-106).
 /// `displayValue` is the value already formatted for people by the caller (dates, masked numbers…).
+/// `compact` (D-292, S04): one line — label left, value right — ≥ 56pt; stacked at accessibility sizes.
 struct FieldRow: View {
     let field: Field
     let kind: TaskKind
     let displayValue: String?
+    var compact = false
+    /// Replaces `field.<kind>.<id>` (e.g. `review.row.time` for the merged calendar time row).
+    var labelKey: String?
     var onEdit: () -> Void = {}
     var onViewSource: () -> Void = {}
     var onChoose: () -> Void = {}
@@ -16,11 +20,11 @@ struct FieldRow: View {
     @Environment(\.colorSchemeContrast) private var contrast
 
     private var hasValue: Bool { !(displayValue ?? "").isEmpty }
-    private var label: String { String(localized: String.LocalizationValue(field.labelKey(kind: kind))) }
+    private var label: String { String(localized: String.LocalizationValue(labelKey ?? field.labelKey(kind: kind))) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.s) {
-            Button(action: onEdit) { mainRow }
+            Button(action: onEdit) { if compact { compactRow } else { mainRow } }
                 .buttonStyle(.plain)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text(verbatim: accessibilityText))
@@ -37,8 +41,9 @@ struct FieldRow: View {
                 SecondaryButton("common.choose", action: onChoose)
             }
         }
-        .padding(Tokens.Space.l)
-        .frame(maxWidth: .infinity, minHeight: Tokens.Size.rowMinHeight, alignment: .leading)
+        .padding(compact ? Tokens.Space.m : Tokens.Space.l)
+        .frame(maxWidth: .infinity, minHeight: compact ? Tokens.Size.buttonMinHeight : Tokens.Size.rowMinHeight,
+               alignment: .leading)
         .background(field.needsReview ? Tokens.Colors.warningBg : Tokens.Colors.surface,
                     in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
         .overlay {
@@ -47,6 +52,43 @@ struct FieldRow: View {
                     .strokeBorder(Tokens.Colors.border, lineWidth: Tokens.Size.borderIncreasedContrast)
             }
         }
+    }
+
+    /// D-292: "Tên lịch   Đi đá bóng sân bkc  ›" on one line; label above value at AX sizes.
+    private var compactRow: some View {
+        let layout = typeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: Tokens.Space.xs))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: Tokens.Space.m))
+        let tint = field.needsReview ? Tokens.Colors.warning : Tokens.Colors.textSecondary
+        return HStack(spacing: Tokens.Space.s) {
+            layout {
+                HStack(spacing: Tokens.Space.xs) {
+                    if field.needsReview {
+                        Image(systemName: "exclamationmark.triangle").accessibilityHidden(true)   // state = icon + color
+                    }
+                    Text(verbatim: label)
+                }
+                .font(Tokens.Fonts.label)
+                .foregroundStyle(tint)
+                .fixedSize(horizontal: !typeSize.isAccessibilitySize, vertical: true)
+                Group {
+                    if hasValue {
+                        Text(verbatim: displayValue ?? "").foregroundStyle(Tokens.Colors.textPrimary)
+                    } else {
+                        Text("common.empty").foregroundStyle(tint)
+                    }
+                }
+                .font(Tokens.Fonts.body.weight(.semibold))
+                .multilineTextAlignment(typeSize.isAccessibilitySize ? .leading : .trailing)
+                .frame(maxWidth: .infinity, alignment: typeSize.isAccessibilitySize ? .leading : .trailing)
+                .fixedSize(horizontal: false, vertical: true)
+            }
+            Image(systemName: "chevron.right")
+                .font(Tokens.Fonts.label)
+                .foregroundStyle(tint)
+                .accessibilityHidden(true)
+        }
+        .contentShape(Rectangle())
     }
 
     private var mainRow: some View {

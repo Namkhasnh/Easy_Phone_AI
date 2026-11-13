@@ -82,7 +82,7 @@ struct FieldEditorTests {
 
     // MARK: - Wired to Review (S04 → S05 → engine)
 
-    @Test func reviewSaveGoesThroughEngine() {
+    @Test func reviewSaveGoesThroughEngine() async {
         let repo = MockTaskRepository()
         let engine = TaskEngine(repository: repo, now: { Self.now })
         let fields = FieldCatalog.mvp.fields(.reminder, .create).map {
@@ -96,7 +96,7 @@ struct FieldEditorTests {
                                      permissions: MockPermissionManager(), now: { Self.now })
         #expect(review.step?.state == .needsInfo)
 
-        review.tapRow(review.visibleFields.first { $0.id == "dueDate" }!)
+        await review.tapRow(review.visibleFields.first { $0.id == "dueDate" }!)
         let editor = try! #require(review.editor)
         editor.setDay(offset: 1)
         editor.save()

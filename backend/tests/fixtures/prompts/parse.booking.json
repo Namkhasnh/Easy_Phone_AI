@@ -23,7 +23,8 @@
     "followUpQuestion": null,
     "unsupported": {
       "reason": "booking",
-      "message": "Chưa hỗ trợ đặt xe."
+      "message": "Chưa hỗ trợ đặt xe.",
+      "date": null
     }
   },
   "liveMatch": {
