@@ -46,6 +46,9 @@ import Observation
     private let localData: (any LocalDataRepository)?
     private let system: any SystemService
     private let tts: any TTSService
+    private let images: any ImageStore
+    /// S10 over S04 ("Xem ảnh gốc", UI_SCREENS S10).
+    var sourceImage: SourceImageViewModel?
     private let services: SupportedServices
     private let snoozeMorningHour: Int
     private let catalog: FieldCatalog
@@ -61,6 +64,7 @@ import Observation
          contacts: any ContactsService = MockContactsService(),
          calendar: any CalendarService = MockCalendarService(), localData: (any LocalDataRepository)? = nil,
          system: any SystemService = MockSystemService(), tts: any TTSService = MockTTSService(),
+         images: any ImageStore = MockImageStore(),
          services: SupportedServices = .bundled,
          snoozeMorningHour: Int = 8, catalog: FieldCatalog = .mvp, now: @escaping () -> Date = { .now },
          autoConfirmTick: Duration = .seconds(1)) {
@@ -70,6 +74,7 @@ import Observation
         self.localData = localData
         self.system = system
         self.tts = tts
+        self.images = images
         self.services = services
         self.snoozeMorningHour = snoozeMorningHour
         self.engine = engine
@@ -250,6 +255,13 @@ import Observation
         stopReading()
         engine.cancel(stepId: stepId, in: draft)
         didRetake = true
+    }
+
+    /// "Xem ảnh gốc" on a field read from the photo (D-126) → S10.
+    func viewSource(_ field: Field) {
+        guard field.source.isOCR, let draft, let step else { return }
+        stopReading()
+        sourceImage = SourceImageViewModel(field: field, kind: step.kind, draft: draft, images: images)
     }
 
     /// Tapping the selected row again clears it (no next step).

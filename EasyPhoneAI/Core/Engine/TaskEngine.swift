@@ -222,12 +222,12 @@ import os
     /// (`nil` when that call failed). Validated (→ `awaitingApproval`: only `extractedText` is required) and saved once.
     /// Returns `false` when the draft already has steps (a second extract never replaces what the user saw).
     @discardableResult
-    func applyExtract(_ extract: ExtractResponse?, text: String, to draft: TaskDraft) -> Bool {
+    func applyExtract(_ extract: ExtractResponse?, text: String, lines: [OCRLine] = [], to draft: TaskDraft) -> Bool {
         guard draft.steps.isEmpty else {
             logger.warning("applyExtract: draft already has steps")
             return false
         }
-        var step = DraftBuilder.ocrStep(text: text, extract: extract, now: now())
+        var step = DraftBuilder.ocrStep(text: text, extract: extract, lines: lines, now: now())
         revalidateInPlace(&step)
         draft.steps = [step]
         draft.serverRequestId = extract?.requestId

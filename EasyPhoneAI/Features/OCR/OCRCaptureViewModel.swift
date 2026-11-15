@@ -119,7 +119,7 @@ import OSLog
             guard !result.isEmpty else { mode = .noText; return }        // spec §6.3 AC5: no `/v1/extract` call
             draft.originalInput = result.text
             repository.save(draft)
-            await extract(result.text, draft: draft)
+            await extract(result.text, lines: result.lines, draft: draft)
             mode = .read
         } catch {
             // TODO(spec): S09 has no text for a failed read (offline fallback…); the "no text" mode offers a retake.
@@ -132,7 +132,7 @@ import OSLog
     /// Any failure (offline, quota, 5xx) still opens S04 with the text, so nothing read is lost (D-104).
     // TODO(spec): S09 has no message for a failed `/v1/extract` (offline, 402 quota…); S04 opens with `extractedText`
     // only and the user fills the rest by hand. Revisit with 1F (paywall on 402).
-    private func extract(_ text: String, draft: TaskDraft) async {
+    private func extract(_ text: String, lines: [OCRLine], draft: TaskDraft) async {
         let zone = TimeZone(identifier: draft.timeZoneId) ?? .current
         let request = ExtractRequest(ocrText: text, now: ParseRequest.nowString(now(), in: zone),
                                      timezone: zone.identifier, locale: draft.locale)
@@ -142,7 +142,7 @@ import OSLog
         } catch {
             logger.info("extract failed: \((error as? AppError)?.code ?? "unknown", privacy: .public)")
         }
-        if engine.applyExtract(response, text: text, to: draft) || !draft.steps.isEmpty {
+        if engine.applyExtract(response, text: text, lines: lines, to: draft) || !draft.steps.isEmpty {
             reviewDraftId = draft.id
         }
     }

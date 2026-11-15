@@ -69,6 +69,10 @@ struct ReviewView: View {
         .onChange(of: viewModel.step?.state) { titleFocused = true }      // focus the title after each result (§9)
         .onChange(of: viewModel.didClose) { _, closed in if closed { dismiss() } }
         .onChange(of: viewModel.didFinish) { _, finished in if finished { router.popToRoot() } }
+        .fullScreenCover(isPresented: Binding(get: { viewModel.sourceImage != nil },
+                                              set: { if !$0 { viewModel.sourceImage = nil } })) {
+            if let source = viewModel.sourceImage { SourceImageView(viewModel: source) }   // S10
+        }
         .onChange(of: viewModel.didRetake) { _, retake in if retake { router.replaceLast(with: .ocr) } }
         .sensoryFeedback(trigger: viewModel.step?.state) { _, new in      // §1.3 haptics
             switch new {
@@ -177,8 +181,8 @@ struct ReviewView: View {
             FieldRow(field: field, kind: step.kind, displayValue: viewModel.displayValue(field), compact: true,
                      labelKey: viewModel.labelKey(field),
                      onEdit: { Task { await viewModel.tapRow(field) } },
+                     onViewSource: { viewModel.viewSource(field) },
                      onChoose: { Task { await viewModel.choose(field) } })
-            // TODO(spec): "Xem ảnh gốc" (S10, 1D.8) opens its screen later.
             if viewModel.canReadAloud(field) {
                 // UI_SCREENS S09 step 3: the photo text row has "Đọc to".
                 TextLinkButton(viewModel.isReading ? "common.stopReading" : "common.readAloud") {
