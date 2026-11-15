@@ -84,7 +84,8 @@ struct AppEnvironment: Sendable {
         let system = MockSystemService()
         let places = MockPlacesService()
         let auth = scenario == .uiTest ? MockAuthService(initial: .signedIn(userId: MockAuthService.userId)) : MockAuthService()
-        let api = scenario == .uiTest ? MockAPIClient(parseRouter: uiTestParse) : MockAPIClient()
+        let api = scenario == .uiTest ? MockAPIClient(parseRouter: uiTestParse, extract: .success(uiTestExtract()))
+                                      : MockAPIClient()
         return AppEnvironment(config: .mock, auth: auth, api: api, drafts: drafts,
                               localData: localData,
                               engine: TaskEngine(repository: drafts,
@@ -103,6 +104,24 @@ struct AppEnvironment: Sendable {
                               system: system, places: places,
                               images: MockImageStore(), photoLibrary: MockPhotoLibraryService(),
                               ocr: MockOCRService())
+    }
+
+    /// `MockScenario.uiTest` `/v1/extract` (flow 1, 1D.11): `ExtractResponse.mock` with the date moved to tomorrow
+    /// 09:30, so the linked event / reminder is not "in the past" whenever the test runs.
+    private static func uiTestExtract(now: Date = .now) -> ExtractResponse {
+        let tz = TimeZone.current
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = tz
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: now) ?? now
+        let date = calendar.date(bySettingHour: 9, minute: 30, second: 0, of: tomorrow) ?? tomorrow
+        let value = ParseRequest.nowString(date, in: tz)
+        let mock = ExtractResponse.mock
+        return ExtractResponse(schemaVersion: mock.schemaVersion, requestId: mock.requestId,
+                               fields: mock.fields.map { field in
+                                   guard field.id == "dateTime" else { return field }
+                                   return .init(id: field.id, value: value, confidence: field.confidence, span: field.span)
+                               },
+                               suggestedNextAction: mock.suggestedNextAction)
     }
 
     /// `MockScenario.uiTest` `/v1/parse`: a request starting with "Gọi" → call anh Minh, anything else → `mockSMS`.
