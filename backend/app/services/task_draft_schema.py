@@ -26,7 +26,7 @@ SCHEMA_NAME = "ParsedDraftLLM"
 # API_CONTRACT §7.1: `unsupported.reason` values.
 UNSUPPORTED_REASONS = [
     "recurringEvent", "invitation", "emailSend", "booking", "payment",
-    "multiPageOcr", "bulkAction", "phaseNotEnabled", "other",
+    "multiPageOcr", "bulkAction", "phaseNotEnabled", "viewCalendar", "other",
 ]
 DATE_TYPES = {"dateTime", "date"}
 
@@ -68,6 +68,7 @@ def build(enabled_kinds: list[str], catalog: dict[str, Any] | None = None) -> di
     unsupported = _obj({
         "reason": {"type": "string", "enum": UNSUPPORTED_REASONS},
         "message": {"type": "string"},
+        "date": {"type": ["string", "null"]},  # D-294: day to show for viewCalendar (YYYY-MM-DD)
     })
     return _obj({
         "steps": {"type": "array", "items": {"anyOf": [_step(k) for k in kinds]}},

@@ -10,6 +10,7 @@ import os
     private let executors: [TaskKind: any StepExecutor]
     private let now: @MainActor () -> Date
     private let serviceIds: Set<String>
+    private let resolver: DeviceResolver?
     private let logger = Logger(subsystem: "vn.namkhanh.easyphone", category: "taskEngine")
 
     /// `nonisolated` so `AppEnvironment.mock()` (also the `@Entry` default) can build it off the main actor.
@@ -17,8 +18,10 @@ import os
         repository: any TaskRepository,
         executors: [TaskKind: any StepExecutor] = [:],   // one per kind, added in 1C / 1D
         serviceIds: Set<String> = [],                   // SupportedServices.json ids (1C.12)
+        resolver: DeviceResolver? = nil,                // contacts / calendar lookups (1C.9)
         now: @escaping @MainActor () -> Date = { .now }
     ) {
+        self.resolver = resolver
         self.repository = repository
         self.executors = executors
         self.serviceIds = serviceIds
@@ -35,6 +38,22 @@ import os
         // TODO(spec): S11 drafts have no spoken / typed input; `originalInput` stays empty, `inputMode = .text`.
         let draft = TaskDraft(inputMode: .text, originalInput: "", timeZoneId: timeZoneId,
                               steps: [DraftBuilder.step(from: event, operation: operation, timeZoneId: timeZoneId)])
+        repository.save(draft)
+        revalidate(stepId: draft.steps[0].id, in: draft)
+        return draft
+    }
+
+    /// New draft with one step on an existing reminder (S12), saved and validated. Only `complete` may be confirmed
+    /// right away by the caller (one tap, D-107); every other operation goes to S04 first (spec §6.5 AC3).
+    func startDraft(from reminder: ReminderSummary, operation: TaskOperation, values: [String: String] = [:],
+                    timeZoneId: String = TimeZone.current.identifier) -> TaskDraft? {
+        guard !reminder.isRecurring, TaskKind.reminder.allowedOperations.contains(operation), operation != .create else {
+            return nil
+        }
+        // TODO(spec): S12 drafts have no spoken / typed input; `originalInput` stays empty, `inputMode = .text`.
+        let draft = TaskDraft(inputMode: .text, originalInput: "", timeZoneId: timeZoneId,
+                              steps: [DraftBuilder.step(from: reminder, operation: operation, values: values,
+                                                        timeZoneId: timeZoneId)])
         repository.save(draft)
         revalidate(stepId: draft.steps[0].id, in: draft)
         return draft
@@ -184,6 +203,159 @@ import os
         return true
     }
 
+    /// S09 → S04 (1D.7): the photo draft gets its one `ocr.create` step from the text read and the `/v1/extract` result
+    /// (`nil` when that call failed). Validated (→ `awaitingApproval`: only `extractedText` is required) and saved once.
+    /// Returns `false` when the draft already has steps (a second extract never replaces what the user saw).
+    @discardableResult
+    func applyExtract(_ extract: ExtractResponse?, text: String, to draft: TaskDraft) -> Bool {
+        guard draft.steps.isEmpty else {
+            logger.warning("applyExtract: draft already has steps")
+            return false
+        }
+        var step = DraftBuilder.ocrStep(text: text, extract: extract, now: now())
+        revalidateInPlace(&step)
+        draft.steps = [step]
+        draft.serverRequestId = extract?.requestId
+        save(draft)
+        return true
+    }
+
+    /// DATA_MODEL §6.2 "run device resolution" for every step still open: contacts, calendar `targetRef`
+    /// (ARCHITECTURE §5). Call after `applyParsed` / `mergeAnswer`. Saved once.
+    func resolveDevice(in draft: TaskDraft) async {
+        guard let resolver else { return }
+        for step in draft.steps where DraftBuilder.mergeableStates.contains(step.state) {
+            let resolution = await resolver.resolve(step, timeZoneId: draft.timeZoneId)
+            guard !resolution.isEmpty else { continue }
+            apply(resolution, stepId: step.id, in: draft)
+        }
+    }
+
+    /// Writes a device resolution into one step (values + ambiguities + `targetRef`), then re-validates.
+    /// Fields the user set (`source = .user`) are never overwritten.
+    func apply(_ resolution: DeviceResolution, stepId: UUID, in draft: TaskDraft) {
+        guard let index = draft.steps.firstIndex(where: { $0.id == stepId }),
+              DraftBuilder.mergeableStates.contains(draft.steps[index].state) else { return }
+        var step = draft.steps[index]
+        for (id, value) in resolution.values {
+            guard let f = step.fields.firstIndex(where: { $0.id == id }), step.fields[f].source != .user else { continue }
+            step.fields[f].value = value
+            step.fields[f].source = .device(origin: resolution.origin)
+            step.fields[f].confidence = nil
+            step.fields[f].ambiguity = nil
+        }
+        for (id, ambiguity) in resolution.ambiguities {
+            guard let f = step.fields.firstIndex(where: { $0.id == id }) else { continue }
+            step.fields[f].ambiguity = ambiguity
+        }
+        if let ref = resolution.targetRef { step.targetRef = ref }
+        revalidateInPlace(&step)
+        draft.steps[index] = step
+        propagateLinks(from: stepId, fieldIds: Set(resolution.values.keys), in: draft)
+        save(draft)
+    }
+
+    /// S06 pick (D-251: on device, no `/v1/parse`): the candidate becomes the field value as a user choice (ambiguity
+    /// cleared, approval reset if any, D-101). Picking a contact also resolves its number (`phoneNumber` cleared first).
+    func pick(_ candidateId: String, fieldId: String, stepId: UUID, in draft: TaskDraft) async {
+        guard edit(fieldId: fieldId, value: candidateId, stepId: stepId, in: draft) else { return }
+        guard fieldId == "contactId", let resolver,
+              let index = draft.steps.firstIndex(where: { $0.id == stepId }) else { return }
+        // The old contact's number no longer applies (unless the user typed one); `apply` re-validates and saves.
+        if let f = draft.steps[index].fields.firstIndex(where: { $0.id == "phoneNumber" }),
+           draft.steps[index].fields[f].source != .user {
+            draft.steps[index].fields[f].value = nil
+            draft.steps[index].fields[f].ambiguity = nil
+            draft.steps[index].fields[f].source = .device(origin: "contacts")
+        }
+        let name = draft.steps[index].field("recipientName")?.value ?? ""
+        apply(await resolver.numberResolution(contactId: candidateId, name: name), stepId: stepId, in: draft)
+    }
+
+    /// A contact chosen in the iOS contact picker (S06 "Chọn trong danh bạ", 1C.9c): `contactId` as a user choice and its
+    /// numbers handed over by the picker (works without Contacts access). Old non-user number cleared first.
+    func pickContact(id: String, displayName: String, phones: [PhoneEntry], stepId: UUID, in draft: TaskDraft) {
+        guard edit(fieldId: "contactId", value: id, stepId: stepId, in: draft),
+              let index = draft.steps.firstIndex(where: { $0.id == stepId }) else { return }
+        if let f = draft.steps[index].fields.firstIndex(where: { $0.id == "phoneNumber" }),
+           draft.steps[index].fields[f].source != .user {
+            draft.steps[index].fields[f].value = nil
+            draft.steps[index].fields[f].ambiguity = nil
+            draft.steps[index].fields[f].source = .device(origin: "contacts")
+        }
+        var r = DeviceResolution(origin: "contacts")
+        DeviceResolver.addNumber(from: phones, askingFor: displayName, into: &r)
+        apply(r, stepId: stepId, in: draft)
+    }
+
+    /// S06 place pick (`.place` ambiguity on `coordinate`): the candidate's name / address / coordinate as user choices.
+    func pickPlace(_ candidate: Candidate, stepId: UUID, in draft: TaskDraft) {
+        guard edit(fieldId: "coordinate", value: candidate.id, stepId: stepId, in: draft) else { return }
+        edit(fieldId: "name", value: candidate.title, stepId: stepId, in: draft)
+        if let address = candidate.subtitle { edit(fieldId: "address", value: address, stepId: stepId, in: draft) }
+    }
+
+    /// New draft with one place step from S13 (save / directions), saved and validated; S04 confirms (D-100).
+    func startDraft(from place: PlaceResult, operation: TaskOperation, mapsApp: String,
+                    timeZoneId: String = TimeZone.current.identifier) -> TaskDraft? {
+        guard operation == .create || operation == .open else { return nil }
+        var values = DeviceResolver.placeValues(name: place.name, address: place.address, coordinate: place.coordinate)
+        values["query"] = place.name
+        if operation == .open { values["mapsApp"] = mapsApp }
+        let fields = FieldCatalog.mvp.fields(.place, operation).map {
+            Field(id: $0.id, type: $0.type, value: values[$0.id],
+                  source: values[$0.id] == nil ? .user : .device(origin: "maps"), deviceOnly: $0.deviceOnly)
+        }
+        // TODO(spec): S13 drafts have no spoken / typed input; `originalInput` stays empty, `inputMode = .text`.
+        let draft = TaskDraft(inputMode: .text, originalInput: "", timeZoneId: timeZoneId,
+                              steps: [TaskStep(order: 0, kind: .place, operation: operation, fields: fields)])
+        repository.save(draft)
+        revalidate(stepId: draft.steps[0].id, in: draft)
+        return draft
+    }
+
+    /// S06 event pick for calendar update / delete (D-106, D-251): `targetRef` + the event's fields.
+    func pickTarget(_ event: EventSummary, stepId: UUID, in draft: TaskDraft) {
+        guard let step = draft.steps.first(where: { $0.id == stepId }),
+              step.kind == .calendarEvent, step.operation == .update || step.operation == .delete else { return }
+        apply(DeviceResolver.resolution(for: event, step: step, timeZoneId: draft.timeZoneId), stepId: stepId, in: draft)
+    }
+
+    /// D-295: several events ticked for one calendar delete. The first becomes this step's target; each other one gets
+    /// its own `delete` step right after it (same draft, one tap confirms them in order on S04). Saved once.
+    /// Returns the ids of every delete step of the batch, in order.
+    @discardableResult
+    func pickTargets(_ events: [EventSummary], stepId: UUID, in draft: TaskDraft) -> [UUID] {
+        guard let first = events.first, let index = draft.steps.firstIndex(where: { $0.id == stepId }),
+              draft.steps[index].kind == .calendarEvent, draft.steps[index].operation == .delete else { return [] }
+        pickTarget(first, stepId: stepId, in: draft)
+        let baseOrder = draft.steps[index].order
+        let extra = events.dropFirst()
+        guard !extra.isEmpty else { return [stepId] }
+        for i in draft.steps.indices where draft.steps[i].order > baseOrder {
+            draft.steps[i].order += extra.count                       // keep later steps after the batch
+        }
+        var ids = [stepId]
+        for (offset, event) in extra.enumerated() {
+            let fields = FieldCatalog.mvp.fields(.calendarEvent, .delete).map {
+                Field(id: $0.id, type: $0.type, source: .device(origin: "calendar"), deviceOnly: $0.deviceOnly)
+            }
+            var step = TaskStep(order: baseOrder + offset + 1, kind: .calendarEvent, operation: .delete, fields: fields,
+                                stateChangedAt: now())
+            let resolution = DeviceResolver.resolution(for: event, step: step, timeZoneId: draft.timeZoneId)
+            for (id, value) in resolution.values {
+                if let f = step.fields.firstIndex(where: { $0.id == id }) { step.fields[f].value = value }
+            }
+            step.targetRef = resolution.targetRef
+            revalidateInPlace(&step)
+            draft.steps.append(step)
+            ids.append(step.id)
+        }
+        draft.steps.sort { $0.order < $1.order }
+        save(draft)
+        return ids
+    }
+
     /// The ONE question S03 asks next (D-281), or nil → open S04.
     func nextFollowUp(in draft: TaskDraft) -> FollowUpPrompt? {
         FollowUpPlanner.next(in: draft, now: now(), serviceIds: serviceIds)
@@ -240,6 +412,7 @@ import os
         }
         revalidateInPlace(&step)
         draft.steps[index] = step
+        propagateLinks(from: stepId, fieldIds: [fieldId], in: draft)
         // The backend wording was about the state before this edit (e.g. a chip pick, D-251); later questions use
         // the catalog text (D-281).
         draft.followUpQuestion = nil
@@ -247,11 +420,84 @@ import os
         return true
     }
 
+    // MARK: - Launch verification (ARCHITECTURE §5.4, D-125)
+
+    /// App was killed while this step ran: `processing` → `interrupted` → `unknown` (spec §5.2).
+    @discardableResult
+    func interrupt(stepId: UUID, in draft: TaskDraft) -> Bool { apply(.interrupted, stepId: stepId, in: draft) }
+
+    /// `unknown` → `actionVerified` (`succeeded`, evidence stored, D-124) when the executor finds evidence; else
+    /// stays `unknown` (the user may "Thử lại" or "Tôi đã làm xong", D-243). Returns true when verified.
+    @discardableResult
+    func verifyOnLaunch(stepId: UUID, in draft: TaskDraft) async -> Bool {
+        guard let step = draft.steps.first(where: { $0.id == stepId }), step.state == .unknown,
+              let executor = executors[step.kind],
+              let evidence = await executor.evidenceOnLaunch(step), !evidence.isEmpty,
+              let index = draft.steps.firstIndex(where: { $0.id == stepId }),
+              draft.steps[index].state == .unknown else { return false }
+        var updated = draft.steps[index]
+        updated.resultEvidence = evidence
+        guard applyInPlace(.actionVerified, to: &updated) else { return false }
+        draft.steps[index] = updated
+        save(draft)
+        return true
+    }
+
+    // MARK: - Linked steps (DATA_MODEL §3.3, D-120)
+
+    /// Copies the current value of each source field into every field linked to it (`.linked(stepId:fieldId:)`,
+    /// the link is kept) and gives that step `userEdited` (approval reset, D-101), then re-validates it. Follows
+    /// chains (A → B → C); each (step, field) is visited once. Caller saves.
+    private func propagateLinks(from stepId: UUID, fieldIds: Set<String>, in draft: TaskDraft) {
+        var queue = fieldIds.map { (stepId, $0) }
+        var visited = Set(fieldIds.map { "\(stepId)/\($0)" })
+        while !queue.isEmpty {
+            let (sourceStep, sourceField) = queue.removeFirst()
+            guard let source = draft.steps.first(where: { $0.id == sourceStep })?.field(sourceField) else { continue }
+            let value = source.value                                  // nil (cleared) is copied too
+            for index in draft.steps.indices where draft.steps[index].id != sourceStep {
+                var step = draft.steps[index]
+                let linked = step.fields.indices.filter {
+                    step.fields[$0].source == .linked(stepId: sourceStep, fieldId: sourceField)
+                        && step.fields[$0].value != value
+                }
+                guard !linked.isEmpty else { continue }
+                // TODO(spec): DATA_MODEL §3.3 does not say what happens to a linked step that already ran or is
+                // running; like a user edit (no `userEdited` row, §1.5) it is left unchanged.
+                guard Self.editableStates.contains(step.state) else {
+                    logger.warning("linked update skipped in state \(step.state.rawValue, privacy: .public)")
+                    continue
+                }
+                for f in linked {
+                    step.fields[f].value = value
+                    step.fields[f].confidence = nil
+                    step.fields[f].ambiguity = nil
+                }
+                if step.state == .succeeded { Self.turnIntoUpdate(&step) }  // D-290, same as a user edit
+                if step.state != .draft {
+                    guard applyInPlace(.userEdited, to: &step) else { continue }
+                }
+                revalidateInPlace(&step)
+                draft.steps[index] = step
+                for f in linked where visited.insert("\(step.id)/\(step.fields[f].id)").inserted {
+                    queue.append((step.id, step.fields[f].id))
+                }
+            }
+        }
+    }
+
     // MARK: - User actions without fields
 
     @discardableResult func cancel(stepId: UUID, in draft: TaskDraft) -> Bool { apply(.userCancelled, stepId: stepId, in: draft) }
     @discardableResult func retry(stepId: UUID, in draft: TaskDraft) -> Bool { apply(.retry, stepId: stepId, in: draft) }
     @discardableResult func markDone(stepId: UUID, in draft: TaskDraft) -> Bool { apply(.userMarkedDone, stepId: stepId, in: draft) }
+
+    /// S08 was shown for this hand-off (D-242: asked once). Not a state change; saved.
+    func markHandoffPromptShown(stepId: UUID, in draft: TaskDraft) {
+        guard let index = draft.steps.firstIndex(where: { $0.id == stepId }) else { return }
+        draft.steps[index].handoffPromptShown = true
+        save(draft)
+    }
 
     // MARK: - Internals
 
@@ -286,6 +532,9 @@ import os
         }
         if to == .awaitingApproval {
             step.approvedSnapshotHash = nil                           // cleared whenever it enters awaitingApproval
+        }
+        if to == .handedOff {
+            step.handoffPromptShown = false                           // a new hand-off is asked about once (D-242)
         }
         if to == .processing {
             step.attempt += 1                                         // each processing entry (idempotency, D-105)

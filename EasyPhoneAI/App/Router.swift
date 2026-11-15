@@ -11,6 +11,8 @@ enum Route: Hashable, Sendable {
     case places
     case conversation(UUID?)
     case calendarToday
+    /// D-294: S11 for one day (`YYYY-MM-DD`), from "xem lịch ngày mai".
+    case calendarDay(String)
     case reminders
 }
 

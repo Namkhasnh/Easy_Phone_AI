@@ -16,10 +16,13 @@ import Observation
     private let step: TaskStep
     private let now: () -> Date
     private let onSave: (String?) -> Void
+    /// `AppSettings.snoozeMorningHour` (S15) for the "Sáng mai lúc {hour} giờ" option.
+    private let snoozeMorningHour: Int
 
     init(field: Field, step: TaskStep, timeZoneId: String, now: @escaping () -> Date = { .now },
-         onSave: @escaping (String?) -> Void) {
+         snoozeMorningHour: Int = 8, onSave: @escaping (String?) -> Void) {
         self.field = field
+        self.snoozeMorningHour = snoozeMorningHour
         self.kind = step.kind
         self.step = step
         self.timeZone = TimeZone(identifier: timeZoneId) ?? .current
@@ -112,8 +115,7 @@ import Observation
     // MARK: - Encoding helpers
 
     private func optionArgs(_ value: String) -> [String] {
-        // TODO(spec): the snooze hour comes from `AppSettings.snoozeMorningHour` (S15, 1C.17); default 8 until then.
-        field.id == "snoozeOption" && value == "tomorrowMorning" ? ["8"] : []
+        field.id == "snoozeOption" && value == "tomorrowMorning" ? ["\(snoozeMorningHour)"] : []
     }
 
     static func iso(_ date: Date, in tz: TimeZone) -> String {

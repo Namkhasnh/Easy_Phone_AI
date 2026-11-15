@@ -85,6 +85,18 @@
         }
       }
     },
+    "NSPhotoLibraryAddUsageDescription" : {
+      "comment" : "Privacy - Photo Library Additions Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "EasyPhoneK lưu ảnh giấy tờ bạn chụp vào app Ảnh khi bạn bật “Lưu ảnh chụp vào Ảnh”."
+          }
+        }
+      }
+    },
     "NSPhotoLibraryUsageDescription" : {
       "comment" : "UI_SCREENS S18, D-186",
       "extractionState" : "manual",

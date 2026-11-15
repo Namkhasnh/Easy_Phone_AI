@@ -10,9 +10,10 @@ from pydantic import BaseModel
 
 from app.errors import MESSAGES
 from app.schemas.error import ErrorCode, ErrorEnvelope
+from app.schemas.extract import ExtractRequest, ExtractResponse
 from app.schemas.health import HealthResponse
 from app.schemas.me import MeResponse
-from app.schemas.media import TranscribeResponse
+from app.schemas.media import OCRResponse, TranscribeResponse
 from app.schemas.parse import ParsedDraft, ParseRequest
 
 FIXTURES = Path(__file__).parent / "fixtures" / "contract"
@@ -24,10 +25,13 @@ RESPONSE_MODELS: dict[str, type[BaseModel]] = {
     "me": MeResponse,
     "error": ErrorEnvelope,
     "parse": ParsedDraft,
+    "extract": ExtractResponse,
+    "ocr": OCRResponse,
     "transcribe": TranscribeResponse,
 }
 REQUEST_MODELS: dict[str, type[BaseModel]] = {
     "parse": ParseRequest,
+    "extract": ExtractRequest,
 }
 
 # 🔒 keys never leave the device (D-056, API_CONTRACT §11).

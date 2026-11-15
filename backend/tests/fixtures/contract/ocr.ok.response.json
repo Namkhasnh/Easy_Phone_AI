@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "requestId": "req_01JC8Z8D22",
+  "text": "PHÒNG KHÁM NHA KHOA AN BÌNH\nLịch hẹn: 09:30 ngày 14/11/2026",
+  "lines": [
+    {
+      "text": "PHÒNG KHÁM NHA KHOA AN BÌNH",
+      "box": {
+        "x": 0.08,
+        "y": 0.86,
+        "width": 0.84,
+        "height": 0.05
+      }
+    },
+    {
+      "text": "Lịch hẹn: 09:30 ngày 14/11/2026",
+      "box": {
+        "x": 0.08,
+        "y": 0.78,
+        "width": 0.7,
+        "height": 0.04
+      }
+    }
+  ]
+}

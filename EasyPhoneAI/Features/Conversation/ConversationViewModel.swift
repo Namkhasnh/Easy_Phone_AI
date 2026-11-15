@@ -74,6 +74,8 @@ import OSLog
     private(set) var prompt: FollowUpPrompt?
     /// Set when nothing is left to ask: the View replaces S03 with S04 of this draft.
     private(set) var reviewDraftId: UUID?
+    /// D-294: "xem lịch ngày mai" → the View opens S11 for this day (`YYYY-MM-DD`). Nothing is executed.
+    private(set) var calendarDay: String?
     /// S18 before the mic starts: microphone, then speech (D-185). The recording waits for the answer.
     var pendingPermission: PendingPermission?
     private var pendingTarget: Target?
@@ -103,6 +105,10 @@ import OSLog
     /// Where a recording goes: the request (modes 1–2) or the follow-up answer (mode 4).
     private enum Target { case request, answer(FollowUp) }
     private var target: Target = .request
+    /// D-296: "Dừng" was tapped → show the transcript, never auto-send.
+    private var stoppedByUser = false
+    /// D-296: set by `finishListening` when listening ended by itself with words heard and `settings.autoSend` is on.
+    private var autoSendPending = false
 
     init(draftId: UUID?, repository: any TaskRepository, speech: any SpeechService, api: any APIClientProtocol,
          tts: any TTSService, localData: any LocalDataRepository,
@@ -241,6 +247,8 @@ import OSLog
             previousText = text
             text = ""
         }
+        stoppedByUser = false
+        autoSendPending = false
         armAutoStop(after: noSpeechTimeout)
         let task = Task { @MainActor in
             do {
@@ -259,10 +267,19 @@ import OSLog
         listenTask = task
         await task.value
         await transcribeTask?.value                           // a `/v1/transcribe` fallback started by this session
+        // D-296: auto-send when listening stopped by itself (2 s silence). Nothing runs before "Xác nhận" (D-100).
+        guard autoSendPending else { return }
+        autoSendPending = false
+        switch mode {
+        case .transcript: await send()
+        case .followUp: await sendAnswer()
+        default: break
+        }
     }
 
     /// "Dừng" / the 140pt mic: ends recording; the stream then delivers the final text.
     func stopListening() async {
+        stoppedByUser = true
         await speech.stop()
     }
 
@@ -311,6 +328,8 @@ import OSLog
             noticeKey = heardNothing ? "conv.speech.unavailable" : nil
         } else if heardNothing {
             noticeKey = "conv.speech.empty"
+        } else if !stoppedByUser, settings.autoSend {
+            autoSendPending = true
         }
         autosave()
     }
@@ -458,7 +477,7 @@ import OSLog
 
     // MARK: - Transcript ready (mode 2)
 
-    /// "Gửi": never automatic (API_CONTRACT §7.4). Saves the request (D-104), then mode 3 → `/v1/parse` (new key).
+    /// "Gửi", or automatic after listening stops by itself when `settings.autoSend` is on (D-296). Saves the request (D-104), then mode 3 → `/v1/parse` (new key).
     func send() async {
         guard canSend else { return }
         stopReading()
@@ -487,7 +506,7 @@ import OSLog
                 let parsed = try await self.api.parse(request, idempotencyKey: key)
                 guard !Task.isCancelled, self.mode == .working else { return }   // "Hủy" already left
                 self.workingReturnMode = nil
-                self.handle(parsed, isAnswer: isAnswer, draft: draft, returnMode: returnMode)
+                await self.handle(parsed, isAnswer: isAnswer, draft: draft, returnMode: returnMode)
             } catch {
                 guard !Task.isCancelled, self.mode == .working else { return }
                 self.workingReturnMode = nil
@@ -504,7 +523,7 @@ import OSLog
         return localData.savedPlaces().map(\.label).filter { seen.insert($0).inserted }
     }
 
-    private func handle(_ parsed: ParsedDraft, isAnswer: Bool, draft: TaskDraft, returnMode: Mode) {
+    private func handle(_ parsed: ParsedDraft, isAnswer: Bool, draft: TaskDraft, returnMode: Mode) async {
         let defaults = DraftBuilder.Defaults(mapsApp: settings.preferredMapsApp)
         if isAnswer {
             guard parsed.unsupported == nil else {
@@ -515,17 +534,33 @@ import OSLog
                 return
             }
             engine.mergeAnswer(parsed, into: draft, defaults: defaults)
-            advance(draft)
+            await resolveThenAdvance(draft)
             return
         }
-        if let u = parsed.unsupported {
+        if let u = parsed.unsupported, u.reason == "viewCalendar" {
+            calendarDay = u.date ?? Self.dayString(now(), timeZoneId: draft.timeZoneId)
+        } else if let u = parsed.unsupported {
             showUnsupported(.init(reason: u.reason, message: u.message))
         } else if engine.applyParsed(parsed, to: draft, defaults: defaults) {
-            advance(draft)
+            await resolveThenAdvance(draft)
         } else {
             // Every step dropped on device (unknown kind / pair, D-150): nothing to review → "Chưa hỗ trợ" (spec §11).
             showUnsupported(.init(reason: "other", message: nil))
         }
+    }
+
+    static func dayString(_ date: Date, timeZoneId: String) -> String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(identifier: timeZoneId) ?? .current
+        f.dateFormat = "yyyy-MM-dd"
+        return f.string(from: date)
+    }
+
+    /// Contacts / calendar lookups on device (1C.9), then the next question or S04. Mode 3 stays on meanwhile.
+    private func resolveThenAdvance(_ draft: TaskDraft) async {
+        await engine.resolveDevice(in: draft)
+        advance(draft)
     }
 
     /// The next ONE question (D-281) or S04 when nothing S03 can ask is left.

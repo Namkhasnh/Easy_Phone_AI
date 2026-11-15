@@ -52,10 +52,13 @@ struct ParsedDateCandidate: Codable, Sendable, Hashable {
     var label: String       // Vietnamese, e.g. "Thứ Sáu 13/11" (data from the backend, may be shown)
 }
 
-/// `reason` ∈ recurringEvent, invitation, emailSend, booking, payment, multiPageOcr, bulkAction, phaseNotEnabled, other.
+/// `reason` ∈ recurringEvent, invitation, emailSend, booking, payment, multiPageOcr, bulkAction, phaseNotEnabled,
+/// viewCalendar (D-294), other.
 struct ParsedUnsupported: Codable, Sendable, Hashable {
     var reason: String
     var message: String
+    /// D-294: the day to show for `viewCalendar` (`YYYY-MM-DD`); null otherwise.
+    var date: String? = nil
 }
 
 /// Request body. `now` is a string because it must keep the device offset (`+07:00`, D-058);

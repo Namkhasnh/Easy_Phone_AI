@@ -12,7 +12,7 @@ struct CalendarTodayView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Tokens.Space.l) {
                 VStack(alignment: .leading, spacing: Tokens.Space.xs) {
-                    Text("calendar.title")
+                    Text(LocalizedStringKey(viewModel.titleKey))
                         .font(Tokens.Fonts.display)
                         .foregroundStyle(Tokens.Colors.textPrimary)
                         .accessibilityAddTraits(.isHeader)
@@ -20,8 +20,9 @@ struct CalendarTodayView: View {
                         .font(Tokens.Fonts.label)
                         .foregroundStyle(Tokens.Colors.textSecondary)
                 }
+                dayButtons
                 if viewModel.isEmpty {
-                    EmptyState(systemImage: "calendar", titleKey: "calendar.empty")
+                    EmptyState(systemImage: "calendar", titleKey: LocalizedStringKey(viewModel.emptyKey))
                         .frame(maxWidth: .infinity)
                         .padding(.top, Tokens.Space.xl)
                 }
@@ -71,6 +72,14 @@ struct CalendarTodayView: View {
 }
 
 extension CalendarTodayView {
+    /// D-294: ◀ "Hôm trước" · ▶ "Hôm sau" (secondary, ≥ 56pt; the only primary stays "Thêm lịch hẹn").
+    fileprivate var dayButtons: some View {
+        HStack(spacing: Tokens.Space.m) {
+            SecondaryButton("calendar.previousDay", systemImage: "chevron.left") { Task { await viewModel.move(by: -1) } }
+            SecondaryButton("calendar.nextDay", systemImage: "chevron.right") { Task { await viewModel.move(by: 1) } }
+        }
+    }
+
     /// Detail sheet: read-only fields + Primary "Sửa" + Secondary "Xóa" (danger text) + link "Mở trong Lịch".
     fileprivate var detailSheet: some View {
         ScrollView {

@@ -1,0 +1,6 @@
+{ "schemaVersion": 1, "services": [
+  { "id": "zalo", "name": "Zalo", "kinds": ["sms"], "urlScheme": "zalo://", "verified": true,
+    "chatURL": "https://zalo.me/{phone}",
+    "guideSteps": ["Mở Zalo", "Chọn người nhận", "Dán tin nhắn", "Bấm Gửi"] },
+  { "id": "grab", "name": "Grab", "kinds": ["ride", "food"], "urlScheme": "grab://", "verified": false, "guideSteps": [] }
+] }

@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "requestId": "req_01JC8Z7C10",
+  "fields": [
+    {
+      "id": "title",
+      "value": "Phòng khám Nha khoa An Bình",
+      "confidence": 0.8,
+      "span": {
+        "start": 0,
+        "end": 27
+      }
+    },
+    {
+      "id": "dateTime",
+      "value": "2026-11-14T09:30:00+07:00",
+      "confidence": 0.85,
+      "span": {
+        "start": 38,
+        "end": 59
+      }
+    },
+    {
+      "id": "address",
+      "value": "215 Hồng Bàng, Q5",
+      "confidence": 0.8,
+      "span": {
+        "start": 69,
+        "end": 86
+      }
+    },
+    {
+      "id": "personName",
+      "value": "Trần Văn Hùng",
+      "confidence": 0.75,
+      "span": {
+        "start": 91,
+        "end": 104
+      }
+    },
+    {
+      "id": "phoneNumber",
+      "value": "0901 234 567",
+      "confidence": 0.9,
+      "span": {
+        "start": 107,
+        "end": 119
+      }
+    }
+  ],
+  "suggestedNextAction": "calendarEvent"
+}

@@ -23,7 +23,8 @@
     "followUpQuestion": null,
     "unsupported": {
       "reason": "recurringEvent",
-      "message": "Chưa hỗ trợ nhắc lặp lại mỗi ngày."
+      "message": "Chưa hỗ trợ nhắc lặp lại mỗi ngày.",
+      "date": null
     }
   },
   "liveMatch": {

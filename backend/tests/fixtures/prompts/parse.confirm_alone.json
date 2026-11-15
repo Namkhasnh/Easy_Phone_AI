@@ -23,7 +23,8 @@
     "followUpQuestion": null,
     "unsupported": {
       "reason": "other",
-      "message": "Chưa hỗ trợ câu này. Bạn nói việc cần làm nhé."
+      "message": "Chưa hỗ trợ câu này. Bạn nói việc cần làm nhé.",
+      "date": null
     }
   },
   "liveMatch": {

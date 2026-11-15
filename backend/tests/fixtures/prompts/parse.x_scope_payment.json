@@ -23,7 +23,8 @@
     "followUpQuestion": null,
     "unsupported": {
       "reason": "payment",
-      "message": "Chưa hỗ trợ chuyển tiền."
+      "message": "Chưa hỗ trợ chuyển tiền.",
+      "date": null
     }
   },
   "liveMatch": {

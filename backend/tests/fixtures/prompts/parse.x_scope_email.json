@@ -23,7 +23,8 @@
     "followUpQuestion": null,
     "unsupported": {
       "reason": "emailSend",
-      "message": "Chưa hỗ trợ gửi email."
+      "message": "Chưa hỗ trợ gửi email.",
+      "date": null
     }
   },
   "liveMatch": {

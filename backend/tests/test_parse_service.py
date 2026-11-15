@@ -165,17 +165,27 @@ def test_date_candidate_labels_rebuilt_on_weekday_slip_and_capped():
 def test_invalid_pairs_and_disabled_kinds_dropped_none_left_is_phase_not_enabled():
     out = run(draft(step("call", "create"), step("emailReply", "create")))
     assert out == {"steps": [], "followUpQuestion": None,
-                   "unsupported": {"reason": "phaseNotEnabled", "message": ps.FALLBACK_UNSUPPORTED_MESSAGE}}
+                   "unsupported": {"reason": "phaseNotEnabled", "message": ps.FALLBACK_UNSUPPORTED_MESSAGE,
+                                   "date": None}}
     only_reminder = Settings(ENABLED_KINDS=["reminder"])
     assert run(draft(step("call", "open", [f("recipientName", "mẹ")])), settings=only_reminder)["unsupported"][
         "reason"] == "phaseNotEnabled"
 
 
 def test_unsupported_means_no_steps_and_no_steps_means_unsupported():
-    u = {"reason": "recurringEvent", "message": "Chưa hỗ trợ lịch lặp lại."}
+    u = {"reason": "recurringEvent", "message": "Chưa hỗ trợ lịch lặp lại.", "date": None}
     out = run(draft(step(fields=[f("title", "A")]), question="?", unsupported=u))
     assert out == {"steps": [], "followUpQuestion": None, "unsupported": u}
     assert run(draft())["unsupported"]["reason"] == "other"
+
+
+def test_view_calendar_keeps_a_valid_day_else_today():  # D-294
+    u = {"reason": "viewCalendar", "message": "Mở lịch của bạn.", "date": "2026-11-13"}
+    assert run(draft(unsupported=u))["unsupported"] == u
+    bad = run(draft(unsupported={**u, "date": "ngày mai"}))["unsupported"]
+    assert bad["reason"] == "viewCalendar" and len(bad["date"]) == 10      # today in the request timezone
+    other = run(draft(unsupported={"reason": "recurringEvent", "message": "x", "date": "2026-11-13"}))
+    assert other["unsupported"]["date"] is None                           # only viewCalendar carries a day
 
 
 def test_two_deletes_become_bulk_action():

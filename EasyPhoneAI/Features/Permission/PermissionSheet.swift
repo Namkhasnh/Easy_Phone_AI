@@ -20,6 +20,8 @@ struct PermissionSheet: View {
     let onAllow: () -> Void
     let onOpenSettings: () -> Void
     let onLater: () -> Void
+    /// Denied variant: the capability's fallback (`perm.<c>.fallback`, e.g. "Chọn ảnh có sẵn") instead of "Để sau".
+    var onFallback: (() -> Void)? = nil
 
     private var key: String { pending.capability.rawValue }
 
@@ -50,9 +52,12 @@ struct PermissionSheet: View {
                 case .denied:
                     PrimaryButton("common.openSettings", action: onOpenSettings)
                 }
-                // TODO(spec): the denied Secondary may be the fallback (copy text / type / choose photo); the
-                // fallback actions come with the executors (1C.3+), so "Để sau" is used until then.
-                SecondaryButton("common.later", action: onLater)
+                if pending.variant == .denied, let onFallback {
+                    SecondaryButton(LocalizedStringKey("perm.\(key).fallback"), action: onFallback)
+                } else {
+                    // TODO(spec): other screens have no fallback action yet; "Để sau" is used there.
+                    SecondaryButton("common.later", action: onLater)
+                }
             }
             .padding(Tokens.Space.screenPadding)
             .background(Tokens.Colors.bg)

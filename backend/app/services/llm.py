@@ -63,7 +63,7 @@ class StructuredCall:
     prompt_name: str  # "parse", "extract" (for logs)
     prompt_version: int
     model: str  # from `MODEL_*` config
-    messages: list[dict[str, str]]  # system / developer / user layers (AI_PROMPTS §1), built by the caller
+    messages: list[dict[str, Any]]  # system / developer / user layers (AI_PROMPTS §1); `/v1/ocr` adds an image part
     schema_name: str  # e.g. "ParsedDraftLLM"
     schema: dict[str, Any]
 
@@ -166,7 +166,7 @@ class LLMClient:
             raise AppError("llm_invalid_output", 502, True)
         return repair.value  # type: ignore[return-value]
 
-    def _repair_messages(self, call: StructuredCall, bad: _Output) -> list[dict[str, str]]:
+    def _repair_messages(self, call: StructuredCall, bad: _Output) -> list[dict[str, Any]]:
         """AI_PROMPTS §6: previous output + error paths; never the user's text again."""
         lines = [line.replace("\n", " ")[:200] for line in bad.errors[:MAX_REPAIR_LINES]]
         text = prompts.render(
@@ -177,7 +177,7 @@ class LLMClient:
     async def _complete(
         self,
         call: StructuredCall,
-        messages: list[dict[str, str]],
+        messages: list[dict[str, Any]],
         validate: Validator,
         budget: Deadline,
         meter: CostMeter,

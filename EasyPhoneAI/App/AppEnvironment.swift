@@ -28,6 +28,18 @@ struct AppEnvironment: Sendable {
     let calendar: any CalendarService
     /// EventKit reminders: list, save with `easyphone:<stepId>`, complete, snooze (1C.5, D-225, D-248).
     let reminders: any RemindersService
+    /// Device contacts: Vietnamese name / nickname matching, phone numbers (1C.7, DATA_MODEL §7.2).
+    let contacts: any ContactsService
+    /// Open other apps / clipboard (ARCHITECTURE §4.2, D-293).
+    let system: any SystemService
+    /// MapKit search + directions hand-off (1C.13, spec §6.9).
+    let places: any PlacesService
+    /// OCR photos in `Application Support/ocr/` (1D.2, ARCHITECTURE §6.4).
+    let images: any ImageStore
+    /// Optional copy of camera photos in the Photos library (D-301).
+    let photoLibrary: any PhotoLibraryService
+    /// Text from the photo: Vision first, `/v1/ocr` fallback (1D.3, ARCHITECTURE §4.3, D-061).
+    let ocr: any OCRService
 
     @MainActor static func live(container: ModelContainer) -> AppEnvironment {
         let config = AppConfig.fromMainBundle()
@@ -37,44 +49,102 @@ struct AppEnvironment: Sendable {
         let calendar = LiveCalendarService()
         let reminders = LiveRemindersService()
         let localData = LiveLocalDataRepository(container: container)
+        let contacts = LiveContactsService { localData.nickname(matching: $0)?.contactId }
+        let system = LiveSystemService()
+        let places = LivePlacesService(system: system)
+        let api = APIClient(config: config, auth: auth, client: .fromMainBundle())
         return AppEnvironment(config: config, auth: auth,
-                              api: APIClient(config: config, auth: auth, client: .fromMainBundle()),
+                              api: api,
                               drafts: drafts,
                               localData: localData,
                               engine: TaskEngine(repository: drafts,
-                                                 executors: executors(calendar, reminders, permissions, localData)),
+                                                 executors: executors(calendar, reminders, permissions, localData,
+                                                                      calls: LiveCallService(), messages: LiveMessagesService(),
+                                                                      system: system, places: places),
+                                                 serviceIds: SupportedServices.bundled.ids,
+                                                 resolver: DeviceResolver(contacts: contacts, calendar: calendar,
+                                                                          permissions: permissions, places: places,
+                                                                          savedPlaces: { localData.savedPlaces() })),
                               speech: LiveSpeechService(), tts: LiveTTSService(),
-                              permissions: permissions, calendar: calendar, reminders: reminders)
+                              permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts,
+                              system: system, places: places,
+                              images: LiveImageStore(), photoLibrary: LivePhotoLibraryService(),
+                              ocr: RoutingOCRService(device: VisionOCRService(), remote: APIRemoteOCR(api: api)))
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
         let drafts = MockTaskRepository()
-        let permissions = MockPermissionManager()
+        let permissions = scenario == .uiTest
+            ? MockPermissionManager(Dictionary(uniqueKeysWithValues: Capability.allCases.map { ($0, .granted) }))
+            : MockPermissionManager()
         let calendar = MockCalendarService()
         let reminders = MockRemindersService()
         let localData = MockLocalDataRepository()
-        return AppEnvironment(config: .mock, auth: MockAuthService(), api: MockAPIClient(), drafts: drafts,
+        let contacts = scenario == .uiTest ? MockContactsService.uiTest : MockContactsService()
+        let system = MockSystemService()
+        let places = MockPlacesService()
+        let auth = scenario == .uiTest ? MockAuthService(initial: .signedIn(userId: MockAuthService.userId)) : MockAuthService()
+        let api = scenario == .uiTest ? MockAPIClient(parseRouter: uiTestParse) : MockAPIClient()
+        return AppEnvironment(config: .mock, auth: auth, api: api, drafts: drafts,
                               localData: localData,
                               engine: TaskEngine(repository: drafts,
-                                                 executors: executors(calendar, reminders, permissions, localData)),
+                                                 executors: executors(calendar, reminders, permissions, localData,
+                                                                      calls: MockCallService(),
+                                                                      // Simulator cannot send SMS; the system composer
+                                                                      // cannot be driven by XCUITest either (1C.18b).
+                                                                      messages: MockMessagesService(canSendText: scenario != .uiTest),
+                                                                      system: system, places: places),
+                                                 serviceIds: SupportedServices.bundled.ids,
+                                                 resolver: DeviceResolver(contacts: contacts, calendar: calendar,
+                                                                          permissions: permissions, places: places,
+                                                                          savedPlaces: { localData.savedPlaces() })),
                               speech: MockSpeechService(), tts: MockTTSService(),
-                              permissions: permissions, calendar: calendar, reminders: reminders)
+                              permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts,
+                              system: system, places: places,
+                              images: MockImageStore(), photoLibrary: MockPhotoLibraryService(),
+                              ocr: MockOCRService())
+    }
+
+    /// `MockScenario.uiTest` `/v1/parse`: a request starting with "Gọi" → call anh Minh, anything else → `mockSMS`.
+    private static let uiTestParse: @Sendable (ParseRequest) -> ParsedDraft? = { request in
+        guard request.text.lowercased().hasPrefix("gọi") else { return .mockSMS }
+        return ParsedDraft(schemaVersion: 1, requestId: "req_uitest_call",
+                           steps: [ParsedStep(kind: "call", operation: "open", fields: [
+                               ParsedField(id: "recipientName", value: "anh Minh", confidence: 0.95, sourceQuote: "anh Minh"),
+                           ], dateCandidates: [])],
+                           followUpQuestion: nil, unsupported: nil)
     }
 
     /// One executor per kind (ARCHITECTURE §5.1); the others are added by their items (1C.5, 1C.10 – 1C.13, 1D).
     private static func executors(_ calendar: any CalendarService, _ reminders: any RemindersService,
                                   _ permissions: any PermissionManager,
-                                  _ localData: any LocalDataRepository) -> [TaskKind: any StepExecutor] {
+                                  _ localData: any LocalDataRepository,
+                                  calls: any CallService,
+                                  messages: any MessagesService,
+                                  system: any SystemService,
+                                  places: any PlacesService) -> [TaskKind: any StepExecutor] {
         [.calendarEvent: CalendarExecutor(calendar: calendar, permissions: permissions),
+         .call: CallExecutor(calls: calls),
+         .sms: SMSExecutor(messages: messages, system: system),
+         .place: PlaceExecutor(places: places, localData: localData),
          .reminder: RemindersExecutor(reminders: reminders, permissions: permissions,
                                       morningHour: { localData.settings().snoozeMorningHour })]
     }
 }
 
 /// Mock scenarios for previews and tests (ARCHITECTURE §13).
-/// Cases `offline`, `quotaExceeded`, `permissionDenied`, `threeMinh`, `uiTest` are added with the mocks that need them.
-enum MockScenario: Sendable, Hashable {
+/// Cases `offline`, `quotaExceeded`, `permissionDenied`, `threeMinh` are added with the mocks that need them.
+enum MockScenario: String, Sendable, Hashable {
     case `default`
+    /// XCUITest (1C.18): signed in, every permission granted, contact "Nguyễn Văn Minh" with one mobile number,
+    /// `/v1/parse` answers `ParsedDraft.mockSMS`. Selected by the launch argument `-uiTestScenario uiTest`.
+    case uiTest
+
+    /// `-uiTestScenario <name>` (ARCHITECTURE §13). Launch arguments cannot be set by a user on a device, so
+    /// this never changes the wiring of a normal launch (D-208).
+    static func fromLaunchArguments(_ defaults: UserDefaults = .standard) -> MockScenario? {
+        defaults.string(forKey: "uiTestScenario").flatMap(MockScenario.init(rawValue:))
+    }
 }
 
 extension EnvironmentValues {

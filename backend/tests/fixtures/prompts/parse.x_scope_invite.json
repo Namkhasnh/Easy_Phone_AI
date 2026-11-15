@@ -23,7 +23,8 @@
     "followUpQuestion": null,
     "unsupported": {
       "reason": "invitation",
-      "message": "Chưa hỗ trợ mời người khác."
+      "message": "Chưa hỗ trợ mời người khác.",
+      "date": null
     }
   },
   "liveMatch": {

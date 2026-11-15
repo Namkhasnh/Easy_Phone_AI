@@ -100,11 +100,19 @@ struct ValidatorTests {
         #expect(Self.issues(s) == Self.missing("contactId", "phoneNumber"))
     }
 
-    @Test func otherChannelIsCopyOnly() {
-        let s = Self.step(.sms, .open, ["recipientName": "anh Minh", "body": "Hi", "channel": "zalo"])
-        #expect(Self.issues(s, serviceIds: ["zalo"]) == [])                              // no contact needed
+    @Test func otherChannelIsCopyOnly() {                                                // D-247
+        let s = Self.step(.sms, .open, ["recipientName": "anh Minh", "body": "Hi", "channel": "viber"])
+        #expect(Self.issues(s, serviceIds: ["viber"]) == [])                             // no contact needed
         #expect(Self.issues(s) == [ValidationIssue(fieldId: "channel", reason: .unknownOption)])   // not in SupportedServices
         #expect(!Validator.requiredFieldIds(s).contains("phoneNumber"))
+    }
+
+    @Test func zaloNeedsContactAndNumber() {                                             // D-297: opens the chat
+        let s = Self.step(.sms, .open, ["recipientName": "anh Minh", "body": "Hi", "channel": "zalo"])
+        #expect(Validator.requiredFieldIds(s).isSuperset(of: ["phoneNumber", "contactId"]))
+        let byNumber = Self.step(.sms, .open, ["recipientName": "0901 234 567", "body": "Hi", "channel": "zalo",
+                                               "phoneNumber": "+84901234567"])
+        #expect(Self.issues(byNumber, serviceIds: ["zalo"]) == [])                       // a spoken number is enough
     }
 
     @Test func phoneNumberRecipientSkipsContactId() {
@@ -135,7 +143,7 @@ struct ValidatorTests {
         var s = Self.step(.sms, .open, ["channel": "sms"])
         s = Validator.applyRequired(s)
         #expect(s.field("phoneNumber")?.required == true)
-        s.fields[s.fields.firstIndex { $0.id == "channel" }!].value = "zalo"
+        s.fields[s.fields.firstIndex { $0.id == "channel" }!].value = "viber"
         s = Validator.applyRequired(s)
         #expect(s.field("phoneNumber")?.required == false)
         #expect(s.field("contactId")?.required == false)
