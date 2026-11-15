@@ -45,6 +45,7 @@ import Observation
     private let calendar: any CalendarService
     private let localData: (any LocalDataRepository)?
     private let system: any SystemService
+    private let tts: any TTSService
     private let services: SupportedServices
     private let snoozeMorningHour: Int
     private let catalog: FieldCatalog
@@ -59,7 +60,8 @@ import Observation
     init(draftId: UUID, repository: any TaskRepository, engine: TaskEngine, permissions: any PermissionManager,
          contacts: any ContactsService = MockContactsService(),
          calendar: any CalendarService = MockCalendarService(), localData: (any LocalDataRepository)? = nil,
-         system: any SystemService = MockSystemService(), services: SupportedServices = .bundled,
+         system: any SystemService = MockSystemService(), tts: any TTSService = MockTTSService(),
+         services: SupportedServices = .bundled,
          snoozeMorningHour: Int = 8, catalog: FieldCatalog = .mvp, now: @escaping () -> Date = { .now },
          autoConfirmTick: Duration = .seconds(1)) {
         self.autoConfirmTick = autoConfirmTick
@@ -67,6 +69,7 @@ import Observation
         self.calendar = calendar
         self.localData = localData
         self.system = system
+        self.tts = tts
         self.services = services
         self.snoozeMorningHour = snoozeMorningHour
         self.engine = engine
@@ -209,6 +212,45 @@ import Observation
     }
 
     var nextActionValue: String? { step?.field("nextAction")?.value }
+
+    /// "Đọc to" under the photo text row (S09 step 3); only while the `ocr` step is under review.
+    func canReadAloud(_ field: Field) -> Bool {
+        guard step?.kind == .ocr, showsActionBar, field.id == "extractedText" else { return false }
+        return !(field.value ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private(set) var isReading = false
+
+    /// "Đọc to" at the Settings rate; tap again = "Dừng đọc" (same as S03).
+    func toggleReading() async {
+        if isReading { stopReading(); return }
+        guard let text = step?.field("extractedText")?.value, !text.isEmpty else { return }
+        isReading = true
+        await tts.speak(text, rate: localData?.settings().speechRate ?? AppSettings().speechRate)
+        isReading = false
+    }
+
+    func stopReading() {
+        guard isReading else { return }
+        tts.stop()
+        isReading = false
+    }
+
+    /// Secondary "Chụp lại" (S09 step 3) while the `ocr` step is under review.
+    var canRetake: Bool { step?.kind == .ocr && showsActionBar }
+
+    /// Set after "Chụp lại": the View replaces S04 with a fresh S09.
+    private(set) var didRetake = false
+
+    /// "Chụp lại": this reading is dropped (`userCancelled`; the draft stays in History, D-104), then S09 again.
+    // TODO(spec): UI_SCREENS S09 step 3 does not say what happens to the read `ocr` step; it is cancelled.
+    func retake() {
+        guard canRetake, let draft, let stepId else { return }
+        cancelAutoConfirm()
+        stopReading()
+        engine.cancel(stepId: stepId, in: draft)
+        didRetake = true
+    }
 
     /// Tapping the selected row again clears it (no next step).
     func chooseNextAction(_ option: String) {
@@ -678,6 +720,7 @@ import Observation
 
     private func execute() async {
         guard let draft, let stepId else { return }
+        stopReading()
         let result = await engine.confirm(stepId: stepId, in: draft)
         if case .needsUI(.composer(let recipients, let body)) = result {
             pendingComposer = (recipients, body)

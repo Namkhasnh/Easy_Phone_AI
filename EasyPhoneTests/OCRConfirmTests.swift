@@ -3,7 +3,8 @@ import Testing
 @testable import EasyPhoneAI
 
 /// 1D.7b — "Tiếp tục" on the `ocr` step: `OCRExecutor` (`local:confirmed`), the linked calendarEvent / reminder step
-/// (DATA_MODEL §3.3, §3.5, §4), `copyContactInfo` → clipboard (D-226), S04 label + radio + jump to the next step.
+/// (DATA_MODEL §3.3, §3.5, §4), `copyContactInfo` → clipboard (D-226), S04 label + radio + jump to the next step;
+/// 1D.7c "Đọc to" on `extractedText` + "Chụp lại" (UI_SCREENS S09 step 3).
 @MainActor
 @Suite("ocr step confirm → linked step")
 struct OCRConfirmTests {
@@ -109,12 +110,47 @@ struct OCRConfirmTests {
 
     // MARK: - S04
 
-    private func reviewModel(action: String?, system: MockSystemService = MockSystemService())
-        -> (ReviewViewModel, TaskDraft) {
+    private func reviewModel(action: String?, system: MockSystemService = MockSystemService(),
+                             tts: MockTTSService = MockTTSService()) -> (ReviewViewModel, TaskDraft) {
         let (engine, draft, repo) = setUp(action: action, system: system)
         let vm = ReviewViewModel(draftId: draft.id, repository: repo, engine: engine,
-                                 permissions: MockPermissionManager(), system: system, now: { [now] in now })
+                                 permissions: MockPermissionManager(), system: system, tts: tts, now: { [now] in now })
         return (vm, draft)
+    }
+
+    // MARK: - 1D.7c "Đọc to" + "Chụp lại"
+
+    @Test func readAloudOnlyOnThePhotoTextRow() async {
+        let tts = MockTTSService()
+        let (vm, _) = reviewModel(action: nil, tts: tts)
+        let text = vm.step!.field("extractedText")!
+        #expect(vm.canReadAloud(text))
+        #expect(!vm.canReadAloud(vm.step!.field("title")!))
+        await vm.toggleReading()
+        #expect(tts.spoken.map(\.text) == [self.text] && tts.spoken.first?.rate == AppSettings().speechRate)
+        #expect(!vm.isReading)                                                   // mock returns at once
+    }
+
+    @Test func readAloudHiddenAfterContinue() async {
+        let (vm, _) = reviewModel(action: "copyContactInfo")
+        await vm.confirm()
+        #expect(!vm.canReadAloud(vm.step!.field("extractedText")!) && !vm.canRetake)
+    }
+
+    @Test func retakeCancelsTheReadingAndAsksForS09() {
+        let (vm, draft) = reviewModel(action: "calendarEvent")
+        #expect(vm.canRetake && !vm.didRetake)
+        vm.retake()
+        #expect(draft.steps[0].state == .cancelled && draft.steps.count == 1)    // nothing appended
+        #expect(vm.didRetake)
+    }
+
+    @Test func retakeOnlyForTheOCRStep() async {
+        let (vm, _) = reviewModel(action: "calendarEvent")
+        await vm.confirm()                                                       // now on the calendar step
+        #expect(vm.step?.kind == .calendarEvent && !vm.canRetake)
+        vm.retake()
+        #expect(!vm.didRetake)
     }
 
     @Test func reviewShowsContinueAndRadioWithoutRide() {
