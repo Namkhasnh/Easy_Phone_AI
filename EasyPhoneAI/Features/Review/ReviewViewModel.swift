@@ -101,6 +101,7 @@ import Observation
             if conditionalOnly.contains(spec.id) && !required.contains(spec.id) { return nil }
             // TODO(spec): the 🔒 `calendarId` row (calendar name) and the contact photo are not shown yet.
             if spec.id == "calendarId" { return nil }
+            if step.kind == .ocr, spec.id == "nextAction" { return nil }   // own radio card (S09 step 3)
             // TODO(spec): S04 says `coordinate` → small map; the filled coordinate row is hidden (name + address show it).
             if spec.id == "coordinate", let f = step.field("coordinate"), f.value != nil, f.ambiguity == nil { return nil }
             return step.field(spec.id) ?? Field(id: spec.id, type: spec.type, deviceOnly: spec.deviceOnly)
@@ -191,6 +192,30 @@ import Observation
 
     var isDelete: Bool { step?.operation == .delete }
 
+    // MARK: - OCR step (UI_SCREENS S09 step 3, 1D.7b)
+
+    /// Primary "Tiếp tục" (`common.continue`) is the `ocr` step's confirm; every other step says "Xác nhận".
+    var confirmKey: String {
+        if isDelete { return "review.delete.confirm" }
+        return step?.kind == .ocr ? "common.continue" : "common.confirm"
+    }
+
+    /// `nextAction` radio rows (`ocr.nextAction.title`), only while the `ocr` step is still under review.
+    /// `ride` is Phase 3 (D-142).
+    var nextActionOptions: [String] {
+        guard let step, step.kind == .ocr, showsActionBar else { return [] }
+        let options = catalog.fields(.ocr, .create).first { $0.id == "nextAction" }?.options ?? []
+        return options.filter(DraftBuilder.ocrNextActions.contains)
+    }
+
+    var nextActionValue: String? { step?.field("nextAction")?.value }
+
+    /// Tapping the selected row again clears it (no next step).
+    func chooseNextAction(_ option: String) {
+        guard let draft, let stepId else { return }
+        engine.edit(fieldId: "nextAction", value: nextActionValue == option ? nil : option, stepId: stepId, in: draft)
+    }
+
     var blocker: ConfirmBlocker? {
         guard let draft, let stepId else { return .notConfirmable }
         return engine.confirmBlocker(stepId: stepId, in: draft)
@@ -262,7 +287,9 @@ import Observation
         case .succeeded:
             // TODO(spec): "Mở trong Lịch" / "Mở trong Lời nhắc" (secondary) need the calendar / reminders services (1C).
             let message = next == nil && draft?.isClosed == true ? UserMessage(key: "result.allDone").text : successMessage(step)
-            return ResultCard(state: .succeeded, message: message, detail: next == nil ? nil : successMessage(step),
+            return ResultCard(state: .succeeded, message: message,
+                              detail: copiedContact(step) ? UserMessage(key: "common.copied").text
+                                  : next == nil ? nil : successMessage(step),
                               primary: advance, secondary: nil)
         case .handedOff, .prepared:
             return ResultCard(state: step.state, message: handOffMessage(step), detail: nil,
@@ -283,6 +310,11 @@ import Observation
         case .draft, .needsInfo, .awaitingApproval:
             return nil
         }
+    }
+
+    /// The `ocr` step put name + phone on the clipboard (D-226).
+    private func copiedContact(_ step: TaskStep) -> Bool {
+        step.kind == .ocr && step.field("nextAction")?.value == "copyContactInfo" && OCRExecutor.contactText(step) != nil
     }
 
     /// The next step by `order` that still needs the user (not closed).
@@ -651,6 +683,12 @@ import Observation
             pendingComposer = (recipients, body)
         }
         showCopyGuideIfNeeded()
+        // S09 step 3 / UI_SCREENS §3: "Tiếp tục" on the `ocr` step goes straight to the appended step (S04 → S04).
+        if step?.kind == .ocr, result == .finished(.succeeded), let next = nextStep,
+           [.draft, .needsInfo, .awaitingApproval].contains(next.state) {
+            self.stepId = next.id
+            return
+        }
         // D-295: the same tap deletes the other ticked events, in order; the first failure stops the batch.
         guard batchStepIds.first == stepId, result == .finished(.succeeded) else { return }
         for id in batchStepIds.dropFirst() {

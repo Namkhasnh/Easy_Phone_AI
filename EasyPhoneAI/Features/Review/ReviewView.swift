@@ -156,6 +156,7 @@ struct ReviewView: View {
                     ForEach(details) { field in row(field, step) }
                 }
             }
+            if !viewModel.nextActionOptions.isEmpty { nextActionCard }
             if let original = viewModel.originalInput {
                 Text(verbatim: original)
                     .font(Tokens.Fonts.body)
@@ -197,6 +198,48 @@ struct ReviewView: View {
         .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
         .accessibilityElement(children: .combine)
         .accessibilityFocused($titleFocused)
+    }
+
+    /// UI_SCREENS S09 step 3: `nextAction` radio list (64pt rows, `checkmark`), saved on tap like any field (D-104).
+    private var nextActionCard: some View {
+        VStack(alignment: .leading, spacing: Tokens.Space.s) {
+            Text("ocr.nextAction.title")
+                .font(Tokens.Fonts.body.weight(.semibold))
+                .foregroundStyle(Tokens.Colors.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
+            ForEach(viewModel.nextActionOptions, id: \.self) { option in
+                let selected = viewModel.nextActionValue == option
+                Button { viewModel.chooseNextAction(option) } label: {
+                    HStack(spacing: Tokens.Space.m) {
+                        Text(verbatim: FieldFormatter.option(fieldId: "nextAction", value: option) ?? option)
+                            .font(Tokens.Fonts.fieldValue)
+                            .foregroundStyle(Tokens.Colors.textPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        if selected {
+                            Image(systemName: "checkmark")
+                                .font(Tokens.Fonts.label)
+                                .foregroundStyle(Tokens.Colors.primary)
+                                .accessibilityHidden(true)
+                        }
+                    }
+                    .padding(.horizontal, Tokens.Space.l)
+                    .frame(minHeight: Tokens.Size.rowMinHeight)
+                    .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+                    .overlay {
+                        if selected {
+                            RoundedRectangle(cornerRadius: Tokens.Radius.card)
+                                .strokeBorder(Tokens.Colors.primary, lineWidth: Tokens.Size.borderIncreasedContrast)
+                        }
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
+                .accessibilityIdentifier("ocr.nextAction.\(option)")
+            }
+        }
     }
 
     /// D-295: every event the one "Xác nhận xóa" tap deletes.
@@ -249,7 +292,7 @@ struct ReviewView: View {
         VStack(alignment: .leading, spacing: Tokens.Space.m) {
             if let seconds = viewModel.autoConfirmSeconds { autoConfirmCard(seconds) }
             if !viewModel.batchDeleteRows.isEmpty { batchDeleteCard }
-            PrimaryButton(viewModel.isDelete ? "review.delete.confirm" : "common.confirm",
+            PrimaryButton(LocalizedStringKey(viewModel.confirmKey),
                           role: viewModel.isDelete ? .destructive : nil,
                           disabledReasonKey: viewModel.disabledReasonKey.map { LocalizedStringKey($0) }) {
                 Task { await viewModel.confirm() }

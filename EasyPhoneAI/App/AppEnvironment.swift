@@ -115,7 +115,7 @@ struct AppEnvironment: Sendable {
                            followUpQuestion: nil, unsupported: nil)
     }
 
-    /// One executor per kind (ARCHITECTURE §5.1); the others are added by their items (1C.5, 1C.10 – 1C.13, 1D).
+    /// One executor per kind (ARCHITECTURE §5.1); ride / food wait for Phase 3.
     private static func executors(_ calendar: any CalendarService, _ reminders: any RemindersService,
                                   _ permissions: any PermissionManager,
                                   _ localData: any LocalDataRepository,
@@ -128,7 +128,8 @@ struct AppEnvironment: Sendable {
          .sms: SMSExecutor(messages: messages, system: system),
          .place: PlaceExecutor(places: places, localData: localData),
          .reminder: RemindersExecutor(reminders: reminders, permissions: permissions,
-                                      morningHour: { localData.settings().snoozeMorningHour })]
+                                      morningHour: { localData.settings().snoozeMorningHour }),
+         .ocr: OCRExecutor(system: system)]
     }
 }
 
