@@ -66,7 +66,7 @@ def test_one_branch_per_enabled_kind_with_catalog_operations():
 
 
 def test_locked_and_app_built_ids_never_in_schema_for_their_kind():
-    b = branches(build(KINDS))
+    b = branches(build([*KINDS, "ocr"]))  # "ocr" paused in ENABLED_KINDS (D-302); still checked here
     ids = {k: v["properties"]["fields"]["items"]["properties"]["id"]["enum"] for k, v in b.items()}
     for kind in load_catalog()["kinds"]:
         for f in kind["fields"]:

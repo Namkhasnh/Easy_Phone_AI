@@ -9,6 +9,7 @@ final class Flow1UITests: XCTestCase {
     private var app: XCUIApplication!
 
     override func setUp() async throws {
+        throw XCTSkip("D-302: photo / OCR paused, the S02 entry is hidden")
         continueAfterFailure = false
         app = XCUIApplication()
         app.launchArguments = ["-uiTestScenario", "uiTest"]

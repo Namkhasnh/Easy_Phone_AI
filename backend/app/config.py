@@ -65,7 +65,7 @@ class Settings(BaseSettings):
     IDEMPOTENCY_WINDOW_HOURS: int = 24  # same key later → 422 idempotencyKeyExpired (API_CONTRACT §4.4)
 
     # Kinds the LLM may produce (DATA_MODEL §1.1). MVP kinds only; Phase 2/3 kinds stay off (D-150).
-    ENABLED_KINDS: list[str] = ["calendarEvent", "reminder", "call", "sms", "place", "ocr"]
+    ENABLED_KINDS: list[str] = ["calendarEvent", "reminder", "call", "sms", "place"]  # D-302: "ocr" paused
 
     # Billing (D-091, D-240, D-284)
     APP_BUNDLE_ID: str = "vn.namkhanh.easyphone"
