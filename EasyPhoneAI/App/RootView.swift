@@ -120,6 +120,10 @@ struct RootView: View {
             ConversationView(viewModel: ConversationViewModel(draftId: draftId, repository: env.drafts, speech: env.speech, api: env.api,
                                                               tts: env.tts, localData: env.localData,
                                                               permissions: env.permissions, engine: env.engine))
+        case .mailReply(let reply):
+            ConversationView(viewModel: ConversationViewModel(draftId: nil, repository: env.drafts, speech: env.speech, api: env.api,
+                                                              tts: env.tts, localData: env.localData,
+                                                              permissions: env.permissions, engine: env.engine, reply: reply))
         case .calendarToday:
             CalendarTodayView(viewModel: CalendarTodayViewModel(calendar: env.calendar, permissions: env.permissions,
                                                                 repository: env.drafts, engine: env.engine))

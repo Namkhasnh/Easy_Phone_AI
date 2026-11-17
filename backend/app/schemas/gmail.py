@@ -60,7 +60,8 @@ class GmailSummaryRequest(BaseModel):
 class GmailMessageSummary(BaseModel):
     messageId: str
     threadId: str
-    fromName: str  # display name only; the sender address is not sent (API_GMAIL §4)
+    fromName: str  # display name (the LLM sees only this, never an address)
+    fromAddress: str | None = None  # Reply-To else From, for S21 "Trả lời" (2.6b); app only, never the LLM
     subject: str
     receivedAt: IsoDatetime
     summary: str

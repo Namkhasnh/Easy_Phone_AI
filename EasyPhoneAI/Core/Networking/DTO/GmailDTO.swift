@@ -67,6 +67,8 @@ struct GmailMessageSummary: Codable, Sendable, Hashable, Identifiable {
     let messageId: String
     let threadId: String
     let fromName: String
+    /// Reply-To else From (2.6b "Trả lời"); 🔒 kept on the phone until "Xác nhận" (D-307), never given to the AI.
+    var fromAddress: String? = nil
     let subject: String
     let receivedAt: Date
     let summary: String
@@ -110,4 +112,43 @@ struct GmailDraftResponse: Codable, Sendable, Hashable {
     let draftId: String
     let messageId: String
     let openUrl: String
+}
+
+/// S21 "Trả lời" (2.6b): what the reply draft takes from the message (UI_SCREENS S21, API_GMAIL §5).
+/// Kept in memory by the conversation; the AI only gets the sender's display name.
+// TODO(spec): not persisted with the draft (no field in DATA_MODEL §5); after a kill mid-reply the draft is a new email.
+struct MailReplyContext: Sendable, Hashable {
+    let messageId: String
+    let threadId: String
+    let fromName: String
+    let fromAddress: String
+    let subject: String
+
+    init?(_ message: GmailMessageSummary) {
+        guard let address = message.fromAddress, DeviceResolver.isEmailAddress(address),
+              !Self.isNoReply(address) else { return nil }
+        messageId = message.messageId
+        threadId = message.threadId
+        fromName = message.fromName
+        fromAddress = address
+        subject = message.subject
+    }
+
+    /// "no-reply@…", "noreply@…", "do-not-reply@…": nobody reads answers there.
+    static func isNoReply(_ address: String) -> Bool {
+        let local = address.lowercased().split(separator: "@").first.map(String.init) ?? ""
+        return ["noreply", "no-reply", "no_reply", "donotreply", "do-not-reply", "mailer-daemon"]
+            .contains { local.contains($0) }
+    }
+
+    /// "Re: <subject>" (once).
+    var replySubject: String {
+        subject.lowercased().hasPrefix("re:") ? subject : "Re: \(subject)"
+    }
+
+    /// The fields set on the parsed `emailReply` step (source `.device("gmail")`).
+    var values: [String: String] {
+        ["recipientName": fromName, "toAddress": fromAddress, "subject": replySubject,
+         "threadId": threadId, "messageId": messageId]
+    }
 }

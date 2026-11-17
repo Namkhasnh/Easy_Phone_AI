@@ -80,6 +80,8 @@ import OSLog
     private(set) var opensMail = false
     /// With `opensMail`: the user asked for a code → S21 shows codes only.
     private(set) var mailCodesOnly = false
+    /// S21 "Trả lời" (2.6b): this conversation writes a reply to that message.
+    let reply: MailReplyContext?
     /// S18 before the mic starts: microphone, then speech (D-185). The recording waits for the answer.
     var pendingPermission: PendingPermission?
     private var pendingTarget: Target?
@@ -119,7 +121,8 @@ import OSLog
          permissions: any PermissionManager = MockPermissionManager(), engine: TaskEngine? = nil,
          now: @escaping () -> Date = { .now },
          silenceAfterSpeech: Duration = ConversationViewModel.silenceAfterSpeech,
-         noSpeechTimeout: Duration = ConversationViewModel.noSpeechTimeout) {
+         noSpeechTimeout: Duration = ConversationViewModel.noSpeechTimeout, reply: MailReplyContext? = nil) {
+        self.reply = reply
         self.draftId = draftId
         self.silenceAfterSpeech = silenceAfterSpeech
         self.noSpeechTimeout = noSpeechTimeout
@@ -488,12 +491,35 @@ import OSLog
         autosave()
         guard let draft = currentDraft else { return }
         guard draft.steps.isEmpty else { advance(draft); return }       // already parsed: never charge twice
-        if LocalIntent.isCheckMail(trimmed) {                            // on device: no `/v1/parse`, no unit
+        if reply == nil, LocalIntent.isCheckMail(trimmed) {              // on device: no `/v1/parse`, no unit
             mailCodesOnly = LocalIntent.wantsCode(trimmed)
             opensMail = true
             return
         }
-        await runParse(text: trimmed, inputMode: draft.inputMode, context: .none, draft: draft, returnMode: .transcript)
+        await runParse(text: replyRequest(trimmed), inputMode: draft.inputMode, context: .none, draft: draft,
+                       returnMode: .transcript)
+    }
+
+    /// 2.6b: the user only says the content ("em đồng ý, 3 giờ em có mặt"); the request names it a reply to the sender
+    /// (display name only, max 60 characters; the address and the mail text never go to the AI, D-307).
+    // TODO(spec): the wording of this request is not in AI_PROMPTS; parse v6 turns "Soạn email trả lời …" into emailReply.
+    func replyRequest(_ text: String) -> String {
+        guard let reply else { return text }
+        return UserMessage(key: "conv.replyRequest", args: [Self.safeName(reply.fromName), text]).text
+    }
+
+    /// The sender's display name comes from the mail (untrusted, D-057): letters, digits, spaces, `.'-` only, 40 chars.
+    static func safeName(_ name: String) -> String {
+        let kept = name.unicodeScalars.filter {
+            CharacterSet.letters.contains($0) || CharacterSet.decimalDigits.contains($0) || " .'-".unicodeScalars.contains($0)
+        }
+        let clean = String(String.UnicodeScalarView(kept)).split(separator: " ").joined(separator: " ")
+        return String(clean.prefix(40))
+    }
+
+    /// "Trả lời thư của {name}" above the conversation.
+    var replyCaption: String? {
+        reply.map { UserMessage(key: "conv.replyTo", args: [$0.fromName]).text }
     }
 
     // MARK: - Parse loop (ARCHITECTURE §6.2)
@@ -554,6 +580,10 @@ import OSLog
         } else if let u = parsed.unsupported {
             showUnsupported(.init(reason: u.reason, message: u.message))
         } else if engine.applyParsed(parsed, to: draft, defaults: defaults) {
+            if let reply, let step = draft.steps.first(where: { $0.kind == .emailReply }) {
+                // Address + thread from the message itself, before Contacts are searched (D-307).
+                engine.apply(DeviceResolution(values: reply.values, origin: "gmail"), stepId: step.id, in: draft)
+            }
             await resolveThenAdvance(draft)
         } else {
             // Every step dropped on device (unknown kind / pair, D-150): nothing to review → "Chưa hỗ trợ" (spec §11).

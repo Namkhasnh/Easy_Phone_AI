@@ -86,7 +86,8 @@ def post_process(raw: dict[str, Any], inbox: Inbox, req: GmailSummaryRequest, se
     for m in inbox.messages:
         item = by_id.get(m.message_id, {})
         messages.append({
-            "messageId": m.message_id, "threadId": m.thread_id, "fromName": m.from_name, "subject": m.subject,
+            "messageId": m.message_id, "threadId": m.thread_id, "fromName": m.from_name,
+            "fromAddress": m.reply_address or None, "subject": m.subject,
             "receivedAt": m.received_at.astimezone(tz),
             "summary": _cut(str(item.get("summary") or ""), settings.GMAIL_SUMMARY_MAX_CHARS),
             "needsReply": bool(item.get("needsReply", False)),

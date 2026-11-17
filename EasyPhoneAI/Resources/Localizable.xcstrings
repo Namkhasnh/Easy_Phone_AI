@@ -589,6 +589,30 @@
         }
       }
     },
+    "conv.replyRequest": {
+      "comment": "Request text sent to /v1/parse for a reply (2.6b, TODO(spec)); not shown",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Soạn email trả lời cho %@: %@"
+          }
+        }
+      }
+    },
+    "conv.replyTo": {
+      "comment": "S03 reply caption (2.6b, TODO(spec))",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trả lời thư của %@"
+          }
+        }
+      }
+    },
     "conv.followup.skip": {
       "comment": "UI_SCREENS S03",
       "extractionState": "manual",
@@ -2637,6 +2661,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cần trả lời"
+          }
+        }
+      }
+    },
+    "mail.reply": {
+      "comment": "UI_SCREENS S21",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trả lời"
           }
         }
       }

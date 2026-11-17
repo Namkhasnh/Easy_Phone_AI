@@ -170,7 +170,7 @@ struct DeviceResolution: Sendable, Hashable {
     }
 
     /// One plain address (`a@b.c`), the same rule as the backend (`schemas/gmail.py` `EMAIL_RE`).
-    static func isEmailAddress(_ text: String) -> Bool {
+    nonisolated static func isEmailAddress(_ text: String) -> Bool {
         text.range(of: #"^[^@\s<>,;"]+@[^@\s<>,;"]+\.[^@\s<>,;"]+$"#, options: .regularExpression) != nil
     }
 

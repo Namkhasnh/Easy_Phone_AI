@@ -32,6 +32,7 @@ class MailMessage:
     message_id: str
     thread_id: str
     from_name: str  # display name, address only when there is no name
+    reply_address: str  # Reply-To else From address; for the app's "Trả lời" only, never given to the LLM
     subject: str
     received_at: datetime  # UTC
     body: str  # plain text, cut to GMAIL_BODY_MAX_CHARS
@@ -75,6 +76,10 @@ def body_text(payload: dict, max_chars: int) -> str:
     return text[:max_chars]
 
 
+def address(header: str) -> str:
+    return parseaddr(header)[1].strip().lower()
+
+
 def from_name(header: str) -> str:
     name, address = parseaddr(header)
     return (name or address or header).strip()
@@ -86,7 +91,9 @@ def parse_message(raw: dict, max_chars: int) -> MailMessage:
     millis = int(raw.get("internalDate") or 0)
     return MailMessage(
         message_id=raw["id"], thread_id=raw.get("threadId", raw["id"]),
-        from_name=from_name(headers.get("from", "")), subject=headers.get("subject", "").strip(),
+        from_name=from_name(headers.get("from", "")),
+        reply_address=address(headers.get("reply-to", "")) or address(headers.get("from", "")),
+        subject=headers.get("subject", "").strip(),
         received_at=datetime.fromtimestamp(millis / 1000, UTC), body=body_text(payload, max_chars),
     )
 

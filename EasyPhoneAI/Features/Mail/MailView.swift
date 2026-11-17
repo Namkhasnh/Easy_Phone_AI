@@ -4,6 +4,7 @@ import SwiftUI
 /// (sender bold, subject, summary, time, "Cần trả lời" tag = icon + text), "Và {count} thư khác", unread note.
 struct MailView: View {
     @State var viewModel: MailViewModel
+    @Environment(Router.self) private var router
 
     var body: some View {
         ScrollView {
@@ -176,8 +177,21 @@ struct MailView: View {
                 }
                 .font(Tokens.Fonts.label)
             }
-            // TODO(spec): "Trả lời" (UI_SCREENS S21 → S03 with the reply context) comes with the `emailReply` kind (2.6).
-            readButton(message.messageId, text: MailViewModel.spoken(message), tint: Tokens.Colors.primary)
+            HStack(spacing: Tokens.Space.l) {
+                readButton(message.messageId, text: MailViewModel.spoken(message), tint: Tokens.Colors.primary)
+                if let reply = MailReplyContext(message) {                    // not for no-reply senders
+                    Button {
+                        viewModel.stopReading()
+                        router.push(.mailReply(reply))
+                    } label: {
+                        Label("mail.reply", systemImage: "arrowshape.turn.up.left.fill")
+                            .font(Tokens.Fonts.label)
+                            .foregroundStyle(Tokens.Colors.primary)
+                            .frame(minHeight: Tokens.Size.tapTargetMin)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
         }
         .fixedSize(horizontal: false, vertical: true)
         .padding(Tokens.Space.l)

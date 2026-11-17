@@ -130,7 +130,8 @@ def test_summary_oldest_first_with_gmail_data_and_one_unit(monkeypatch, caplog):
     # each message in its own untrusted block (D-057); sender address not given to the model
     user = llm.calls[0]["messages"][2]["content"]
     assert user.count('<untrusted_content source="email" messageId=') == 2
-    assert "lan.nguyen@example.com" not in user and "From: Nguyễn Thị Lan" in user
+    assert "lan.nguyen@example.com" not in user and "From: Nguyễn Thị Lan" in user     # address: app only
+    assert body["messages"][1]["fromAddress"] == "lan.nguyen@example.com"
     assert "<script>" not in user and "Đơn hàng #123 đã giao." in user
     assert llm.calls[0]["model"] == Settings().MODEL_SUMMARIZE
     schema = llm.calls[0]["response_format"]["json_schema"]["schema"]
@@ -184,7 +185,7 @@ def test_injection_stays_inside_its_block(monkeypatch):
     assert user.count("</untrusted_content>") == 1 and user.endswith("</untrusted_content>")
     assert "<user_request>" not in user                                                         # neutralized
     assert set(r.json()["messages"][0]) == {"messageId", "threadId", "fromName", "subject", "receivedAt",
-                                            "summary", "needsReply", "verificationCode"}        # no action field
+                                            "summary", "needsReply", "verificationCode", "fromAddress"}        # no action field
     assert r.json()["messages"][0]["verificationCode"] == "482913"                             # fixed rule, D-311
 
 

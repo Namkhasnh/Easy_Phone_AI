@@ -185,10 +185,10 @@ extension GmailSummaryResponse {
         overview: "Có 2 thư mới: 1 thư cần trả lời, 1 thư thông báo.",
         messages: [
             GmailMessageSummary(messageId: "18c2e01", threadId: "t18c2e01", fromName: "no-reply@shop.example",
-                                subject: "Đơn hàng đã giao", receivedAt: Date(timeIntervalSince1970: 1_794_866_000),
+                                fromAddress: "no-reply@shop.example", subject: "Đơn hàng đã giao", receivedAt: Date(timeIntervalSince1970: 1_794_866_000),
                                 summary: "Cửa hàng báo đơn hàng đã giao.", needsReply: false),
             GmailMessageSummary(messageId: "18c2f0a", threadId: "t18c2f0a", fromName: "Nguyễn Thị Lan",
-                                subject: "Họp tổ chiều thứ Sáu", receivedAt: Date(timeIntervalSince1970: 1_794_874_320),
+                                fromAddress: "lan.nguyen@example.com", subject: "Họp tổ chiều thứ Sáu", receivedAt: Date(timeIntervalSince1970: 1_794_874_320),
                                 summary: "Chị Lan hỏi em có dự họp 15:00 thứ Sáu không.", needsReply: true),
         ])
 }

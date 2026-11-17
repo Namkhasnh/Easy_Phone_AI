@@ -13,6 +13,11 @@ struct ConversationView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Tokens.Space.l) {
+                if let caption = viewModel.replyCaption {
+                    Label { Text(verbatim: caption) } icon: { Image(systemName: "arrowshape.turn.up.left") }
+                        .font(Tokens.Fonts.label)
+                        .foregroundStyle(Tokens.Colors.textSecondary)
+                }
                 switch viewModel.mode {
                 case .listening: listening
                 case .transcript: transcript
