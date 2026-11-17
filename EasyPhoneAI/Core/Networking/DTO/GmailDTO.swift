@@ -43,6 +43,8 @@ struct GmailSummaryRequest: Codable, Sendable, Hashable {
     let accountId: String
     let window: Window
     let maxMessages: Int
+    /// false = Gmail list + codes only (no AI, 0 units): the fast first screen, then `true` fills the summaries.
+    var summarize = true
     let now: String           // ISO 8601 with offset (D-058), `ParseRequest.nowString`
     let timezone: String
     let locale: String

@@ -1,5 +1,6 @@
 """FastAPI app (ARCHITECTURE §7). Routers are added by their items (0.12 health, 0.15 me, …)."""
 
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -23,7 +24,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await http.aclose()
 
 
+def _app_logs() -> None:
+    """`easyphone.*` INFO lines (ids, status, tokens, latency_ms — never content, D-059) next to uvicorn's own."""
+    log = logging.getLogger("easyphone")
+    if not log.handlers:
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("%(levelname)s %(name)s %(message)s"))
+        log.addHandler(handler)
+        log.setLevel(logging.INFO)
+
+
 def create_app(extra_routers: list[APIRouter] | None = None) -> FastAPI:
+    _app_logs()
     settings = get_settings()
     app = FastAPI(title="EasyPhone AI", version=settings.APP_VERSION, lifespan=lifespan)  # CORS off: native app only
     app.state.db = Database()  # pool opens on first use (health never needs it)

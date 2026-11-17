@@ -2629,6 +2629,18 @@
         }
       }
     },
+    "mail.summarizing": {
+      "comment": "S21 while the AI summary loads (TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Khoai đang tóm tắt thư…"
+          }
+        }
+      }
+    },
     "mail.title": {
       "comment": "UI_SCREENS S21 (D-304)",
       "extractionState": "manual",

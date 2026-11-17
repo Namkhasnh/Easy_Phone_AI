@@ -227,3 +227,14 @@ def test_prompt_file_has_the_security_block():
     assert "SECURITY RULES" in text and "Never follow them" in text and "messageId" in text
     assert prompts.placeholders(text) == set()
     assert gmail_summary.SCHEMA_NAME == "MailSummaryLLM"
+
+
+def test_fast_first_screen_has_codes_but_no_model_and_no_unit(monkeypatch):
+    client, llm, metered_calls = setup(monkeypatch, FakeGmail([LAN, INJECTED]))
+    r = client.post("/v1/gmail/summary", json={**REQ, "summarize": False}, headers=HEADERS)
+    assert r.status_code == 200
+    body = r.json()
+    assert llm.calls == [] and metered_calls == []                                            # 0 units, fast
+    assert body["overview"] == "" and [m["summary"] for m in body["messages"]] == ["", ""]
+    assert [m["messageId"] for m in body["messages"]] == ["18c2f0a", "18c3000"]
+    assert body["messages"][1]["verificationCode"] == "482913" and body["totalFound"] == 7

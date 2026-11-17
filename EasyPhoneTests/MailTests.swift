@@ -23,9 +23,11 @@ struct MailTests {
         let call = try #require(api.gmailSummaryCalls.first)
         #expect(call.request.accountId == MockGmailService.sample.accountId)
         #expect(call.request.window == .unread && call.request.maxMessages == 10)
+        #expect(!call.request.summarize && api.gmailSummaryCalls.last?.request.summarize == true)   // fast first
         #expect(call.request.now == "2026-11-17T08:00:00+07:00" && call.request.timezone == "Asia/Ho_Chi_Minh")
-        await vm.load()                                                       // "Tải lại" = a new user action
         #expect(api.gmailSummaryCalls.count == 2 && api.gmailSummaryCalls[1].key != call.key)
+        await vm.load()                                                       // "Tải lại" = a new user action
+        #expect(api.gmailSummaryCalls.count == 4 && !vm.isSummarizing)
     }
 
     @Test func noAccountOrDeadTokenAsksToConnect() async {
@@ -113,5 +115,26 @@ struct MailTests {
                     "mail.code.spoken"] {
             #expect(UserMessage(key: key).text != key, "missing \(key)")
         }
+    }
+
+    // MARK: - Speed (owner 2026-11-18)
+
+    @Test func checkMailIsUnderstoodOnTheDevice() {
+        for text in ["Có thư mới không?", "kiểm tra mail giúp tôi", "xem mã gửi về", "đọc mã xác nhận", "mã OTP đâu",
+                     "Gmail có gì mới"] {
+            #expect(LocalIntent.isCheckMail(text), "\(text)")
+        }
+        for text in ["Soạn mail cho chị Lan", "gửi thư cho sếp nói mai em nghỉ", "trả lời thư của anh Minh",
+                     "nhắn tin cho mẹ", "nhắc tôi uống thuốc", "gửi mã cho con"] {
+            #expect(!LocalIntent.isCheckMail(text), "\(text)")
+        }
+    }
+
+    @Test func summaryFailureKeepsTheListAndCodes() async {
+        let api = MockAPIClient()
+        let vm = model(MockGmailService(accounts: [MockGmailService.sample]), api)
+        api.setGmailSummary(.success(.mock))
+        await vm.load()
+        #expect(vm.phase == .loaded(.mock) && vm.summaryNotice == nil)
     }
 }

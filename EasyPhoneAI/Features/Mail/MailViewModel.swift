@@ -15,6 +15,11 @@ import Observation
     }
 
     private(set) var phase: Phase = .loading
+    /// Second call (AI summaries) still running; the list + codes from the first call are already shown.
+    private(set) var isSummarizing = false
+    /// The AI summary failed (the list + codes stay on screen).
+    private(set) var summaryNotice: UserMessage?
+    private var generation = 0
     /// Id of the row being read aloud (`overviewId` for the overview card), nil when silent.
     private(set) var readingId: String?
     static let overviewId = "overview"
@@ -43,20 +48,45 @@ import Observation
         self.timeZone = timeZone
     }
 
-    /// Accounts → summary (1 unit; an empty inbox costs nothing, D-308). "Tải lại" calls it again with a new key.
+    /// Accounts → (1) the list + codes without AI (0 units, fast) → (2) the AI summaries (1 unit; an empty inbox
+    /// costs nothing, D-308). "Tải lại" runs both again with new keys.
     func load() async {
         stopReading()
+        generation += 1
+        let run = generation
         phase = .loading
+        summaryNotice = nil
+        isSummarizing = false
+        var request: GmailSummaryRequest
         do {
             guard let account = try await gmail.accounts().first else { phase = .notConnected; return }
             guard account.status == .connected else { phase = .needsReconnect; return }
-            let request = GmailSummaryRequest(accountId: account.accountId, window: .unread,
-                                              maxMessages: Self.maxMessages, now: ParseRequest.nowString(now(), in: timeZone),
-                                              timezone: timeZone.identifier, locale: "vi-VN")
-            phase = .loaded(try await api.gmailSummary(request, idempotencyKey: IdempotencyKey()))
+            request = GmailSummaryRequest(accountId: account.accountId, window: .unread, maxMessages: Self.maxMessages,
+                                          now: ParseRequest.nowString(now(), in: timeZone),
+                                          timezone: timeZone.identifier, locale: "vi-VN")
+            request.summarize = false
+            let quick = try await api.gmailSummary(request, idempotencyKey: IdempotencyKey())
+            guard run == generation else { return }
+            phase = .loaded(quick)
+            guard !quick.messages.isEmpty else { return }
+        } catch is CancellationError {
+            return
+        } catch {
+            if run == generation { phase = Self.phase(for: error) }
+            return
+        }
+        isSummarizing = true
+        defer { if run == generation { isSummarizing = false } }
+        request.summarize = true
+        do {
+            let full = try await api.gmailSummary(request, idempotencyKey: IdempotencyKey())
+            guard run == generation else { return }
+            phase = .loaded(full)
         } catch is CancellationError {
         } catch {
-            phase = Self.phase(for: error)
+            guard run == generation else { return }
+            if case .needsReconnect = Self.phase(for: error) { phase = .needsReconnect; return }
+            if case .failed(let message) = Self.phase(for: error) { summaryNotice = message }
         }
     }
 

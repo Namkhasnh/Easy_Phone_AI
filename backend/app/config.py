@@ -94,7 +94,7 @@ class Settings(BaseSettings):
     GOOGLE_HTTP_TIMEOUT_SECONDS: float = 10.0
     GMAIL_API_URL: str = "https://gmail.googleapis.com/gmail/v1/users/me"
     GMAIL_MAX_MESSAGES: int = 10  # API_GMAIL §4
-    GMAIL_BODY_MAX_CHARS: int = 2000  # per message, before the LLM
+    GMAIL_BODY_MAX_CHARS: int = 1200  # per message, before the LLM (smaller = faster summary)
     GMAIL_OVERVIEW_MAX_CHARS: int = 300
     GMAIL_SUMMARY_MAX_CHARS: int = 200
     VERIFICATION_CODE_MAX_AGE_MINUTES: int = 60  # D-311

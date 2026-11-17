@@ -104,6 +104,13 @@ struct ConversationParseTests {
         #expect(draft.steps.isEmpty)
     }
 
+    @Test func checkMailPhraseSkipsTheBackend() async {                   // owner 2026-11-18: speed, no unit
+        let api = MockAPIClient()
+        let vm = model(api, draft: typed("Xem mã gửi về"))
+        await vm.onAppear()
+        #expect(vm.opensMail && api.parseCalls.isEmpty)
+    }
+
     @Test func everyStepDroppedIsUnsupported() async {
         let api = MockAPIClient(parse: .success(DraftBuilderTests.draft([DraftBuilderTests.step("ride", "open", [])])))
         let vm = model(api, draft: typed("Đặt xe về nhà"))

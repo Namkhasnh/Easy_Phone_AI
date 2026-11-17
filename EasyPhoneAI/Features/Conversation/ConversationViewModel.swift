@@ -486,6 +486,7 @@ import OSLog
         autosave()
         guard let draft = currentDraft else { return }
         guard draft.steps.isEmpty else { advance(draft); return }       // already parsed: never charge twice
+        if LocalIntent.isCheckMail(trimmed) { opensMail = true; return } // on device: no `/v1/parse`, no unit
         await runParse(text: trimmed, inputMode: draft.inputMode, context: .none, draft: draft, returnMode: .transcript)
     }
 

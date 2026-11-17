@@ -117,11 +117,21 @@ struct MailView: View {
 
     private func overviewCard(_ overview: String, spoken: String) -> some View {
         VStack(alignment: .leading, spacing: Tokens.Space.s) {
-            Text(verbatim: overview)
-                .font(Tokens.Fonts.fieldValue)
-                .foregroundStyle(Tokens.Colors.onHoney)
-                .fixedSize(horizontal: false, vertical: true)
-            readButton(MailViewModel.overviewId, text: spoken, tint: Tokens.Colors.onHoney)
+            if viewModel.isSummarizing {
+                HStack(spacing: Tokens.Space.s) {
+                    ProgressView().tint(Tokens.Colors.onHoney)
+                    Text("mail.summarizing").font(Tokens.Fonts.body).foregroundStyle(Tokens.Colors.onHoney)
+                }
+            } else if let notice = viewModel.summaryNotice {
+                Text(verbatim: notice.text).font(Tokens.Fonts.body).foregroundStyle(Tokens.Colors.onHoney)
+            }
+            if !overview.isEmpty {
+                Text(verbatim: overview)
+                    .font(Tokens.Fonts.fieldValue)
+                    .foregroundStyle(Tokens.Colors.onHoney)
+                    .fixedSize(horizontal: false, vertical: true)
+                readButton(MailViewModel.overviewId, text: spoken, tint: Tokens.Colors.onHoney)
+            }
         }
         .padding(Tokens.Space.l)
         .frame(maxWidth: .infinity, alignment: .leading)

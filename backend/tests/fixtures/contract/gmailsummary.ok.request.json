@@ -5,5 +5,6 @@
   "maxMessages": 10,
   "now": "2026-11-17T08:00:00+07:00",
   "timezone": "Asia/Ho_Chi_Minh",
-  "locale": "vi-VN"
+  "locale": "vi-VN",
+  "summarize": true
 }

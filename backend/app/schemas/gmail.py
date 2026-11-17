@@ -42,6 +42,7 @@ class GmailSummaryRequest(BaseModel):
     accountId: str = Field(min_length=1, max_length=64)
     window: Literal["unread", "today"]
     maxMessages: int = Field(ge=1)  # ≤ GMAIL_MAX_MESSAGES, checked in the service (config, D-038)
+    summarize: bool = True  # false = Gmail list + codes only: no LLM, 0 units (fast first screen, API_GMAIL §4)
     now: AwareDatetime  # D-058
     timezone: str
     locale: Literal["vi-VN", "en-US"]

@@ -100,11 +100,12 @@ async def summary(
     gmail_summary.check_request(body, settings)
     email, token = await gmail_accounts.connected(conn, user.id, body.accountId, oauth, settings)
     inbox = await gmail.new_messages(token, body.window, body.maxMessages)
-    if not inbox.messages:
+    if not inbox.messages or not body.summarize:
+        # Empty inbox, or the fast first screen (`summarize: false`): no LLM, 0 units; codes still found (D-311).
         ent = await quota.entitlement(conn, user.id, settings, now)
         response.headers.update(quota.quota_headers(ent.quota))
-        return GmailSummaryResponse(schemaVersion=settings.SCHEMA_VERSION, requestId=rid, accountEmail=email,
-                                    totalFound=0, overview="", messages=[])
+        out = gmail_summary.post_process({}, inbox, body, settings)
+        return GmailSummaryResponse(schemaVersion=settings.SCHEMA_VERSION, requestId=rid, accountEmail=email, **out)
     out = await metered(
         conn, settings, endpoint=SUMMARY_ENDPOINT, units=settings.UNITS_GMAIL_SUMMARY, user_id=user.id, key=key,
         now=now, run=lambda budget, meter: gmail_summary.summarize(body, inbox, settings, client, budget, meter),
