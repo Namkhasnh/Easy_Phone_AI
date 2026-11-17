@@ -853,6 +853,42 @@
         }
       }
     },
+    "error.gmail_account_limit": {
+      "comment": "API_GMAIL.md §6",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chỉ kết nối được 1 tài khoản Gmail."
+          }
+        }
+      }
+    },
+    "error.gmail_not_connected": {
+      "comment": "API_GMAIL.md §6",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn chưa kết nối Gmail."
+          }
+        }
+      }
+    },
+    "error.gmail_reconnect_required": {
+      "comment": "API_GMAIL.md §6",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kết nối lại Gmail."
+          }
+        }
+      }
+    },
     "error.internal": {
       "comment": "UI_SCREENS §8 (ARCHITECTURE §9.2), S03 parse errors",
       "extractionState": "manual",

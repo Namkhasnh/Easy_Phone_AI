@@ -45,6 +45,12 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "I didn't understand the request. Please try again.",
     },
     "upstream_error": {"vi": "Có lỗi, bản nháp đã được lưu.", "en": "Something went wrong. Your draft is saved."},
+    "gmail_not_connected": {"vi": "Bạn chưa kết nối Gmail.", "en": "Gmail is not connected."},
+    "gmail_account_limit": {
+        "vi": "Chỉ kết nối được 1 tài khoản Gmail.",
+        "en": "Only one Gmail account can be connected.",
+    },
+    "gmail_reconnect_required": {"vi": "Kết nối lại Gmail.", "en": "Please reconnect Gmail."},
     "spend_cap": {
         "vi": "Dịch vụ AI tạm dừng. Các tính năng khác vẫn dùng được.",
         "en": "The AI service is paused. Other features still work.",

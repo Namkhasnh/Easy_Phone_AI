@@ -8,16 +8,19 @@ from fastapi import APIRouter, FastAPI
 from app import errors
 from app.config import get_settings
 from app.db import Database
-from app.routers import extract, health, me, media, parse
+from app.routers import extract, gmail, health, me, media, parse
 from app.request_id import RequestIdMiddleware
 
-ROUTERS: list[APIRouter] = [health.router, me.router, parse.router, extract.router, media.router]
+ROUTERS: list[APIRouter] = [health.router, me.router, parse.router, extract.router, media.router, gmail.router]
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     yield
     await app.state.db.close()
+    http = getattr(app.state, "google_http", None)
+    if http is not None:
+        await http.aclose()
 
 
 def create_app(extra_routers: list[APIRouter] | None = None) -> FastAPI:

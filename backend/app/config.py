@@ -81,6 +81,18 @@ class Settings(BaseSettings):
     DB_POOL_MAX_SIZE: int = 5
     DB_CONNECT_TIMEOUT_SECONDS: float = 5.0
 
+    # Gmail (Phase 2, API_GMAIL.md §2–§3, D-151, D-306, D-310). Secrets only from env / .env.
+    GMAIL_CLIENT_ID: str | None = None  # Google Cloud iOS OAuth client (not a secret, but per install)
+    GMAIL_TOKEN_KEY: SecretStr | None = None  # Fernet key for `gmail_accounts.refresh_token_enc`
+    GMAIL_MAX_ACCOUNTS: int = 1  # D-306
+    GMAIL_REQUIRED_SCOPES: list[str] = [
+        "https://www.googleapis.com/auth/gmail.readonly",
+        "https://www.googleapis.com/auth/gmail.compose",
+    ]
+    GOOGLE_TOKEN_URL: str = "https://oauth2.googleapis.com/token"
+    GOOGLE_REVOKE_URL: str = "https://oauth2.googleapis.com/revoke"
+    GOOGLE_HTTP_TIMEOUT_SECONDS: float = 10.0
+
     # Auth (API_CONTRACT §2): JWKS at {SUPABASE_URL}/auth/v1/.well-known/jwks.json; HS256 secret only as fallback
     JWT_AUDIENCE: str = "authenticated"
 
