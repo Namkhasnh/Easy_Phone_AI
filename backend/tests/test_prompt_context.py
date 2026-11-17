@@ -45,7 +45,7 @@ def test_weekdays_are_consistent_over_a_year():
 
 
 def test_catalog_lines_hide_locked_and_app_built_fields():
-    lines = catalog_lines(KINDS)
+    lines = catalog_lines([*KINDS, "ocr"])  # "ocr" paused in ENABLED_KINDS (D-302); still checked here
     text = "\n".join(lines)
     assert "calendarEvent.create: title*, startDate*, endDate, allDay, location, notes, alertMinutesBefore" in lines
     assert "reminder.create: title*, dueDate*, notes" in lines
@@ -75,7 +75,7 @@ def test_full_block_shape():
         "timezone: Asia/Ho_Chi_Minh",
         "today: Chủ nhật 08/11/2026",
         "locale: vi-VN",
-        "enabled_kinds: calendarEvent, reminder, call, sms, place, ocr",
+        f"enabled_kinds: {', '.join(KINDS)}",
     ]
     assert "saved_place_labels: home, work, Nhà con gái" in lines
     assert "answering_field: null" in lines

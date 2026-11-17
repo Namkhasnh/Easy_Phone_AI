@@ -3806,6 +3806,42 @@
         }
       }
     },
+    "source.caption": {
+      "comment": "UI_SCREENS S10",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thông tin “%@” được lấy từ vùng này."
+          }
+        }
+      }
+    },
+    "source.noBox": {
+      "comment": "UI_SCREENS S10",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không xác định được vị trí trong ảnh."
+          }
+        }
+      }
+    },
+    "source.title": {
+      "comment": "UI_SCREENS S10",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ảnh gốc"
+          }
+        }
+      }
+    },
     "state.awaitingApproval": {
       "comment": "DATA_MODEL §8",
       "extractionState": "manual",

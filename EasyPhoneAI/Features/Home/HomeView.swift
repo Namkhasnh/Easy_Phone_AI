@@ -2,6 +2,9 @@ import SwiftUI
 
 /// S02 Home (UI_SCREENS S02). Primary buttons on this screen: mic and "Gửi" only (D-183).
 struct HomeView: View {
+    /// D-302 (owner 2026-11-17): photo / OCR is paused; the S09 code stays and comes back by flipping this.
+    static let showsPhotoEntry = false
+
     @State var viewModel: HomeViewModel
     @Environment(Router.self) private var router
     @Environment(AppState.self) private var appState
@@ -40,7 +43,9 @@ struct HomeView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 inputRow
-                SecondaryButton("home.camera", systemImage: "camera") { router.push(.ocr) }
+                if Self.showsPhotoEntry {
+                    SecondaryButton("home.camera", systemImage: "camera") { router.push(.ocr) }
+                }
                 quickLinks
                 unfinishedSection
             }

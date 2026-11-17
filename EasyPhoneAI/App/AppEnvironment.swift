@@ -84,7 +84,8 @@ struct AppEnvironment: Sendable {
         let system = MockSystemService()
         let places = MockPlacesService()
         let auth = scenario == .uiTest ? MockAuthService(initial: .signedIn(userId: MockAuthService.userId)) : MockAuthService()
-        let api = scenario == .uiTest ? MockAPIClient(parseRouter: uiTestParse) : MockAPIClient()
+        let api = scenario == .uiTest ? MockAPIClient(parseRouter: uiTestParse, extract: .success(uiTestExtract()))
+                                      : MockAPIClient()
         return AppEnvironment(config: .mock, auth: auth, api: api, drafts: drafts,
                               localData: localData,
                               engine: TaskEngine(repository: drafts,
@@ -105,6 +106,24 @@ struct AppEnvironment: Sendable {
                               ocr: MockOCRService())
     }
 
+    /// `MockScenario.uiTest` `/v1/extract` (flow 1, 1D.11): `ExtractResponse.mock` with the date moved to tomorrow
+    /// 09:30, so the linked event / reminder is not "in the past" whenever the test runs.
+    private static func uiTestExtract(now: Date = .now) -> ExtractResponse {
+        let tz = TimeZone.current
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = tz
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: now) ?? now
+        let date = calendar.date(bySettingHour: 9, minute: 30, second: 0, of: tomorrow) ?? tomorrow
+        let value = ParseRequest.nowString(date, in: tz)
+        let mock = ExtractResponse.mock
+        return ExtractResponse(schemaVersion: mock.schemaVersion, requestId: mock.requestId,
+                               fields: mock.fields.map { field in
+                                   guard field.id == "dateTime" else { return field }
+                                   return .init(id: field.id, value: value, confidence: field.confidence, span: field.span)
+                               },
+                               suggestedNextAction: mock.suggestedNextAction)
+    }
+
     /// `MockScenario.uiTest` `/v1/parse`: a request starting with "Gọi" → call anh Minh, anything else → `mockSMS`.
     private static let uiTestParse: @Sendable (ParseRequest) -> ParsedDraft? = { request in
         guard request.text.lowercased().hasPrefix("gọi") else { return .mockSMS }
@@ -115,7 +134,7 @@ struct AppEnvironment: Sendable {
                            followUpQuestion: nil, unsupported: nil)
     }
 
-    /// One executor per kind (ARCHITECTURE §5.1); the others are added by their items (1C.5, 1C.10 – 1C.13, 1D).
+    /// One executor per kind (ARCHITECTURE §5.1); ride / food wait for Phase 3.
     private static func executors(_ calendar: any CalendarService, _ reminders: any RemindersService,
                                   _ permissions: any PermissionManager,
                                   _ localData: any LocalDataRepository,
@@ -128,7 +147,8 @@ struct AppEnvironment: Sendable {
          .sms: SMSExecutor(messages: messages, system: system),
          .place: PlaceExecutor(places: places, localData: localData),
          .reminder: RemindersExecutor(reminders: reminders, permissions: permissions,
-                                      morningHour: { localData.settings().snoozeMorningHour })]
+                                      morningHour: { localData.settings().snoozeMorningHour }),
+         .ocr: OCRExecutor(system: system)]
     }
 }
 

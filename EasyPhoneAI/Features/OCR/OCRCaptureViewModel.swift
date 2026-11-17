@@ -5,7 +5,8 @@ import OSLog
 /// S09 step 1 "Choose source" (UI_SCREENS S09): camera (S18 step 0, D-185) or one photo from the library
 /// (`PhotosPicker` runs out of process, no Photos access needed). Reading (1D.3) and saving (1D.2) come next.
 @Observable @MainActor final class OCRCaptureViewModel {
-    /// S09 modes: 1 choose source, 2 reading, 3 text found (fields come with 1D.7), 4 no text / blurry (spec §6.3 AC5).
+    /// S09 modes: 1 choose source, 2 reading, 3 text found, 4 no text / blurry (spec §6.3 AC5: nothing read, a read
+    /// error, or `/v1/extract` found no field in the text, API_CONTRACT §7.2).
     enum Mode: Equatable { case choosing, reading, read, noText }
 
     private(set) var mode: Mode = .choosing
@@ -119,8 +120,8 @@ import OSLog
             guard !result.isEmpty else { mode = .noText; return }        // spec §6.3 AC5: no `/v1/extract` call
             draft.originalInput = result.text
             repository.save(draft)
-            await extract(result.text, draft: draft)
-            mode = .read
+            // API_CONTRACT §7.2: blurry text → `fields: []` → the same "no text" mode with retake (spec §6.3 AC5).
+            mode = await extract(result.text, lines: result.lines, draft: draft) ? .read : .noText
         } catch {
             // TODO(spec): S09 has no text for a failed read (offline fallback…); the "no text" mode offers a retake.
             logger.info("ocr failed: \((error as? ServiceError)?.code ?? "unknown", privacy: .public)")
@@ -132,7 +133,9 @@ import OSLog
     /// Any failure (offline, quota, 5xx) still opens S04 with the text, so nothing read is lost (D-104).
     // TODO(spec): S09 has no message for a failed `/v1/extract` (offline, 402 quota…); S04 opens with `extractedText`
     // only and the user fills the rest by hand. Revisit with 1F (paywall on 402).
-    private func extract(_ text: String, draft: TaskDraft) async {
+    /// Returns `false` when the backend found nothing in the text (`200` with `fields: []`, API_CONTRACT §7.2): no S04,
+    /// S09 shows "no text" (the unit is still charged). The text stays in `originalInput` until "Chụp lại".
+    private func extract(_ text: String, lines: [OCRLine], draft: TaskDraft) async -> Bool {
         let zone = TimeZone(identifier: draft.timeZoneId) ?? .current
         let request = ExtractRequest(ocrText: text, now: ParseRequest.nowString(now(), in: zone),
                                      timezone: zone.identifier, locale: draft.locale)
@@ -142,9 +145,11 @@ import OSLog
         } catch {
             logger.info("extract failed: \((error as? AppError)?.code ?? "unknown", privacy: .public)")
         }
-        if engine.applyExtract(response, text: text, to: draft) || !draft.steps.isEmpty {
+        if let response, response.fields.isEmpty, draft.steps.isEmpty { return false }
+        if engine.applyExtract(response, text: text, lines: lines, to: draft) || !draft.steps.isEmpty {
             reviewDraftId = draft.id
         }
+        return true
     }
 
     /// Mode 3 text, one line per row (data from the photo, shown as is).

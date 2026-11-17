@@ -225,7 +225,8 @@ extension DraftBuilder {
     /// The `ocr.create` step (DATA_MODEL §4): `extractedText` = the whole text read from the photo (= `originalInput`),
     /// then the `/v1/extract` fields, each with its UTF-16 span into that text (§1.7), and the suggested `nextAction`.
     /// `extract == nil` (the call failed) → only `extractedText`; the user can still type the rest. Pure; `state = draft`.
-    static func ocrStep(text: String, extract: ExtractResponse?, now: Date, catalog: FieldCatalog = .mvp) -> TaskStep {
+    static func ocrStep(text: String, extract: ExtractResponse?, lines: [OCRLine] = [], now: Date,
+                        catalog: FieldCatalog = .mvp) -> TaskStep {
         let extracted = Dictionary((extract?.fields ?? []).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let fields = catalog.fields(.ocr, .create).map { spec -> Field in
             var field = Field(id: spec.id, type: spec.type, source: .ai, deviceOnly: spec.deviceOnly)
@@ -244,7 +245,8 @@ extension DraftBuilder {
                 field.value = value
                 field.confidence = min(1, max(0, e.confidence))
                 if let span = e.span, span.start >= 0, span.end > span.start, span.end <= text.utf16.count {
-                    field.source = .ocr(span: SourceSpan(start: span.start, end: span.end))  // box: 1D.8 (S10)
+                    field.source = .ocr(span: SourceSpan(start: span.start, end: span.end,
+                                                         boundingBox: box(span.start, span.end, text: text, lines: lines)))
                 } else {
                     // TODO(spec): a field with `span: null` (API_CONTRACT §7.2) has no `.ocr(span:)`; kept as `.ai`
                     // (confidence ≤ 0.5 from the backend → still "needs review").
@@ -254,6 +256,66 @@ extension DraftBuilder {
             return field
         }
         let step = TaskStep(order: 0, kind: .ocr, operation: .create, state: .draft, fields: fields, stateChangedAt: now)
+        return Validator.applyRequired(step, catalog: catalog)
+    }
+
+    /// S10 box for a UTF-16 span (DATA_MODEL §1.7): the union of the boxes of every OCR line the span touches.
+    /// `text` must be the lines joined by "\n" (API_CONTRACT §7.3), else nil (no box → `source.noBox`).
+    // TODO(spec): OCR gives one box per line, not per character; a value in part of a line outlines the whole line.
+    static func box(_ start: Int, _ end: Int, text: String, lines: [OCRLine]) -> NormalizedRect? {
+        guard !lines.isEmpty, lines.map(\.text).joined(separator: "\n") == text, start < end else { return nil }
+        var offset = 0
+        var boxes: [OCRBox] = []
+        for line in lines {
+            let length = line.text.utf16.count
+            if start < offset + length, end > offset, length > 0 { boxes.append(line.box) }
+            offset += length + 1                                       // + "\n"
+        }
+        guard let first = boxes.first else { return nil }
+        if boxes.count == 1, first.x >= 0, first.y >= 0, first.width > 0, first.height > 0,
+           first.x + first.width <= 1, first.y + first.height <= 1 {
+            return NormalizedRect(x: first.x, y: first.y, width: first.width, height: first.height)   // exact
+        }
+        var minX = first.x, minY = first.y, maxX = first.x + first.width, maxY = first.y + first.height
+        for b in boxes.dropFirst() {
+            minX = min(minX, b.x); minY = min(minY, b.y)
+            maxX = max(maxX, b.x + b.width); maxY = max(maxY, b.y + b.height)
+        }
+        let clamp = { (v: Double) in min(1, max(0, v)) }
+        minX = clamp(minX); minY = clamp(minY); maxX = clamp(maxX); maxY = clamp(maxY)
+        guard maxX > minX, maxY > minY else { return nil }
+        return NormalizedRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
+    }
+
+    /// `ocr` field → field of the step appended for `nextAction` (DATA_MODEL §4). `personName` / `phoneNumber` are
+    /// not carried over (not in §4; owner 2026-11-15: not into `notes`).
+    static func ocrLinks(_ kind: TaskKind) -> [(source: String, target: String)] {
+        switch kind {
+        case .calendarEvent: [("title", "title"), ("dateTime", "startDate"), ("address", "location")]
+        case .reminder: [("title", "title"), ("dateTime", "dueDate")]
+        default: []
+        }
+    }
+
+    /// The `create` step appended after "Tiếp tục" on the `ocr` step (S09 step 3, DATA_MODEL §3.3): linked fields
+    /// follow the photo's fields (`.linked(stepId:fieldId:)`, current value copied), the rest get catalog defaults.
+    /// Nil unless `nextAction` is `calendarEvent` / `reminder` (`copyContactInfo` = clipboard only, `ride` = Phase 3).
+    /// Pure; `state = draft`.
+    static func linkedStep(from ocr: TaskStep, order: Int, now: Date, catalog: FieldCatalog = .mvp) -> TaskStep? {
+        guard ocr.kind == .ocr, let action = ocr.field("nextAction")?.value,
+              let kind = TaskKind(rawValue: action), kind == .calendarEvent || kind == .reminder else { return nil }
+        let links = Dictionary(uniqueKeysWithValues: ocrLinks(kind).map { ($0.target, $0.source) })
+        let fields = catalog.fields(kind, .create).map { spec -> Field in
+            var field = Field(id: spec.id, type: spec.type, source: .ai, deviceOnly: spec.deviceOnly)
+            if let sourceId = links[spec.id] {
+                field.value = cleaned(ocr.field(sourceId)?.value)
+                field.source = .linked(stepId: ocr.id, fieldId: sourceId)
+            } else {
+                field.value = defaultValue(spec, kind: kind, operation: .create)
+            }
+            return field
+        }
+        let step = TaskStep(order: order, kind: kind, operation: .create, state: .draft, fields: fields, stateChangedAt: now)
         return Validator.applyRequired(step, catalog: catalog)
     }
 }

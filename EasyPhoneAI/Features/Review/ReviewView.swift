@@ -49,7 +49,10 @@ struct ReviewView: View {
             await viewModel.openPendingEventChoice()
             viewModel.startAutoConfirmIfAllowed()                       // D-299, only when the toggle is on
         }
-        .onDisappear { viewModel.cancelAutoConfirm() }
+        .onDisappear {
+            viewModel.cancelAutoConfirm()
+            viewModel.stopReading()
+        }
         .sheet(isPresented: Binding(get: { viewModel.picking != nil },
                                     set: { if !$0 { viewModel.pickingFieldId = nil } }),
                onDismiss: { viewModel.pickerSheetDismissed() }) {
@@ -66,6 +69,11 @@ struct ReviewView: View {
         .onChange(of: viewModel.step?.state) { titleFocused = true }      // focus the title after each result (§9)
         .onChange(of: viewModel.didClose) { _, closed in if closed { dismiss() } }
         .onChange(of: viewModel.didFinish) { _, finished in if finished { router.popToRoot() } }
+        .fullScreenCover(isPresented: Binding(get: { viewModel.sourceImage != nil },
+                                              set: { if !$0 { viewModel.sourceImage = nil } })) {
+            if let source = viewModel.sourceImage { SourceImageView(viewModel: source) }   // S10
+        }
+        .onChange(of: viewModel.didRetake) { _, retake in if retake { router.replaceLast(with: .ocr) } }
         .sensoryFeedback(trigger: viewModel.step?.state) { _, new in      // §1.3 haptics
             switch new {
             case .succeeded: .success
@@ -156,6 +164,7 @@ struct ReviewView: View {
                     ForEach(details) { field in row(field, step) }
                 }
             }
+            if !viewModel.nextActionOptions.isEmpty { nextActionCard }
             if let original = viewModel.originalInput {
                 Text(verbatim: original)
                     .font(Tokens.Fonts.body)
@@ -168,11 +177,19 @@ struct ReviewView: View {
     }
 
     private func row(_ field: Field, _ step: TaskStep) -> some View {
-        FieldRow(field: field, kind: step.kind, displayValue: viewModel.displayValue(field), compact: true,
-                 labelKey: viewModel.labelKey(field),
-                 onEdit: { Task { await viewModel.tapRow(field) } },
-                 onChoose: { Task { await viewModel.choose(field) } })
-        // TODO(spec): "Xem ảnh gốc" (S10, 1D.8) opens its screen later.
+        VStack(alignment: .leading, spacing: Tokens.Space.xs) {
+            FieldRow(field: field, kind: step.kind, displayValue: viewModel.displayValue(field), compact: true,
+                     labelKey: viewModel.labelKey(field),
+                     onEdit: { Task { await viewModel.tapRow(field) } },
+                     onViewSource: { viewModel.viewSource(field) },
+                     onChoose: { Task { await viewModel.choose(field) } })
+            if viewModel.canReadAloud(field) {
+                // UI_SCREENS S09 step 3: the photo text row has "Đọc to".
+                TextLinkButton(viewModel.isReading ? "common.stopReading" : "common.readAloud") {
+                    Task { await viewModel.toggleReading() }
+                }
+            }
+        }
     }
 
     /// D-292 summary card: state badge, the main value in bold, one time line. Gets VoiceOver focus (UI_SCREENS §9).
@@ -197,6 +214,48 @@ struct ReviewView: View {
         .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
         .accessibilityElement(children: .combine)
         .accessibilityFocused($titleFocused)
+    }
+
+    /// UI_SCREENS S09 step 3: `nextAction` radio list (64pt rows, `checkmark`), saved on tap like any field (D-104).
+    private var nextActionCard: some View {
+        VStack(alignment: .leading, spacing: Tokens.Space.s) {
+            Text("ocr.nextAction.title")
+                .font(Tokens.Fonts.body.weight(.semibold))
+                .foregroundStyle(Tokens.Colors.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
+            ForEach(viewModel.nextActionOptions, id: \.self) { option in
+                let selected = viewModel.nextActionValue == option
+                Button { viewModel.chooseNextAction(option) } label: {
+                    HStack(spacing: Tokens.Space.m) {
+                        Text(verbatim: FieldFormatter.option(fieldId: "nextAction", value: option) ?? option)
+                            .font(Tokens.Fonts.fieldValue)
+                            .foregroundStyle(Tokens.Colors.textPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        if selected {
+                            Image(systemName: "checkmark")
+                                .font(Tokens.Fonts.label)
+                                .foregroundStyle(Tokens.Colors.primary)
+                                .accessibilityHidden(true)
+                        }
+                    }
+                    .padding(.horizontal, Tokens.Space.l)
+                    .frame(minHeight: Tokens.Size.rowMinHeight)
+                    .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+                    .overlay {
+                        if selected {
+                            RoundedRectangle(cornerRadius: Tokens.Radius.card)
+                                .strokeBorder(Tokens.Colors.primary, lineWidth: Tokens.Size.borderIncreasedContrast)
+                        }
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
+                .accessibilityIdentifier("ocr.nextAction.\(option)")
+            }
+        }
     }
 
     /// D-295: every event the one "Xác nhận xóa" tap deletes.
@@ -249,7 +308,7 @@ struct ReviewView: View {
         VStack(alignment: .leading, spacing: Tokens.Space.m) {
             if let seconds = viewModel.autoConfirmSeconds { autoConfirmCard(seconds) }
             if !viewModel.batchDeleteRows.isEmpty { batchDeleteCard }
-            PrimaryButton(viewModel.isDelete ? "review.delete.confirm" : "common.confirm",
+            PrimaryButton(LocalizedStringKey(viewModel.confirmKey),
                           role: viewModel.isDelete ? .destructive : nil,
                           disabledReasonKey: viewModel.disabledReasonKey.map { LocalizedStringKey($0) }) {
                 Task { await viewModel.confirm() }
@@ -262,6 +321,9 @@ struct ReviewView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             SecondaryButton("common.edit") { viewModel.startEdit() }
+            if viewModel.canRetake {
+                SecondaryButton("ocr.retake") { viewModel.retake() }       // S09 step 3
+            }
         }
         .padding(Tokens.Space.screenPadding)
         .background(Tokens.Colors.bg)

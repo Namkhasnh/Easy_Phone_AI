@@ -143,8 +143,23 @@ import os
         }
         guard applyInPlace(event, to: &step) else { return .notAllowed }
         draft.steps[index] = step
+        if step.kind == .ocr, step.state == .succeeded { appendOCRLinkedStep(from: step, in: draft) }
         save(draft)
         return .finished(step.state)
+    }
+
+    /// "Tiếp tục" on the `ocr` step (UI_SCREENS S09 step 3): appends the `nextAction` step with linked fields
+    /// (DATA_MODEL §3.3, §4), validated (→ `awaitingApproval` / `needsInfo`). Nothing runs until its own "Xác nhận"
+    /// (D-100). Only once per `ocr` step: a re-confirm after an edit updates the links instead (`propagateLinks`).
+    // TODO(spec): changing `nextAction` after the linked step exists does not replace it or add a second one.
+    private func appendOCRLinkedStep(from ocr: TaskStep, in draft: TaskDraft) {
+        let alreadyLinked = draft.steps.contains { other in
+            other.fields.contains { if case .linked(ocr.id, _) = $0.source { true } else { false } }
+        }
+        let order = (draft.steps.map(\.order).max() ?? ocr.order) + 1
+        guard !alreadyLinked, var step = DraftBuilder.linkedStep(from: ocr, order: order, now: now()) else { return }
+        revalidateInPlace(&step)
+        draft.steps.append(step)
     }
 
     private func isoString(_ date: Date, timeZoneId: String) -> String {
@@ -207,12 +222,12 @@ import os
     /// (`nil` when that call failed). Validated (→ `awaitingApproval`: only `extractedText` is required) and saved once.
     /// Returns `false` when the draft already has steps (a second extract never replaces what the user saw).
     @discardableResult
-    func applyExtract(_ extract: ExtractResponse?, text: String, to draft: TaskDraft) -> Bool {
+    func applyExtract(_ extract: ExtractResponse?, text: String, lines: [OCRLine] = [], to draft: TaskDraft) -> Bool {
         guard draft.steps.isEmpty else {
             logger.warning("applyExtract: draft already has steps")
             return false
         }
-        var step = DraftBuilder.ocrStep(text: text, extract: extract, now: now())
+        var step = DraftBuilder.ocrStep(text: text, extract: extract, lines: lines, now: now())
         revalidateInPlace(&step)
         draft.steps = [step]
         draft.serverRequestId = extract?.requestId

@@ -94,4 +94,34 @@ struct OCRExtractTests {
         let json = try JSONSerialization.jsonObject(with: JSONEncoder().encode(request)) as? [String: Any]
         #expect(Set(json?.keys.map { $0 } ?? []) == ["schemaVersion", "ocrText", "now", "timezone", "locale"])  // D-056
     }
+
+    // MARK: - 1D.9 no text / blurry (spec §6.3 AC5, API_CONTRACT §7.2)
+
+    private func capture(ocr: MockOCRService, api: MockAPIClient, repo: MockTaskRepository) -> OCRCaptureViewModel {
+        OCRCaptureViewModel(permissions: MockPermissionManager(), cameraAvailable: false, repository: repo,
+                            ocr: ocr, api: api, engine: TaskEngine(repository: repo))
+    }
+
+    @Test func readErrorNeverCallsExtract() async {
+        let api = MockAPIClient()
+        let vm = capture(ocr: MockOCRService(.failure(.framework(code: "ocr.failed"))), api: api,
+                         repo: MockTaskRepository())
+        await vm.received(Data([0xFF, 0xD8]), fromCamera: false)
+        #expect(vm.mode == .noText && api.extractCalls.isEmpty)
+    }
+
+    @Test func blurryTextWithNoFieldsShowsRetakeNotReview() async throws {
+        let empty = ExtractResponse(schemaVersion: 1, requestId: "r", fields: [], suggestedNextAction: nil)
+        let api = MockAPIClient(extract: .success(empty))
+        let repo = MockTaskRepository()
+        let vm = capture(ocr: MockOCRService(), api: api, repo: repo)
+        await vm.received(Data([0xFF, 0xD8]), fromCamera: false)
+        #expect(api.extractCalls.count == 1)                                   // charged once (API_CONTRACT §7.2)
+        #expect(vm.mode == .noText && vm.reviewDraftId == nil)
+        let id = try #require(vm.draftId)
+        let draft = try #require(repo.draft(id))
+        #expect(draft.steps.isEmpty)                                            // no S04, no row in History
+        await vm.retake()
+        #expect(vm.mode == .choosing && draft.imageLocalPath == nil)            // unread photo removed
+    }
 }
