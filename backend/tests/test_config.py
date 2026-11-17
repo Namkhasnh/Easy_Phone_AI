@@ -11,7 +11,7 @@ def test_defaults(monkeypatch):
     assert s.TRANSCRIBE_PER_HOUR == 30
     assert s.QUOTA_DAY_TZ == "Asia/Ho_Chi_Minh"
     assert s.ALLOW_XCODE_STOREKIT is False
-    assert not {"emailReply", "ride", "food"} & set(s.ENABLED_KINDS)  # D-150
+    assert not {"ride", "food"} & set(s.ENABLED_KINDS)  # D-142 (emailReply is in MVP since D-303)
     assert s.OPENAI_API_KEY is None
 
 

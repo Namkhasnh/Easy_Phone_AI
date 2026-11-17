@@ -74,6 +74,17 @@ final class MockAPIClient: APIClientProtocol {
         return try gmailSummaryResult.withLock { $0 }.get()
     }
 
+    private let gmailDraftResult = Mutex<Result<GmailDraftResponse, AppError>>(.success(.mock))
+    private let gmailDraftLog = Mutex<[(request: GmailDraftRequest, key: IdempotencyKey)]>([])
+    /// Every `gmailDraft` call so far.
+    var gmailDraftCalls: [(request: GmailDraftRequest, key: IdempotencyKey)] { gmailDraftLog.withLock { $0 } }
+    func setGmailDraft(_ result: Result<GmailDraftResponse, AppError>) { gmailDraftResult.withLock { $0 = result } }
+
+    func gmailDraft(_ request: GmailDraftRequest, idempotencyKey: IdempotencyKey) async throws -> GmailDraftResponse {
+        gmailDraftLog.withLock { $0.append((request, idempotencyKey)) }
+        return try gmailDraftResult.withLock { $0 }.get()
+    }
+
     var quotaUpdates: AsyncStream<Quota> { quota.stream }
     var blockingUpdates: AsyncStream<BlockingScreen> { blocking.stream }
 
@@ -180,4 +191,10 @@ extension GmailSummaryResponse {
                                 subject: "Họp tổ chiều thứ Sáu", receivedAt: Date(timeIntervalSince1970: 1_794_874_320),
                                 summary: "Chị Lan hỏi em có dự họp 15:00 thứ Sáu không.", needsReply: true),
         ])
+}
+
+extension GmailDraftResponse {
+    /// = `gmaildraft.created.response.json` (`ContractFixtureTests.mocksEqualFixtures`).
+    static let mock = GmailDraftResponse(schemaVersion: 1, draftId: "r-5823", messageId: "18c3001",
+                                         openUrl: "https://mail.google.com/mail/u/0/#drafts")
 }

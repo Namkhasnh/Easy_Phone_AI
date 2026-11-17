@@ -110,6 +110,7 @@ import Observation
             // TODO(spec): the 🔒 `calendarId` row (calendar name) and the contact photo are not shown yet.
             if spec.id == "calendarId" { return nil }
             if step.kind == .ocr, spec.id == "nextAction" { return nil }   // own radio card (S09 step 3)
+            if step.kind == .emailReply, spec.appBuilt { return nil }      // account / thread ids: not for the user
             // TODO(spec): S04 says `coordinate` → small map; the filled coordinate row is hidden (name + address show it).
             if spec.id == "coordinate", let f = step.field("coordinate"), f.value != nil, f.ambiguity == nil { return nil }
             return step.field(spec.id) ?? Field(id: spec.id, type: spec.type, deviceOnly: spec.deviceOnly)
@@ -305,6 +306,8 @@ import Observation
 
     enum ResultAction: Sendable, Hashable {
         case nextStep(UUID), done, markDone, later, retry, cancel
+        /// Opens a URL (the View calls `openURL`), e.g. "Mở Gmail" after a Gmail draft (UI_SCREENS S21).
+        case open(URL)
     }
 
     struct ResultButton: Sendable, Hashable {
@@ -342,9 +345,10 @@ import Observation
             // TODO(spec): "Mở trong Lịch" / "Mở trong Lời nhắc" (secondary) need the calendar / reminders services (1C).
             let message = next == nil && draft?.isClosed == true ? UserMessage(key: "result.allDone").text : successMessage(step)
             return ResultCard(state: .succeeded, message: message,
+                              // D-304: a Gmail draft always says "saved as a draft", never just "done" (not sent).
                               detail: copiedContact(step) ? UserMessage(key: "common.copied").text
-                                  : next == nil ? nil : successMessage(step),
-                              primary: advance, secondary: nil)
+                                  : next == nil && step.kind != .emailReply ? nil : successMessage(step),
+                              primary: advance, secondary: openGmail(step))
         case .handedOff, .prepared:
             return ResultCard(state: step.state, message: handOffMessage(step), detail: nil,
                               primary: markDone, secondary: later)
@@ -365,6 +369,16 @@ import Observation
             return nil
         }
     }
+
+    /// "Mở Gmail" under a saved Gmail draft (UI_SCREENS S21 `mail.openGmail`); the web link opens the Gmail app
+    /// when it is installed.
+    private func openGmail(_ step: TaskStep) -> ResultButton? {
+        guard step.kind == .emailReply, let url = URL(string: Self.gmailDraftsURL) else { return nil }
+        return ResultButton(title: UserMessage(key: "mail.openGmail").text, action: .open(url))
+    }
+
+    // TODO(spec): API_GMAIL §5 returns `openUrl`, but the step keeps only the evidence; the same fixed link is used.
+    static let gmailDraftsURL = "https://mail.google.com/mail/u/0/#drafts"
 
     /// The `ocr` step put name + phone on the clipboard (D-226).
     private func copiedContact(_ step: TaskStep) -> Bool {
@@ -397,6 +411,7 @@ import Observation
                         args: [step.field("customLabel")?.value
                                ?? step.field("label").flatMap(displayValue) ?? ""])
         case (.ocr, _): UserMessage(key: "result.ocr.confirmed")
+        case (.emailReply, _): UserMessage(key: "result.gmailDraft")           // D-304: saved, never sent
         default:
             // TODO(spec): no result text for reminder update / delete; the state label "Đã xong" is shown.
             UserMessage(key: TaskState.succeeded.labelKey)
@@ -789,6 +804,7 @@ import Observation
         case .retry: engine.retry(stepId: stepId, in: draft)
         case .cancel: engine.cancel(stepId: stepId, in: draft)
         case .later: didClose = true
+        case .open: break                                                      // handled by the View (`openURL`)
         case .done: didFinish = true
         }
     }

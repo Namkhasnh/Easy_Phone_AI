@@ -52,6 +52,7 @@ struct ContractFixtureTests {
         case "gmailaccount": reencoded = try JSONEncoder().encode(Self.decode(GmailAccountResponse.self, name))
         case "gmailaccounts": reencoded = try JSONEncoder().encode(Self.decode(GmailAccountsResponse.self, name))
         case "gmailsummary": reencoded = try JSONEncoder().encode(Self.decode(GmailSummaryResponse.self, name))
+        case "gmaildraft": reencoded = try JSONEncoder().encode(Self.decode(GmailDraftResponse.self, name))
         default:
             Issue.record("no DTO mapped for \(name)")
             return
@@ -99,6 +100,7 @@ struct ContractFixtureTests {
         #expect(OCRResponse.mock == (try Self.decode(OCRResponse.self, "ocr.ok.response.json")))
         #expect(ExtractResponse.mock == (try Self.decode(ExtractResponse.self, "extract.appointment.response.json")))
         #expect(GmailSummaryResponse.mock == (try Self.decode(GmailSummaryResponse.self, "gmailsummary.ok.response.json")))
+        #expect(GmailDraftResponse.mock == (try Self.decode(GmailDraftResponse.self, "gmaildraft.created.response.json")))
     }
 
     static var requestFixtureNames: [String] {
@@ -118,6 +120,7 @@ struct ContractFixtureTests {
         case "extract": encoded = try JSONEncoder().encode(Self.decode(ExtractRequest.self, name))
         case "gmailaccount": encoded = try JSONEncoder().encode(Self.decode(GmailConnectRequest.self, name))
         case "gmailsummary": encoded = try JSONEncoder().encode(Self.decode(GmailSummaryRequest.self, name))
+        case "gmaildraft": encoded = try JSONEncoder().encode(Self.decode(GmailDraftRequest.self, name))
         default:
             Issue.record("no DTO mapped for \(name)")
             return

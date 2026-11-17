@@ -1,6 +1,6 @@
-"""`/v1/gmail/*` DTOs (API_GMAIL.md §3, §4). Requests forbid unknown keys (API_CONTRACT §0.1)."""
+"""`/v1/gmail/*` DTOs (API_GMAIL.md §3, §4, §5). Requests forbid unknown keys (API_CONTRACT §0.1)."""
 
-from typing import Literal
+from typing import Annotated, Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
@@ -73,3 +73,33 @@ class GmailSummaryResponse(BaseModel):
     totalFound: int
     overview: str
     messages: list[GmailMessageSummary]
+
+
+# ---- POST /v1/gmail/drafts (API_GMAIL §5) ----
+
+EMAIL_RE = r"^[^@\s<>,;\"]+@[^@\s<>,;\"]+\.[^@\s<>,;\"]+$"  # one plain address, no display name (RFC 5322 subset)
+
+
+class ReplyTo(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    threadId: str = Field(min_length=1, max_length=64, pattern=r"^[A-Za-z0-9]+$")
+    messageId: str = Field(min_length=1, max_length=64, pattern=r"^[A-Za-z0-9]+$")
+
+
+class GmailDraftRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schemaVersion: Literal[1]
+    accountId: str = Field(min_length=1, max_length=64)
+    to: list[Annotated[str, Field(max_length=254, pattern=EMAIL_RE)]] = Field(min_length=1, max_length=5)
+    subject: str = Field(max_length=200)
+    body: str = Field(min_length=1, max_length=10_000)  # D-238
+    replyTo: ReplyTo | None = None
+
+
+class GmailDraftResponse(BaseModel):
+    schemaVersion: int
+    draftId: str
+    messageId: str
+    openUrl: str

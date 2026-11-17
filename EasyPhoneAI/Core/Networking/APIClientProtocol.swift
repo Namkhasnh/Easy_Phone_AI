@@ -26,6 +26,8 @@ protocol APIClientProtocol: Sendable {
     func gmailDisconnect(accountId: String) async throws
     /// `POST /v1/gmail/summary` (§4, 1 unit; empty inbox 0). Own key per user action (D-245).
     func gmailSummary(_ request: GmailSummaryRequest, idempotencyKey: IdempotencyKey) async throws -> GmailSummaryResponse
+    /// `POST /v1/gmail/drafts` (§5, 0 units, never sends). Key = the step's key: a retry returns the same draft (D-105).
+    func gmailDraft(_ request: GmailDraftRequest, idempotencyKey: IdempotencyKey) async throws -> GmailDraftResponse
     /// From `X-Quota-*` headers after every response that carries them (D-234). Display only (D-085).
     var quotaUpdates: AsyncStream<Quota> { get }
     // TODO(spec): not in ARCHITECTURE §4.1 — lets any `426` reach `AppState.blockingScreen` (S19) without every

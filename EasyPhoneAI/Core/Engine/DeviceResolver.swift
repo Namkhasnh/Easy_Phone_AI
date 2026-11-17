@@ -49,6 +49,8 @@ struct DeviceResolution: Sendable, Hashable {
             return await resolveEvent(step, timeZoneId: timeZoneId)
         case (.place, .open), (.place, .create):
             return await resolvePlace(step)
+        case (.emailReply, _):
+            return await resolveEmail(step)
         default:
             // TODO(spec): reminder update / delete / complete / snooze by voice need a reminder search (RemindersService
             // has none in ARCHITECTURE §4.2); they come from S12 with `targetRef` set.
@@ -129,6 +131,47 @@ struct DeviceResolution: Sendable, Hashable {
                                   ?? PhoneNumber.masked(number))
                 })
         }
+    }
+
+    // MARK: - Email address (emailReply, D-307)
+
+    /// `recipientName` → `toAddress`: an address typed / said as the name is used as is; else Contacts: one match
+    /// with one address → filled; several addresses or several contacts → one `.other` choice of "Name — address"
+    /// rows (never auto-picked, D-106); nothing found → left empty, the user types it in S05 (required field).
+    private func resolveEmail(_ step: TaskStep) async -> DeviceResolution {
+        var r = DeviceResolution(origin: "contacts")
+        guard let name = step.field("recipientName")?.value?.trimmingCharacters(in: .whitespaces), !name.isEmpty,
+              step.field("toAddress")?.value == nil else { return r }
+        if Self.isEmailAddress(name) {
+            r.values["toAddress"] = name.lowercased()
+            return r
+        }
+        guard permissions.status(.contacts).isUsable,
+              let matches = try? await contacts.match(name: name) else { return r }
+        var rows: [Candidate] = []
+        var seen = Set<String>()
+        for match in matches {
+            for address in (try? await contacts.emailAddresses(contactId: match.id)) ?? [] {
+                let key = address.lowercased()
+                guard Self.isEmailAddress(key), seen.insert(key).inserted else { continue }
+                rows.append(Candidate(id: key, title: match.displayName, subtitle: key))
+            }
+        }
+        switch rows.count {
+        case 0: break
+        case 1: r.values["toAddress"] = rows[0].id
+        default:
+            // TODO(spec): no `ambiguity.email` text in UI_SCREENS; key added (PROGRESS §5.2).
+            r.ambiguities["toAddress"] = Ambiguity(kind: .other,
+                                                   question: UserMessage(key: "ambiguity.email", args: [name]).text,
+                                                   candidates: rows)
+        }
+        return r
+    }
+
+    /// One plain address (`a@b.c`), the same rule as the backend (`schemas/gmail.py` `EMAIL_RE`).
+    static func isEmailAddress(_ text: String) -> Bool {
+        text.range(of: #"^[^@\s<>,;"]+@[^@\s<>,;"]+\.[^@\s<>,;"]+$"#, options: .regularExpression) != nil
     }
 
     // MARK: - Places (directions / save)

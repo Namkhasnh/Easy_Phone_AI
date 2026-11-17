@@ -93,7 +93,7 @@ struct FieldCatalog: Codable, Sendable, Hashable {
 }
 
 extension FieldCatalog {
-    /// MVP kinds only. Phase 2/3 kinds are defined when their phase starts (DATA_MODEL §4, D-150).
+    /// MVP kinds + `emailReply` (Phase 2 in MVP, D-303). Ride / food are defined when Phase 3 starts (DATA_MODEL §4).
     static let mvp = FieldCatalog(schemaVersion: 1, kinds: [
         KindCatalog(kind: .calendarEvent, fields: [
             FieldSpec(id: "title", type: .text),
@@ -182,6 +182,18 @@ extension FieldCatalog {
                       options: ["calendarEvent", "reminder", "copyContactInfo", "ride"]),
         ], required: [
             RequiredRule(operation: .create, fields: ["extractedText"]),
+        ]),
+        // Phase 2 (D-303, D-304, D-307): a new Gmail message saved to Gmail Drafts, never sent.
+        KindCatalog(kind: .emailReply, fields: [
+            FieldSpec(id: "recipientName", type: .text),
+            FieldSpec(id: "toAddress", type: .text, deviceOnly: true),   // 🔒 from Contacts / typed; only to /v1/gmail/drafts
+            FieldSpec(id: "subject", type: .text),
+            FieldSpec(id: "body", type: .longText),
+            FieldSpec(id: "accountEmail", type: .text, appBuilt: true),
+            FieldSpec(id: "threadId", type: .text, appBuilt: true),
+            FieldSpec(id: "messageId", type: .text, appBuilt: true),
+        ], required: [
+            RequiredRule(operation: .create, fields: ["recipientName", "toAddress", "body"]),
         ]),
     ])
 }

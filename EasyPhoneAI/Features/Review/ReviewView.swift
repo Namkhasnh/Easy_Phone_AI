@@ -360,15 +360,19 @@ extension ReviewView {
             .accessibilityElement(children: .combine)
             // Titles are already localized (with args); a lookup of the text itself falls back to the text.
             if let primary = card.primary {
-                PrimaryButton(LocalizedStringKey(primary.title)) { viewModel.perform(primary.action) }
+                PrimaryButton(LocalizedStringKey(primary.title)) { run(primary.action) }
             }
             if let secondary = card.secondary {
-                SecondaryButton(LocalizedStringKey(secondary.title)) { viewModel.perform(secondary.action) }
+                SecondaryButton(LocalizedStringKey(secondary.title)) { run(secondary.action) }
             }
         }
         .padding(Tokens.Space.screenPadding)
         .background(Tokens.Colors.bg)
         .overlay(alignment: .top) { Divider() }
+    }
+
+    private func run(_ action: ReviewViewModel.ResultAction) {
+        if case .open(let url) = action { openURL(url) } else { viewModel.perform(action) }
     }
 
     private static func tint(_ state: TaskState) -> Color {

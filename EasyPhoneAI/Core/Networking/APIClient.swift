@@ -138,6 +138,17 @@ actor APIClient: APIClientProtocol {
                                        body: body, idempotencyKey: idempotencyKey))
     }
 
+    func gmailDraft(_ request: GmailDraftRequest, idempotencyKey: IdempotencyKey) async throws -> GmailDraftResponse {
+        let body: Data
+        do {
+            body = try JSONEncoder().encode(request)
+        } catch {
+            throw AppError.decoding(requestId: nil)
+        }
+        return try await send(Endpoint(method: "POST", path: "/v1/gmail/drafts", authorized: true,
+                                       body: body, idempotencyKey: idempotencyKey))
+    }
+
     // MARK: - Pipeline
 
     private func send<Response: Decodable & Sendable>(_ endpoint: Endpoint) async throws -> Response {

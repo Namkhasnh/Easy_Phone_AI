@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     MODEL_VISION: str = "gpt-6-luna"  # D-052
     MODEL_TRANSCRIBE: str = "gpt-4o-mini-transcribe"  # D-052
     MODEL_SUMMARIZE: str = "gpt-6-luna"  # Phase 2 only (D-052)
-    PROMPT_VERSION_PARSE: int = 4  # v2: viewCalendar (D-294); v3: callType FaceTime (D-300); v4: checkMail (D-304)
+    PROMPT_VERSION_PARSE: int = 5  # v2: viewCalendar (D-294); v3: callType FaceTime (D-300); v4: checkMail (D-304); v5: emailReply drafts (D-304, D-307)
     PROMPT_VERSION_EXTRACT: int = 1
     PROMPT_VERSION_REPAIR: int = 1
     PROMPT_VERSION_OCR: int = 1  # 1D.4 `/v1/ocr`
@@ -65,7 +65,7 @@ class Settings(BaseSettings):
     IDEMPOTENCY_WINDOW_HOURS: int = 24  # same key later → 422 idempotencyKeyExpired (API_CONTRACT §4.4)
 
     # Kinds the LLM may produce (DATA_MODEL §1.1). MVP kinds only; Phase 2/3 kinds stay off (D-150).
-    ENABLED_KINDS: list[str] = ["calendarEvent", "reminder", "call", "sms", "place"]  # D-302: "ocr" paused
+    ENABLED_KINDS: list[str] = ["calendarEvent", "reminder", "call", "sms", "place", "emailReply"]  # D-302: "ocr" paused; D-303: emailReply
 
     # Billing (D-091, D-240, D-284)
     APP_BUNDLE_ID: str = "vn.namkhanh.easyphone"
@@ -99,6 +99,7 @@ class Settings(BaseSettings):
     GMAIL_SUMMARY_MAX_CHARS: int = 200
     UNITS_GMAIL_SUMMARY: int = 1  # D-308; empty inbox = 0 (no LLM call)
     PROMPT_VERSION_SUMMARIZE: int = 1
+    GMAIL_DRAFTS_URL: str = "https://mail.google.com/mail/u/0/#drafts"  # API_GMAIL §5 `openUrl`
 
     # Auth (API_CONTRACT §2): JWKS at {SUPABASE_URL}/auth/v1/.well-known/jwks.json; HS256 secret only as fallback
     JWT_AUDIENCE: str = "authenticated"

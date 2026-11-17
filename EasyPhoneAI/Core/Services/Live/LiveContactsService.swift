@@ -12,7 +12,7 @@ actor LiveContactsService: ContactsService {
 
     private static let keys: [CNKeyDescriptor] = [
         CNContactIdentifierKey, CNContactGivenNameKey, CNContactMiddleNameKey, CNContactFamilyNameKey,
-        CNContactThumbnailImageDataKey, CNContactPhoneNumbersKey,
+        CNContactThumbnailImageDataKey, CNContactPhoneNumbersKey, CNContactEmailAddressesKey,
     ].map { $0 as CNKeyDescriptor }
 
     init(nicknameContactId: @escaping @MainActor @Sendable (String) -> String?) {
@@ -33,6 +33,16 @@ actor LiveContactsService: ContactsService {
                 PhoneEntry(label: labeled.label.map(CNLabeledValue<CNPhoneNumber>.localizedString(forLabel:)),
                            number: labeled.value.stringValue)
             }
+        } catch {
+            throw ServiceError.notFound
+        }
+    }
+
+    func emailAddresses(contactId: String) async throws -> [String] {
+        try ensureAccess()
+        do {
+            let contact = try store.unifiedContact(withIdentifier: contactId, keysToFetch: Self.keys)
+            return contact.emailAddresses.map { String($0.value) }
         } catch {
             throw ServiceError.notFound
         }

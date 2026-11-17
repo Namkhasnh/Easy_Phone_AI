@@ -163,7 +163,7 @@ def test_date_candidate_labels_rebuilt_on_weekday_slip_and_capped():
 
 
 def test_invalid_pairs_and_disabled_kinds_dropped_none_left_is_phase_not_enabled():
-    out = run(draft(step("call", "create"), step("emailReply", "create")))
+    out = run(draft(step("call", "create"), step("ride", "prepare")))
     assert out == {"steps": [], "followUpQuestion": None,
                    "unsupported": {"reason": "phaseNotEnabled", "message": ps.FALLBACK_UNSUPPORTED_MESSAGE,
                                    "date": None}}

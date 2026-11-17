@@ -1,4 +1,5 @@
-"""`/v1/gmail/*` (API_GMAIL.md): accounts (§3, 0 units) and the new-mail summary (§4, 1 unit). Routers stay thin."""
+"""`/v1/gmail/*` (API_GMAIL.md): accounts (§3, 0 units), new-mail summary (§4, 1 unit), drafts (§5, 0 units, never
+sends). Routers stay thin."""
 
 from datetime import datetime
 
@@ -11,10 +12,12 @@ from app.schemas.gmail import (
     GmailAccountResponse,
     GmailAccountsResponse,
     GmailConnectRequest,
+    GmailDraftRequest,
+    GmailDraftResponse,
     GmailSummaryRequest,
     GmailSummaryResponse,
 )
-from app.services import gmail_accounts, gmail_summary, quota
+from app.services import gmail_accounts, gmail_drafts, gmail_summary, quota
 from app.services.gmail_client import GmailClient
 from app.services.google_oauth import GoogleOAuth
 from app.services.llm import LLMClient
@@ -109,3 +112,19 @@ async def summary(
     response.headers.update(quota.quota_headers(out.quota))
     return GmailSummaryResponse(schemaVersion=settings.SCHEMA_VERSION, requestId=rid, accountEmail=email,
                                 **out.result)
+
+
+@router.post("/drafts", response_model=GmailDraftResponse)
+async def drafts(
+    body: GmailDraftRequest,
+    user: AuthedUser = Depends(authed_user),
+    conn: asyncpg.Connection = Depends(db),
+    settings: Settings = Depends(get_settings),
+    now: datetime = Depends(clock),
+    key: str = Depends(idempotency_key),  # the step's key: a retry returns the same draft (D-105)
+    oauth: GoogleOAuth = Depends(google_oauth),
+    gmail: GmailClient = Depends(gmail_client),
+) -> GmailDraftResponse:
+    draft_id, message_id = await gmail_drafts.create(conn, user.id, key, body, oauth, gmail, settings, now)
+    return GmailDraftResponse(schemaVersion=settings.SCHEMA_VERSION, draftId=draft_id, messageId=message_id,
+                              openUrl=settings.GMAIL_DRAFTS_URL)

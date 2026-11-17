@@ -72,3 +72,38 @@ struct GmailMessageSummary: Codable, Sendable, Hashable, Identifiable {
 
     var id: String { messageId }
 }
+
+/// `POST /v1/gmail/drafts` (API_GMAIL §5, 0 units): saved to Gmail Drafts, **never sent** (D-103, D-304).
+/// `to` is 🔒 on device until "Xác nhận", then sent once (D-307). `replyTo` is written as `null` when absent.
+struct GmailDraftRequest: Codable, Sendable, Hashable {
+    var schemaVersion = 1
+    let accountId: String
+    let to: [String]
+    let subject: String
+    let body: String
+    var replyTo: ReplyTo?
+
+    struct ReplyTo: Codable, Sendable, Hashable {
+        let threadId: String
+        let messageId: String
+    }
+
+    private enum CodingKeys: String, CodingKey { case schemaVersion, accountId, to, subject, body, replyTo }
+
+    func encode(to encoder: any Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(schemaVersion, forKey: .schemaVersion)
+        try c.encode(accountId, forKey: .accountId)
+        try c.encode(to, forKey: .to)
+        try c.encode(subject, forKey: .subject)
+        try c.encode(body, forKey: .body)
+        try c.encode(replyTo, forKey: .replyTo)               // null, not missing (same bytes as the fixture)
+    }
+}
+
+struct GmailDraftResponse: Codable, Sendable, Hashable {
+    let schemaVersion: Int
+    let draftId: String
+    let messageId: String
+    let openUrl: String
+}

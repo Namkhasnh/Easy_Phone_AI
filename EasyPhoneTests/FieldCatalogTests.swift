@@ -18,9 +18,9 @@ struct FieldCatalogTests {
     }
 
     @Test func mvpKindsOnly() {
-        #expect(FieldCatalog.mvp.kinds.map(\.kind) == [.calendarEvent, .reminder, .call, .sms, .place, .ocr])
-        for kind in [TaskKind.emailReply, .ride, .food] {
-            #expect(FieldCatalog.mvp.kind(kind) == nil)                       // D-150
+        #expect(FieldCatalog.mvp.kinds.map(\.kind) == [.calendarEvent, .reminder, .call, .sms, .place, .ocr, .emailReply])
+        for kind in [TaskKind.ride, .food] {
+            #expect(FieldCatalog.mvp.kind(kind) == nil)                       // D-142 (emailReply in MVP, D-303)
         }
     }
 
@@ -66,8 +66,9 @@ struct FieldCatalogTests {
             }
         }
         #expect(locked == ["calendarEvent.calendarId", "call.contactId", "call.phoneNumber",
-                           "sms.contactId", "sms.phoneNumber"])                     // D-056
-        #expect(built == ["reminder.completed"])                                    // D-248
+                           "sms.contactId", "sms.phoneNumber", "emailReply.toAddress"])   // D-056, D-307
+        #expect(built == ["reminder.completed", "emailReply.accountEmail", "emailReply.threadId",
+                          "emailReply.messageId"])                                  // D-248
     }
 
     @Test func conditionJSONShape() throws {

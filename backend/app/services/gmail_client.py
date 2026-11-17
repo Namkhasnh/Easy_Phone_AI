@@ -1,4 +1,5 @@
-"""Gmail REST calls (API_GMAIL.md §4): list + read new messages, read-only (D-310: never marks as read).
+"""Gmail REST calls (API_GMAIL.md §4, §5): list + read new messages (read-only, D-310: never marks as read) and
+create a draft (`drafts.create`). There is no send call anywhere (D-103, D-304).
 
 Uses the short-lived access token from `gmail_accounts.access_token()`. Gmail errors are mapped here only.
 Never logs a subject, a body, a sender or a token (D-059): ids and counts only.
@@ -95,11 +96,14 @@ class GmailClient:
         self._settings = settings
         self._http = http
 
-    async def _get(self, path: str, token: str, params: dict[str, str | int]) -> dict:
+    async def _get(self, path: str, token: str, params: dict[str, str | int] | list[tuple[str, str]]) -> dict:
+        return await self._call("GET", path, token, params=params)
+
+    async def _call(self, method: str, path: str, token: str, *, params=None, json: dict | None = None) -> dict:
         try:
-            response = await self._http.get(f"{self._settings.GMAIL_API_URL}{path}", params=params,
-                                            headers={"Authorization": f"Bearer {token}"},
-                                            timeout=self._settings.GOOGLE_HTTP_TIMEOUT_SECONDS)
+            response = await self._http.request(method, f"{self._settings.GMAIL_API_URL}{path}", params=params,
+                                                json=json, headers={"Authorization": f"Bearer {token}"},
+                                                timeout=self._settings.GOOGLE_HTTP_TIMEOUT_SECONDS)
         except httpx2.HTTPError as exc:
             logger.warning("gmail call failed: %s", type(exc).__name__)
             raise AppError("upstream_error", 503, True) from None
@@ -121,3 +125,24 @@ class GmailClient:
         total = max(len(messages), int(listing.get("resultSizeEstimate") or 0))
         logger.info("gmail listed count=%s total=%s", len(messages), total)
         return Inbox(messages, total)
+
+    async def reply_headers(self, token: str, message_id: str) -> dict[str, str]:
+        """`Message-ID`, `References`, `Subject` of the message being answered (metadata only, no body)."""
+        raw = await self._get(f"/messages/{message_id}", token, [
+            ("format", "metadata"), ("metadataHeaders", "Message-ID"), ("metadataHeaders", "References"),
+            ("metadataHeaders", "Subject"),
+        ])
+        return {h.get("name", "").lower(): h.get("value", "") for h in (raw.get("payload") or {}).get("headers") or []}
+
+    async def create_draft(self, token: str, raw_mime: str, thread_id: str | None) -> tuple[str, str]:
+        """`drafts.create` → (draftId, messageId). Never `drafts.send` / `messages.send`."""
+        message: dict[str, str] = {"raw": raw_mime}
+        if thread_id:
+            message["threadId"] = thread_id
+        out = await self._call("POST", "/drafts", token, json={"message": message})
+        return str(out["id"]), str((out.get("message") or {}).get("id", ""))
+
+    async def draft_message_id(self, token: str, draft_id: str) -> str:
+        """For a retry that found its stored draft: read its message id (read-only)."""
+        out = await self._get(f"/drafts/{draft_id}", token, {"format": "minimal"})
+        return str((out.get("message") or {}).get("id", ""))

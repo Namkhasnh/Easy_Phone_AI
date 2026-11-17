@@ -853,6 +853,138 @@
         }
       }
     },
+    "field.emailReply.recipientName": {
+      "comment": "DATA_MODEL §4 emailReply (D-304, D-307)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Người nhận"
+          }
+        }
+      }
+    },
+    "field.emailReply.toAddress": {
+      "comment": "DATA_MODEL §4 emailReply (D-304, D-307)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Địa chỉ email"
+          }
+        }
+      }
+    },
+    "field.emailReply.subject": {
+      "comment": "DATA_MODEL §4 emailReply (D-304, D-307)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiêu đề"
+          }
+        }
+      }
+    },
+    "field.emailReply.body": {
+      "comment": "DATA_MODEL §4 emailReply (D-304, D-307)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nội dung thư"
+          }
+        }
+      }
+    },
+    "field.emailReply.accountEmail": {
+      "comment": "DATA_MODEL §4 emailReply (D-304, D-307)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tài khoản Gmail"
+          }
+        }
+      }
+    },
+    "field.emailReply.threadId": {
+      "comment": "DATA_MODEL §4 emailReply (D-304, D-307)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chuỗi thư"
+          }
+        }
+      }
+    },
+    "field.emailReply.messageId": {
+      "comment": "DATA_MODEL §4 emailReply (D-304, D-307)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thư gốc"
+          }
+        }
+      }
+    },
+    "step.emailReply.create": {
+      "comment": "S04 step title (D-304)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Soạn thư Gmail"
+          }
+        }
+      }
+    },
+    "result.gmailDraft": {
+      "comment": "UI_SCREENS S21 / S04 result (D-304)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã lưu thư nháp trong Gmail"
+          }
+        }
+      }
+    },
+    "mail.openGmail": {
+      "comment": "UI_SCREENS S21 / S04 result",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mở Gmail"
+          }
+        }
+      }
+    },
+    "ambiguity.email": {
+      "comment": "TODO(spec): not in UI_SCREENS (D-106)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gửi tới địa chỉ email nào của %@?"
+          }
+        }
+      }
+    },
     "error.approval.mismatch": {
       "comment": "UI_SCREENS §8",
       "extractionState": "manual",

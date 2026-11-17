@@ -15,6 +15,8 @@ from app.schemas.gmail import (
     GmailAccountResponse,
     GmailAccountsResponse,
     GmailConnectRequest,
+    GmailDraftRequest,
+    GmailDraftResponse,
     GmailSummaryRequest,
     GmailSummaryResponse,
 )
@@ -38,12 +40,14 @@ RESPONSE_MODELS: dict[str, type[BaseModel]] = {
     "gmailaccount": GmailAccountResponse,  # API_GMAIL §3.1
     "gmailaccounts": GmailAccountsResponse,  # §3.2
     "gmailsummary": GmailSummaryResponse,  # §4
+    "gmaildraft": GmailDraftResponse,  # §5
 }
 REQUEST_MODELS: dict[str, type[BaseModel]] = {
     "parse": ParseRequest,
     "extract": ExtractRequest,
     "gmailaccount": GmailConnectRequest,
     "gmailsummary": GmailSummaryRequest,
+    "gmaildraft": GmailDraftRequest,
 }
 
 # 🔒 keys never leave the device (D-056, API_CONTRACT §11).
