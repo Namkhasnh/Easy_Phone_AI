@@ -83,4 +83,35 @@ struct MailTests {
         }
         #expect(UserMessage(key: "mail.more", args: ["5"]).text == "Và 5 thư khác")
     }
+
+    // MARK: - Verification code (D-311)
+
+    static let otp = GmailMessageSummary(messageId: "18c4000", threadId: "t", fromName: "Google",
+                                         subject: "482913 là mã xác minh Google của bạn", receivedAt: Self.now,
+                                         summary: "Google gửi mã 482913 để đăng nhập.", needsReply: false,
+                                         verificationCode: "482913")
+
+    @Test func codeIsCopiedToADeviceOnlyClipboardAndNeverSpoken() async {
+        let system = MockSystemService()
+        let vm = MailViewModel(gmail: MockGmailService(accounts: [MockGmailService.sample]), api: MockAPIClient(),
+                               system: system)
+        await vm.copyCode(Self.otp)
+        #expect(system.copied == ["482913"] && vm.copiedCodeId == "18c4000")
+        let spoken = MailViewModel.spoken(Self.otp)
+        #expect(!spoken.contains("482913"))
+        #expect(spoken.hasSuffix(UserMessage(key: "mail.code.spoken").text))
+        let response = GmailSummaryResponse(schemaVersion: 1, requestId: "r", accountEmail: "k@gmail.com", totalFound: 3,
+                                            overview: "Có mã 482913 từ Google.",
+                                            messages: GmailSummaryResponse.mock.messages + [Self.otp])
+        #expect(!MailViewModel.spokenOverview(response).contains("482913"))
+        #expect(MailViewModel.codes(response).map(\.messageId) == ["18c4000"])
+        #expect(MailViewModel.codeClipboardSeconds == 120)
+    }
+
+    @Test func codeStrings() {
+        for key in ["mail.code.title", "mail.code.from", "mail.code.copy", "mail.code.copied", "mail.code.warning",
+                    "mail.code.spoken"] {
+            #expect(UserMessage(key: key).text != key, "missing \(key)")
+        }
+    }
 }

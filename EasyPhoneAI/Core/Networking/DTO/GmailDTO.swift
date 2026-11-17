@@ -69,6 +69,8 @@ struct GmailMessageSummary: Codable, Sendable, Hashable, Identifiable {
     let receivedAt: Date
     let summary: String
     let needsReply: Bool
+    /// D-311: a sign-in code found by a fixed backend rule (recent mail only). Shown + copied, **never read aloud**.
+    var verificationCode: String? = nil
 
     var id: String { messageId }
 }

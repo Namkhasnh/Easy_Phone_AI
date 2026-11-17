@@ -64,6 +64,7 @@ class GmailMessageSummary(BaseModel):
     receivedAt: IsoDatetime
     summary: str
     needsReply: bool
+    verificationCode: str | None = None  # D-311: fixed rule, recent mail only; shown + copied, never read aloud
 
 
 class GmailSummaryResponse(BaseModel):

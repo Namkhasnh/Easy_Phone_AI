@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     MODEL_VISION: str = "gpt-6-luna"  # D-052
     MODEL_TRANSCRIBE: str = "gpt-4o-mini-transcribe"  # D-052
     MODEL_SUMMARIZE: str = "gpt-6-luna"  # Phase 2 only (D-052)
-    PROMPT_VERSION_PARSE: int = 5  # v2: viewCalendar (D-294); v3: callType FaceTime (D-300); v4: checkMail (D-304); v5: emailReply drafts (D-304, D-307)
+    PROMPT_VERSION_PARSE: int = 6  # v2: viewCalendar (D-294); v3: callType FaceTime (D-300); v4: checkMail (D-304); v5: emailReply drafts (D-304, D-307); v6: "xem mã" → checkMail (D-311)
     PROMPT_VERSION_EXTRACT: int = 1
     PROMPT_VERSION_REPAIR: int = 1
     PROMPT_VERSION_OCR: int = 1  # 1D.4 `/v1/ocr`
@@ -97,6 +97,7 @@ class Settings(BaseSettings):
     GMAIL_BODY_MAX_CHARS: int = 2000  # per message, before the LLM
     GMAIL_OVERVIEW_MAX_CHARS: int = 300
     GMAIL_SUMMARY_MAX_CHARS: int = 200
+    VERIFICATION_CODE_MAX_AGE_MINUTES: int = 60  # D-311
     UNITS_GMAIL_SUMMARY: int = 1  # D-308; empty inbox = 0 (no LLM call)
     PROMPT_VERSION_SUMMARIZE: int = 1
     GMAIL_DRAFTS_URL: str = "https://mail.google.com/mail/u/0/#drafts"  # API_GMAIL §5 `openUrl`

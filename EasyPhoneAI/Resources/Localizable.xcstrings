@@ -2509,6 +2509,78 @@
         }
       }
     },
+    "mail.code.copied": {
+      "comment": "UI_SCREENS S21 verification code (D-311)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã sao chép mã"
+          }
+        }
+      }
+    },
+    "mail.code.copy": {
+      "comment": "UI_SCREENS S21 verification code (D-311)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sao chép mã"
+          }
+        }
+      }
+    },
+    "mail.code.from": {
+      "comment": "UI_SCREENS S21 verification code (D-311)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Từ %@"
+          }
+        }
+      }
+    },
+    "mail.code.spoken": {
+      "comment": "UI_SCREENS S21 verification code (D-311)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thư này có mã xác nhận, bạn xem trên màn hình"
+          }
+        }
+      }
+    },
+    "mail.code.title": {
+      "comment": "UI_SCREENS S21 verification code (D-311)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mã xác nhận"
+          }
+        }
+      }
+    },
+    "mail.code.warning": {
+      "comment": "UI_SCREENS S21 verification code (D-311)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không đọc mã này cho ai qua điện thoại hay tin nhắn. Mã tự xóa khỏi bộ nhớ tạm sau 2 phút."
+          }
+        }
+      }
+    },
     "mail.empty": {
       "comment": "UI_SCREENS S21 (D-304)",
       "extractionState": "manual",

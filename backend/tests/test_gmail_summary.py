@@ -184,7 +184,8 @@ def test_injection_stays_inside_its_block(monkeypatch):
     assert user.count("</untrusted_content>") == 1 and user.endswith("</untrusted_content>")
     assert "<user_request>" not in user                                                         # neutralized
     assert set(r.json()["messages"][0]) == {"messageId", "threadId", "fromName", "subject", "receivedAt",
-                                            "summary", "needsReply"}                            # no action field
+                                            "summary", "needsReply", "verificationCode"}        # no action field
+    assert r.json()["messages"][0]["verificationCode"] == "482913"                             # fixed rule, D-311
 
 
 @pytest.mark.parametrize("status, code, http", [(401, "gmail_reconnect_required", 409), (500, "upstream_error", 503)])

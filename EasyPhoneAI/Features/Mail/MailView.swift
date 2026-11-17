@@ -60,7 +60,10 @@ struct MailView: View {
         if summary.messages.isEmpty {
             EmptyState(systemImage: "tray", titleKey: "mail.empty")
         } else {
-            overviewCard(summary.overview)
+            ForEach(Array(MailViewModel.codes(summary).enumerated()), id: \.element.id) { index, message in
+                codeCard(message, primary: index == 0)                  // max 2 primary buttons per screen (D-183)
+            }
+            overviewCard(summary.overview, spoken: MailViewModel.spokenOverview(summary))
             ForEach(summary.messages) { message in
                 row(message)
             }
@@ -75,13 +78,50 @@ struct MailView: View {
             .foregroundStyle(Tokens.Colors.textSecondary)
     }
 
-    private func overviewCard(_ overview: String) -> some View {
+    /// D-311: the code in large text + "Sao chép mã" + the anti-scam warning. No "Đọc to" here, ever.
+    private func codeCard(_ message: GmailMessageSummary, primary: Bool) -> some View {
+        let code = message.verificationCode ?? ""
+        let copied = viewModel.copiedCodeId == message.messageId
+        return VStack(alignment: .leading, spacing: Tokens.Space.m) {
+            Text("mail.code.title")
+                .font(Tokens.Fonts.label)
+                .foregroundStyle(Tokens.Colors.textSecondary)
+                .accessibilityAddTraits(.isHeader)
+            Text(verbatim: UserMessage(key: "mail.code.from", args: [message.fromName]).text)
+                .font(Tokens.Fonts.body)
+                .foregroundStyle(Tokens.Colors.textPrimary)
+            Text(verbatim: code)
+                .font(.system(.largeTitle, design: .monospaced, weight: .bold))
+                .foregroundStyle(Tokens.Colors.textPrimary)
+                .textSelection(.enabled)
+                .accessibilityLabel(Text(verbatim: code.map(String.init).joined(separator: " ")))
+            let title = LocalizedStringKey(copied ? "mail.code.copied" : "mail.code.copy")
+            if primary {
+                PrimaryButton(title) { Task { await viewModel.copyCode(message) } }
+            } else {
+                SecondaryButton(title, systemImage: "doc.on.doc") { Task { await viewModel.copyCode(message) } }
+            }
+            Label {
+                Text("mail.code.warning").foregroundStyle(Tokens.Colors.textPrimary)
+            } icon: {
+                Image(systemName: "exclamationmark.shield.fill").foregroundStyle(Tokens.Colors.warning)
+            }
+            .font(Tokens.Fonts.body)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(Tokens.Space.l)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Tokens.Colors.border, lineWidth: 1))
+    }
+
+    private func overviewCard(_ overview: String, spoken: String) -> some View {
         VStack(alignment: .leading, spacing: Tokens.Space.s) {
             Text(verbatim: overview)
                 .font(Tokens.Fonts.fieldValue)
                 .foregroundStyle(Tokens.Colors.onHoney)
                 .fixedSize(horizontal: false, vertical: true)
-            readButton(MailViewModel.overviewId, text: overview, tint: Tokens.Colors.onHoney)
+            readButton(MailViewModel.overviewId, text: spoken, tint: Tokens.Colors.onHoney)
         }
         .padding(Tokens.Space.l)
         .frame(maxWidth: .infinity, alignment: .leading)

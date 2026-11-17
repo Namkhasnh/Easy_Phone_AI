@@ -12,7 +12,8 @@
       "subject": "Đơn hàng đã giao",
       "receivedAt": "2026-11-17T04:53:20+07:00",
       "summary": "Cửa hàng báo đơn hàng đã giao.",
-      "needsReply": false
+      "needsReply": false,
+      "verificationCode": null
     },
     {
       "messageId": "18c2f0a",
@@ -21,7 +22,8 @@
       "subject": "Họp tổ chiều thứ Sáu",
       "receivedAt": "2026-11-17T07:12:00+07:00",
       "summary": "Chị Lan hỏi em có dự họp 15:00 thứ Sáu không.",
-      "needsReply": true
+      "needsReply": true,
+      "verificationCode": null
     }
   ]
 }

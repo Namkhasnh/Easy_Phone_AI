@@ -6,4 +6,8 @@ final class LiveSystemService: SystemService {
     @MainActor func open(_ url: URL) async -> Bool { await UIApplication.shared.open(url) }
     @MainActor func canOpen(_ url: URL) async -> Bool { UIApplication.shared.canOpenURL(url) }
     @MainActor func copy(_ text: String) async { UIPasteboard.general.string = text }
+    @MainActor func copySecret(_ text: String, expiresAfter seconds: TimeInterval) async {
+        UIPasteboard.general.setItems([[UIPasteboard.typeAutomatic: text]],
+                                      options: [.localOnly: true, .expirationDate: Date().addingTimeInterval(seconds)])
+    }
 }

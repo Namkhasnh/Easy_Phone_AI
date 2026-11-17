@@ -17,6 +17,7 @@ from app.services.llm import LLMClient, StructuredCall
 from app.services.metering import CostMeter, Deadline
 from app.services.prompt_context import build_request_context
 from app.services.schema_check import check
+from app.services import verification_code
 from app.services.untrusted import wrap_untrusted
 
 SCHEMA_NAME = "MailSummaryLLM"
@@ -89,6 +90,8 @@ def post_process(raw: dict[str, Any], inbox: Inbox, req: GmailSummaryRequest, se
             "receivedAt": m.received_at.astimezone(tz),
             "summary": _cut(str(item.get("summary") or ""), settings.GMAIL_SUMMARY_MAX_CHARS),
             "needsReply": bool(item.get("needsReply", False)),
+            "verificationCode": verification_code.recent_code(m.subject, m.body, m.received_at, req.now,
+                                                              settings.VERIFICATION_CODE_MAX_AGE_MINUTES),
         })
     return {"overview": _cut(str(raw.get("overview") or ""), settings.GMAIL_OVERVIEW_MAX_CHARS),
             "messages": messages, "totalFound": inbox.total_found}

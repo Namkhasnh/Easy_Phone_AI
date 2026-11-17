@@ -18,16 +18,23 @@ import Observation
     /// Id of the row being read aloud (`overviewId` for the overview card), nil when silent.
     private(set) var readingId: String?
     static let overviewId = "overview"
+    /// The message whose code was just copied ("Đã sao chép mã").
+    private(set) var copiedCodeId: String?
+    /// D-311: the clipboard forgets the code after this many seconds.
+    static let codeClipboardSeconds: TimeInterval = 120
 
     private let gmail: any GmailService
     private let api: any APIClientProtocol
     private let tts: any TTSService
+    private let system: any SystemService
     private let speechRate: Double
     private let now: @Sendable () -> Date
     private let timeZone: TimeZone
 
     init(gmail: any GmailService, api: any APIClientProtocol, tts: any TTSService = MockTTSService(),
+         system: any SystemService = MockSystemService(),
          speechRate: Double = 0.45, now: @escaping @Sendable () -> Date = { .now }, timeZone: TimeZone = .current) {
+        self.system = system
         self.gmail = gmail
         self.api = api
         self.tts = tts
@@ -92,9 +99,31 @@ import Observation
         readingId = nil
     }
 
-    /// What one row reads aloud: sender, subject, summary.
+    /// What one row reads aloud: sender, subject, summary — with any verification code taken out (D-311: never
+    /// read aloud) and a hint to look at the screen instead.
     static func spoken(_ message: GmailMessageSummary) -> String {
-        [message.fromName, message.subject, message.summary].filter { !$0.isEmpty }.joined(separator: ". ")
+        let parts = [message.fromName, message.subject, message.summary].filter { !$0.isEmpty }
+        guard let code = message.verificationCode else { return parts.joined(separator: ". ") }
+        let clean = parts.map { $0.replacingOccurrences(of: code, with: "") }
+        return (clean + [UserMessage(key: "mail.code.spoken").text]).joined(separator: ". ")
+    }
+
+    /// The overview read aloud, without any code of the loaded messages (D-311).
+    static func spokenOverview(_ response: GmailSummaryResponse) -> String {
+        response.messages.compactMap(\.verificationCode)
+            .reduce(response.overview) { $0.replacingOccurrences(of: $1, with: "") }
+    }
+
+    /// Messages with a code, newest first (the newest is usually the one the user waits for).
+    static func codes(_ response: GmailSummaryResponse) -> [GmailMessageSummary] {
+        response.messages.filter { $0.verificationCode != nil }.sorted { $0.receivedAt > $1.receivedAt }
+    }
+
+    /// "Sao chép mã": device-only clipboard that clears itself (D-311).
+    func copyCode(_ message: GmailMessageSummary) async {
+        guard let code = message.verificationCode else { return }
+        await system.copySecret(code, expiresAfter: Self.codeClipboardSeconds)
+        copiedCodeId = message.messageId
     }
 
     /// "Và {count} thư khác" when Gmail found more than it returned.
