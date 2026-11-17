@@ -137,4 +137,18 @@ struct MailTests {
         await vm.load()
         #expect(vm.phase == .loaded(.mock) && vm.summaryNotice == nil)
     }
+
+    @Test func codesOnlySkipsTheAISummaryAndShowAllTurnsItOff() async {
+        let api = MockAPIClient()
+        let vm = MailViewModel(gmail: MockGmailService(accounts: [MockGmailService.sample]), api: api, codesOnly: true)
+        await vm.load()
+        #expect(api.gmailSummaryCalls.map(\.request.summarize) == [false])         // no AI, no unit
+        await vm.showAll()
+        #expect(!vm.codesOnly && api.gmailSummaryCalls.map(\.request.summarize) == [false, false, true])
+        for text in ["xem mã gửi về", "Mã OTP đâu", "đọc mã xác nhận"] { #expect(LocalIntent.wantsCode(text), "\(text)") }
+        for text in ["có thư mới không", "kiểm tra mail", "gửi mã cho con"] { #expect(!LocalIntent.wantsCode(text), "\(text)") }
+        for key in ["mail.code.none", "mail.code.noneBody", "mail.showAll"] {
+            #expect(UserMessage(key: key).text != key, "missing \(key)")
+        }
+    }
 }

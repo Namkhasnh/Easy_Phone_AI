@@ -14,7 +14,7 @@ struct MailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(Tokens.Colors.bg)
-        .navigationTitle(Text("mail.title"))
+        .navigationTitle(Text(viewModel.codesOnly ? "mail.code.title" : "mail.title"))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { Task { await viewModel.load() } } label: {
@@ -57,7 +57,16 @@ struct MailView: View {
         Text(verbatim: UserMessage(key: "mail.account", args: [summary.accountEmail]).text)
             .font(Tokens.Fonts.caption)
             .foregroundStyle(Tokens.Colors.textSecondary)
-        if summary.messages.isEmpty {
+        if viewModel.codesOnly {
+            let codes = MailViewModel.codes(summary)
+            if codes.isEmpty {
+                EmptyState(systemImage: "key", titleKey: "mail.code.none", bodyKey: "mail.code.noneBody")
+            }
+            ForEach(Array(codes.enumerated()), id: \.element.id) { index, message in
+                codeCard(message, primary: index == 0)
+            }
+            TextLinkButton("mail.showAll") { Task { await viewModel.showAll() } }
+        } else if summary.messages.isEmpty {
             EmptyState(systemImage: "tray", titleKey: "mail.empty")
         } else {
             ForEach(Array(MailViewModel.codes(summary).enumerated()), id: \.element.id) { index, message in

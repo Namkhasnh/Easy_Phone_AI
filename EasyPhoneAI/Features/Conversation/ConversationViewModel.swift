@@ -78,6 +78,8 @@ import OSLog
     private(set) var calendarDay: String?
     /// D-304: "có thư mới không" → S21 (`unsupported.reason = checkMail`), nothing to execute.
     private(set) var opensMail = false
+    /// With `opensMail`: the user asked for a code → S21 shows codes only.
+    private(set) var mailCodesOnly = false
     /// S18 before the mic starts: microphone, then speech (D-185). The recording waits for the answer.
     var pendingPermission: PendingPermission?
     private var pendingTarget: Target?
@@ -486,7 +488,11 @@ import OSLog
         autosave()
         guard let draft = currentDraft else { return }
         guard draft.steps.isEmpty else { advance(draft); return }       // already parsed: never charge twice
-        if LocalIntent.isCheckMail(trimmed) { opensMail = true; return } // on device: no `/v1/parse`, no unit
+        if LocalIntent.isCheckMail(trimmed) {                            // on device: no `/v1/parse`, no unit
+            mailCodesOnly = LocalIntent.wantsCode(trimmed)
+            opensMail = true
+            return
+        }
         await runParse(text: trimmed, inputMode: draft.inputMode, context: .none, draft: draft, returnMode: .transcript)
     }
 
@@ -543,6 +549,7 @@ import OSLog
         if let u = parsed.unsupported, u.reason == "viewCalendar" {
             calendarDay = u.date ?? Self.dayString(now(), timeZoneId: draft.timeZoneId)
         } else if let u = parsed.unsupported, u.reason == "checkMail" {
+            mailCodesOnly = LocalIntent.wantsCode(draft.originalInput)
             opensMail = true
         } else if let u = parsed.unsupported {
             showUnsupported(.init(reason: u.reason, message: u.message))

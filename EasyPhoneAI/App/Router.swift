@@ -15,7 +15,8 @@ enum Route: Hashable, Sendable {
     case calendarDay(String)
     case reminders
     /// S21 Mail summary (Phase 2, D-304), from "có thư mới không" (`unsupported.reason = checkMail`).
-    case mail
+    /// `codesOnly`: "xem mã gửi về" shows only verification codes (owner 2026-11-18, D-311), no other mail, no AI.
+    case mail(codesOnly: Bool)
 }
 
 /// Owns the single `NavigationStack(path:)`. Reopen at the exact step = `.review(draftId)` (spec §6.10 AC2).

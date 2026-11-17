@@ -2545,6 +2545,30 @@
         }
       }
     },
+    "mail.code.none": {
+      "comment": "S21 codes-only (owner 2026-11-18, TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chưa có mã mới"
+          }
+        }
+      }
+    },
+    "mail.code.noneBody": {
+      "comment": "S21 codes-only (owner 2026-11-18, TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mã thường đến sau vài giây. Bấm Tải lại để xem lại."
+          }
+        }
+      }
+    },
     "mail.code.spoken": {
       "comment": "UI_SCREENS S21 verification code (D-311)",
       "extractionState": "manual",
@@ -2625,6 +2649,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tải lại"
+          }
+        }
+      }
+    },
+    "mail.showAll": {
+      "comment": "S21 codes-only (owner 2026-11-18, TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xem tất cả thư mới"
           }
         }
       }

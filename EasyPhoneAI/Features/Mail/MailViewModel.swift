@@ -15,6 +15,8 @@ import Observation
     }
 
     private(set) var phase: Phase = .loading
+    /// "xem mã": only the code cards, and no AI summary call at all (faster, 0 units). "Xem tất cả thư" turns it off.
+    private(set) var codesOnly: Bool
     /// Second call (AI summaries) still running; the list + codes from the first call are already shown.
     private(set) var isSummarizing = false
     /// The AI summary failed (the list + codes stay on screen).
@@ -37,9 +39,10 @@ import Observation
     private let timeZone: TimeZone
 
     init(gmail: any GmailService, api: any APIClientProtocol, tts: any TTSService = MockTTSService(),
-         system: any SystemService = MockSystemService(),
+         system: any SystemService = MockSystemService(), codesOnly: Bool = false,
          speechRate: Double = 0.45, now: @escaping @Sendable () -> Date = { .now }, timeZone: TimeZone = .current) {
         self.system = system
+        self.codesOnly = codesOnly
         self.gmail = gmail
         self.api = api
         self.tts = tts
@@ -68,7 +71,7 @@ import Observation
             let quick = try await api.gmailSummary(request, idempotencyKey: IdempotencyKey())
             guard run == generation else { return }
             phase = .loaded(quick)
-            guard !quick.messages.isEmpty else { return }
+            guard !quick.messages.isEmpty, !codesOnly else { return }       // codes need no AI
         } catch is CancellationError {
             return
         } catch {
@@ -88,6 +91,12 @@ import Observation
             if case .needsReconnect = Self.phase(for: error) { phase = .needsReconnect; return }
             if case .failed(let message) = Self.phase(for: error) { summaryNotice = message }
         }
+    }
+
+    /// "Xem tất cả thư" from the codes-only screen.
+    func showAll() async {
+        codesOnly = false
+        await load()
     }
 
     // TODO(spec): API_GMAIL §4 gives `maxMessages` 1–10 and no app default; the app asks for the maximum.

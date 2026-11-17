@@ -12,6 +12,17 @@ enum LocalIntent {
         return checks.contains(where: t.contains)
     }
 
+    /// "xem mã gửi về", "mã OTP", "đọc mã xác nhận"… → S21 with codes only (owner 2026-11-18). Bare "mã" is not
+    /// enough (folded it is also "mà", "má").
+    static func wantsCode(_ text: String) -> Bool {
+        let t = " " + NameNormalizer.normalize(text) + " "
+        guard !compose.contains(where: t.contains) else { return false }
+        return codes.contains(where: t.contains)
+    }
+
+    private static let codes = [" ma xac ", " ma otp ", " otp ", " ma gui ve ", " ma dang nhap ", " doc ma ",
+                                " xem ma ", " lay ma ", " ma code ", " code "]
+
     // Diacritics folded by `NameNormalizer` ("thư mới" → "thu moi", "mã" → "ma").
     private static let compose = [" soan ", " viet ", " gui cho ", " gui mail ", " gui email ", " gui thu ",
                                   " gui ma ", " tra loi ", " nhan cho ", " nhan tin ", " chuyen tiep "]
