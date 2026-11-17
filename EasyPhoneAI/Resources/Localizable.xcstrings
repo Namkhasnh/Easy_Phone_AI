@@ -2365,6 +2365,90 @@
         }
       }
     },
+    "mail.account": {
+      "comment": "UI_SCREENS S21 (D-304)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Từ %@"
+          }
+        }
+      }
+    },
+    "mail.empty": {
+      "comment": "UI_SCREENS S21 (D-304)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không có thư mới."
+          }
+        }
+      }
+    },
+    "mail.more": {
+      "comment": "UI_SCREENS S21 (D-304)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Và %@ thư khác"
+          }
+        }
+      }
+    },
+    "mail.needsReply": {
+      "comment": "UI_SCREENS S21 (D-304)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cần trả lời"
+          }
+        }
+      }
+    },
+    "mail.refresh": {
+      "comment": "UI_SCREENS S21 (D-304)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tải lại"
+          }
+        }
+      }
+    },
+    "mail.title": {
+      "comment": "UI_SCREENS S21 (D-304)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thư mới"
+          }
+        }
+      }
+    },
+    "mail.unreadNote": {
+      "comment": "UI_SCREENS S21 (D-304)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thư vẫn để chưa đọc trong Gmail."
+          }
+        }
+      }
+    },
     "perm.%@.feature": {},
     "perm.allow": {
       "comment": "UI_SCREENS S18",

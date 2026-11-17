@@ -42,6 +42,9 @@ struct ConversationView: View {
         .onChange(of: viewModel.calendarDay) { _, day in
             if let day { router.replaceLast(with: .calendarDay(day)) } // D-294: S11 for that day
         }
+        .onChange(of: viewModel.opensMail) { _, opens in
+            if opens { router.replaceLast(with: .mail) }               // D-304: S21
+        }
         .onDisappear { viewModel.onDisappear() }
         .sheet(item: $viewModel.pendingPermission) { pending in
             PermissionSheet(pending: pending,

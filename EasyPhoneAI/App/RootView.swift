@@ -127,6 +127,9 @@ struct RootView: View {
             CalendarTodayView(viewModel: CalendarTodayViewModel(calendar: env.calendar, permissions: env.permissions,
                                                                 repository: env.drafts, engine: env.engine,
                                                                 day: day))
+        case .mail:
+            MailView(viewModel: MailViewModel(gmail: env.gmail, api: env.api, tts: env.tts,
+                                              speechRate: env.localData.settings().speechRate))
         case .reminders:
             RemindersView(viewModel: RemindersViewModel(reminders: env.reminders, permissions: env.permissions,
                                                         repository: env.drafts, engine: env.engine,

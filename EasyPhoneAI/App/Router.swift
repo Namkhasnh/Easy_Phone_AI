@@ -14,6 +14,8 @@ enum Route: Hashable, Sendable {
     /// D-294: S11 for one day (`YYYY-MM-DD`), from "xem lịch ngày mai".
     case calendarDay(String)
     case reminders
+    /// S21 Mail summary (Phase 2, D-304), from "có thư mới không" (`unsupported.reason = checkMail`).
+    case mail
 }
 
 /// Owns the single `NavigationStack(path:)`. Reopen at the exact step = `.review(draftId)` (spec §6.10 AC2).

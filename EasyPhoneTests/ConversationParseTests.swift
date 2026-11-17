@@ -93,6 +93,17 @@ struct ConversationParseTests {
         #expect(vm2.calendarDay == "2026-11-08")                               // today in the draft timezone
     }
 
+    @Test func checkMailOpensS21NotChuaHoTro() async {                     // D-304
+        let mail = ParsedDraft(schemaVersion: 1, requestId: "req_mail", steps: [], followUpQuestion: nil,
+                               unsupported: ParsedUnsupported(reason: "checkMail", message: "Mở thư mới của bạn."))
+        let draft = typed("Có thư mới không")
+        let vm = model(MockAPIClient(parse: .success(mail)), draft: draft)
+        await vm.onAppear()
+        #expect(vm.opensMail)
+        if case .unsupported = vm.mode { Issue.record("must not show Chưa hỗ trợ") }
+        #expect(draft.steps.isEmpty)
+    }
+
     @Test func everyStepDroppedIsUnsupported() async {
         let api = MockAPIClient(parse: .success(DraftBuilderTests.draft([DraftBuilderTests.step("ride", "open", [])])))
         let vm = model(api, draft: typed("Đặt xe về nhà"))

@@ -26,7 +26,7 @@ SCHEMA_NAME = "ParsedDraftLLM"
 # API_CONTRACT §7.1: `unsupported.reason` values.
 UNSUPPORTED_REASONS = [
     "recurringEvent", "invitation", "emailSend", "booking", "payment",
-    "multiPageOcr", "bulkAction", "phaseNotEnabled", "viewCalendar", "other",
+    "multiPageOcr", "bulkAction", "phaseNotEnabled", "viewCalendar", "checkMail", "other",
 ]
 DATE_TYPES = {"dateTime", "date"}
 

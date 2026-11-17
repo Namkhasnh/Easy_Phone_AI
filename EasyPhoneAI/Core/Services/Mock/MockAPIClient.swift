@@ -62,8 +62,16 @@ final class MockAPIClient: APIClientProtocol {
         gmailState.withLock { $0.removeAll { $0.accountId == accountId } }
     }
 
+    private let gmailSummaryResult = Mutex<Result<GmailSummaryResponse, AppError>>(.success(.mock))
+    private let gmailSummaryLog = Mutex<[(request: GmailSummaryRequest, key: IdempotencyKey)]>([])
+    /// Every `gmailSummary` call so far.
+    var gmailSummaryCalls: [(request: GmailSummaryRequest, key: IdempotencyKey)] { gmailSummaryLog.withLock { $0 } }
+    /// Answer for the next `gmailSummary` calls (tests).
+    func setGmailSummary(_ result: Result<GmailSummaryResponse, AppError>) { gmailSummaryResult.withLock { $0 = result } }
+
     func gmailSummary(_ request: GmailSummaryRequest, idempotencyKey: IdempotencyKey) async throws -> GmailSummaryResponse {
-        .mock
+        gmailSummaryLog.withLock { $0.append((request, idempotencyKey)) }
+        return try gmailSummaryResult.withLock { $0 }.get()
     }
 
     var quotaUpdates: AsyncStream<Quota> { quota.stream }

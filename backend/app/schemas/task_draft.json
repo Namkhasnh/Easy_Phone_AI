@@ -505,6 +505,7 @@
                 "bulkAction",
                 "phaseNotEnabled",
                 "viewCalendar",
+                "checkMail",
                 "other"
               ]
             },

@@ -188,6 +188,11 @@ def test_view_calendar_keeps_a_valid_day_else_today():  # D-294
     assert other["unsupported"]["date"] is None                           # only viewCalendar carries a day
 
 
+def test_check_mail_has_no_day():  # D-304: S21 Mail summary, prompt v4
+    u = {"reason": "checkMail", "message": "Mở thư mới của bạn.", "date": "2026-11-13"}
+    assert run(draft(unsupported=u))["unsupported"] == {**u, "date": None}
+
+
 def test_two_deletes_become_bulk_action():
     out = run(draft(step("calendarEvent", "delete", [f("title", "A")]), step("calendarEvent", "delete", [f("title", "B")])))
     assert out["steps"] == [] and out["unsupported"]["reason"] == "bulkAction"  # D-280

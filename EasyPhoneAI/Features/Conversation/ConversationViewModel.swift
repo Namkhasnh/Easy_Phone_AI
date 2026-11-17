@@ -76,6 +76,8 @@ import OSLog
     private(set) var reviewDraftId: UUID?
     /// D-294: "xem lịch ngày mai" → the View opens S11 for this day (`YYYY-MM-DD`). Nothing is executed.
     private(set) var calendarDay: String?
+    /// D-304: "có thư mới không" → S21 (`unsupported.reason = checkMail`), nothing to execute.
+    private(set) var opensMail = false
     /// S18 before the mic starts: microphone, then speech (D-185). The recording waits for the answer.
     var pendingPermission: PendingPermission?
     private var pendingTarget: Target?
@@ -539,6 +541,8 @@ import OSLog
         }
         if let u = parsed.unsupported, u.reason == "viewCalendar" {
             calendarDay = u.date ?? Self.dayString(now(), timeZoneId: draft.timeZoneId)
+        } else if let u = parsed.unsupported, u.reason == "checkMail" {
+            opensMail = true
         } else if let u = parsed.unsupported {
             showUnsupported(.init(reason: u.reason, message: u.message))
         } else if engine.applyParsed(parsed, to: draft, defaults: defaults) {
