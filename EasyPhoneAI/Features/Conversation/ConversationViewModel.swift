@@ -115,6 +115,8 @@ import OSLog
     private var stoppedByUser = false
     /// D-296: set by `finishListening` when listening ended by itself with words heard and `settings.autoSend` is on.
     private var autoSendPending = false
+    /// D-312: the question being read aloud before the mic opens again by itself.
+    private var handsFreeTask: Task<Void, Never>?
 
     init(draftId: UUID?, repository: any TaskRepository, speech: any SpeechService, api: any APIClientProtocol,
          tts: any TTSService, localData: any LocalDataRepository,
@@ -159,6 +161,7 @@ import OSLog
 
     /// Leaving the screen stops mic and voice; the draft is already saved (D-104).
     func onDisappear() {
+        handsFreeTask?.cancel()
         tts.stop()
         silenceTask?.cancel()
         listenTask?.cancel()
@@ -277,6 +280,11 @@ import OSLog
         // D-296: auto-send when listening stopped by itself (2 s silence). Nothing runs before "Xác nhận" (D-100).
         guard autoSendPending else { return }
         autoSendPending = false
+        // D-312: "thôi / dừng / hủy" as the spoken answer ends the hands-free loop; nothing is sent.
+        if isHandsFree, case .followUp = mode, VoiceReply.classify(answerText) == .stop {
+            answerText = ""
+            return
+        }
         switch mode {
         case .transcript: await send()
         case .followUp: await sendAnswer()
@@ -335,7 +343,7 @@ import OSLog
             noticeKey = heardNothing ? "conv.speech.unavailable" : nil
         } else if heardNothing {
             noticeKey = "conv.speech.empty"
-        } else if !stoppedByUser, settings.autoSend {
+        } else if !stoppedByUser, settings.autoSend || isHandsFree {
             autoSendPending = true
         }
         autosave()
@@ -612,6 +620,7 @@ import OSLog
             showFollowUp(FollowUp(question: next.question, chips: next.candidates.map {
                 DateChip(fieldId: next.fieldId, value: $0.id, label: $0.title)
             }))
+            askAloudThenListen(next.question)
         } else {
             prompt = nil
             reviewDraftId = draft.id
@@ -652,6 +661,28 @@ import OSLog
         guard isReading else { return }
         tts.stop()
         isReading = false
+    }
+
+    // MARK: - Hands-free (D-312)
+
+    /// The request was spoken, and "Nói chuyện rảnh tay" + "Đọc to câu trả lời" are on.
+    var isHandsFree: Bool {
+        settings.handsFree && settings.voiceEnabled && currentDraft?.inputMode == .voice
+    }
+
+    /// Reads the follow-up question, then opens the mic for the answer (it is sent 2 s after the last words; 8 s
+    /// without a word just stops listening). Any tap that changes the mode first cancels it.
+    private func askAloudThenListen(_ question: String) {
+        guard isHandsFree else { return }
+        handsFreeTask?.cancel()
+        handsFreeTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            self.isReading = true
+            await self.tts.speak(question, rate: self.settings.speechRate)
+            self.isReading = false
+            guard !Task.isCancelled, case .followUp = self.mode else { return }
+            await self.listenForAnswer()
+        }
     }
 
     // MARK: - Autosave (D-104)

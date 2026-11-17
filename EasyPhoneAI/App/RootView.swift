@@ -115,7 +115,8 @@ struct RootView: View {
                                                        permissions: env.permissions, contacts: env.contacts,
                                                        calendar: env.calendar, localData: env.localData,
                                                        system: env.system, tts: env.tts, images: env.images,
-                                                       snoozeMorningHour: env.localData.settings().snoozeMorningHour))
+                                                       snoozeMorningHour: env.localData.settings().snoozeMorningHour,
+                                                       speech: env.speech))
         case .conversation(let draftId):
             ConversationView(viewModel: ConversationViewModel(draftId: draftId, repository: env.drafts, speech: env.speech, api: env.api,
                                                               tts: env.tts, localData: env.localData,

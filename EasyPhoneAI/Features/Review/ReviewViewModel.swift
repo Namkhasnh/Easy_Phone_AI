@@ -46,6 +46,12 @@ import Observation
     private let localData: (any LocalDataRepository)?
     private let system: any SystemService
     private let tts: any TTSService
+    /// D-312 hands-free "đồng ý"; nil (tests, previews) = no listening on S04.
+    private let speech: (any SpeechService)?
+    /// Khoai is listening for "đồng ý / sửa / thôi" on S04.
+    private(set) var voiceListening = false
+    private var handsFreeTried = false
+    private var handsFreeTask: Task<Void, Never>?
     private let images: any ImageStore
     /// S10 over S04 ("Xem ảnh gốc", UI_SCREENS S10).
     var sourceImage: SourceImageViewModel?
@@ -67,7 +73,8 @@ import Observation
          images: any ImageStore = MockImageStore(),
          services: SupportedServices = .bundled,
          snoozeMorningHour: Int = 8, catalog: FieldCatalog = .mvp, now: @escaping () -> Date = { .now },
-         autoConfirmTick: Duration = .seconds(1)) {
+         autoConfirmTick: Duration = .seconds(1), speech: (any SpeechService)? = nil) {
+        self.speech = speech
         self.autoConfirmTick = autoConfirmTick
         self.contacts = contacts
         self.calendar = calendar
@@ -848,11 +855,79 @@ import Observation
         }
     }
 
-    /// "Để tôi xem lại", any edit / pick, "Hủy", or leaving S04.
+    /// "Để tôi xem lại", any edit / pick, "Hủy", or leaving S04. Also ends hands-free listening (D-312).
     func cancelAutoConfirm() {
         autoConfirmTask?.cancel()
         autoConfirmTask = nil
         autoConfirmSeconds = nil
+        stopHandsFree()
+    }
+
+    // MARK: - Hands-free "đồng ý" (D-312, owner 2026-11-18)
+
+    /// A spoken "đồng ý" may run: the D-299 safe set + a Gmail draft (never sent, D-304). Delete / update / complete
+    /// / snooze always need the tap (D-108).
+    static func isVoiceConfirmable(_ kind: TaskKind, _ operation: TaskOperation) -> Bool {
+        isAutoConfirmable(kind, operation) || (kind == .emailReply && operation == .create)
+    }
+
+    /// Spoken request, both voice toggles on, a fresh step waiting for "Xác nhận", and no D-299 countdown instead.
+    var isHandsFree: Bool {
+        guard let settings = localData?.settings(), settings.handsFree, settings.voiceEnabled,
+              draft?.inputMode == .voice, let step, step.state == .awaitingApproval, step.attempt == 0,
+              !canAutoConfirm else { return false }
+        return true
+    }
+
+    /// Nothing open on top, nothing missing / ambiguous, permission usable — the same checks as the D-299 countdown.
+    var canVoiceConfirm: Bool {
+        guard isHandsFree, let step, Self.isVoiceConfirmable(step.kind, step.operation), blocker == nil,
+              !needsEventChoice, pickingFieldId == nil, editingFieldId == nil, pendingPermission == nil,
+              eventChoice == nil else { return false }
+        if let capability = Capability.required(for: step.kind) { return permissions.status(capability).isUsable }
+        return true
+    }
+
+    /// What Khoai says first: "Tạo lịch hẹn: Khám răng, Thứ Năm 19/11 lúc 09:00."
+    var spokenSummary: String {
+        guard let step else { return "" }
+        let title = UserMessage(key: "step.\(step.kind.rawValue).\(step.operation.rawValue)").text
+        let rest = [summaryTitle, summaryTime].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", ")
+        return rest.isEmpty ? "\(title)." : "\(title): \(rest)."
+    }
+
+    /// Called once when S04 appears. Safe step → summary + "nói đồng ý…" → listen once → yes = the same confirm as
+    /// the button. Other steps (delete…) → summary + "cần bạn bấm nút", no listening. A tap anywhere stops it.
+    func startHandsFreeIfAllowed() {
+        guard !handsFreeTried, speech != nil, isHandsFree else { return }
+        handsFreeTried = true
+        let voice = canVoiceConfirm
+        let prompt = UserMessage(key: voice ? "review.voice.prompt" : "review.voice.tapNeeded").text
+        let rate = localData?.settings().speechRate ?? 0.45
+        handsFreeTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            await self.tts.speak("\(self.spokenSummary) \(prompt)", rate: rate)
+            guard !Task.isCancelled, voice, self.canVoiceConfirm, let speech = self.speech else { return }
+            self.voiceListening = true
+            let heard = await ListenOnce.listen(speech)
+            self.voiceListening = false
+            guard !Task.isCancelled, VoiceReply.classify(heard) == .yes, self.canVoiceConfirm else { return }
+            await self.confirm()
+            if let card = self.resultCard {
+                await self.tts.speak([card.message, card.detail].compactMap { $0 }.joined(separator: ". "), rate: rate)
+            }
+        }
+    }
+
+    /// Tests wait for the read-aloud + listening turn.
+    func waitForHandsFree() async { await handsFreeTask?.value }
+
+    /// "Dừng nghe", any tap that edits / picks, or leaving S04.
+    func stopHandsFree() {
+        handsFreeTask?.cancel()
+        handsFreeTask = nil
+        if voiceListening, let speech { Task { await speech.stop() } }
+        voiceListening = false
     }
 
     /// "Hủy": cancels the step (draft kept, D-104) and leaves the screen.

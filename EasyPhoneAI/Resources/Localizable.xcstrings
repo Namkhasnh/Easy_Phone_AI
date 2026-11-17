@@ -3494,6 +3494,54 @@
         }
       }
     },
+    "review.voice.tapNeeded": {
+      "comment": "D-312 hands-free (TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Việc này cần bạn bấm nút trên màn hình."
+          }
+        }
+      }
+    },
+    "review.voice.stop": {
+      "comment": "D-312 hands-free (TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dừng nghe"
+          }
+        }
+      }
+    },
+    "review.voice.prompt": {
+      "comment": "D-312 hands-free (TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn nói “đồng ý” để làm, hoặc “sửa”."
+          }
+        }
+      }
+    },
+    "review.voice.listening": {
+      "comment": "D-312 hands-free (TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Khoai đang nghe: nói “đồng ý” để làm, hoặc “sửa”."
+          }
+        }
+      }
+    },
     "review.batchDelete.title": {
       "comment": "UI_SCREENS S04 (D-295)",
       "extractionState": "manual",
@@ -3610,6 +3658,30 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bạn đã yêu cầu: “%@”"
+          }
+        }
+      }
+    },
+    "settings.handsFree.note": {
+      "comment": "D-312 hands-free (TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Khoai đọc câu hỏi rồi tự nghe bạn trả lời. Nói “đồng ý” để làm việc an toàn; việc xóa vẫn cần bấm nút."
+          }
+        }
+      }
+    },
+    "settings.handsFree": {
+      "comment": "D-312 hands-free (TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nói chuyện rảnh tay"
           }
         }
       }
