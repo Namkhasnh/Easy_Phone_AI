@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "requestId": "req_01JD0000000000000000000000",
+  "accountEmail": "khanh@gmail.com",
+  "totalFound": 7,
+  "overview": "Có 2 thư mới: 1 thư cần trả lời, 1 thư thông báo.",
+  "messages": [
+    {
+      "messageId": "18c2e01",
+      "threadId": "t18c2e01",
+      "fromName": "no-reply@shop.example",
+      "subject": "Đơn hàng đã giao",
+      "receivedAt": "2026-11-17T04:53:20+07:00",
+      "summary": "Cửa hàng báo đơn hàng đã giao.",
+      "needsReply": false
+    },
+    {
+      "messageId": "18c2f0a",
+      "threadId": "t18c2f0a",
+      "fromName": "Nguyễn Thị Lan",
+      "subject": "Họp tổ chiều thứ Sáu",
+      "receivedAt": "2026-11-17T07:12:00+07:00",
+      "summary": "Chị Lan hỏi em có dự họp 15:00 thứ Sáu không.",
+      "needsReply": true
+    }
+  ]
+}

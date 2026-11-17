@@ -36,3 +36,39 @@ struct GmailAccountsResponse: Codable, Sendable, Hashable {
     let schemaVersion: Int
     let accounts: [GmailAccount]
 }
+
+/// `POST /v1/gmail/summary` (API_GMAIL §4, 1 unit; empty inbox = 0). Read-only: mail stays unread (D-310).
+struct GmailSummaryRequest: Codable, Sendable, Hashable {
+    var schemaVersion = 1
+    let accountId: String
+    let window: Window
+    let maxMessages: Int
+    let now: String           // ISO 8601 with offset (D-058), `ParseRequest.nowString`
+    let timezone: String
+    let locale: String
+
+    enum Window: String, Codable, Sendable, Hashable { case unread, today }
+}
+
+struct GmailSummaryResponse: Codable, Sendable, Hashable {
+    let schemaVersion: Int
+    let requestId: String
+    let accountEmail: String
+    /// May be larger than `messages.count` ("Và {count} thư khác", S21).
+    let totalFound: Int
+    let overview: String
+    /// Oldest first; each `summary` belongs to its `messageId` (D-154).
+    let messages: [GmailMessageSummary]
+}
+
+struct GmailMessageSummary: Codable, Sendable, Hashable, Identifiable {
+    let messageId: String
+    let threadId: String
+    let fromName: String
+    let subject: String
+    let receivedAt: Date
+    let summary: String
+    let needsReply: Bool
+
+    var id: String { messageId }
+}

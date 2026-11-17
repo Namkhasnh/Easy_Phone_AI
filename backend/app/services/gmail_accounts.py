@@ -60,7 +60,12 @@ async def disconnect(conn: asyncpg.Connection, user_id: str, account_id: str, oa
 
 async def access_token(conn: asyncpg.Connection, user_id: str, account_id: str, oauth: GoogleOAuth,
                        settings: Settings) -> str:
-    """For one Gmail call: unknown account → 404 `gmail_not_connected`; dead token → 409 `gmail_reconnect_required`
+    return (await connected(conn, user_id, account_id, oauth, settings))[1]
+
+
+async def connected(conn: asyncpg.Connection, user_id: str, account_id: str, oauth: GoogleOAuth,
+                    settings: Settings) -> tuple[str, str]:
+    """(account email, fresh access token) for one Gmail call: unknown account → 404 `gmail_not_connected`; dead token → 409 `gmail_reconnect_required`
     and the row is marked `needsReconnect` so S15 / S21 show "Kết nối lại Gmail" (spec §6.12 AC5)."""
     row = next((r for r in await repo.for_user(conn, user_id) if r.id == account_id), None)
     if row is None:
@@ -68,7 +73,7 @@ async def access_token(conn: asyncpg.Connection, user_id: str, account_id: str, 
     token = gmail_tokens.decrypt(row.refresh_token_enc, settings) if row.status == "connected" else None
     if token is not None:
         try:
-            return await oauth.access_token(token)
+            return row.email, await oauth.access_token(token)
         except ReconnectRequired:
             pass
     if row.status != "needsReconnect":

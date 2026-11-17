@@ -62,6 +62,10 @@ final class MockAPIClient: APIClientProtocol {
         gmailState.withLock { $0.removeAll { $0.accountId == accountId } }
     }
 
+    func gmailSummary(_ request: GmailSummaryRequest, idempotencyKey: IdempotencyKey) async throws -> GmailSummaryResponse {
+        .mock
+    }
+
     var quotaUpdates: AsyncStream<Quota> { quota.stream }
     var blockingUpdates: AsyncStream<BlockingScreen> { blocking.stream }
 
@@ -153,4 +157,19 @@ extension MeResponse {
         quota: Quota(limit: 10, used: 3, remaining: 7, resetsAt: Date(timeIntervalSince1970: 1_794_157_200)), // 2026-11-09T00:00:00+07:00
         subscription: nil
     )
+}
+
+extension GmailSummaryResponse {
+    /// = `gmailsummary.ok.response.json` (checked by `ContractFixtureTests.mocksEqualFixtures`). "Dữ liệu mẫu" (D-189).
+    static let mock = GmailSummaryResponse(
+        schemaVersion: 1, requestId: "req_01JD0000000000000000000000", accountEmail: "khanh@gmail.com", totalFound: 7,
+        overview: "Có 2 thư mới: 1 thư cần trả lời, 1 thư thông báo.",
+        messages: [
+            GmailMessageSummary(messageId: "18c2e01", threadId: "t18c2e01", fromName: "no-reply@shop.example",
+                                subject: "Đơn hàng đã giao", receivedAt: Date(timeIntervalSince1970: 1_794_866_000),
+                                summary: "Cửa hàng báo đơn hàng đã giao.", needsReply: false),
+            GmailMessageSummary(messageId: "18c2f0a", threadId: "t18c2f0a", fromName: "Nguyễn Thị Lan",
+                                subject: "Họp tổ chiều thứ Sáu", receivedAt: Date(timeIntervalSince1970: 1_794_874_320),
+                                summary: "Chị Lan hỏi em có dự họp 15:00 thứ Sáu không.", needsReply: true),
+        ])
 }

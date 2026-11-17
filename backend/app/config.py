@@ -92,6 +92,13 @@ class Settings(BaseSettings):
     GOOGLE_TOKEN_URL: str = "https://oauth2.googleapis.com/token"
     GOOGLE_REVOKE_URL: str = "https://oauth2.googleapis.com/revoke"
     GOOGLE_HTTP_TIMEOUT_SECONDS: float = 10.0
+    GMAIL_API_URL: str = "https://gmail.googleapis.com/gmail/v1/users/me"
+    GMAIL_MAX_MESSAGES: int = 10  # API_GMAIL §4
+    GMAIL_BODY_MAX_CHARS: int = 2000  # per message, before the LLM
+    GMAIL_OVERVIEW_MAX_CHARS: int = 300
+    GMAIL_SUMMARY_MAX_CHARS: int = 200
+    UNITS_GMAIL_SUMMARY: int = 1  # D-308; empty inbox = 0 (no LLM call)
+    PROMPT_VERSION_SUMMARIZE: int = 1
 
     # Auth (API_CONTRACT §2): JWKS at {SUPABASE_URL}/auth/v1/.well-known/jwks.json; HS256 secret only as fallback
     JWT_AUDIENCE: str = "authenticated"
