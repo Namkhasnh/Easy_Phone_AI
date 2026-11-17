@@ -144,7 +144,8 @@ struct RootView: View {
         case .settings:
             SettingsView(viewModel: SettingsViewModel(localData: env.localData, drafts: env.drafts, auth: env.auth,
                                                       tts: env.tts, permissions: env.permissions,
-                                                      contacts: env.contacts, photoLibrary: env.photoLibrary))
+                                                      contacts: env.contacts, photoLibrary: env.photoLibrary,
+                                                      gmail: env.gmail, gmailAvailable: env.config.gmailClientID != nil))
         default:
             EmptyView()
         }

@@ -517,6 +517,42 @@
         }
       }
     },
+    "confirm.gmailDisconnect.body": {
+      "comment": "UI_SCREENS S20 Gmail disconnect",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Khoai sẽ không đọc được thư nữa. Thư trong Gmail không bị ảnh hưởng."
+          }
+        }
+      }
+    },
+    "confirm.gmailDisconnect.title": {
+      "comment": "UI_SCREENS S20 Gmail disconnect",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ngắt kết nối Gmail?"
+          }
+        }
+      }
+    },
+    "confirm.gmailDisconnect.yes": {
+      "comment": "UI_SCREENS S20 Gmail disconnect",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ngắt kết nối"
+          }
+        }
+      }
+    },
     "confirm.signOut.body": {
       "comment": "UI_SCREENS S20",
       "extractionState": "manual",
@@ -3370,6 +3406,90 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hiển thị"
+          }
+        }
+      }
+    },
+    "settings.gmail.account": {
+      "comment": "UI_SCREENS S15 Gmail row (D-304, D-306)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gmail: %@"
+          }
+        }
+      }
+    },
+    "settings.gmail.connect": {
+      "comment": "UI_SCREENS S15 Gmail row (D-304, D-306)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kết nối Gmail"
+          }
+        }
+      }
+    },
+    "settings.gmail.disconnect": {
+      "comment": "UI_SCREENS S15 Gmail row (D-304, D-306)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ngắt kết nối"
+          }
+        }
+      }
+    },
+    "settings.gmail.failed": {
+      "comment": "TODO(spec): not in UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chưa kết nối được Gmail. Bạn thử lại nhé."
+          }
+        }
+      }
+    },
+    "settings.gmail.missingScope": {
+      "comment": "API_GMAIL §3.1 words; key TODO(spec)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hãy cho phép cả đọc và soạn thư."
+          }
+        }
+      }
+    },
+    "settings.gmail.note": {
+      "comment": "UI_SCREENS S15 Gmail row (D-304, D-306)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Khoai chỉ đọc thư mới và soạn thư nháp, không bao giờ tự gửi."
+          }
+        }
+      }
+    },
+    "settings.gmail.reconnect": {
+      "comment": "UI_SCREENS S15 Gmail row (D-304, D-306)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kết nối lại Gmail"
           }
         }
       }

@@ -6,6 +6,8 @@
 
 SUPABASE_URL =
 SUPABASE_ANON_KEY =
+// Google Cloud iOS OAuth client id for Gmail (API_GMAIL §2, D-310). Public id, not a secret; set in Secrets.xcconfig.
+GMAIL_CLIENT_ID =
 
 // Color tokens are asset names (UI_SCREENS §1.1); `primary` would collide with SwiftUI `Color.primary`.
 // Keep `ColorResource` symbols, skip the `Color`/`UIColor` extensions; code uses `Tokens.Colors`.

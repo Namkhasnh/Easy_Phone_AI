@@ -108,6 +108,25 @@ actor APIClient: APIClientProtocol {
                                        contentType: contentType, idempotencyKey: idempotencyKey))
     }
 
+    func gmailConnect(_ request: GmailConnectRequest) async throws -> GmailAccountResponse {
+        let body: Data
+        do {
+            body = try JSONEncoder().encode(request)
+        } catch {
+            throw AppError.decoding(requestId: nil)
+        }
+        return try await send(Endpoint(method: "POST", path: "/v1/gmail/accounts", authorized: true, body: body))
+    }
+
+    func gmailAccounts() async throws -> GmailAccountsResponse {
+        try await send(Endpoint(method: "GET", path: "/v1/gmail/accounts", authorized: true))
+    }
+
+    func gmailDisconnect(accountId: String) async throws {
+        let _: NoContent = try await send(Endpoint(method: "DELETE", path: "/v1/gmail/accounts/\(accountId)",
+                                                   authorized: true))
+    }
+
     // MARK: - Pipeline
 
     private func send<Response: Decodable & Sendable>(_ endpoint: Endpoint) async throws -> Response {
@@ -131,6 +150,7 @@ actor APIClient: APIClientProtocol {
 
                 if (200..<300).contains(http.statusCode) {
                     if let quota = Self.quota(from: http) { self.quota.yield(quota) }
+                    if http.statusCode == 204, let empty = NoContent() as? Response { return empty }
                     do {
                         return try Self.decoder().decode(Response.self, from: data)
                     } catch {
@@ -250,3 +270,6 @@ actor APIClient: APIClientProtocol {
         return Quota(limit: limit, used: max(0, limit - remaining), remaining: remaining, resetsAt: resetsAt)
     }
 }
+
+/// A `204 No Content` answer (e.g. `DELETE /v1/gmail/accounts/{id}`).
+struct NoContent: Decodable, Sendable {}

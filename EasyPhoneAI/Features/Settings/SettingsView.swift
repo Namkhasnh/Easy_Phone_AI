@@ -99,11 +99,7 @@ struct SettingsView: View {
                 permissionsSection
             }
 
-            Section(header: header("settings.connections")) {
-                rowText("settings.gmail.soon")
-                    .foregroundStyle(Tokens.Colors.textSecondary)   // disabled until Phase 2 (D-150)
-                    .accessibilityAddTraits(.isStaticText)
-            }
+            gmailSection
 
             Section(header: header("settings.data")) {
                 VStack(alignment: .leading, spacing: Tokens.Space.xs) {          // D-301
@@ -155,7 +151,10 @@ struct SettingsView: View {
             viewModel.refreshPermissions()
             Task { await viewModel.loadContactNames() }
         }
-        .task { await viewModel.loadContactNames() }
+        .task {
+            await viewModel.loadContactNames()
+            await viewModel.loadGmail()
+        }
         .accessibilityIdentifier("screen.S15")
     }
 
@@ -183,6 +182,54 @@ struct SettingsView: View {
                 if let url = URL(string: "app-settings:") { openURL(url) }
             }
             .padding(.vertical, Tokens.Space.s)
+        }
+    }
+
+    /// S15 "Kết nối" (UI_SCREENS S15, D-304, D-306): not connected → "Kết nối Gmail"; connected → "Gmail: {email}" +
+    /// "Ngắt kết nối" (→ S20); `needsReconnect` → warning icon + "Kết nối lại Gmail".
+    private var gmailSection: some View {
+        Section(header: header("settings.connections")) {
+            if !viewModel.gmailAvailable {
+                rowText("settings.gmail.soon")
+                    .foregroundStyle(Tokens.Colors.textSecondary)   // no GMAIL_CLIENT_ID in this build
+            } else if let account = viewModel.gmailAccount {
+                if let text = viewModel.gmailAccountText {
+                    Text(verbatim: text)
+                        .font(Tokens.Fonts.fieldValue)
+                        .foregroundStyle(Tokens.Colors.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(minHeight: Tokens.Size.buttonMinHeight, alignment: .leading)
+                }
+                if account.status == .needsReconnect {
+                    Button { Task { await viewModel.connectGmail() } } label: {
+                        Label { Text("settings.gmail.reconnect").font(Tokens.Fonts.fieldValue) } icon: {
+                            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Tokens.Colors.warning)
+                        }
+                        .foregroundStyle(Tokens.Colors.primary)
+                        .frame(maxWidth: .infinity, minHeight: Tokens.Size.buttonMinHeight, alignment: .leading)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(viewModel.gmailBusy)
+                }
+                actionRow("settings.gmail.disconnect", danger: true) { viewModel.pendingConfirm = .gmailDisconnect }
+                    .disabled(viewModel.gmailBusy)
+            } else {
+                actionRow("settings.gmail.connect", danger: false) { Task { await viewModel.connectGmail() } }
+                    .disabled(viewModel.gmailBusy)
+                Text("settings.gmail.note")
+                    .font(Tokens.Fonts.body)
+                    .foregroundStyle(Tokens.Colors.textSecondary)
+            }
+            if viewModel.gmailBusy {
+                ProgressView().frame(maxWidth: .infinity, alignment: .leading)
+            }
+            if let message = viewModel.gmailMessage {
+                Label { Text(verbatim: message.text).font(Tokens.Fonts.body) } icon: {
+                    Image(systemName: "exclamationmark.circle").foregroundStyle(Tokens.Colors.danger)
+                }
+                .foregroundStyle(Tokens.Colors.textPrimary)
+            }
         }
     }
 

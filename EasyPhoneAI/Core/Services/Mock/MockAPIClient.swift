@@ -43,6 +43,25 @@ final class MockAPIClient: APIClientProtocol {
     /// Every `parse` call so far (tests check the request and that a retry reused the key).
     var parseCalls: [(request: ParseRequest, key: IdempotencyKey)] { parseLog.withLock { $0 } }
 
+    private let gmailState = Mutex<[GmailAccount]>([])
+    /// Every `gmailConnect` request so far (tests check code / verifier / redirect).
+    var gmailConnectCalls: [GmailConnectRequest] { gmailConnectLog.withLock { $0 } }
+    private let gmailConnectLog = Mutex<[GmailConnectRequest]>([])
+
+    func gmailConnect(_ request: GmailConnectRequest) async throws -> GmailAccountResponse {
+        gmailConnectLog.withLock { $0.append(request) }
+        gmailState.withLock { $0 = [MockGmailService.sample] }
+        return GmailAccountResponse(schemaVersion: 1, account: MockGmailService.sample)
+    }
+
+    func gmailAccounts() async throws -> GmailAccountsResponse {
+        GmailAccountsResponse(schemaVersion: 1, accounts: gmailState.withLock { $0 })
+    }
+
+    func gmailDisconnect(accountId: String) async throws {
+        gmailState.withLock { $0.removeAll { $0.accountId == accountId } }
+    }
+
     var quotaUpdates: AsyncStream<Quota> { quota.stream }
     var blockingUpdates: AsyncStream<BlockingScreen> { blocking.stream }
 

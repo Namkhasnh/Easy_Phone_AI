@@ -18,6 +18,12 @@ protocol APIClientProtocol: Sendable {
     /// `POST /v1/extract` (API_CONTRACT §7.2, 1 unit): photo text → fields with UTF-16 spans. Own key (≠ the `/v1/ocr`
     /// one, D-245). Never called with empty text (spec §6.3 AC5).
     func extract(_ request: ExtractRequest, idempotencyKey: IdempotencyKey) async throws -> ExtractResponse
+    /// `POST /v1/gmail/accounts` (API_GMAIL §3.1, 0 units): one-time Google code + PKCE verifier → account.
+    func gmailConnect(_ request: GmailConnectRequest) async throws -> GmailAccountResponse
+    /// `GET /v1/gmail/accounts` (§3.2).
+    func gmailAccounts() async throws -> GmailAccountsResponse
+    /// `DELETE /v1/gmail/accounts/{id}` (§3.3), `204`, idempotent.
+    func gmailDisconnect(accountId: String) async throws
     /// From `X-Quota-*` headers after every response that carries them (D-234). Display only (D-085).
     var quotaUpdates: AsyncStream<Quota> { get }
     // TODO(spec): not in ARCHITECTURE §4.1 — lets any `426` reach `AppState.blockingScreen` (S19) without every
