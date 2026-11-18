@@ -159,6 +159,10 @@ actor APIClient: APIClientProtocol {
         return try await send(Endpoint(method: "POST", path: "/v1/billing/verify", authorized: true, body: body))
     }
 
+    func deleteAccount() async throws {
+        let _: NoContent = try await send(Endpoint(method: "DELETE", path: "/v1/me", authorized: true))
+    }
+
     // MARK: - Pipeline
 
     private func send<Response: Decodable & Sendable>(_ endpoint: Endpoint) async throws -> Response {

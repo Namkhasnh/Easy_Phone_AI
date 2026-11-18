@@ -5,7 +5,7 @@ import Observation
 @Observable @MainActor final class SettingsViewModel {
     /// Destructive confirms (S20, `ConfirmSheet`). Delete always needs a tap (D-108).
     enum Confirm: String, Identifiable, Sendable {
-        case clearHistory, clearMemory, signOut, gmailDisconnect
+        case clearHistory, clearMemory, signOut, gmailDisconnect, deleteAccount
         var id: String { rawValue }
         var titleKey: String { "confirm.\(rawValue).title" }
         var bodyKey: String { "confirm.\(rawValue).body" }
@@ -13,6 +13,7 @@ import Observation
             switch self {
             case .signOut: "confirm.signOut.yes"
             case .gmailDisconnect: "confirm.gmailDisconnect.yes"
+            case .deleteAccount: "confirm.deleteAccount.yes"
             case .clearHistory, .clearMemory: "confirm.delete"
             }
         }
@@ -42,12 +43,21 @@ import Observation
     private let contacts: any ContactsService
     private let photoLibrary: any PhotoLibraryService
     private let gmail: any GmailService
+    private let api: (any APIClientProtocol)?
+    private let images: any ImageStore
+    /// S20 "Đang xóa…" while `DELETE /v1/me` runs.
+    private(set) var deletingAccount = false
+    /// A failed deletion (network / server): shown in the account section; nothing was wiped.
+    private(set) var accountMessage: UserMessage?
 
     init(localData: any LocalDataRepository, drafts: any TaskRepository, auth: any AuthService,
          tts: any TTSService = MockTTSService(), permissions: any PermissionManager = MockPermissionManager(),
          contacts: any ContactsService = MockContactsService(),
          photoLibrary: any PhotoLibraryService = MockPhotoLibraryService(),
-         gmail: any GmailService = MockGmailService(), gmailAvailable: Bool = true) {
+         gmail: any GmailService = MockGmailService(), gmailAvailable: Bool = true,
+         api: (any APIClientProtocol)? = nil, images: any ImageStore = MockImageStore()) {
+        self.api = api
+        self.images = images
         self.gmail = gmail
         self.gmailAvailable = gmailAvailable
         self.photoLibrary = photoLibrary
@@ -130,7 +140,28 @@ import Observation
             nicknames = []
         case .signOut: await auth.signOut()                       // drafts stay on the phone (S20)
         case .gmailDisconnect: await disconnectGmail()
+        case .deleteAccount: await deleteAccount()
         }
+    }
+
+    /// ARCHITECTURE §6.6 (D-073): `DELETE /v1/me` → only after `204` wipe drafts, saved data and photos on the phone →
+    /// sign out (S01). A failure wipes nothing (D-104) and shows the error.
+    private func deleteAccount() async {
+        guard let api, !deletingAccount else { return }
+        deletingAccount = true
+        accountMessage = nil
+        defer { deletingAccount = false }
+        do {
+            try await api.deleteAccount()
+        } catch {
+            let code = (error as? AppError)?.code ?? "generic"
+            accountMessage = UserMessage(key: ConversationViewModel.noticeKey(forParseError: code))
+            return
+        }
+        drafts.wipeAll()
+        localData.wipeAll()
+        await images.deleteAll()
+        await auth.signOut()
     }
 
     // MARK: - Gmail (API_GMAIL §2–§3)

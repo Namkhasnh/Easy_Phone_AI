@@ -14,6 +14,7 @@ final class MockImageStore: ImageStore {
 
     func load(_ relativePath: String) async -> Data? { files.withLock { $0[relativePath] } }
     func delete(_ relativePath: String) async { _ = files.withLock { $0.removeValue(forKey: relativePath) } }
+    func deleteAll() async { files.withLock { $0.removeAll() } }
 }
 
 final class MockPhotoLibraryService: PhotoLibraryService {

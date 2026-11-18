@@ -26,3 +26,20 @@ async def ensure_profile(conn: asyncpg.Connection, user_id: str, accept_language
     except asyncpg.ForeignKeyViolationError:
         logger.info("profile upsert: auth user missing")
         raise AppError("unauthorized", 401, False) from None
+
+
+async def delete_account(conn, user_id: str, admin, oauth, settings) -> None:
+    """API_CONTRACT §6.3 (D-073): give the Gmail tokens back to Google (best effort), then delete the auth user;
+    FK cascades remove profiles, subscriptions, usage_events, gmail_accounts, gmail_draft_keys. Idempotent."""
+    from app.repositories import gmail_accounts as gmail_repo
+    from app.services import gmail_tokens
+
+    try:
+        rows = await gmail_repo.for_user(conn, user_id)
+    except Exception:  # noqa: BLE001 — a missing table / row must never block the deletion
+        rows = []
+    for row in rows:
+        token = gmail_tokens.decrypt(row.refresh_token_enc, settings) if settings.GMAIL_TOKEN_KEY else None
+        if token:
+            await oauth.revoke(token)
+    await admin.delete_user(user_id)

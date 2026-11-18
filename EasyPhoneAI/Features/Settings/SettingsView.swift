@@ -132,7 +132,14 @@ struct SettingsView: View {
 
             Section {
                 actionRow("settings.signOut", danger: false) { viewModel.pendingConfirm = .signOut }
-                // TODO(spec): "Xóa tài khoản" needs `DELETE /v1/me` + local wipe (1G.1–1G.2).
+                actionRow("settings.deleteAccount", danger: true) { viewModel.pendingConfirm = .deleteAccount }  // S20
+                    .disabled(viewModel.deletingAccount)
+                if viewModel.deletingAccount {
+                    Label { Text("confirm.deleteAccount.progress") } icon: { ProgressView() }
+                }
+                if let message = viewModel.accountMessage {
+                    Text(verbatim: message.text).font(Tokens.Fonts.body).foregroundStyle(Tokens.Colors.danger)
+                }
             }
             }
             .listRowBackground(Tokens.Colors.surface)          // cards = `surface` (UI_SCREENS §1.1)
@@ -144,7 +151,10 @@ struct SettingsView: View {
         .navigationTitle(Text("settings.title"))
         .sheet(item: $viewModel.pendingConfirm) { confirm in
             ConfirmSheet(titleKey: LocalizedStringKey(confirm.titleKey), bodyKey: LocalizedStringKey(confirm.bodyKey),
+                         // S20: the App Store subscription is not cancelled by deleting the account (API_CONTRACT §6.3).
+                         noteKey: confirm == .deleteAccount ? "confirm.deleteAccount.subNote" : nil,
                          confirmKey: LocalizedStringKey(confirm.confirmKey),
+                         cancelKey: confirm == .deleteAccount ? "confirm.deleteAccount.no" : "common.cancel",
                          onConfirm: { Task { await viewModel.perform(confirm) } },
                          onCancel: { viewModel.pendingConfirm = nil })
         }

@@ -171,7 +171,8 @@ struct RootView: View {
             SettingsView(viewModel: SettingsViewModel(localData: env.localData, drafts: env.drafts, auth: env.auth,
                                                       tts: env.tts, permissions: env.permissions,
                                                       contacts: env.contacts, photoLibrary: env.photoLibrary,
-                                                      gmail: env.gmail, gmailAvailable: env.config.gmailClientID != nil))
+                                                      gmail: env.gmail, gmailAvailable: env.config.gmailClientID != nil,
+                                                      api: env.api, images: env.images))
         default:
             EmptyView()
         }

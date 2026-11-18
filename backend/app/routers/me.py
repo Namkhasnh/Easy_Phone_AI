@@ -4,13 +4,34 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 import asyncpg
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Request, Response
 
-from app.deps import AuthedUser, Settings, authed_user, clock, db, get_settings
+from app.deps import AuthedUser, CurrentUser, Settings, authed_user, clock, current_user, db, get_settings
 from app.schemas.me import MeResponse, Quota, Subscription
-from app.services import quota
+from app.routers.gmail import google_oauth
+from app.services import accounts, quota
 
 router = APIRouter(prefix="/v1")
+
+
+def supabase_admin(request: Request, settings: Settings = Depends(get_settings)):
+    """Overridden in tests."""
+    from app.routers.gmail import _http
+    from app.services.supabase_admin import SupabaseAdmin
+    return SupabaseAdmin(settings, _http(request))
+
+
+@router.delete("/me", status_code=204, response_class=Response)
+async def delete_me(
+    user: CurrentUser = Depends(current_user),          # no profile upsert (API_CONTRACT §2); no client-version gate
+    conn: asyncpg.Connection = Depends(db),
+    settings: Settings = Depends(get_settings),
+    admin=Depends(supabase_admin),
+    oauth=Depends(google_oauth),
+) -> Response:
+    """API_CONTRACT §6.3 (D-073): all server data of the user is deleted; `204`, also when already deleted."""
+    await accounts.delete_account(conn, user.id, admin, oauth, settings)
+    return Response(status_code=204)
 
 
 @router.get("/me", response_model=MeResponse)

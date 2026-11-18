@@ -95,6 +95,16 @@ final class MockAPIClient: APIClientProtocol {
         return try verifyResult.withLock { $0 }.get()
     }
 
+    private let deleteResult = Mutex<Result<Void, AppError>>(.success(()))
+    private let deleteLog = Mutex(0)
+    var deleteAccountCalls: Int { deleteLog.withLock { $0 } }
+    func setDeleteAccount(_ result: Result<Void, AppError>) { deleteResult.withLock { $0 = result } }
+
+    func deleteAccount() async throws {
+        deleteLog.withLock { $0 += 1 }
+        try deleteResult.withLock { $0 }.get()
+    }
+
     var quotaUpdates: AsyncStream<Quota> { quota.stream }
     var blockingUpdates: AsyncStream<BlockingScreen> { blocking.stream }
 

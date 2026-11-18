@@ -28,6 +28,8 @@ protocol APIClientProtocol: Sendable {
     func gmailSummary(_ request: GmailSummaryRequest, idempotencyKey: IdempotencyKey) async throws -> GmailSummaryResponse
     /// `POST /v1/gmail/drafts` (§5, 0 units, never sends). Key = the step's key: a retry returns the same draft (D-105).
     func gmailDraft(_ request: GmailDraftRequest, idempotencyKey: IdempotencyKey) async throws -> GmailDraftResponse
+    /// `DELETE /v1/me` (API_CONTRACT §6.3, D-073): all server data; `204`, also when already deleted.
+    func deleteAccount() async throws
     /// `POST /v1/billing/verify` (API_CONTRACT §8.1, 0 units): signed StoreKit transaction → the user's plan + quota.
     func verifyTransaction(jws: String) async throws -> MeResponse
     /// From `X-Quota-*` headers after every response that carries them (D-234). Display only (D-085).

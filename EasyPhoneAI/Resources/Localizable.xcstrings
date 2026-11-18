@@ -697,6 +697,90 @@
         }
       }
     },
+    "confirm.deleteAccount.done": {
+      "comment": "UI_SCREENS S20 (1G.2, D-073)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã xóa tài khoản."
+          }
+        }
+      }
+    },
+    "confirm.deleteAccount.progress": {
+      "comment": "UI_SCREENS S20 (1G.2, D-073)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đang xóa…"
+          }
+        }
+      }
+    },
+    "confirm.deleteAccount.no": {
+      "comment": "UI_SCREENS S20 (1G.2, D-073)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giữ tài khoản"
+          }
+        }
+      }
+    },
+    "confirm.deleteAccount.yes": {
+      "comment": "UI_SCREENS S20 (1G.2, D-073)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xóa tài khoản"
+          }
+        }
+      }
+    },
+    "confirm.deleteAccount.subNote": {
+      "comment": "UI_SCREENS S20 (1G.2, D-073)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xóa tài khoản không tự hủy gói Premium. Hãy hủy trong Cài đặt iPhone > tên của bạn > Đăng ký."
+          }
+        }
+      }
+    },
+    "confirm.deleteAccount.body": {
+      "comment": "UI_SCREENS S20 (1G.2, D-073)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toàn bộ dữ liệu của bạn trên máy chủ và trên điện thoại này sẽ bị xóa. Việc này không hoàn tác được."
+          }
+        }
+      }
+    },
+    "confirm.deleteAccount.title": {
+      "comment": "UI_SCREENS S20 (1G.2, D-073)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xóa tài khoản?"
+          }
+        }
+      }
+    },
     "confirm.clearHistory.body" : {
       "comment" : "UI_SCREENS S20",
       "extractionState" : "manual",
