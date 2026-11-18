@@ -25,6 +25,9 @@
         }
       }
     },
+    "Khoai" : {
+
+    },
     "NSCalendarsFullAccessUsageDescription" : {
       "comment" : "UI_SCREENS S18, D-186",
       "extractionState" : "manual",

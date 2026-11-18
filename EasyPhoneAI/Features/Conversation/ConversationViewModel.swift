@@ -83,6 +83,8 @@ import OSLog
     private(set) var mailCodesOnly = false
     /// D-313: "xem lời nhắc" → S12, understood on the phone.
     private(set) var opensReminders = false
+    /// 1F.7: a 402 opens S16 (free) or S17 (premium) on top of S03; the request text is kept (D-104).
+    var quotaBlock: QuotaBlock?
     /// S21 "Trả lời" (2.6b): this conversation writes a reply to that message.
     let reply: MailReplyContext?
     /// S18 before the mic starts: microphone, then speech (D-185). The recording waits for the answer.
@@ -665,10 +667,11 @@ import OSLog
         Self.logger.info("parse failed: \(code, privacy: .public)")       // D-059: code only
         mode = returnMode
         noticeKey = Self.noticeKey(forParseError: code)
+        quotaBlock = QuotaBlock.from(error)                                // D-088, D-241
     }
 
     /// `error.<code>` keys of UI_SCREENS §8 used by S03; unknown → `error.generic`.
-    // TODO(spec): 402 should open S16 / S17 (1F); until then the notice `error.quota_exceeded` is shown.
+    // 402 also opens S16 / S17 (`quotaBlock`, 1F.7); the notice stays under the text.
     static func noticeKey(forParseError code: String) -> String {
         if code.hasPrefix("network.") { return "error.network.offline" }
         switch code {

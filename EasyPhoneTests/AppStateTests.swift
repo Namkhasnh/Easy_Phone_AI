@@ -11,7 +11,8 @@ struct AppStateTests {
         let state = AppState()
         state.apply(me: .mock, now: now)
         #expect(state.entitlement == CachedEntitlement(plan: .free, quotaRemaining: 7,
-                                                       resetsAt: MeResponse.mock.quota.resetsAt, fetchedAt: now))
+                                                       resetsAt: MeResponse.mock.quota.resetsAt, fetchedAt: now,
+                                                       quotaLimit: MeResponse.mock.quota.limit))
     }
 
     @Test func quotaUpdatesExistingEntitlement() {
@@ -20,7 +21,8 @@ struct AppStateTests {
         let later = now.addingTimeInterval(60)
         let resets = now.addingTimeInterval(86_400)
         state.apply(quota: Quota(limit: 10, used: 4, remaining: 6, resetsAt: resets), now: later)
-        #expect(state.entitlement == CachedEntitlement(plan: .free, quotaRemaining: 6, resetsAt: resets, fetchedAt: later))
+        #expect(state.entitlement == CachedEntitlement(plan: .free, quotaRemaining: 6, resetsAt: resets, fetchedAt: later,
+                                                       quotaLimit: 10))
     }
 
     @Test func quotaWithoutMeIsIgnored() {

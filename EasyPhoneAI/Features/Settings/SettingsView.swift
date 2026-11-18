@@ -249,10 +249,22 @@ struct SettingsView: View {
             if let plan = appState.entitlement?.plan {
                 rowText(plan == .premium ? "settings.plan.premium" : "settings.plan.free")
             }
+            if let entitlement = appState.entitlement {                                 // S15 AC7 (1F.8)
+                if let limit = entitlement.quotaLimit {
+                    Text(verbatim: UserMessage(key: "settings.quota",
+                                               args: ["\(entitlement.quotaRemaining)", "\(limit)"]).text)
+                        .font(Tokens.Fonts.body)
+                        .foregroundStyle(Tokens.Colors.textPrimary)
+                }
+                Text(verbatim: UserMessage(key: "settings.quota.reset",
+                                           args: [entitlement.resetsAt.formatted(date: .omitted, time: .shortened)]).text)
+                    .font(Tokens.Fonts.caption)
+                    .foregroundStyle(Tokens.Colors.textSecondary)
+            }
             if appState.entitlement?.plan != .premium {
                 actionRow("settings.upgrade", danger: false) { showsPaywall = true }      // → S16 (1F.6)
             }
-            // TODO(spec): quota row + reset time (1F.8); "Quản lý gói" needs StoreKit's sheet (D-015) → later.
+            // TODO(spec): "Quản lý gói" needs StoreKit's manage-subscriptions sheet (a View import, D-015) → later.
         }
     }
 

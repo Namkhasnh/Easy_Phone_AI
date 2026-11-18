@@ -54,6 +54,9 @@ struct ConversationView: View {
             if opens { router.replaceLast(with: .mail(codesOnly: viewModel.mailCodesOnly)) }   // D-304: S21
         }
         .onDisappear { viewModel.onDisappear() }
+        .sheet(item: $viewModel.quotaBlock) { block in
+            QuotaBlockSheet(block: block)                                 // 1F.7: S16 (free) / S17 (premium)
+        }
         .sheet(item: $viewModel.pendingPermission) { pending in
             PermissionSheet(pending: pending,
                             onAllow: { Task { await viewModel.allowPermission() } },
