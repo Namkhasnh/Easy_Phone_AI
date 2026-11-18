@@ -42,6 +42,8 @@ struct AppEnvironment: Sendable {
     let ocr: any OCRService
     /// Gmail connection (Phase 2, API_GMAIL §2–§3).
     let gmail: any GmailService
+    /// StoreKit 2 (Phase 1F, ARCHITECTURE §6.5).
+    let purchases: any PurchaseService
 
     @MainActor static func live(container: ModelContainer) -> AppEnvironment {
         let config = AppConfig.fromMainBundle()
@@ -74,7 +76,7 @@ struct AppEnvironment: Sendable {
                               system: system, places: places,
                               images: LiveImageStore(), photoLibrary: LivePhotoLibraryService(),
                               ocr: RoutingOCRService(device: VisionOCRService(), remote: APIRemoteOCR(api: api)),
-                              gmail: gmail)
+                              gmail: gmail, purchases: LivePurchaseService())
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
@@ -110,7 +112,7 @@ struct AppEnvironment: Sendable {
                               permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts,
                               system: system, places: places,
                               images: MockImageStore(), photoLibrary: MockPhotoLibraryService(),
-                              ocr: MockOCRService(), gmail: gmail)
+                              ocr: MockOCRService(), gmail: gmail, purchases: MockPurchaseService())
     }
 
     /// `MockScenario.uiTest` `/v1/extract` (flow 1, 1D.11): `ExtractResponse.mock` with the date moved to tomorrow

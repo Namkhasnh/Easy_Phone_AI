@@ -85,6 +85,16 @@ final class MockAPIClient: APIClientProtocol {
         return try gmailDraftResult.withLock { $0 }.get()
     }
 
+    private let verifyResult = Mutex<Result<MeResponse, AppError>>(.success(.mock))
+    private let verifyLog = Mutex<[String]>([])
+    var verifyCalls: [String] { verifyLog.withLock { $0 } }
+    func setVerify(_ result: Result<MeResponse, AppError>) { verifyResult.withLock { $0 = result } }
+
+    func verifyTransaction(jws: String) async throws -> MeResponse {
+        verifyLog.withLock { $0.append(jws) }
+        return try verifyResult.withLock { $0 }.get()
+    }
+
     var quotaUpdates: AsyncStream<Quota> { quota.stream }
     var blockingUpdates: AsyncStream<BlockingScreen> { blocking.stream }
 

@@ -149,6 +149,16 @@ actor APIClient: APIClientProtocol {
                                        body: body, idempotencyKey: idempotencyKey))
     }
 
+    func verifyTransaction(jws: String) async throws -> MeResponse {
+        let body: Data
+        do {
+            body = try JSONEncoder().encode(BillingVerifyRequest(signedTransaction: jws))
+        } catch {
+            throw AppError.decoding(requestId: nil)
+        }
+        return try await send(Endpoint(method: "POST", path: "/v1/billing/verify", authorized: true, body: body))
+    }
+
     // MARK: - Pipeline
 
     private func send<Response: Decodable & Sendable>(_ endpoint: Endpoint) async throws -> Response {

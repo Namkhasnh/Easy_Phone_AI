@@ -30,6 +30,12 @@ struct RootView: View {
             }
         }
         .task {
+            // ARCHITECTURE §6.5: Transaction.updates from launch (renewals, Ask to Buy, refunds) → backend → plan.
+            for await jws in env.purchases.transactionUpdates {
+                if let me = await BillingSync.verify(jws, api: env.api, purchases: env.purchases) { appState.apply(me: me) }
+            }
+        }
+        .task {
             for await screen in env.api.blockingUpdates {
                 appState.blockingScreen = screen
             }
