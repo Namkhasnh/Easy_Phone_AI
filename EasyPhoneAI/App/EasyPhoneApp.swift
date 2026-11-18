@@ -15,7 +15,7 @@ import SwiftUI
         // `StartListeningIntent` sets the flag on this same AppState (D-172).
         let state = AppState()
         _appState = State(initialValue: state)
-        AppDependencyManager.shared.add(dependency: state)
+        ListenRequests.onRequest = { state.startListeningRequested = true }
         // XCUITest (ARCHITECTURE §13): `-uiTestScenario <name>` → mocks + in-memory store, never real device data.
         let scenario = MockScenario.fromLaunchArguments()
         do {

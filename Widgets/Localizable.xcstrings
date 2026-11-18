@@ -55,6 +55,28 @@
           }
         }
       }
+    },
+    "intent.listen.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bắt đầu nghe"
+          }
+        }
+      }
+    },
+    "intent.listen.desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mở EasyPhoneK và nghe yêu cầu của bạn"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

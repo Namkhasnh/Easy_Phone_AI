@@ -9,7 +9,7 @@ struct ListenControl: ControlWidget {
 
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: Self.kind) {
-            ControlWidgetButton(action: OpenURLIntent(Listen.url)) {
+            ControlWidgetButton(action: StartListeningIntent()) {     // shared intent: opens the app (also locked)
                 Label { Text("control.listen") } icon: { Image(systemName: "mic.fill") }
             }
         }

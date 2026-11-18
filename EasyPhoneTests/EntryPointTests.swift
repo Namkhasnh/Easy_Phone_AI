@@ -7,10 +7,14 @@ import Testing
 @MainActor
 @Suite("Entry points (D-170 – D-172)")
 struct EntryPointTests {
-    // `perform()` is not called here: the test host app already registered its AppState with AppDependencyManager,
-    // and a second registration crashes the host. Checked on the iPhone (Siri / Action Button / Back Tap).
-    @Test func intentOpensTheApp() {
+    @Test func intentOpensTheAppAndAsksToListen() async throws {
         #expect(StartListeningIntent.openAppWhenRun)
+        let previous = ListenRequests.onRequest
+        defer { ListenRequests.onRequest = previous }
+        var asked = 0
+        ListenRequests.onRequest = { asked += 1 }
+        _ = try await StartListeningIntent().perform()
+        #expect(asked == 1)
     }
 
     @Test func shortcutsAndStrings() {

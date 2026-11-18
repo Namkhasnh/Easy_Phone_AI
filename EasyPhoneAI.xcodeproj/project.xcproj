@@ -25,6 +25,7 @@
     { "kind": "folder", "path": "EasyPhoneTests", "target-membership": [ "EasyPhoneTests" ] },
     { "kind": "folder", "path": "backend/tests/fixtures/contract", "target-membership": [ "EasyPhoneTests" ] },
     { "kind": "folder", "path": "EasyPhoneUITests", "target-membership": [ "EasyPhoneUITests" ] },
+    { "kind": "folder", "path": "Shared", "target-membership": [ "EasyPhoneAI", "WidgetsExtension" ] },
     {
       "kind": "folder",
       "path": "Widgets",
