@@ -9,6 +9,7 @@ import pytest
 from pydantic import BaseModel
 
 from app.errors import MESSAGES
+from app.schemas.billing import BillingVerifyRequest
 from app.schemas.error import ErrorCode, ErrorEnvelope
 from app.schemas.extract import ExtractRequest, ExtractResponse
 from app.schemas.gmail import (
@@ -48,6 +49,7 @@ REQUEST_MODELS: dict[str, type[BaseModel]] = {
     "gmailaccount": GmailConnectRequest,
     "gmailsummary": GmailSummaryRequest,
     "gmaildraft": GmailDraftRequest,
+    "billing": BillingVerifyRequest,  # §8.1
 }
 
 # 🔒 keys never leave the device (D-056, API_CONTRACT §11).

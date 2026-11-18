@@ -21,6 +21,12 @@ async def me(
     settings: Settings = Depends(get_settings),
     now: datetime = Depends(clock),
 ) -> MeResponse:
+    return await me_response(conn, user, settings, now, response)
+
+
+async def me_response(conn: asyncpg.Connection, user: AuthedUser, settings: Settings, now: datetime,
+                      response: Response) -> MeResponse:
+    """`MeResponse` + `X-Quota-*` headers; also the answer of `POST /v1/billing/verify` (API_CONTRACT §8.1 step 5)."""
     ent = await quota.entitlement(conn, user.id, settings, now)
     q, sub = ent.quota, ent.subscription
     response.headers.update(quota.quota_headers(q))

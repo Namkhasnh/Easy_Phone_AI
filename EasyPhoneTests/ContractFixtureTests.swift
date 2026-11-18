@@ -121,6 +121,7 @@ struct ContractFixtureTests {
         case "gmailaccount": encoded = try JSONEncoder().encode(Self.decode(GmailConnectRequest.self, name))
         case "gmailsummary": encoded = try JSONEncoder().encode(Self.decode(GmailSummaryRequest.self, name))
         case "gmaildraft": encoded = try JSONEncoder().encode(Self.decode(GmailDraftRequest.self, name))
+        case "billing": encoded = try JSONEncoder().encode(Self.decode(BillingVerifyRequest.self, name))
         default:
             Issue.record("no DTO mapped for \(name)")
             return

@@ -9,10 +9,10 @@ from fastapi import APIRouter, FastAPI
 from app import errors
 from app.config import get_settings
 from app.db import Database
-from app.routers import extract, gmail, health, me, media, parse
+from app.routers import billing, extract, gmail, health, me, media, parse
 from app.request_id import RequestIdMiddleware
 
-ROUTERS: list[APIRouter] = [health.router, me.router, parse.router, extract.router, media.router, gmail.router]
+ROUTERS: list[APIRouter] = [health.router, me.router, parse.router, extract.router, media.router, gmail.router, billing.router]
 
 
 @asynccontextmanager

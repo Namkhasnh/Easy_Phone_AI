@@ -75,6 +75,11 @@ class Settings(BaseSettings):
     APP_BUNDLE_ID: str = "vn.namkhanh.easyphone"
     PRODUCT_IDS: list[str] = ["easyphone.premium.monthly", "easyphone.premium.yearly"]
     ALLOW_XCODE_STOREKIT: bool = False
+    # Xcode StoreKit test transactions (D-240): the owner's Xcode could not export its public certificate (Xcode 27,
+    # 2026-11-18), so the first verified Xcode leaf certificate is pinned here (SHA-256) and every later one must match.
+    # TODO(decision): API_CONTRACT §8.1 step 1 says "verify with the exported StoreKit test certificate".
+    XCODE_STOREKIT_PIN_FILE: str = "certs/xcode_storekit_leaf.sha256"
+    ALLOWED_ENVIRONMENTS: list[str] = ["Sandbox", "Xcode"]  # dev backend (API_CONTRACT §8.1); Xcode needs the flag
 
     # Secrets: only from env / .env, never committed (D-051, D-207)
     OPENAI_API_KEY: SecretStr | None = None
