@@ -26,12 +26,34 @@
     { "kind": "folder", "path": "backend/tests/fixtures/contract", "target-membership": [ "EasyPhoneTests" ] },
     { "kind": "folder", "path": "EasyPhoneUITests", "target-membership": [ "EasyPhoneUITests" ] },
     {
+      "kind": "folder",
+      "path": "Widgets",
+      "target-membership": [
+        "WidgetsExtension",
+      ],
+      "membership-exceptions": [
+        {
+          "target": "WidgetsExtension",
+          "exclusions": [
+            "Info.plist",
+          ],
+        },
+      ],
+    }, {
+      "kind": "group",
+      "name": "Frameworks",
+      "children": [
+        { "path": "<SDK>/System/Library/Frameworks/WidgetKit.framework", "target-membership": [ "WidgetsExtension/frameworks" ] },
+        { "path": "<SDK>/System/Library/Frameworks/SwiftUI.framework", "target-membership": [ "WidgetsExtension/frameworks" ] },
+      ],
+    }, {
       "kind": "group",
       "name": "Products",
       "children": [
         { "path": "<PRODUCTS>/EasyPhoneAI.app", "id": "000000000000000000000120", "type": "wrapper.application", "index": false },
         { "path": "<PRODUCTS>/EasyPhoneTests.xctest", "id": "000000000000000000000220", "type": "wrapper.cfbundle", "index": false },
         { "path": "<PRODUCTS>/EasyPhoneUITests.xctest", "id": "000000000000000000000320", "type": "wrapper.cfbundle", "index": false },
+        { "path": "<PRODUCTS>/WidgetsExtension.appex", "id": "33493D5E30AD8A8B000F6507", "type": "wrapper.app-extension", "index": false, "target-membership": [ { "build-phase": "EasyPhoneAI/copy/Embed Foundation Extensions", "header-preservation": "remove-on-copy" } ] },
       ],
     },
   ],
@@ -45,10 +67,18 @@
         { "name": "Debug", "file": { "anchor": "Config", "relative-path": "Debug.xcconfig" } },
         { "name": "Release", "file": { "anchor": "Config", "relative-path": "Release.xcconfig" } },
       ],
+      "dependencies": [
+        "WidgetsExtension",
+      ],
       "build-phases": [
         "compile-sources",
         "frameworks",
         "resources",
+        {
+          "kind": "copy",
+          "name": "Embed Foundation Extensions",
+          "bundle-base-path": "plugins-directory",
+        },
       ],
       "package-product-members": [
         {
@@ -141,6 +171,47 @@
         "TARGETED_DEVICE_FAMILY": "1",
         "TEST_TARGET_NAME": "EasyPhoneAI",
       },
+    }, {
+      "name": "WidgetsExtension",
+      "id": "33493D5D30AD8A8B000F6507",
+      "product": "Products/WidgetsExtension.appex",
+      "product-type": "app-extension",
+      "specialized-configurations": [
+        { "name": "Debug", "file": { "anchor": "Config", "relative-path": "Debug.xcconfig" } },
+        { "name": "Release", "file": { "anchor": "Config", "relative-path": "Release.xcconfig" } },
+      ],
+      "build-phases": [
+        "compile-sources",
+        "frameworks",
+        "resources",
+      ],
+      "build-settings": {
+        "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME": "AccentColor",
+        "ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME": "WidgetBackground",
+        "CODE_SIGN_STYLE": "Automatic",
+        "CURRENT_PROJECT_VERSION": "1",
+        "GENERATE_INFOPLIST_FILE": "YES",
+        "INFOPLIST_FILE": "Widgets/Info.plist",
+        "INFOPLIST_KEY_CFBundleDisplayName": "EasyPhoneK",
+        "INFOPLIST_KEY_NSHumanReadableCopyright": "",
+        "LD_RUNPATH_SEARCH_PATHS": [
+          "$(inherited)",
+          "@executable_path/Frameworks",
+          "@executable_path/../../Frameworks",
+        ],
+        "MARKETING_VERSION": "1.0",
+        "PRODUCT_BUNDLE_IDENTIFIER": "vn.namkhanh.easyphone.Widgets",
+        "PRODUCT_NAME": "$(TARGET_NAME)",
+        "SDKROOT": "iphoneos",
+        "SKIP_INSTALL": "YES",
+        "STRING_CATALOG_GENERATE_SYMBOLS": "YES",
+        "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
+        "SWIFT_EMIT_LOC_STRINGS": "YES",
+        "SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY": "YES",
+        "SWIFT_VERSION": "6.0",
+        "TARGETED_DEVICE_FAMILY": "1",
+        "VALIDATE_PRODUCT[config=Release]": "YES",
+      },
     },
   ],
   "build-settings": {
@@ -209,5 +280,5 @@
     "SWIFT_OPTIMIZATION_LEVEL[config=Debug]": "-Onone",
   },
   "last-upgrade": "27.0",
-  "last-swift-update": "27.0",
+  "last-swift-update": "27.2",
 }
