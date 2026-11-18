@@ -985,6 +985,30 @@
         }
       }
     },
+    "intent.listen.desc": {
+      "comment": "UI_SCREENS §7 (1E.1)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mở EasyPhoneK và nghe yêu cầu của bạn"
+          }
+        }
+      }
+    },
+    "intent.listen.title": {
+      "comment": "UI_SCREENS §7 (1E.1)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bắt đầu nghe"
+          }
+        }
+      }
+    },
     "mail.openGmail": {
       "comment": "UI_SCREENS S21 / S04 result",
       "extractionState": "manual",

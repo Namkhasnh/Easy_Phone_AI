@@ -59,6 +59,17 @@ struct RootView: View {
         .task(id: appState.session) {
             await loadAccount()
         }
+        // D-170: Siri / Action Button / Back Tap / widget → S03 listening, once signed in (the flag waits for it).
+        .onChange(of: appState.startListeningRequested, initial: true) { _, _ in openListeningIfRequested() }
+        .onChange(of: appState.session) { _, _ in openListeningIfRequested() }
+    }
+
+    private func openListeningIfRequested() {
+        guard appState.startListeningRequested, case .signedIn = appState.session, appState.blockingScreen == nil
+        else { return }
+        appState.startListeningRequested = false
+        router.popToRoot()
+        router.push(.conversation(nil))                                    // a new request, mic on (S03 mode 1)
     }
 
     /// API_CONTRACT §6.2: `/v1/me` on launch and after sign-in. Failures only log; UI keeps working.
