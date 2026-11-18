@@ -45,6 +45,10 @@ def _leaf(jws: str) -> x509.Certificate:
 def _pin_xcode(cert: x509.Certificate, settings: Settings) -> None:
     """Trust on first use for the owner's Xcode signing certificate (dev backend only)."""
     fingerprint = hashlib.sha256(cert.public_bytes(encoding=_der())).hexdigest()
+    if settings.XCODE_STOREKIT_LEAF_SHA256:                           # hosted (D-315): pin from the environment
+        if settings.XCODE_STOREKIT_LEAF_SHA256.strip().lower() != fingerprint:
+            raise _invalid("xcodeCertificate")
+        return
     path = BACKEND_DIR / settings.XCODE_STOREKIT_PIN_FILE
     if not path.exists():
         path.parent.mkdir(parents=True, exist_ok=True)

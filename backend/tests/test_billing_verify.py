@@ -160,3 +160,15 @@ def test_expired_and_revoked(setup):
 def test_listed_in_openapi(setup):
     client, _, _ = setup
     assert "/v1/billing/verify" in client.get("/openapi.json").json()["paths"]
+
+
+def test_pin_from_the_environment_wins(setup, tmp_path):  # Cloud Run (D-315)
+    client, _, pin = setup
+    import hashlib
+    fp = hashlib.sha256(base64.b64decode(X5C)).hexdigest()
+    client.app.dependency_overrides[get_settings] = lambda: Settings(
+        ALLOW_XCODE_STOREKIT=True, XCODE_STOREKIT_LEAF_SHA256=fp, XCODE_STOREKIT_PIN_FILE=str(tmp_path / "x"))
+    assert post(client, jws()).status_code == 200 and not (tmp_path / "x").exists()
+    client.app.dependency_overrides[get_settings] = lambda: Settings(
+        ALLOW_XCODE_STOREKIT=True, XCODE_STOREKIT_LEAF_SHA256="00" * 32)
+    assert post(client, jws()).status_code == 400

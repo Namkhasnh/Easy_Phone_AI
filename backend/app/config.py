@@ -79,6 +79,8 @@ class Settings(BaseSettings):
     # 2026-11-18), so the first verified Xcode leaf certificate is pinned here (SHA-256) and every later one must match.
     # TODO(decision): API_CONTRACT §8.1 step 1 says "verify with the exported StoreKit test certificate".
     XCODE_STOREKIT_PIN_FILE: str = "certs/xcode_storekit_leaf.sha256"
+    # Cloud Run has no lasting disk (D-315): set the pin here instead (the file's content); it wins over the file.
+    XCODE_STOREKIT_LEAF_SHA256: str | None = None
     ALLOWED_ENVIRONMENTS: list[str] = ["Sandbox", "Xcode"]  # dev backend (API_CONTRACT §8.1); Xcode needs the flag
 
     # Secrets: only from env / .env, never committed (D-051, D-207)
