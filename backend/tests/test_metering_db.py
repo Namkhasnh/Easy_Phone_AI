@@ -344,4 +344,5 @@ def test_me_reflects_metered_usage():
     with make_client(uid) as client:
         resp = client.get("/v1/me")
     assert resp.json()["quota"]["used"] == 1
-    assert resp.headers["X-Quota-Remaining"] == "9" and resp.headers["X-Quota-Limit"] == "10"
+    free = Settings().FREE_DAILY_QUOTA                                    # D-314 default, never hard-coded
+    assert resp.headers["X-Quota-Remaining"] == str(free - 1) and resp.headers["X-Quota-Limit"] == str(free)

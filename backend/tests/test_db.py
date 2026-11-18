@@ -119,7 +119,8 @@ def test_me_end_to_end_creates_profile(uid):
     assert resp.status_code == 200
     body = resp.json()
     assert body["userId"] == uid and body["locale"] == "en" and body["plan"] == "free"
-    assert body["quota"] == {"limit": 10, "used": 0, "remaining": 10, "resetsAt": "2026-11-10T00:00:00+07:00"}
+    free = Settings().FREE_DAILY_QUOTA                                    # D-314 default, never hard-coded
+    assert body["quota"] == {"limit": free, "used": 0, "remaining": free, "resetsAt": "2026-11-10T00:00:00+07:00"}
     assert run(with_conn(lambda c: c.fetchval("select locale from profiles where id = $1::uuid", uid))) == "en"
 
 
