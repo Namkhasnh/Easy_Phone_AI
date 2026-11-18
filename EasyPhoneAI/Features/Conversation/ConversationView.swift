@@ -47,6 +47,9 @@ struct ConversationView: View {
         .onChange(of: viewModel.calendarDay) { _, day in
             if let day { router.replaceLast(with: .calendarDay(day)) } // D-294: S11 for that day
         }
+        .onChange(of: viewModel.opensReminders) { _, opens in
+            if opens { router.replaceLast(with: .reminders) }           // D-313: S12
+        }
         .onChange(of: viewModel.opensMail) { _, opens in
             if opens { router.replaceLast(with: .mail(codesOnly: viewModel.mailCodesOnly)) }   // D-304: S21
         }

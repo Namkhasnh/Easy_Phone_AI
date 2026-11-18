@@ -81,6 +81,8 @@ import OSLog
     private(set) var opensMail = false
     /// With `opensMail`: the user asked for a code → S21 shows codes only.
     private(set) var mailCodesOnly = false
+    /// D-313: "xem lời nhắc" → S12, understood on the phone.
+    private(set) var opensReminders = false
     /// S21 "Trả lời" (2.6b): this conversation writes a reply to that message.
     let reply: MailReplyContext?
     /// S18 before the mic starts: microphone, then speech (D-185). The recording waits for the answer.
@@ -500,9 +502,9 @@ import OSLog
         autosave()
         guard let draft = currentDraft else { return }
         guard draft.steps.isEmpty else { advance(draft); return }       // already parsed: never charge twice
-        if reply == nil, LocalIntent.isCheckMail(trimmed) {              // on device: no `/v1/parse`, no unit
-            mailCodesOnly = LocalIntent.wantsCode(trimmed)
-            opensMail = true
+        if reply == nil, let intent = LocalIntent.match(trimmed, now: now(),
+                                                         timeZone: TimeZone(identifier: draft.timeZoneId) ?? .current) {
+            await runLocal(intent, draft: draft)                          // D-313: on device, no `/v1/parse`, no unit
             return
         }
         await runParse(text: replyRequest(trimmed), inputMode: draft.inputMode, context: .none, draft: draft,
@@ -524,6 +526,35 @@ import OSLog
         }
         let clean = String(String.UnicodeScalarView(kept)).split(separator: " ").joined(separator: " ")
         return String(clean.prefix(40))
+    }
+
+    /// D-313: the same result a `/v1/parse` answer would give, built on the phone. Call / directions become a normal
+    /// step (contacts / saved place resolved on device, follow-up or S04 as usual).
+    private func runLocal(_ intent: LocalIntent, draft: TaskDraft) async {
+        Self.logger.info("local intent")                                  // D-059: no content
+        switch intent {
+        case .checkMail(let codesOnly):
+            mailCodesOnly = codesOnly
+            opensMail = true
+        case .calendarDay(let day):
+            calendarDay = day
+        case .reminders:
+            opensReminders = true
+        case .call(let name):
+            await handle(Self.localDraft("call", "open", [("recipientName", name), ("callType", "phone")]),
+                         isAnswer: false, draft: draft, returnMode: .transcript)
+        case .directions(let label):
+            await handle(Self.localDraft("place", "open", [("query", label)]),
+                         isAnswer: false, draft: draft, returnMode: .transcript)
+        }
+    }
+
+    static func localDraft(_ kind: String, _ operation: String, _ fields: [(String, String)]) -> ParsedDraft {
+        ParsedDraft(schemaVersion: 1, requestId: nil,
+                    steps: [ParsedStep(kind: kind, operation: operation,
+                                       fields: fields.map { ParsedField(id: $0.0, value: $0.1, confidence: 1, sourceQuote: nil) },
+                                       dateCandidates: [])],
+                    followUpQuestion: nil, unsupported: nil)
     }
 
     /// "Trả lời thư của {name}" above the conversation.
