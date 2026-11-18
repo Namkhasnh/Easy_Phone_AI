@@ -80,6 +80,16 @@ def test_temperature_sent_only_when_set():
     assert fake.calls[0]["temperature"] == 0.2
 
 
+def test_reasoning_effort_per_prompt_name():  # owner 2026-11-18: speed
+    assert Settings().LLM_REASONING_EFFORT == {"parse": "none", "summarize": "none"}
+    fake = FakeCompletions(resp('{"ok": true}'))
+    run(fake, settings=Settings(LLM_REASONING_EFFORT={CALL.prompt_name: "low"}))
+    assert fake.calls[0]["reasoning_effort"] == "low"
+    other = FakeCompletions(resp('{"ok": true}'))
+    run(other, settings=Settings(LLM_REASONING_EFFORT={"somethingElse": "none"}))
+    assert "reasoning_effort" not in other.calls[0]                       # not listed → model default
+
+
 def test_timeout_is_min_of_12s_and_remaining():
     clock = Clock()
     budget = Deadline(18, clock)

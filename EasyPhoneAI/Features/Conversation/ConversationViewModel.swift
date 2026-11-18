@@ -53,7 +53,8 @@ import OSLog
     static let locale = Locale(identifier: "vi-VN")
     static let hintKeys = ["conv.listening.hint.1", "conv.listening.hint.2", "conv.listening.hint.3"]
     /// UI_SCREENS S03 (DOC-29): silence after the last recognized words → stop by itself, like Siri. "Dừng" stays visible (AC1).
-    static let silenceAfterSpeech: Duration = .seconds(2)
+    // Owner 2026-11-18 (speed): 2 s → 1.5 s; DOC-29 gave 2 s. TODO(decision): record in UI_SCREENS S03.
+    static let silenceAfterSpeech: Duration = .milliseconds(1500)
     /// Nothing recognized at all → stop and show `conv.speech.empty`.
     static let noSpeechTimeout: Duration = .seconds(8)
 

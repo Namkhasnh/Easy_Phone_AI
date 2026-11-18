@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     PROMPT_VERSION_REPAIR: int = 1
     PROMPT_VERSION_OCR: int = 1  # 1D.4 `/v1/ocr`
     LLM_TEMPERATURE: float | None = None  # AI_PROMPTS §0.2: sent only when set (some models reject it)
+    # `reasoning_effort` per prompt name; a prompt not listed sends none (model default). Measured 2026-11-18 on
+    # gpt-6-luna: parse 3.2–5.8 s at the default vs ≈ 2.1 s with "none", same fields on everyday requests.
+    # The model accepts none / low / medium / high (not "minimal").
+    LLM_REASONING_EFFORT: dict[str, str] = {"parse": "none", "summarize": "none"}
     # USD per 1M tokens [input, output], for `usage_events.cost_usd` + the spend cap (D-087).
     # Values = OpenAI list prices read 2026-11-10 at D-052 (developers.openai.com/api/docs/pricing); cached input
     # is not modelled, so the recorded cost can only be a little high (spend cap trips early, never late).

@@ -199,6 +199,9 @@ class LLMClient:
         }
         if self._settings.LLM_TEMPERATURE is not None:
             kwargs["temperature"] = self._settings.LLM_TEMPERATURE
+        effort = self._settings.LLM_REASONING_EFFORT.get(call.prompt_name)
+        if effort:
+            kwargs["reasoning_effort"] = effort  # speed (owner 2026-11-18); the repair call uses the same value
         started = time.monotonic()
         try:
             resp = await self._completions.create(**kwargs)

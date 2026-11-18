@@ -31,7 +31,7 @@ enum VoiceReply: Equatable, Sendable {
 /// One short listening turn for S04 (D-312): ends 2 s after the last words or after `noSpeech` without any word.
 @MainActor enum ListenOnce {
     static func listen(_ speech: any SpeechService, locale: Locale = Locale(identifier: "vi-VN"),
-                       noSpeech: Duration = .seconds(8), silence: Duration = .seconds(2)) async -> String {
+                       noSpeech: Duration = .seconds(8), silence: Duration = .milliseconds(1500)) async -> String {
         var heard = ""
         var timer: Task<Void, Never>?
         func arm(_ delay: Duration) {
