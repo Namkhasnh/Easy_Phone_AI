@@ -2809,6 +2809,150 @@
         }
       }
     },
+    "paywall.col.free": {
+      "comment": "S16 comparison table (D-314; TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Miễn phí"
+          }
+        }
+      }
+    },
+    "paywall.col.premium": {
+      "comment": "S16 comparison table (D-314; TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Premium"
+          }
+        }
+      }
+    },
+    "paywall.row.device": {
+      "comment": "S16 comparison table (D-314; TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gọi điện, xem lịch, chỉ đường, lời nhắc, mã xác nhận"
+          }
+        }
+      }
+    },
+    "paywall.row.ai": {
+      "comment": "S16 comparison table (D-314; TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lượt AI (đặt lịch, nhắn tin, soạn thư…)"
+          }
+        }
+      }
+    },
+    "paywall.row.gmail": {
+      "comment": "S16 comparison table (D-314; TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tóm tắt và soạn thư Gmail"
+          }
+        }
+      }
+    },
+    "paywall.row.voice": {
+      "comment": "S16 comparison table (D-314; TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nói chuyện rảnh tay, Siri, widget"
+          }
+        }
+      }
+    },
+    "paywall.row.ads": {
+      "comment": "S16 comparison table (D-314; TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quảng cáo"
+          }
+        }
+      }
+    },
+    "paywall.cell.unlimited": {
+      "comment": "S16 comparison table (D-314; TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không giới hạn"
+          }
+        }
+      }
+    },
+    "paywall.cell.perDay": {
+      "comment": "S16 comparison table (D-314; TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ lượt/ngày"
+          }
+        }
+      }
+    },
+    "paywall.cell.yes": {
+      "comment": "S16 comparison table (D-314; TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Có"
+          }
+        }
+      }
+    },
+    "paywall.cell.none": {
+      "comment": "S16 comparison table (D-314; TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không có"
+          }
+        }
+      }
+    },
+    "paywall.allFree": {
+      "comment": "S16 comparison table (D-314; TODO(spec): not in UI_SCREENS)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mọi tính năng đều có trong bản miễn phí. Premium chỉ thêm lượt AI cho người dùng nhiều."
+          }
+        }
+      }
+    },
     "paywall.context.quota": {
       "comment": "UI_SCREENS S16 (D-089)",
       "extractionState": "manual",

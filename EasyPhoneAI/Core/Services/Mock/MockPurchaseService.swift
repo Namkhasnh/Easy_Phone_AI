@@ -4,8 +4,8 @@ import Synchronization
 /// In-memory `PurchaseService` for previews and tests (D-206). Prices are "Dữ liệu mẫu" (D-189).
 final class MockPurchaseService: PurchaseService {
     static let sample = [
-        ProductInfo(id: PremiumProducts.monthly, displayName: "Premium theo tháng", displayPrice: "49.000 ₫", period: .month),
-        ProductInfo(id: PremiumProducts.yearly, displayName: "Premium theo năm", displayPrice: "490.000 ₫", period: .year),
+        ProductInfo(id: PremiumProducts.monthly, displayName: "Premium theo tháng", displayPrice: "19.000 ₫", period: .month),
+        ProductInfo(id: PremiumProducts.yearly, displayName: "Premium theo năm", displayPrice: "190.000 ₫", period: .year),
     ]
 
     private struct State {

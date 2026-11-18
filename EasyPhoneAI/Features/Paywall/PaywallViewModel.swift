@@ -57,9 +57,32 @@ import Observation
         return UserMessage(key: "paywall.context.quota", args: ["\(context.limit)", time])
     }
 
-    /// D-232 fair-use limit, shown only as a benefit line.
-    // TODO(spec): the app has no endpoint for PREMIUM_DAILY_QUOTA; the D-232 default (200) is shown.
-    static let premiumLimit = 200
+    /// D-314 daily AI limits, shown in the comparison table (display only; the backend enforces them, D-085).
+    // TODO(spec): no endpoint returns both limits; the D-314 values are mirrored here and must change with the backend.
+    static let freeLimit = 30
+    static let premiumLimit = 300
+
+    /// One row of the Free / Premium table (D-314): every feature is free; Premium only raises the AI limit.
+    struct Row: Hashable, Identifiable {
+        let key: String
+        let free: String
+        let premium: String
+        var id: String { key }
+    }
+
+    static var comparison: [Row] {
+        let unlimited = UserMessage(key: "paywall.cell.unlimited").text
+        let yes = UserMessage(key: "paywall.cell.yes").text
+        let perDay = { (n: Int) in UserMessage(key: "paywall.cell.perDay", args: ["\(n)"]).text }
+        return [
+            Row(key: "paywall.row.device", free: unlimited, premium: unlimited),
+            Row(key: "paywall.row.ai", free: perDay(freeLimit), premium: perDay(premiumLimit)),
+            Row(key: "paywall.row.gmail", free: yes, premium: yes),
+            Row(key: "paywall.row.voice", free: yes, premium: yes),
+            Row(key: "paywall.row.ads", free: UserMessage(key: "paywall.cell.none").text,
+                premium: UserMessage(key: "paywall.cell.none").text),
+        ]
+    }
 
     /// "Đăng ký": StoreKit → `/v1/billing/verify` → plan. Cancelling is not an error.
     func subscribe() async {

@@ -20,7 +20,7 @@ struct PaywallView: View {
                     if let context = viewModel.contextMessage {
                         Banner(message: context, style: .warning)
                     }
-                    benefits
+                    comparisonTable
                     plans
                     Text("paywall.renewal")
                         .font(Tokens.Fonts.caption)
@@ -60,21 +60,56 @@ struct PaywallView: View {
         .accessibilityIdentifier("screen.S16")
     }
 
-    private var benefits: some View {
-        VStack(alignment: .leading, spacing: Tokens.Space.m) {
-            benefit(Text(verbatim: UserMessage(key: "paywall.benefit.quota", args: ["\(PaywallViewModel.premiumLimit)"]).text))
-            benefit(Text("paywall.benefit.all"))
-            benefit(Text("paywall.benefit.same"))
+    /// D-314: Free / Premium side by side. Stacks into one card per row at accessibility text sizes.
+    // TODO(spec): the table is not in UI_SCREENS S16 (owner 2026-11-18); it replaces the 3 benefit lines.
+    private var comparisonTable: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text(verbatim: "").frame(maxWidth: .infinity, alignment: .leading)
+                header("paywall.col.free")
+                header("paywall.col.premium")
+            }
+            .padding(.bottom, Tokens.Space.s)
+            ForEach(PaywallViewModel.comparison) { row in
+                Divider()
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(LocalizedStringKey(row.key)).frame(maxWidth: .infinity, alignment: .leading)
+                        cell(row.free)
+                        cell(row.premium, strong: true)
+                    }
+                    VStack(alignment: .leading, spacing: Tokens.Space.xs) {
+                        Text(LocalizedStringKey(row.key)).font(Tokens.Fonts.body.weight(.semibold))
+                        Text(verbatim: "\(UserMessage(key: "paywall.col.free").text): \(row.free)")
+                        Text(verbatim: "\(UserMessage(key: "paywall.col.premium").text): \(row.premium)")
+                    }
+                }
+                .font(Tokens.Fonts.body)
+                .foregroundStyle(Tokens.Colors.textPrimary)
+                .padding(.vertical, Tokens.Space.s)
+                .accessibilityElement(children: .combine)
+            }
+            Text("paywall.allFree")
+                .font(Tokens.Fonts.caption)
+                .foregroundStyle(Tokens.Colors.textSecondary)
+                .padding(.top, Tokens.Space.s)
         }
+        .padding(Tokens.Space.l)
+        .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: 16))
     }
 
-    private func benefit(_ text: Text) -> some View {
-        Label {
-            text.font(Tokens.Fonts.body).foregroundStyle(Tokens.Colors.textPrimary)
-                .fixedSize(horizontal: false, vertical: true)
-        } icon: {
-            Image(systemName: "checkmark.circle.fill").foregroundStyle(Tokens.Colors.success)
-        }
+    private func header(_ key: LocalizedStringKey) -> some View {
+        Text(key)
+            .font(Tokens.Fonts.label)
+            .foregroundStyle(Tokens.Colors.textSecondary)
+            .frame(width: 96, alignment: .center)
+    }
+
+    private func cell(_ text: String, strong: Bool = false) -> some View {
+        Text(verbatim: text)
+            .font(strong ? Tokens.Fonts.body.weight(.semibold) : Tokens.Fonts.body)
+            .multilineTextAlignment(.center)
+            .frame(width: 96)
     }
 
     @ViewBuilder private var plans: some View {

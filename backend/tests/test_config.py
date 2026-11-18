@@ -5,7 +5,7 @@ from app.config import Settings
 
 def test_defaults(monkeypatch):
     s = Settings(_env_file=None)
-    assert (s.FREE_DAILY_QUOTA, s.PREMIUM_DAILY_QUOTA) == (10, 200)
+    assert (s.FREE_DAILY_QUOTA, s.PREMIUM_DAILY_QUOTA) == (30, 300)  # D-314
     assert (s.REQUEST_BUDGET_SECONDS, s.LLM_TIMEOUT_SECONDS) == (18, 12)
     assert s.MONTHLY_SPEND_CAP_USD == 5
     assert s.TRANSCRIBE_PER_HOUR == 30

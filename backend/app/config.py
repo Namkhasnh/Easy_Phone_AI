@@ -50,8 +50,8 @@ class Settings(BaseSettings):
     UNKNOWN_MODEL_PRICE_USD_PER_1M: list[float] = [10.0, 40.0]
 
     # Quota (D-091, D-232, D-224) and units (API_CONTRACT §4.1)
-    FREE_DAILY_QUOTA: int = 10
-    PREMIUM_DAILY_QUOTA: int = 200
+    FREE_DAILY_QUOTA: int = 30  # D-314 (was 10, D-091)
+    PREMIUM_DAILY_QUOTA: int = 300  # D-314 (was 200, D-232)
     QUOTA_DAY_TZ: str = "Asia/Ho_Chi_Minh"
     UNITS_PARSE: int = 1
     UNITS_EXTRACT: int = 1

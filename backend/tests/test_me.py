@@ -55,7 +55,9 @@ async def fake_db():
 
 def make_client(user_id: str = UID, **settings) -> TestClient:
     app = create_app()
-    app.dependency_overrides[get_settings] = lambda: Settings(**settings)
+    # The contract fixtures use the API_CONTRACT example numbers (10 free / 200 premium), not the D-314 defaults.
+    values = {"FREE_DAILY_QUOTA": 10, "PREMIUM_DAILY_QUOTA": 200, **settings}
+    app.dependency_overrides[get_settings] = lambda: Settings(**values)
     app.dependency_overrides[deps.current_user] = lambda: CurrentUser(id=user_id)
     app.dependency_overrides[deps.db] = fake_db
     app.dependency_overrides[deps.clock] = lambda: NOW

@@ -21,8 +21,8 @@ struct PaywallTests {
         let vm = model()
         await vm.load()
         #expect(vm.phase == .ready && vm.products.map(\.id) == PremiumProducts.all)
-        #expect(PaywallViewModel.planTitle(vm.products[0]) == "Gói tháng — 49.000 ₫/tháng")
-        #expect(PaywallViewModel.planTitle(vm.products[1]) == "Gói năm — 490.000 ₫/năm")
+        #expect(PaywallViewModel.planTitle(vm.products[0]) == "Gói tháng — 19.000 ₫/tháng")
+        #expect(PaywallViewModel.planTitle(vm.products[1]) == "Gói năm — 190.000 ₫/năm")
 
         let empty = model(MockPurchaseService(products: .failure(.framework(code: PurchaseErrorCode.productsUnavailable))))
         await empty.load()
@@ -89,5 +89,18 @@ struct PaywallTests {
             #expect(UserMessage(key: key).text != key, "missing \(key)")
         }
         #expect(!UserMessage(key: "paywall.benefit.all").text.contains("ảnh"))       // photo reading is paused (D-302)
+    }
+
+    @Test func comparisonTableShowsEverythingFreeAndOnlyMoreAIInPremium() {             // D-314
+        let rows = PaywallViewModel.comparison
+        #expect(rows.count == 5)
+        let ai = rows.first { $0.key == "paywall.row.ai" }
+        #expect(ai?.free == "30 lượt/ngày" && ai?.premium == "300 lượt/ngày")
+        for row in rows where row.key != "paywall.row.ai" {
+            #expect(row.free == row.premium, "\(row.key) must be the same in both plans")
+        }
+        for key in rows.map(\.key) + ["paywall.col.free", "paywall.col.premium", "paywall.allFree"] {
+            #expect(UserMessage(key: key).text != key, "missing \(key)")
+        }
     }
 }
