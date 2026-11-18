@@ -7,6 +7,8 @@ struct SettingsView: View {
     @Environment(Router.self) private var router
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.appEnv) private var env
+    @State private var showsPaywall = false
 
     var body: some View {
         @Bindable var settings = viewModel.settings
@@ -156,6 +158,10 @@ struct SettingsView: View {
             await viewModel.loadContactNames()
             await viewModel.loadGmail()
         }
+        .sheet(isPresented: $showsPaywall) {
+            PaywallView(viewModel: PaywallViewModel(purchases: env.purchases, api: env.api, userId: signedInUser,
+                                                    onPlan: { appState.apply(me: $0) }))
+        }
         .accessibilityIdentifier("screen.S15")
     }
 
@@ -234,12 +240,19 @@ struct SettingsView: View {
         }
     }
 
+    private var signedInUser: UUID? {
+        if case .signedIn(let id) = appState.session { id } else { nil }
+    }
+
     @ViewBuilder private var accountSection: some View {
         Section(header: header("settings.account")) {
             if let plan = appState.entitlement?.plan {
                 rowText(plan == .premium ? "settings.plan.premium" : "settings.plan.free")
             }
-            // TODO(spec): quota row + reset time + "Nâng cấp Premium" / "Quản lý gói" come with 1F.6–1F.8.
+            if appState.entitlement?.plan != .premium {
+                actionRow("settings.upgrade", danger: false) { showsPaywall = true }      // → S16 (1F.6)
+            }
+            // TODO(spec): quota row + reset time (1F.8); "Quản lý gói" needs StoreKit's sheet (D-015) → later.
         }
     }
 

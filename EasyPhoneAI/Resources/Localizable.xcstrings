@@ -1033,6 +1033,30 @@
         }
       }
     },
+    "error.billing_invalid": {
+      "comment": "API_CONTRACT §3.2 (UI_SCREENS §8)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không xác minh được giao dịch."
+          }
+        }
+      }
+    },
+    "error.billing_account_mismatch": {
+      "comment": "API_CONTRACT §3.2 (UI_SCREENS §8)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giao dịch thuộc tài khoản khác."
+          }
+        }
+      }
+    },
     "error.approval.mismatch": {
       "comment": "UI_SCREENS §8",
       "extractionState": "manual",
@@ -2761,6 +2785,186 @@
         }
       }
     },
+    "paywall.title": {
+      "comment": "UI_SCREENS S16 (D-089)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EasyPhoneK Premium"
+          }
+        }
+      }
+    },
+    "paywall.subtitle": {
+      "comment": "UI_SCREENS S16 (D-089)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dùng trợ lý AI thoải mái hơn mỗi ngày"
+          }
+        }
+      }
+    },
+    "paywall.context.quota": {
+      "comment": "UI_SCREENS S16 (D-089)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn đã dùng hết %@ lượt miễn phí hôm nay. Lượt mới có lúc %@."
+          }
+        }
+      }
+    },
+    "paywall.benefit.quota": {
+      "comment": "UI_SCREENS S16 (D-089)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tới %@ lượt AI mỗi ngày"
+          }
+        }
+      }
+    },
+    "paywall.benefit.all": {
+      "comment": "S16; TODO(spec): UI_SCREENS text mentions photo reading, paused (D-302) — DOC-48",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dùng giọng nói, soạn tin và xem thư Gmail không lo hết lượt sớm"
+          }
+        }
+      }
+    },
+    "paywall.benefit.same": {
+      "comment": "UI_SCREENS S16 (D-089)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dữ liệu của bạn vẫn được bảo vệ như gói miễn phí"
+          }
+        }
+      }
+    },
+    "paywall.plan.monthly": {
+      "comment": "UI_SCREENS S16 (D-089)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gói tháng — %@/tháng"
+          }
+        }
+      }
+    },
+    "paywall.plan.yearly": {
+      "comment": "UI_SCREENS S16 (D-089)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gói năm — %@/năm"
+          }
+        }
+      }
+    },
+    "paywall.renewal": {
+      "comment": "UI_SCREENS S16 (D-089)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tự động gia hạn. Bạn có thể hủy bất cứ lúc nào trong Cài đặt iPhone, chậm nhất 24 giờ trước khi hết kỳ."
+          }
+        }
+      }
+    },
+    "paywall.subscribe": {
+      "comment": "UI_SCREENS S16 (D-089)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đăng ký"
+          }
+        }
+      }
+    },
+    "paywall.restore": {
+      "comment": "UI_SCREENS S16 (D-089)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Khôi phục giao dịch"
+          }
+        }
+      }
+    },
+    "paywall.restore.none": {
+      "comment": "UI_SCREENS S16 (D-089)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không tìm thấy giao dịch nào để khôi phục."
+          }
+        }
+      }
+    },
+    "paywall.pending": {
+      "comment": "UI_SCREENS S16 (D-089)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giao dịch đang chờ duyệt. Mình sẽ cập nhật khi được duyệt."
+          }
+        }
+      }
+    },
+    "paywall.success": {
+      "comment": "UI_SCREENS S16 (D-089)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bạn đã là thành viên Premium. Cảm ơn bạn!"
+          }
+        }
+      }
+    },
+    "paywall.productsUnavailable": {
+      "comment": "UI_SCREENS S16 (D-089)",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chưa tải được các gói. Bạn thử lại sau nhé."
+          }
+        }
+      }
+    },
     "perm.%@.feature": {},
     "perm.allow": {
       "comment": "UI_SCREENS S18",
@@ -3682,6 +3886,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bạn đã yêu cầu: “%@”"
+          }
+        }
+      }
+    },
+    "settings.upgrade": {
+      "comment": "UI_SCREENS S15",
+      "extractionState": "manual",
+      "localizations": {
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nâng cấp Premium"
           }
         }
       }

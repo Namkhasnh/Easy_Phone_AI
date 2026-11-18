@@ -5,15 +5,21 @@ import Foundation
 /// account); network error, `400`, `5xx` → leave unfinished so StoreKit delivers it again on the next launch.
 @MainActor enum BillingSync {
     static func verify(_ jws: String, api: any APIClientProtocol, purchases: any PurchaseService) async -> MeResponse? {
+        try? await verifyResult(jws, api: api, purchases: purchases).get()
+    }
+
+    /// Same rules; the error is kept for the paywall's message.
+    static func verifyResult(_ jws: String, api: any APIClientProtocol,
+                             purchases: any PurchaseService) async -> Result<MeResponse, AppError> {
         do {
             let me = try await api.verifyTransaction(jws: jws)
             await purchases.finish(jws: jws)
-            return me
+            return .success(me)
         } catch let error as AppError {
             if error.code == "billing_account_mismatch" { await purchases.finish(jws: jws) }
-            return nil
+            return .failure(error)
         } catch {
-            return nil
+            return .failure(.decoding(requestId: nil))
         }
     }
 }
