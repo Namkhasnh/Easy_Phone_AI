@@ -32,15 +32,23 @@ EVALS = Path(__file__).parents[2] / "evals"
 BASE = Settings()
 TAG = f"-{os.environ['LIVE_TAG']}" if os.environ.get("LIVE_TAG") else ""
 MODELS = [m.strip() for m in os.environ.get("LIVE_MODELS", BASE.MODEL_PARSE).split(",") if m.strip()]
+# Speed / accuracy experiments (D-320): only cases whose name starts with one of LIVE_ONLY; another reasoning effort.
+ONLY = [c.strip() for c in os.environ.get("LIVE_ONLY", "").split(",") if c.strip()]
+REASONING = os.environ.get("LIVE_REASONING")
 
 
 async def _run_model(model: str) -> ModelRun:
-    settings = BASE.model_copy(update={"MODEL_PARSE": model})
+    update: dict = {"MODEL_PARSE": model}
+    if REASONING:
+        update["LLM_REASONING_EFFORT"] = {**BASE.LLM_REASONING_EFFORT, "parse": REASONING}
+    settings = BASE.model_copy(update=update)
     client = make_openai(settings)
     llm = LLMClient(settings, client.chat.completions)
     results: list[CaseResult] = []
     for path in sorted(GOLDEN.glob("parse.*.json")):
         g = json.loads(path.read_text("utf-8"))
+        if ONLY and not any(g["case"].startswith(prefix) for prefix in ONLY):
+            continue
         req = ParseRequest.model_validate(g["request"])
         meter = CostMeter()
         started = time.monotonic()
