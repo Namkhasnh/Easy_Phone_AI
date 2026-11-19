@@ -169,7 +169,9 @@ extension FieldCatalog {
             RequiredRule(operation: .create, fields: ["query", "name", "address", "coordinate", "label"], conditional: [
                 ConditionalRequirement(when: [.equals(field: "label", value: "custom")], fields: ["customLabel"]),
             ]),
-            RequiredRule(operation: .open, fields: ["query", "name", "address", "coordinate", "mapsApp"]),
+            // D-321: directions may go to a text destination (Google Maps searches it); address / coordinate only
+            // when a saved place or MapKit gave one.
+            RequiredRule(operation: .open, fields: ["query", "name", "mapsApp"]),
         ]),
         KindCatalog(kind: .ocr, fields: [
             FieldSpec(id: "extractedText", type: .longText),

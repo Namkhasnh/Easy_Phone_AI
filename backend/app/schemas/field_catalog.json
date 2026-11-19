@@ -431,8 +431,6 @@
           "fields": [
             "query",
             "name",
-            "address",
-            "coordinate",
             "mapsApp"
           ],
           "conditional": []

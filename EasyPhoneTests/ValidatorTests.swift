@@ -64,7 +64,7 @@ struct ValidatorTests {
         Row(kind: .place, op: .open,
             valid: ["query": "chợ", "name": "Chợ Bến Thành", "address": "Lê Lợi, Q1", "coordinate": "10.772,106.698",
                     "mapsApp": "appleMaps"],
-            requiredInOrder: ["query", "name", "address", "coordinate", "mapsApp"], targetRef: false),
+            requiredInOrder: ["query", "name", "mapsApp"], targetRef: false),
         Row(kind: .ocr, op: .create, valid: ["extractedText": "Hẹn khám 14:00"],
             requiredInOrder: ["extractedText"], targetRef: false),
         Row(kind: .emailReply, op: .create,

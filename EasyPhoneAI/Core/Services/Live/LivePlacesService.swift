@@ -36,6 +36,15 @@ final class LivePlacesService: PlacesService {
         }
     }
 
+    func openDirections(toQuery query: String, app: MapsApp) async throws {
+        if app == .googleMaps, let url = MapsURL.google(query: query), await system.canOpen(url), await system.open(url) {
+            return
+        }
+        guard let url = MapsURL.apple(query: query), await system.open(url) else {
+            throw ServiceError.framework(code: "maps.cannotOpen")
+        }
+    }
+
     static func result(_ item: MKMapItem) -> PlaceResult? {
         let coordinate = item.placemark.coordinate
         guard CLLocationCoordinate2DIsValid(coordinate) else { return nil }

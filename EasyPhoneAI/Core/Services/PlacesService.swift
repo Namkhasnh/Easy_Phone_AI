@@ -42,6 +42,8 @@ protocol PlacesService: Sendable {
     func search(_ query: String, near: Coordinate?) async throws -> [PlaceResult]
     /// Throws `ServiceError.framework("maps.cannotOpen")` when no maps app can be opened.
     func openDirections(to place: PlaceResult, app: MapsApp) async throws
+    /// D-321: directions to what the user said ("sân bóng Học viện Kỹ thuật Mật mã"); the maps app searches it.
+    func openDirections(toQuery query: String, app: MapsApp) async throws
 }
 
 enum MapsURL {
@@ -50,6 +52,19 @@ enum MapsURL {
         var c = URLComponents(string: "https://maps.apple.com/")
         c?.queryItems = [URLQueryItem(name: "daddr", value: place.coordinate.encoded),
                          URLQueryItem(name: "q", value: place.name)]
+        return c?.url
+    }
+
+    /// D-321: a text destination, searched by the maps app itself.
+    static func apple(query: String) -> URL? {
+        var c = URLComponents(string: "https://maps.apple.com/")
+        c?.queryItems = [URLQueryItem(name: "daddr", value: query)]
+        return c?.url
+    }
+
+    static func google(query: String) -> URL? {
+        var c = URLComponents(string: "comgooglemaps://")
+        c?.queryItems = [URLQueryItem(name: "daddr", value: query), URLQueryItem(name: "directionsmode", value: "driving")]
         return c?.url
     }
 

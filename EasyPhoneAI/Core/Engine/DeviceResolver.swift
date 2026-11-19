@@ -191,9 +191,20 @@ struct DeviceResolution: Sendable, Hashable {
             return r
         }
         r.origin = "maps"
-        guard let places, let found = try? await places.search(query, near: nil) else { return r }
+        // D-321 (owner 2026-11-19): Apple's map data misses many Vietnamese places ("sân bóng Học viện Kỹ thuật Mật
+        // mã" → 0 results → the app kept asking for an address). Directions with Google Maps (the default) go to
+        // the words as said; Google Maps finds the place and the user sees it there before starting.
+        let textDestination = step.operation == .open
+        if textDestination, step.field("mapsApp")?.value == MapsApp.googleMaps.rawValue {
+            r.values = ["name": query]
+            return r
+        }
+        guard let places else { return r }
+        let found = (try? await places.search(query, near: nil)) ?? []
         switch found.count {
-        case 0: break    // TODO(spec): no place found has no S04 text; the destination rows stay "Chưa có".
+        case 0:
+            if textDestination { r.values = ["name": query] }   // Apple Maps searches the words itself
+            // TODO(spec): saving a place that MapKit cannot find has no S04 text; the rows stay "Chưa có".
         case 1: r.values = Self.placeValues(name: found[0].name, address: found[0].address, coordinate: found[0].coordinate)
         default:
             r.ambiguities["coordinate"] = Ambiguity(

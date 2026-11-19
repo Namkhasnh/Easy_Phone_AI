@@ -56,14 +56,14 @@ struct PlacesScreenTests {
 
     // MARK: - DeviceResolver for place steps
 
-    func resolveDraft(_ query: String, places: MockPlacesService) async -> TaskDraft {
+    func resolveDraft(_ query: String, places: MockPlacesService, mapsApp: String = "appleMaps") async -> TaskDraft {
         let e = TaskEngine(repository: repo,
                            resolver: DeviceResolver(contacts: MockContactsService(), calendar: MockCalendarService(),
                                                     permissions: MockPermissionManager(), places: places,
                                                     savedPlaces: { local.savedPlaces() }),
                            now: { Self.now })
         let fields = FieldCatalog.mvp.fields(.place, .open).map {
-            Field(id: $0.id, type: $0.type, value: ["query": query, "mapsApp": "appleMaps"][$0.id], source: .ai, deviceOnly: $0.deviceOnly)
+            Field(id: $0.id, type: $0.type, value: ["query": query, "mapsApp": mapsApp][$0.id], source: .ai, deviceOnly: $0.deviceOnly)
         }
         let d = TaskDraft(inputMode: .voice, originalInput: "x", steps: [TaskStep(order: 0, kind: .place, operation: .open, fields: fields)])
         repo.save(d)
@@ -102,5 +102,36 @@ struct PlacesScreenTests {
         #expect(vm.step?.field("name")?.value == "Bến Thành Market Café")
         #expect(vm.step?.field("address")?.value == "Phan Bội Châu, Quận 1")
         #expect(vm.blocker == nil)
+    }
+
+    // MARK: - D-321 text destination (owner 2026-11-19)
+
+    static let kma = "sân bóng học viện kĩ thuật mật mã"
+
+    @Test func googleMapsGetsTheWordsAsSaidWithoutAskingAnAddress() async throws {
+        let places = MockPlacesService([Self.benThanh])
+        let d = await resolveDraft(Self.kma, places: places, mapsApp: "googleMaps")
+        let step = d.steps[0]
+        #expect(places.searchCount == 0)                                        // Apple's map data is not asked
+        #expect(step.field("name")?.value == Self.kma && step.field("coordinate")?.value == nil)
+        #expect(step.state == .awaitingApproval)                                // no follow-up about the address
+        let outcome = await PlaceExecutor(places: places, localData: local).execute(step, draft: d)
+        guard case .handedOff = outcome else { Issue.record("\(outcome)"); return }
+        #expect(places.openedQueries.map(\.query) == [Self.kma] && places.openedQueries.first?.app == .googleMaps)
+        #expect(places.opened.isEmpty)
+    }
+
+    @Test func appleMapsWithNoResultFallsBackToTheWords() async throws {
+        let places = MockPlacesService([])
+        let d = await resolveDraft(Self.kma, places: places)
+        #expect(places.searchCount == 1)
+        #expect(d.steps[0].field("name")?.value == Self.kma && d.steps[0].state == .awaitingApproval)
+        _ = await PlaceExecutor(places: places, localData: local).execute(d.steps[0], draft: d)
+        #expect(places.openedQueries.first?.app == .appleMaps)
+    }
+
+    @Test func savingAPlaceStillNeedsARealResult() {
+        #expect(FieldCatalog.mvp.rule(.place, .create)?.fields.contains("coordinate") == true)
+        #expect(FieldCatalog.mvp.rule(.place, .open)?.fields.contains("coordinate") == false)
     }
 }
