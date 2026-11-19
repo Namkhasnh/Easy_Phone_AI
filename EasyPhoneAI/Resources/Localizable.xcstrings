@@ -1249,6 +1249,54 @@
         }
       }
     },
+    "error.unauthorized" : {
+      "comment" : "UI_SCREENS §8 (found missing by the 1G.9 string scan)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phiên đăng nhập đã hết. Bạn đăng nhập lại nhé."
+          }
+        }
+      }
+    },
+    "error.rate_limited" : {
+      "comment" : "UI_SCREENS §8 (found missing by the 1G.9 string scan)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giọng nói tạm thời chưa dùng được. Bạn gõ chữ nhé."
+          }
+        }
+      }
+    },
+    "error.llm_invalid_output" : {
+      "comment" : "UI_SCREENS §8 (found missing by the 1G.9 string scan)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mình chưa hiểu yêu cầu. Bạn thử lại nhé."
+          }
+        }
+      }
+    },
+    "error.client_outdated" : {
+      "comment" : "UI_SCREENS §8 (found missing by the 1G.9 string scan)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cần cập nhật ứng dụng."
+          }
+        }
+      }
+    },
     "error.approval.mismatch" : {
       "comment" : "UI_SCREENS §8",
       "extractionState" : "manual",
