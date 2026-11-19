@@ -54,6 +54,24 @@ struct StringScanTests {
         #expect(!Self.swiftFiles("EasyPhoneAI").isEmpty)                         // the scan really read files
     }
 
+    /// `LocalizedStringKey("perm.\(x).feature")` builds the key `perm.%@.feature` (interpolation = format argument), so
+    /// the row shows the raw key. Build a `String` first (found on the owner's iPhone, 2026-11-19).
+    @Test func noInterpolatedLocalizedStringKey() {
+        let bad = try! NSRegularExpression(pattern: #"LocalizedStringKey\("[^"]*\\\("#)
+        var found: [String] = []
+        for folder in ["EasyPhoneAI", "Widgets"] {
+            for file in Self.swiftFiles(folder) {
+                guard let source = try? String(contentsOf: file, encoding: .utf8) else { continue }
+                for (index, line) in source.components(separatedBy: .newlines).enumerated()
+                where !line.trimmingCharacters(in: .whitespaces).hasPrefix("//")
+                    && bad.firstMatch(in: line, range: NSRange(line.startIndex..., in: line)) != nil {
+                    found.append("\(file.lastPathComponent):\(index + 1)")
+                }
+            }
+        }
+        #expect(found.isEmpty, "interpolated LocalizedStringKey: \(found)")
+    }
+
     @Test func everyBackendErrorCodeHasAText() throws {
         let appKeys = try Self.keys("EasyPhoneAI/Resources/Localizable.xcstrings")
         let source = try String(contentsOf: Self.repo.appending(path: "backend/app/schemas/error.py"), encoding: .utf8)

@@ -15,7 +15,7 @@ struct SettingsView: View {
     enum Page: String, CaseIterable, Hashable, Identifiable {
         case account, voice, display, memory, connections, advanced, data, about
         var id: String { rawValue }
-        var titleKey: LocalizedStringKey { LocalizedStringKey("settings.\(rawValue)") }
+        var titleKey: LocalizedStringKey { LocalizedStringKey("settings." + rawValue) }
         var symbol: String {
             switch self {
             case .account: "person.crop.circle.fill"
@@ -348,7 +348,7 @@ struct SettingsView: View {
                         .foregroundStyle(Tokens.Colors.primary)
                         .accessibilityHidden(true)
                     // TODO(spec): row label = `perm.<c>.feature` (DOC-37); S15 names no label per capability.
-                    rowText(LocalizedStringKey("perm.\(row.capability.rawValue).feature"))
+                    rowText(LocalizedStringKey("perm." + row.capability.rawValue + ".feature"))
                     Spacer(minLength: Tokens.Space.s)
                     Text(LocalizedStringKey(row.status.labelKey))
                         .font(Tokens.Fonts.body)

@@ -53,7 +53,7 @@ struct PermissionSheet: View {
                     PrimaryButton("common.openSettings", action: onOpenSettings)
                 }
                 if pending.variant == .denied, let onFallback {
-                    SecondaryButton(LocalizedStringKey("perm.\(key).fallback"), action: onFallback)
+                    SecondaryButton(LocalizedStringKey("perm." + key + ".fallback"), action: onFallback)
                 } else {
                     // TODO(spec): other screens have no fallback action yet; "Để sau" is used there.
                     SecondaryButton("common.later", action: onLater)
