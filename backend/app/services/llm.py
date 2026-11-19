@@ -197,6 +197,9 @@ class LLMClient:
             },
             "timeout": timeout,
             "store": False,  # D-059: no copy of user content kept on the OpenAI side
+            # D-319: the static prefix (system prompt + schema, ~3.4k tokens) is the same for every user; one fixed key
+            # per prompt version routes calls to the same cache, so the model re-reads less (no user data in the key).
+            "prompt_cache_key": f"{call.prompt_name}.v{call.prompt_version}",
         }
         if self._settings.LLM_TEMPERATURE is not None:
             kwargs["temperature"] = self._settings.LLM_TEMPERATURE
@@ -223,16 +226,17 @@ class LLMClient:
             out = _Output(out.raw, out.value, validate(out.value))  # type: ignore[arg-type]
         self._log(
             call, f"{phase}:{'ok' if not out.errors else 'invalid'}", started=started,
-            tokens=(tokens_in, tokens_out), n_errors=len(out.errors),
+            tokens=(tokens_in, tokens_out), n_errors=len(out.errors), cached=_cached(resp),
         )
         return out
 
     def _log(self, call: StructuredCall, result: str, *, started: float | None = None,
-             tokens: tuple[int, int] = (0, 0), n_errors: int = 0) -> None:
+             tokens: tuple[int, int] = (0, 0), n_errors: int = 0, cached: int = 0) -> None:
         latency_ms = int((time.monotonic() - started) * 1000) if started is not None else 0
         logger.info(
-            "llm prompt=%s.v%s model=%s result=%s errors=%s tokens_in=%s tokens_out=%s latency_ms=%s",
-            call.prompt_name, call.prompt_version, call.model, result, n_errors, tokens[0], tokens[1], latency_ms,
+            "llm prompt=%s.v%s model=%s result=%s errors=%s tokens_in=%s cached_in=%s tokens_out=%s latency_ms=%s",
+            call.prompt_name, call.prompt_version, call.model, result, n_errors, tokens[0], cached, tokens[1],
+            latency_ms,
         )
 
 
@@ -250,6 +254,12 @@ def _usage(resp: Any) -> tuple[int, int]:
     if usage is None:
         return 0, 0
     return int(getattr(usage, "prompt_tokens", 0) or 0), int(getattr(usage, "completion_tokens", 0) or 0)
+
+
+def _cached(resp: Any) -> int:
+    """Input tokens served from OpenAI's prompt cache (D-319); 0 when not reported."""
+    details = getattr(getattr(resp, "usage", None), "prompt_tokens_details", None)
+    return int(getattr(details, "cached_tokens", 0) or 0)
 
 
 def _read(resp: Any) -> _Output:
