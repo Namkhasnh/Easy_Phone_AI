@@ -4,6 +4,8 @@
 <dict>
 	<key>APIBaseURL</key>
 	<string>$(API_BASE_URL)</string>
+	<key>GmailClientID</key>
+	<string>$(GMAIL_CLIENT_ID)</string>
 	<key>SupabaseURL</key>
 	<string>$(SUPABASE_URL)</string>
 	<key>SupabaseAnonKey</key>
@@ -42,6 +44,23 @@
 			<array>
 				<string>vn.namkhanh.easyphone</string>
 			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>vn.namkhanh.easyphone.listen</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>easyphone</string>
+			</array>
+		</dict>
+	</array>
+	<key>INAlternativeAppNames</key>
+	<array>
+		<dict>
+			<key>INAlternativeAppName</key>
+			<string>Khoai</string>
+			<key>INAlternativeAppNamePronunciationHint</key>
+			<string>Khoai</string>
 		</dict>
 	</array>
 </dict>

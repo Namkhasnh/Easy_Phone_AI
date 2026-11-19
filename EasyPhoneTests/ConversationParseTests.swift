@@ -57,7 +57,7 @@ struct ConversationParseTests {
 
     @Test func completeDraftOpensReview() async throws {
         let api = MockAPIClient(parse: .success(try Self.fixture("followUpAnswer")))
-        let draft = typed("Nhắc tôi 8 giờ sáng mai uống thuốc")
+        let draft = typed("Nhắc tôi thứ Bảy 8 giờ sáng uống thuốc")   // weekday → AI ("8 giờ sáng mai" is on device, D-320)
         let vm = model(api, draft: draft)
         await vm.onAppear()
         #expect(vm.reviewDraftId == draft.id)
@@ -91,6 +91,24 @@ struct ConversationParseTests {
         let vm2 = model(MockAPIClient(parse: .success(noDay)), draft: typed("Xem lịch"))
         await vm2.onAppear()
         #expect(vm2.calendarDay == "2026-11-08")                               // today in the draft timezone
+    }
+
+    @Test func checkMailOpensS21NotChuaHoTro() async {                     // D-304
+        let mail = ParsedDraft(schemaVersion: 1, requestId: "req_mail", steps: [], followUpQuestion: nil,
+                               unsupported: ParsedUnsupported(reason: "checkMail", message: "Mở thư mới của bạn."))
+        let draft = typed("Có thư mới không")
+        let vm = model(MockAPIClient(parse: .success(mail)), draft: draft)
+        await vm.onAppear()
+        #expect(vm.opensMail)
+        if case .unsupported = vm.mode { Issue.record("must not show Chưa hỗ trợ") }
+        #expect(draft.steps.isEmpty)
+    }
+
+    @Test func checkMailPhraseSkipsTheBackend() async {                   // owner 2026-11-18: speed, no unit
+        let api = MockAPIClient()
+        let vm = model(api, draft: typed("Xem mã gửi về"))
+        await vm.onAppear()
+        #expect(vm.opensMail && api.parseCalls.isEmpty)
     }
 
     @Test func everyStepDroppedIsUnsupported() async {

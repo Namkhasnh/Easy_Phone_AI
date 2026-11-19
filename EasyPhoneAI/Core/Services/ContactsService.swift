@@ -46,6 +46,9 @@ protocol ContactsService: Sendable {
     /// Several results are all returned: the caller shows a picker (D-106).
     func match(name: String) async throws -> [ContactMatch]
     func phoneNumbers(contactId: String) async throws -> [PhoneEntry]
+    /// Email addresses of one contact (Phase 2 `emailReply`, D-307). 🔒 stay on device until "Xác nhận".
+    // TODO(spec): not in ARCHITECTURE §4.2; needed to fill `emailReply.toAddress` from Contacts (API_GMAIL §5.1).
+    func emailAddresses(contactId: String) async throws -> [String]
     /// The S04 contact row (name, photo) for a stored `contactId`; nil when it was deleted or is not shared (limited).
     // TODO(spec): not in ARCHITECTURE §4.2; S04 must show the contact name for the 🔒 `contactId` (UI_SCREENS S04).
     func contact(id: String) async throws -> ContactMatch?

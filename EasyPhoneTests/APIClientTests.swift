@@ -345,3 +345,39 @@ struct APIClientTests {
         #expect(IdempotencyKey() != key)
     }
 }
+
+// MARK: - /v1/gmail/accounts (2.3, API_GMAIL §3)
+
+extension APIClientTests {
+    @Test func gmailConnectPostsTheCodeAndDecodes() async throws {
+        let account = #"{"schemaVersion":1,"account":{"accountId":"gma_01JD0000000000000000000000","email":"k@gmail.com","status":"connected"}}"#
+        let transport = StubTransport { _, _ in reply(200, account) }
+        let request = GmailConnectRequest(code: "4/0Ae", codeVerifier: String(repeating: "v", count: 43),
+                                          redirectUri: "com.googleusercontent.apps.1-a:/oauth2redirect")
+        let result = try await makeClient(transport).gmailConnect(request)
+        #expect(result.account.email == "k@gmail.com" && result.account.status == .connected)
+        let sent = try #require(transport.requests.first)
+        #expect(sent.httpMethod == "POST" && sent.url?.path() == "/v1/gmail/accounts")
+        #expect(sent.value(forHTTPHeaderField: "Idempotency-Key") == nil)             // 0 units, not metered
+        let body = try #require(sent.httpBody)
+        let json = try #require(try JSONSerialization.jsonObject(with: body) as? [String: Any])
+        #expect(Set(json.keys) == ["schemaVersion", "code", "codeVerifier", "redirectUri"])  // no token ever
+    }
+
+    @Test func gmailDisconnectAccepts204WithEmptyBody() async throws {
+        let transport = StubTransport { _, _ in reply(204, "") }
+        try await makeClient(transport).gmailDisconnect(accountId: "gma_01JD0000000000000000000000")
+        let sent = try #require(transport.requests.first)
+        #expect(sent.httpMethod == "DELETE")
+        #expect(sent.url?.path() == "/v1/gmail/accounts/gma_01JD0000000000000000000000")
+    }
+
+    @Test func gmailReconnectRequiredIsAnAPIError() async throws {
+        let transport = StubTransport { _, _ in reply(409, envelope("gmail_reconnect_required")) }
+        await #expect(throws: AppError.api(code: "gmail_reconnect_required", retryable: false, details: nil,
+                                           requestId: "req_env")) {
+            _ = try await makeClient(transport).gmailAccounts()
+        }
+        #expect(transport.requests.count == 1)                                        // 4xx never retried
+    }
+}

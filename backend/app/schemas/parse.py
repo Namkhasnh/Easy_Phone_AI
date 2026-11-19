@@ -13,7 +13,7 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validato
 InputMode = Literal["text", "voice", "photo", "shortcut"]  # DATA_MODEL §1 InputMode
 UnsupportedReason = Literal[
     "recurringEvent", "invitation", "emailSend", "booking", "payment",
-    "multiPageOcr", "bulkAction", "phaseNotEnabled", "viewCalendar", "other",
+    "multiPageOcr", "bulkAction", "phaseNotEnabled", "viewCalendar", "checkMail", "other",
 ]
 
 # TODO(spec): API_CONTRACT §7.1 gives no limit for `savedPlaceLabels`; 50 labels × 100 chars keeps the prompt bounded.

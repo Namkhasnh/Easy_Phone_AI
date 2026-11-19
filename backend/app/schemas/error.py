@@ -24,6 +24,10 @@ ErrorCode = Literal[
     "llm_invalid_output",
     "upstream_error",
     "spend_cap",
+    # Gmail (API_GMAIL.md §6)
+    "gmail_not_connected",
+    "gmail_account_limit",
+    "gmail_reconnect_required",
 ]
 
 

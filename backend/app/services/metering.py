@@ -17,6 +17,7 @@ from typing import Generic, TypeVar
 
 import asyncpg
 
+from app import timing
 from app.config import Settings
 from app.errors import AppError
 from app.repositories import usage
@@ -111,19 +112,21 @@ async def metered(
     budget timeout, unexpected) refunds — `units = 0` — but only if no newer attempt started meanwhile.
     """
     budget = deadline or Deadline(settings.REQUEST_BUDGET_SECONDS)
-    async with conn.transaction():
-        await conn.execute("select pg_advisory_xact_lock(hashtext($1))", user_id)
-        row = await _claim(conn, user_id, key, endpoint, settings, now)
-        my_attempt = await usage.next_attempt(conn, row.id)
-        await quota.check_spend_cap(conn, settings, now)  # 503 spend_cap, before any OpenAI call (D-086)
-        quota_after = await quota.reserve(conn, user_id, row, units, settings, now)  # 402 quota_exceeded
+    with timing.span("reserve"):
+        async with conn.transaction():
+            await conn.execute("select pg_advisory_xact_lock(hashtext($1))", user_id)
+            row = await _claim(conn, user_id, key, endpoint, settings, now)
+            my_attempt = await usage.next_attempt(conn, row.id)
+            await quota.check_spend_cap(conn, settings, now)  # 503 spend_cap, before any OpenAI call (D-086)
+            quota_after = await quota.reserve(conn, user_id, row, units, settings, now)  # 402 quota_exceeded
     # An error above rolls the transaction back: a first attempt leaves no row, a retry keeps its old attempt.
 
     meter = CostMeter()
     try:
         try:
-            async with asyncio.timeout(budget.remaining()):
-                result = await run(budget, meter)
+            with timing.span("work"):
+                async with asyncio.timeout(budget.remaining()):
+                    result = await run(budget, meter)
         except TimeoutError:
             raise AppError("upstream_error", 503, True) from None  # budget exhausted (D-246)
     except BaseException as exc:
@@ -134,7 +137,8 @@ async def metered(
             endpoint, row.id, my_attempt, getattr(exc, "code", type(exc).__name__), refunded,
         )
         raise
-    await _settle(conn, row.id, meter)
+    with timing.span("settle"):
+        await _settle(conn, row.id, meter)
     logger.info("metered ok endpoint=%s row=%s attempt=%s units=%s", endpoint, row.id, my_attempt, units)
     return Metered(result, quota_after)
 

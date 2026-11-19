@@ -14,6 +14,11 @@ enum Route: Hashable, Sendable {
     /// D-294: S11 for one day (`YYYY-MM-DD`), from "xem lịch ngày mai".
     case calendarDay(String)
     case reminders
+    /// S21 Mail summary (Phase 2, D-304), from "có thư mới không" (`unsupported.reason = checkMail`).
+    /// `codesOnly`: "xem mã gửi về" shows only verification codes (owner 2026-11-18, D-311), no other mail, no AI.
+    case mail(codesOnly: Bool)
+    /// S21 "Trả lời" (2.6b): S03 listening for the reply content; the step gets the thread + address from `context`.
+    case mailReply(MailReplyContext)
 }
 
 /// Owns the single `NavigationStack(path:)`. Reopen at the exact step = `.review(draftId)` (spec §6.10 AC2).

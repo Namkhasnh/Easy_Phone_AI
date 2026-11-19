@@ -1,3 +1,10 @@
+"""Shared fixtures. Tests never read the developer's `backend/.env` (BUG-007): settings come from code defaults
+plus what each test passes or sets with `monkeypatch.setenv`."""
+
+from app.config import Settings
+
+Settings.model_config["env_file"] = None
+
 import pytest
 from fastapi import APIRouter, Depends
 from fastapi.testclient import TestClient

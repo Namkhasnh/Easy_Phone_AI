@@ -1,8 +1,9 @@
+import AppIntents
 import SwiftData
 import SwiftUI
 
 @main struct EasyPhoneApp: App {
-    @State private var appState = AppState()
+    @State private var appState: AppState
     @State private var router = Router()
     @State private var handoff: HandoffPromptCoordinator
     /// ARCHITECTURE §5.4 (D-125): once per process, at the first appearance (= first `.active`).
@@ -11,6 +12,10 @@ import SwiftUI
     private let modelContainer: ModelContainer
 
     init() {
+        // `StartListeningIntent` sets the flag on this same AppState (D-172).
+        let state = AppState()
+        _appState = State(initialValue: state)
+        ListenRequests.onRequest = { state.startListeningRequested = true }
         // XCUITest (ARCHITECTURE §13): `-uiTestScenario <name>` → mocks + in-memory store, never real device data.
         let scenario = MockScenario.fromLaunchArguments()
         do {
@@ -33,6 +38,9 @@ import SwiftUI
                 .environment(handoff)
                 .environment(\.appEnv, env)
                 .task { await launchVerifier.runOnce() }
+                .onOpenURL { url in                                   // widgets: easyphone://listen (D-172)
+                    if url.scheme == "easyphone", url.host() == "listen" { appState.startListeningRequested = true }
+                }
         }
         .modelContainer(modelContainer)
     }

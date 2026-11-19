@@ -27,3 +27,6 @@ docs/
 
 # CodeGraph index (local, rebuilt by `codegraph init` / `codegraph sync`)
 .codegraph/
+
+# Xcode StoreKit leaf certificate pin (machine-specific, D-240)
+backend/certs/

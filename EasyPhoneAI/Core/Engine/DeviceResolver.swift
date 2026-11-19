@@ -49,6 +49,8 @@ struct DeviceResolution: Sendable, Hashable {
             return await resolveEvent(step, timeZoneId: timeZoneId)
         case (.place, .open), (.place, .create):
             return await resolvePlace(step)
+        case (.emailReply, _):
+            return await resolveEmail(step)
         default:
             // TODO(spec): reminder update / delete / complete / snooze by voice need a reminder search (RemindersService
             // has none in ARCHITECTURE §4.2); they come from S12 with `targetRef` set.
@@ -131,6 +133,47 @@ struct DeviceResolution: Sendable, Hashable {
         }
     }
 
+    // MARK: - Email address (emailReply, D-307)
+
+    /// `recipientName` → `toAddress`: an address typed / said as the name is used as is; else Contacts: one match
+    /// with one address → filled; several addresses or several contacts → one `.other` choice of "Name — address"
+    /// rows (never auto-picked, D-106); nothing found → left empty, the user types it in S05 (required field).
+    private func resolveEmail(_ step: TaskStep) async -> DeviceResolution {
+        var r = DeviceResolution(origin: "contacts")
+        guard let name = step.field("recipientName")?.value?.trimmingCharacters(in: .whitespaces), !name.isEmpty,
+              step.field("toAddress")?.value == nil else { return r }
+        if Self.isEmailAddress(name) {
+            r.values["toAddress"] = name.lowercased()
+            return r
+        }
+        guard permissions.status(.contacts).isUsable,
+              let matches = try? await contacts.match(name: name) else { return r }
+        var rows: [Candidate] = []
+        var seen = Set<String>()
+        for match in matches {
+            for address in (try? await contacts.emailAddresses(contactId: match.id)) ?? [] {
+                let key = address.lowercased()
+                guard Self.isEmailAddress(key), seen.insert(key).inserted else { continue }
+                rows.append(Candidate(id: key, title: match.displayName, subtitle: key))
+            }
+        }
+        switch rows.count {
+        case 0: break
+        case 1: r.values["toAddress"] = rows[0].id
+        default:
+            // TODO(spec): no `ambiguity.email` text in UI_SCREENS; key added (PROGRESS §5.2).
+            r.ambiguities["toAddress"] = Ambiguity(kind: .other,
+                                                   question: UserMessage(key: "ambiguity.email", args: [name]).text,
+                                                   candidates: rows)
+        }
+        return r
+    }
+
+    /// One plain address (`a@b.c`), the same rule as the backend (`schemas/gmail.py` `EMAIL_RE`).
+    nonisolated static func isEmailAddress(_ text: String) -> Bool {
+        text.range(of: #"^[^@\s<>,;"]+@[^@\s<>,;"]+\.[^@\s<>,;"]+$"#, options: .regularExpression) != nil
+    }
+
     // MARK: - Places (directions / save)
 
     /// AI_PROMPTS: "về nhà" → `query = home`, "chỗ làm" → `work`, a custom label → its text. A saved place fills the
@@ -148,9 +191,20 @@ struct DeviceResolution: Sendable, Hashable {
             return r
         }
         r.origin = "maps"
-        guard let places, let found = try? await places.search(query, near: nil) else { return r }
+        // D-321 (owner 2026-11-19): Apple's map data misses many Vietnamese places ("sân bóng Học viện Kỹ thuật Mật
+        // mã" → 0 results → the app kept asking for an address). Directions with Google Maps (the default) go to
+        // the words as said; Google Maps finds the place and the user sees it there before starting.
+        let textDestination = step.operation == .open
+        if textDestination, step.field("mapsApp")?.value == MapsApp.googleMaps.rawValue {
+            r.values = ["name": query]
+            return r
+        }
+        guard let places else { return r }
+        let found = (try? await places.search(query, near: nil)) ?? []
         switch found.count {
-        case 0: break    // TODO(spec): no place found has no S04 text; the destination rows stay "Chưa có".
+        case 0:
+            if textDestination { r.values = ["name": query] }   // Apple Maps searches the words itself
+            // TODO(spec): saving a place that MapKit cannot find has no S04 text; the rows stay "Chưa có".
         case 1: r.values = Self.placeValues(name: found[0].name, address: found[0].address, coordinate: found[0].coordinate)
         default:
             r.ambiguities["coordinate"] = Ambiguity(

@@ -43,6 +43,68 @@ final class MockAPIClient: APIClientProtocol {
     /// Every `parse` call so far (tests check the request and that a retry reused the key).
     var parseCalls: [(request: ParseRequest, key: IdempotencyKey)] { parseLog.withLock { $0 } }
 
+    private let gmailState = Mutex<[GmailAccount]>([])
+    /// Every `gmailConnect` request so far (tests check code / verifier / redirect).
+    var gmailConnectCalls: [GmailConnectRequest] { gmailConnectLog.withLock { $0 } }
+    private let gmailConnectLog = Mutex<[GmailConnectRequest]>([])
+
+    func gmailConnect(_ request: GmailConnectRequest) async throws -> GmailAccountResponse {
+        gmailConnectLog.withLock { $0.append(request) }
+        gmailState.withLock { $0 = [MockGmailService.sample] }
+        return GmailAccountResponse(schemaVersion: 1, account: MockGmailService.sample)
+    }
+
+    func gmailAccounts() async throws -> GmailAccountsResponse {
+        GmailAccountsResponse(schemaVersion: 1, accounts: gmailState.withLock { $0 })
+    }
+
+    func gmailDisconnect(accountId: String) async throws {
+        gmailState.withLock { $0.removeAll { $0.accountId == accountId } }
+    }
+
+    private let gmailSummaryResult = Mutex<Result<GmailSummaryResponse, AppError>>(.success(.mock))
+    private let gmailSummaryLog = Mutex<[(request: GmailSummaryRequest, key: IdempotencyKey)]>([])
+    /// Every `gmailSummary` call so far.
+    var gmailSummaryCalls: [(request: GmailSummaryRequest, key: IdempotencyKey)] { gmailSummaryLog.withLock { $0 } }
+    /// Answer for the next `gmailSummary` calls (tests).
+    func setGmailSummary(_ result: Result<GmailSummaryResponse, AppError>) { gmailSummaryResult.withLock { $0 = result } }
+
+    func gmailSummary(_ request: GmailSummaryRequest, idempotencyKey: IdempotencyKey) async throws -> GmailSummaryResponse {
+        gmailSummaryLog.withLock { $0.append((request, idempotencyKey)) }
+        return try gmailSummaryResult.withLock { $0 }.get()
+    }
+
+    private let gmailDraftResult = Mutex<Result<GmailDraftResponse, AppError>>(.success(.mock))
+    private let gmailDraftLog = Mutex<[(request: GmailDraftRequest, key: IdempotencyKey)]>([])
+    /// Every `gmailDraft` call so far.
+    var gmailDraftCalls: [(request: GmailDraftRequest, key: IdempotencyKey)] { gmailDraftLog.withLock { $0 } }
+    func setGmailDraft(_ result: Result<GmailDraftResponse, AppError>) { gmailDraftResult.withLock { $0 = result } }
+
+    func gmailDraft(_ request: GmailDraftRequest, idempotencyKey: IdempotencyKey) async throws -> GmailDraftResponse {
+        gmailDraftLog.withLock { $0.append((request, idempotencyKey)) }
+        return try gmailDraftResult.withLock { $0 }.get()
+    }
+
+    private let verifyResult = Mutex<Result<MeResponse, AppError>>(.success(.mock))
+    private let verifyLog = Mutex<[String]>([])
+    var verifyCalls: [String] { verifyLog.withLock { $0 } }
+    func setVerify(_ result: Result<MeResponse, AppError>) { verifyResult.withLock { $0 = result } }
+
+    func verifyTransaction(jws: String) async throws -> MeResponse {
+        verifyLog.withLock { $0.append(jws) }
+        return try verifyResult.withLock { $0 }.get()
+    }
+
+    private let deleteResult = Mutex<Result<Void, AppError>>(.success(()))
+    private let deleteLog = Mutex(0)
+    var deleteAccountCalls: Int { deleteLog.withLock { $0 } }
+    func setDeleteAccount(_ result: Result<Void, AppError>) { deleteResult.withLock { $0 = result } }
+
+    func deleteAccount() async throws {
+        deleteLog.withLock { $0 += 1 }
+        try deleteResult.withLock { $0 }.get()
+    }
+
     var quotaUpdates: AsyncStream<Quota> { quota.stream }
     var blockingUpdates: AsyncStream<BlockingScreen> { blocking.stream }
 
@@ -134,4 +196,25 @@ extension MeResponse {
         quota: Quota(limit: 10, used: 3, remaining: 7, resetsAt: Date(timeIntervalSince1970: 1_794_157_200)), // 2026-11-09T00:00:00+07:00
         subscription: nil
     )
+}
+
+extension GmailSummaryResponse {
+    /// = `gmailsummary.ok.response.json` (checked by `ContractFixtureTests.mocksEqualFixtures`). "Dữ liệu mẫu" (D-189).
+    static let mock = GmailSummaryResponse(
+        schemaVersion: 1, requestId: "req_01JD0000000000000000000000", accountEmail: "khanh@gmail.com", totalFound: 7,
+        overview: "Có 2 thư mới: 1 thư cần trả lời, 1 thư thông báo.",
+        messages: [
+            GmailMessageSummary(messageId: "18c2e01", threadId: "t18c2e01", fromName: "no-reply@shop.example",
+                                fromAddress: "no-reply@shop.example", subject: "Đơn hàng đã giao", receivedAt: Date(timeIntervalSince1970: 1_794_866_000),
+                                summary: "Cửa hàng báo đơn hàng đã giao.", needsReply: false),
+            GmailMessageSummary(messageId: "18c2f0a", threadId: "t18c2f0a", fromName: "Nguyễn Thị Lan",
+                                fromAddress: "lan.nguyen@example.com", subject: "Họp tổ chiều thứ Sáu", receivedAt: Date(timeIntervalSince1970: 1_794_874_320),
+                                summary: "Chị Lan hỏi em có dự họp 15:00 thứ Sáu không.", needsReply: true),
+        ])
+}
+
+extension GmailDraftResponse {
+    /// = `gmaildraft.created.response.json` (`ContractFixtureTests.mocksEqualFixtures`).
+    static let mock = GmailDraftResponse(schemaVersion: 1, draftId: "r-5823", messageId: "18c3001",
+                                         openUrl: "https://mail.google.com/mail/u/0/#drafts")
 }

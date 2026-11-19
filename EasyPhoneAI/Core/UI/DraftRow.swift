@@ -62,7 +62,7 @@ struct DraftRowBuilder {
 
     private static func mainValue(_ step: TaskStep) -> String? {
         let id: [String] = switch step.kind {
-        case .call, .sms: ["recipientName"]
+        case .call, .sms, .emailReply: ["recipientName"]
         case .place: ["name", "query"]
         default: ["title"]
         }

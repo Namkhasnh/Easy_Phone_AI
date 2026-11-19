@@ -7,6 +7,8 @@ protocol ImageStore: Sendable {
     func save(_ data: Data, draftId: UUID) async throws -> String
     func load(_ relativePath: String) async -> Data?
     func delete(_ relativePath: String) async
+    /// Account deletion (ARCHITECTURE §6.6): the whole `ocr/` folder.
+    func deleteAll() async
 }
 
 /// D-301: camera photos may also be added to the iPhone Photos library (add-only access, default off).

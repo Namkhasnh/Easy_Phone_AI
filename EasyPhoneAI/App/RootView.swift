@@ -6,6 +6,8 @@ import SwiftUI
 struct RootView: View {
     @Environment(Router.self) private var router
     @Environment(AppState.self) private var appState
+    /// The iPhone's own Dynamic Type size (read above our override, D-318 "Theo iPhone").
+    @Environment(\.dynamicTypeSize) private var systemTextSize
     @Environment(\.appEnv) private var env
     @Environment(HandoffPromptCoordinator.self) private var handoff
     @Environment(\.scenePhase) private var scenePhase
@@ -19,6 +21,9 @@ struct RootView: View {
                     destination(route)
                 }
         }
+        // D-318: whole app, sheets included. Always the same modifier (no if/else), so changing the size never
+        // rebuilds the navigation stack (the user stays on the Settings page).
+        .dynamicTypeSize(AppTextSize(stored: env.localData.settings().textSize).dynamicTypeSize ?? systemTextSize)
         .task {
             for await session in env.auth.sessionUpdates {
                 appState.session = session
@@ -27,6 +32,12 @@ struct RootView: View {
         .task {
             for await quota in env.api.quotaUpdates {
                 appState.apply(quota: quota)
+            }
+        }
+        .task {
+            // ARCHITECTURE §6.5: Transaction.updates from launch (renewals, Ask to Buy, refunds) → backend → plan.
+            for await jws in env.purchases.transactionUpdates {
+                if let me = await BillingSync.verify(jws, api: env.api, purchases: env.purchases) { appState.apply(me: me) }
             }
         }
         .task {
@@ -39,7 +50,10 @@ struct RootView: View {
         .onChange(of: scenePhase, initial: true) { _, phase in
             switch phase {
             case .background: handoff.didEnterBackground()
-            case .active: if case .signedIn = appState.session { handoff.didBecomeActive() }
+            case .active:
+                if case .signedIn = appState.session { handoff.didBecomeActive() }
+                // D-316: wake the hosted backend while the user is still speaking (free hosts may sleep).
+                Task { _ = try? await env.api.health() }
             default: break
             }
         }
@@ -59,6 +73,17 @@ struct RootView: View {
         .task(id: appState.session) {
             await loadAccount()
         }
+        // D-170: Siri / Action Button / Back Tap / widget → S03 listening, once signed in (the flag waits for it).
+        .onChange(of: appState.startListeningRequested, initial: true) { _, _ in openListeningIfRequested() }
+        .onChange(of: appState.session) { _, _ in openListeningIfRequested() }
+    }
+
+    private func openListeningIfRequested() {
+        guard appState.startListeningRequested, case .signedIn = appState.session, appState.blockingScreen == nil
+        else { return }
+        appState.startListeningRequested = false
+        router.popToRoot()
+        router.push(.conversation(nil))                                    // a new request, mic on (S03 mode 1)
     }
 
     /// API_CONTRACT §6.2: `/v1/me` on launch and after sign-in. Failures only log; UI keeps working.
@@ -115,11 +140,16 @@ struct RootView: View {
                                                        permissions: env.permissions, contacts: env.contacts,
                                                        calendar: env.calendar, localData: env.localData,
                                                        system: env.system, tts: env.tts, images: env.images,
-                                                       snoozeMorningHour: env.localData.settings().snoozeMorningHour))
+                                                       snoozeMorningHour: env.localData.settings().snoozeMorningHour,
+                                                       speech: env.speech))
         case .conversation(let draftId):
             ConversationView(viewModel: ConversationViewModel(draftId: draftId, repository: env.drafts, speech: env.speech, api: env.api,
                                                               tts: env.tts, localData: env.localData,
                                                               permissions: env.permissions, engine: env.engine))
+        case .mailReply(let reply):
+            ConversationView(viewModel: ConversationViewModel(draftId: nil, repository: env.drafts, speech: env.speech, api: env.api,
+                                                              tts: env.tts, localData: env.localData,
+                                                              permissions: env.permissions, engine: env.engine, reply: reply))
         case .calendarToday:
             CalendarTodayView(viewModel: CalendarTodayViewModel(calendar: env.calendar, permissions: env.permissions,
                                                                 repository: env.drafts, engine: env.engine))
@@ -127,6 +157,10 @@ struct RootView: View {
             CalendarTodayView(viewModel: CalendarTodayViewModel(calendar: env.calendar, permissions: env.permissions,
                                                                 repository: env.drafts, engine: env.engine,
                                                                 day: day))
+        case .mail(let codesOnly):
+            MailView(viewModel: MailViewModel(gmail: env.gmail, api: env.api, tts: env.tts, system: env.system,
+                                              codesOnly: codesOnly,
+                                              speechRate: env.localData.settings().speechRate))
         case .reminders:
             RemindersView(viewModel: RemindersViewModel(reminders: env.reminders, permissions: env.permissions,
                                                         repository: env.drafts, engine: env.engine,
@@ -144,7 +178,9 @@ struct RootView: View {
         case .settings:
             SettingsView(viewModel: SettingsViewModel(localData: env.localData, drafts: env.drafts, auth: env.auth,
                                                       tts: env.tts, permissions: env.permissions,
-                                                      contacts: env.contacts, photoLibrary: env.photoLibrary))
+                                                      contacts: env.contacts, photoLibrary: env.photoLibrary,
+                                                      gmail: env.gmail, gmailAvailable: env.config.gmailClientID != nil,
+                                                      api: env.api, images: env.images))
         default:
             EmptyView()
         }

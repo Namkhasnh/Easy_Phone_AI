@@ -8,6 +8,8 @@ struct AppConfig: Sendable, Hashable {
     let supabaseURL: URL?
     /// `nil` until `Config/Secrets.xcconfig` is filled (item 0.8). `AuthService` live requires it (0.9).
     let supabaseAnonKey: String?
+    /// Google iOS OAuth client id for Gmail (API_GMAIL §2); `nil` → S15 hides "Kết nối Gmail". Public, not a secret.
+    let gmailClientID: String?
 
     enum LoadError: Error, Equatable {
         /// Key missing or an unexpanded `$(…)`: the target's xcconfig / Info.plist File is not set.
@@ -18,11 +20,13 @@ struct AppConfig: Sendable, Hashable {
     static let apiBaseURLKey = "APIBaseURL"
     static let supabaseURLKey = "SupabaseURL"
     static let supabaseAnonKeyKey = "SupabaseAnonKey"
+    static let gmailClientIDKey = "GmailClientID"
 
-    init(apiBaseURL: URL, supabaseURL: URL?, supabaseAnonKey: String?) {
+    init(apiBaseURL: URL, supabaseURL: URL?, supabaseAnonKey: String?, gmailClientID: String? = nil) {
         self.apiBaseURL = apiBaseURL
         self.supabaseURL = supabaseURL
         self.supabaseAnonKey = supabaseAnonKey
+        self.gmailClientID = gmailClientID
     }
 
     /// Parses an Info.plist dictionary. Empty Supabase values become `nil`; a missing or bad API URL throws.
@@ -37,7 +41,8 @@ struct AppConfig: Sendable, Hashable {
             guard let url = Self.httpURL(rawSupabase) else { throw .invalidURL(Self.supabaseURLKey) }
             supabase = url
         }
-        self.init(apiBaseURL: api, supabaseURL: supabase, supabaseAnonKey: Self.value(info, Self.supabaseAnonKeyKey))
+        self.init(apiBaseURL: api, supabaseURL: supabase, supabaseAnonKey: Self.value(info, Self.supabaseAnonKeyKey),
+                  gmailClientID: Self.value(info, Self.gmailClientIDKey))
     }
 
     /// The app's own configuration. A failure is a developer setup error, never a user error,

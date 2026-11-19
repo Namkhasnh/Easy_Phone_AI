@@ -71,6 +71,8 @@ def test_ok_matches_fixture_shape_and_sets_quota_headers(setup, caplog):
     assert calls == [{"endpoint": "/v1/parse", "units": 1, "key": KEY}]
     assert fake.calls[0]["model"] == Settings().MODEL_PARSE == "gpt-6-luna"  # D-052
     assert SECRET not in caplog.text and "anh Minh" not in caplog.text  # D-059
+    timing = r.headers["Server-Timing"]  # D-319: names + ms only
+    assert "llm;dur=" in timing and "total;dur=" in timing and "Minh" not in timing
 
 
 def test_missing_key_is_422_and_llm_not_called(setup):

@@ -53,7 +53,7 @@ struct ParsedDateCandidate: Codable, Sendable, Hashable {
 }
 
 /// `reason` ∈ recurringEvent, invitation, emailSend, booking, payment, multiPageOcr, bulkAction, phaseNotEnabled,
-/// viewCalendar (D-294), other.
+/// viewCalendar (D-294), checkMail (D-304: opens S21), other.
 struct ParsedUnsupported: Codable, Sendable, Hashable {
     var reason: String
     var message: String

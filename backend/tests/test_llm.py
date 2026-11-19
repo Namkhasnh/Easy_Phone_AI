@@ -80,6 +80,16 @@ def test_temperature_sent_only_when_set():
     assert fake.calls[0]["temperature"] == 0.2
 
 
+def test_reasoning_effort_per_prompt_name():  # owner 2026-11-18: speed
+    assert Settings().LLM_REASONING_EFFORT == {"parse": "none", "summarize": "none"}
+    fake = FakeCompletions(resp('{"ok": true}'))
+    run(fake, settings=Settings(LLM_REASONING_EFFORT={CALL.prompt_name: "low"}))
+    assert fake.calls[0]["reasoning_effort"] == "low"
+    other = FakeCompletions(resp('{"ok": true}'))
+    run(other, settings=Settings(LLM_REASONING_EFFORT={"somethingElse": "none"}))
+    assert "reasoning_effort" not in other.calls[0]                       # not listed → model default
+
+
 def test_timeout_is_min_of_12s_and_remaining():
     clock = Clock()
     budget = Deadline(18, clock)
@@ -199,3 +209,26 @@ def test_repair_prompt_file_loads_and_fills():
     assert "a: b" in text and "{{" not in text
     with pytest.raises(KeyError):
         prompts.render(template)
+
+
+def test_prompt_cache_key_is_fixed_per_prompt_and_cached_tokens_logged(caplog):
+    """D-319: one cache key per prompt version (no user data); cached input tokens appear in the log line."""
+    import asyncio
+    from types import SimpleNamespace
+
+    from app.config import Settings
+    from app.services.llm import LLMClient, StructuredCall
+    from app.services.metering import CostMeter, Deadline
+
+    resp = SimpleNamespace(
+        choices=[SimpleNamespace(message=SimpleNamespace(content='{"a": 1}', refusal=None), finish_reason="stop",
+                                 logprobs=None)],
+        usage=SimpleNamespace(prompt_tokens=3400, completion_tokens=150,
+                              prompt_tokens_details=SimpleNamespace(cached_tokens=3072)),
+    )
+    fake = FakeCompletions(resp)
+    caplog.set_level("INFO")
+    call = StructuredCall("parse", 6, "gpt-6-luna", [{"role": "user", "content": "x"}], "S", {"type": "object"})
+    asyncio.run(LLMClient(Settings(), fake).structured(call, lambda v: [], Deadline(18), CostMeter()))
+    assert fake.calls[0]["prompt_cache_key"] == "parse.v6"
+    assert "cached_in=3072" in caplog.text

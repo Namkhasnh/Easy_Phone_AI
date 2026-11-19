@@ -12,6 +12,12 @@ import Foundation
     }
 
     func execute(_ step: TaskStep, draft: TaskDraft) async -> ExecutionOutcome {
+        if step.operation == .open, Self.place(from: step) == nil {                   // D-321: text destination
+            guard let query = step.field("name")?.value ?? step.field("query")?.value, !query.isEmpty else {
+                return .failed(code: "maps.cannotOpen")
+            }
+            return await directions(step) { try await self.places.openDirections(toQuery: query, app: $0) }
+        }
         guard let place = Self.place(from: step) else { return .failed(code: "maps.cannotOpen") }
         switch step.operation {
         case .create: return save(step, place)
@@ -38,9 +44,13 @@ import Foundation
     }
 
     private func directions(_ step: TaskStep, _ place: PlaceResult) async -> ExecutionOutcome {
+        await directions(step) { try await self.places.openDirections(to: place, app: $0) }
+    }
+
+    private func directions(_ step: TaskStep, open: (MapsApp) async throws -> Void) async -> ExecutionOutcome {
         let app = MapsApp(rawValue: step.field("mapsApp")?.value ?? "") ?? .appleMaps
         do {
-            try await places.openDirections(to: place, app: app)
+            try await open(app)
             let appName = FieldFormatter.option(fieldId: "mapsApp", value: app.rawValue) ?? app.rawValue
             return .handedOff(note: UserMessage(key: "handoff.note.directions", args: [appName]).text)
         } catch let error as ServiceError {

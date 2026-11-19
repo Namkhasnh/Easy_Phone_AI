@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "accountId": "gma_01JD0000000000000000000000",
+  "to": [
+    "lan.nguyen@example.com"
+  ],
+  "subject": "Xin nghỉ ngày mai",
+  "body": "Chào chị Lan,\nMai em xin nghỉ một ngày ạ.\nEm cảm ơn ạ.",
+  "replyTo": null
+}

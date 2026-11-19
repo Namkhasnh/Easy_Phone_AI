@@ -21,4 +21,5 @@ final class MockSystemService: SystemService {
 
     func canOpen(_ url: URL) async -> Bool { state.withLock { $0.canOpen } }
     func copy(_ text: String) async { state.withLock { $0.copied.append(text) } }
+    func copySecret(_ text: String, expiresAfter seconds: TimeInterval) async { state.withLock { $0.copied.append(text) } }
 }

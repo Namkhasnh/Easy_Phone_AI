@@ -1,0 +1,35 @@
+# Render Blueprint (D-316): the FastAPI backend as one free Docker web service in Singapore.
+# Secrets are NOT here: set them in the Render dashboard (Environment → "Add from .env"). sync: false = asked on setup.
+services:
+  - type: web
+    name: easyphone-backend
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    region: singapore
+    plan: free
+    branch: demo_git
+    autoDeploy: true
+    healthCheckPath: /v1/health
+    envVars:
+      - key: ENV
+        value: render
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: GMAIL_CLIENT_ID
+        sync: false
+      - key: GMAIL_TOKEN_KEY
+        sync: false
+      - key: ALLOW_XCODE_STOREKIT
+        sync: false
+      - key: XCODE_STOREKIT_LEAF_SHA256
+        sync: false

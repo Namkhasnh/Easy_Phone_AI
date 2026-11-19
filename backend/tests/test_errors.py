@@ -78,6 +78,7 @@ def test_every_contract_code_has_vi_and_en_message():
         "billing_invalid", "unauthorized", "quota_exceeded", "billing_account_mismatch", "not_found",
         "payload_too_large", "invalid_input", "client_outdated", "rate_limited", "internal",
         "llm_invalid_output", "upstream_error", "spend_cap",
+        "gmail_not_connected", "gmail_account_limit", "gmail_reconnect_required",  # API_GMAIL §6
     }
     assert set(MESSAGES) == codes
     assert all(m["vi"] and m["en"] for m in MESSAGES.values())

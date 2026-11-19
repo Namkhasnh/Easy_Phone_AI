@@ -20,11 +20,15 @@ class Settings(BaseSettings):
     MODEL_VISION: str = "gpt-6-luna"  # D-052
     MODEL_TRANSCRIBE: str = "gpt-4o-mini-transcribe"  # D-052
     MODEL_SUMMARIZE: str = "gpt-6-luna"  # Phase 2 only (D-052)
-    PROMPT_VERSION_PARSE: int = 3  # v2: viewCalendar (D-294); v3: callType FaceTime (D-300)
+    PROMPT_VERSION_PARSE: int = 6  # v2: viewCalendar (D-294); v3: callType FaceTime (D-300); v4: checkMail (D-304); v5: emailReply drafts (D-304, D-307); v6: "xem mã" → checkMail (D-311)
     PROMPT_VERSION_EXTRACT: int = 1
     PROMPT_VERSION_REPAIR: int = 1
     PROMPT_VERSION_OCR: int = 1  # 1D.4 `/v1/ocr`
     LLM_TEMPERATURE: float | None = None  # AI_PROMPTS §0.2: sent only when set (some models reject it)
+    # `reasoning_effort` per prompt name; a prompt not listed sends none (model default). Measured 2026-11-18 on
+    # gpt-6-luna: parse 3.2–5.8 s at the default vs ≈ 2.1 s with "none", same fields on everyday requests.
+    # The model accepts none / low / medium / high (not "minimal").
+    LLM_REASONING_EFFORT: dict[str, str] = {"parse": "none", "summarize": "none"}
     # USD per 1M tokens [input, output], for `usage_events.cost_usd` + the spend cap (D-087).
     # Values = OpenAI list prices read 2026-11-10 at D-052 (developers.openai.com/api/docs/pricing); cached input
     # is not modelled, so the recorded cost can only be a little high (spend cap trips early, never late).
@@ -46,8 +50,8 @@ class Settings(BaseSettings):
     UNKNOWN_MODEL_PRICE_USD_PER_1M: list[float] = [10.0, 40.0]
 
     # Quota (D-091, D-232, D-224) and units (API_CONTRACT §4.1)
-    FREE_DAILY_QUOTA: int = 10
-    PREMIUM_DAILY_QUOTA: int = 200
+    FREE_DAILY_QUOTA: int = 30  # D-314 (was 10, D-091)
+    PREMIUM_DAILY_QUOTA: int = 300  # D-314 (was 200, D-232)
     QUOTA_DAY_TZ: str = "Asia/Ho_Chi_Minh"
     UNITS_PARSE: int = 1
     UNITS_EXTRACT: int = 1
@@ -65,12 +69,19 @@ class Settings(BaseSettings):
     IDEMPOTENCY_WINDOW_HOURS: int = 24  # same key later → 422 idempotencyKeyExpired (API_CONTRACT §4.4)
 
     # Kinds the LLM may produce (DATA_MODEL §1.1). MVP kinds only; Phase 2/3 kinds stay off (D-150).
-    ENABLED_KINDS: list[str] = ["calendarEvent", "reminder", "call", "sms", "place"]  # D-302: "ocr" paused
+    ENABLED_KINDS: list[str] = ["calendarEvent", "reminder", "call", "sms", "place", "emailReply"]  # D-302: "ocr" paused; D-303: emailReply
 
     # Billing (D-091, D-240, D-284)
     APP_BUNDLE_ID: str = "vn.namkhanh.easyphone"
     PRODUCT_IDS: list[str] = ["easyphone.premium.monthly", "easyphone.premium.yearly"]
     ALLOW_XCODE_STOREKIT: bool = False
+    # Xcode StoreKit test transactions (D-240): the owner's Xcode could not export its public certificate (Xcode 27,
+    # 2026-11-18), so the first verified Xcode leaf certificate is pinned here (SHA-256) and every later one must match.
+    # TODO(decision): API_CONTRACT §8.1 step 1 says "verify with the exported StoreKit test certificate".
+    XCODE_STOREKIT_PIN_FILE: str = "certs/xcode_storekit_leaf.sha256"
+    # Cloud Run has no lasting disk (D-315): set the pin here instead (the file's content); it wins over the file.
+    XCODE_STOREKIT_LEAF_SHA256: str | None = None
+    ALLOWED_ENVIRONMENTS: list[str] = ["Sandbox", "Xcode"]  # dev backend (API_CONTRACT §8.1); Xcode needs the flag
 
     # Secrets: only from env / .env, never committed (D-051, D-207)
     OPENAI_API_KEY: SecretStr | None = None
@@ -80,6 +91,27 @@ class Settings(BaseSettings):
     DATABASE_URL: SecretStr | None = None  # Supabase → Connect → Session pooler URI (D-261)
     DB_POOL_MAX_SIZE: int = 5
     DB_CONNECT_TIMEOUT_SECONDS: float = 5.0
+
+    # Gmail (Phase 2, API_GMAIL.md §2–§3, D-151, D-306, D-310). Secrets only from env / .env.
+    GMAIL_CLIENT_ID: str | None = None  # Google Cloud iOS OAuth client (not a secret, but per install)
+    GMAIL_TOKEN_KEY: SecretStr | None = None  # Fernet key for `gmail_accounts.refresh_token_enc`
+    GMAIL_MAX_ACCOUNTS: int = 1  # D-306
+    GMAIL_REQUIRED_SCOPES: list[str] = [
+        "https://www.googleapis.com/auth/gmail.readonly",
+        "https://www.googleapis.com/auth/gmail.compose",
+    ]
+    GOOGLE_TOKEN_URL: str = "https://oauth2.googleapis.com/token"
+    GOOGLE_REVOKE_URL: str = "https://oauth2.googleapis.com/revoke"
+    GOOGLE_HTTP_TIMEOUT_SECONDS: float = 10.0
+    GMAIL_API_URL: str = "https://gmail.googleapis.com/gmail/v1/users/me"
+    GMAIL_MAX_MESSAGES: int = 10  # API_GMAIL §4
+    GMAIL_BODY_MAX_CHARS: int = 1200  # per message, before the LLM (smaller = faster summary)
+    GMAIL_OVERVIEW_MAX_CHARS: int = 300
+    GMAIL_SUMMARY_MAX_CHARS: int = 200
+    VERIFICATION_CODE_MAX_AGE_MINUTES: int = 60  # D-311
+    UNITS_GMAIL_SUMMARY: int = 1  # D-308; empty inbox = 0 (no LLM call)
+    PROMPT_VERSION_SUMMARIZE: int = 1
+    GMAIL_DRAFTS_URL: str = "https://mail.google.com/mail/u/0/#drafts"  # API_GMAIL §5 `openUrl`
 
     # Auth (API_CONTRACT §2): JWKS at {SUPABASE_URL}/auth/v1/.well-known/jwks.json; HS256 secret only as fallback
     JWT_AUDIENCE: str = "authenticated"

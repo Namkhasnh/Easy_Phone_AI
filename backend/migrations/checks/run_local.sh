@@ -7,6 +7,6 @@ docker run -d --rm --name "$NAME" -e POSTGRES_PASSWORD=check -v "$DIR:/m:ro" pos
 trap 'docker stop "$NAME" >/dev/null' EXIT
 until docker exec "$NAME" pg_isready -U postgres -q; do sleep 1; done
 sleep 1
-for f in checks/supabase_stub.sql 0001_init.sql checks/0001_check.sql; do
+for f in checks/supabase_stub.sql 0001_init.sql checks/0001_check.sql 0002_gmail.sql checks/0002_check.sql; do
   docker exec "$NAME" psql -q -U postgres -v ON_ERROR_STOP=1 -f "/m/$f"
 done

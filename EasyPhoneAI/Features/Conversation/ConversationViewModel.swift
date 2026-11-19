@@ -53,7 +53,11 @@ import OSLog
     static let locale = Locale(identifier: "vi-VN")
     static let hintKeys = ["conv.listening.hint.1", "conv.listening.hint.2", "conv.listening.hint.3"]
     /// UI_SCREENS S03 (DOC-29): silence after the last recognized words → stop by itself, like Siri. "Dừng" stays visible (AC1).
-    static let silenceAfterSpeech: Duration = .seconds(2)
+    // Owner 2026-11-18 (speed): 2 s → 1.5 s; DOC-29 gave 2 s. TODO(decision): record in UI_SCREENS S03.
+    static let silenceAfterSpeech: Duration = .milliseconds(1500)
+    /// D-320: when the words so far are already a complete request the phone understands (`LocalIntent`), stop sooner.
+    /// Other requests keep 1.5 s so a slow speaker who pauses mid-sentence is not cut off.
+    static let quickSilence: Duration = .milliseconds(1000)
     /// Nothing recognized at all → stop and show `conv.speech.empty`.
     static let noSpeechTimeout: Duration = .seconds(8)
 
@@ -76,6 +80,16 @@ import OSLog
     private(set) var reviewDraftId: UUID?
     /// D-294: "xem lịch ngày mai" → the View opens S11 for this day (`YYYY-MM-DD`). Nothing is executed.
     private(set) var calendarDay: String?
+    /// D-304: "có thư mới không" → S21 (`unsupported.reason = checkMail`), nothing to execute.
+    private(set) var opensMail = false
+    /// With `opensMail`: the user asked for a code → S21 shows codes only.
+    private(set) var mailCodesOnly = false
+    /// D-313: "xem lời nhắc" → S12, understood on the phone.
+    private(set) var opensReminders = false
+    /// 1F.7: a 402 opens S16 (free) or S17 (premium) on top of S03; the request text is kept (D-104).
+    var quotaBlock: QuotaBlock?
+    /// S21 "Trả lời" (2.6b): this conversation writes a reply to that message.
+    let reply: MailReplyContext?
     /// S18 before the mic starts: microphone, then speech (D-185). The recording waits for the answer.
     var pendingPermission: PendingPermission?
     private var pendingTarget: Target?
@@ -109,13 +123,16 @@ import OSLog
     private var stoppedByUser = false
     /// D-296: set by `finishListening` when listening ended by itself with words heard and `settings.autoSend` is on.
     private var autoSendPending = false
+    /// D-312: the question being read aloud before the mic opens again by itself.
+    private var handsFreeTask: Task<Void, Never>?
 
     init(draftId: UUID?, repository: any TaskRepository, speech: any SpeechService, api: any APIClientProtocol,
          tts: any TTSService, localData: any LocalDataRepository,
          permissions: any PermissionManager = MockPermissionManager(), engine: TaskEngine? = nil,
          now: @escaping () -> Date = { .now },
          silenceAfterSpeech: Duration = ConversationViewModel.silenceAfterSpeech,
-         noSpeechTimeout: Duration = ConversationViewModel.noSpeechTimeout) {
+         noSpeechTimeout: Duration = ConversationViewModel.noSpeechTimeout, reply: MailReplyContext? = nil) {
+        self.reply = reply
         self.draftId = draftId
         self.silenceAfterSpeech = silenceAfterSpeech
         self.noSpeechTimeout = noSpeechTimeout
@@ -152,6 +169,7 @@ import OSLog
 
     /// Leaving the screen stops mic and voice; the draft is already saved (D-104).
     func onDisappear() {
+        handsFreeTask?.cancel()
         tts.stop()
         silenceTask?.cancel()
         listenTask?.cancel()
@@ -257,7 +275,7 @@ import OSLog
                     // words already shown (owner report 2026-11-10: "Gọi cho mẹ" vanished after "Dừng").
                     guard !transcript.text.isEmpty, transcript.text != listeningText else { continue }
                     if case .answer = self.target { answerText = transcript.text } else { text = transcript.text }
-                    armAutoStop(after: silenceAfterSpeech)
+                    armAutoStop(after: silenceDelay(for: transcript.text))
                 }
                 finishListening(errorCode: nil)
             } catch {
@@ -270,6 +288,11 @@ import OSLog
         // D-296: auto-send when listening stopped by itself (2 s silence). Nothing runs before "Xác nhận" (D-100).
         guard autoSendPending else { return }
         autoSendPending = false
+        // D-312: "thôi / dừng / hủy" as the spoken answer ends the hands-free loop; nothing is sent.
+        if isHandsFree, case .followUp = mode, VoiceReply.classify(answerText) == .stop {
+            answerText = ""
+            return
+        }
         switch mode {
         case .transcript: await send()
         case .followUp: await sendAnswer()
@@ -284,6 +307,16 @@ import OSLog
     }
 
     /// Restarts the silence timer; when it fires while still listening, recording stops like "Dừng".
+    /// D-320: 1 s after a request the phone already understands, else `silenceAfterSpeech`. Follow-up answers unchanged.
+    func silenceDelay(for spoken: String) -> Duration {
+        guard case .answer = target else {
+            let zone = TimeZone(identifier: currentDraft?.timeZoneId ?? "") ?? .current
+            return reply == nil && LocalIntent.match(spoken, now: now(), timeZone: zone) != nil
+                ? min(Self.quickSilence, silenceAfterSpeech) : silenceAfterSpeech
+        }
+        return silenceAfterSpeech
+    }
+
     private func armAutoStop(after delay: Duration) {
         silenceTask?.cancel()
         silenceTask = Task { @MainActor [weak self] in
@@ -328,7 +361,7 @@ import OSLog
             noticeKey = heardNothing ? "conv.speech.unavailable" : nil
         } else if heardNothing {
             noticeKey = "conv.speech.empty"
-        } else if !stoppedByUser, settings.autoSend {
+        } else if !stoppedByUser, settings.autoSend || isHandsFree {
             autoSendPending = true
         }
         autosave()
@@ -484,7 +517,77 @@ import OSLog
         autosave()
         guard let draft = currentDraft else { return }
         guard draft.steps.isEmpty else { advance(draft); return }       // already parsed: never charge twice
-        await runParse(text: trimmed, inputMode: draft.inputMode, context: .none, draft: draft, returnMode: .transcript)
+        if reply == nil, let intent = LocalIntent.match(trimmed, now: now(),
+                                                         timeZone: TimeZone(identifier: draft.timeZoneId) ?? .current) {
+            await runLocal(intent, draft: draft)                          // D-313: on device, no `/v1/parse`, no unit
+            return
+        }
+        await runParse(text: replyRequest(trimmed), inputMode: draft.inputMode, context: .none, draft: draft,
+                       returnMode: .transcript)
+    }
+
+    /// 2.6b: the user only says the content ("em đồng ý, 3 giờ em có mặt"); the request names it a reply to the sender
+    /// (display name only, max 60 characters; the address and the mail text never go to the AI, D-307).
+    // TODO(spec): the wording of this request is not in AI_PROMPTS; parse v6 turns "Soạn email trả lời …" into emailReply.
+    func replyRequest(_ text: String) -> String {
+        guard let reply else { return text }
+        return UserMessage(key: "conv.replyRequest", args: [Self.safeName(reply.fromName), text]).text
+    }
+
+    /// The sender's display name comes from the mail (untrusted, D-057): letters, digits, spaces, `.'-` only, 40 chars.
+    static func safeName(_ name: String) -> String {
+        let kept = name.unicodeScalars.filter {
+            CharacterSet.letters.contains($0) || CharacterSet.decimalDigits.contains($0) || " .'-".unicodeScalars.contains($0)
+        }
+        let clean = String(String.UnicodeScalarView(kept)).split(separator: " ").joined(separator: " ")
+        return String(clean.prefix(40))
+    }
+
+    /// D-313: the same result a `/v1/parse` answer would give, built on the phone. Call / directions become a normal
+    /// step (contacts / saved place resolved on device, follow-up or S04 as usual).
+    private func runLocal(_ intent: LocalIntent, draft: TaskDraft) async {
+        Self.logger.info("local intent")                                  // D-059: no content
+        switch intent {
+        case .checkMail(let codesOnly):
+            mailCodesOnly = codesOnly
+            opensMail = true
+        case .calendarDay(let day):
+            calendarDay = day
+        case .reminders:
+            opensReminders = true
+        case .call(let name):
+            await handle(Self.localDraft("call", "open", [("recipientName", name), ("callType", "phone")]),
+                         isAnswer: false, draft: draft, returnMode: .transcript)
+        case .directions(let label):
+            await handle(Self.localDraft("place", "open", [("query", label)]),
+                         isAnswer: false, draft: draft, returnMode: .transcript)
+        case .schedule(let s):                                            // D-320
+            let parsed = switch s.kind {
+            case .reminder:
+                Self.localDraft("reminder", "create", [("title", s.title), ("dueDate", s.date)],
+                                confidence: ["dueDate": s.dateConfidence])
+            case .event:
+                Self.localDraft("calendarEvent", "create",
+                                [("title", s.title), ("startDate", s.date)] + (s.location.map { [("location", $0)] } ?? []),
+                                confidence: ["startDate": s.dateConfidence])
+            }
+            await handle(parsed, isAnswer: false, draft: draft, returnMode: .transcript)
+        }
+    }
+
+    static func localDraft(_ kind: String, _ operation: String, _ fields: [(String, String)],
+                           confidence: [String: Double] = [:]) -> ParsedDraft {
+        ParsedDraft(schemaVersion: 1, requestId: nil,
+                    steps: [ParsedStep(kind: kind, operation: operation,
+                                       fields: fields.map { ParsedField(id: $0.0, value: $0.1,
+                                                                        confidence: confidence[$0.0] ?? 1, sourceQuote: nil) },
+                                       dateCandidates: [])],
+                    followUpQuestion: nil, unsupported: nil)
+    }
+
+    /// "Trả lời thư của {name}" above the conversation.
+    var replyCaption: String? {
+        reply.map { UserMessage(key: "conv.replyTo", args: [$0.fromName]).text }
     }
 
     // MARK: - Parse loop (ARCHITECTURE §6.2)
@@ -494,6 +597,7 @@ import OSLog
         noticeKey = nil
         workingReturnMode = returnMode
         mode = .working
+        acknowledge(draft)
         let zone = TimeZone(identifier: draft.timeZoneId) ?? .current
         let request = ParseRequest(text: text, inputMode: inputMode, now: ParseRequest.nowString(now(), in: zone),
                                    timezone: zone.identifier, locale: draft.locale,
@@ -539,9 +643,16 @@ import OSLog
         }
         if let u = parsed.unsupported, u.reason == "viewCalendar" {
             calendarDay = u.date ?? Self.dayString(now(), timeZoneId: draft.timeZoneId)
+        } else if let u = parsed.unsupported, u.reason == "checkMail" {
+            mailCodesOnly = LocalIntent.wantsCode(draft.originalInput)
+            opensMail = true
         } else if let u = parsed.unsupported {
             showUnsupported(.init(reason: u.reason, message: u.message))
         } else if engine.applyParsed(parsed, to: draft, defaults: defaults) {
+            if let reply, let step = draft.steps.first(where: { $0.kind == .emailReply }) {
+                // Address + thread from the message itself, before Contacts are searched (D-307).
+                engine.apply(DeviceResolution(values: reply.values, origin: "gmail"), stepId: step.id, in: draft)
+            }
             await resolveThenAdvance(draft)
         } else {
             // Every step dropped on device (unknown kind / pair, D-150): nothing to review → "Chưa hỗ trợ" (spec §11).
@@ -570,6 +681,7 @@ import OSLog
             showFollowUp(FollowUp(question: next.question, chips: next.candidates.map {
                 DateChip(fieldId: next.fieldId, value: $0.id, label: $0.title)
             }))
+            askAloudThenListen(next.question)
         } else {
             prompt = nil
             reviewDraftId = draft.id
@@ -582,10 +694,11 @@ import OSLog
         Self.logger.info("parse failed: \(code, privacy: .public)")       // D-059: code only
         mode = returnMode
         noticeKey = Self.noticeKey(forParseError: code)
+        quotaBlock = QuotaBlock.from(error)                                // D-088, D-241
     }
 
     /// `error.<code>` keys of UI_SCREENS §8 used by S03; unknown → `error.generic`.
-    // TODO(spec): 402 should open S16 / S17 (1F); until then the notice `error.quota_exceeded` is shown.
+    // 402 also opens S16 / S17 (`quotaBlock`, 1F.7); the notice stays under the text.
     static func noticeKey(forParseError code: String) -> String {
         if code.hasPrefix("network.") { return "error.network.offline" }
         switch code {
@@ -610,6 +723,40 @@ import OSLog
         guard isReading else { return }
         tts.stop()
         isReading = false
+    }
+
+    /// D-320: a spoken request that goes to the AI (~3–4 s) gets an instant "Để Khoai xem nhé." so the wait is not
+    /// silent. Only with "Đọc to" on and a spoken request; the next thing Khoai says stops it (`TTSService.speak`).
+    private func acknowledge(_ draft: TaskDraft) {
+        guard settings.voiceEnabled, draft.inputMode == .voice else { return }
+        acknowledged = true
+        let text = UserMessage(key: "conv.ack").text
+        Task { @MainActor [tts, settings] in await tts.speak(text, rate: settings.speechRate) }
+    }
+
+    /// Test hook: the last AI request was acknowledged aloud.
+    private(set) var acknowledged = false
+
+    // MARK: - Hands-free (D-312)
+
+    /// The request was spoken, and "Nói chuyện rảnh tay" + "Đọc to câu trả lời" are on.
+    var isHandsFree: Bool {
+        settings.handsFree && settings.voiceEnabled && currentDraft?.inputMode == .voice
+    }
+
+    /// Reads the follow-up question, then opens the mic for the answer (it is sent 2 s after the last words; 8 s
+    /// without a word just stops listening). Any tap that changes the mode first cancels it.
+    private func askAloudThenListen(_ question: String) {
+        guard isHandsFree else { return }
+        handsFreeTask?.cancel()
+        handsFreeTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            self.isReading = true
+            await self.tts.speak(question, rate: self.settings.speechRate)
+            self.isReading = false
+            guard !Task.isCancelled, case .followUp = self.mode else { return }
+            await self.listenForAnswer()
+        }
     }
 
     // MARK: - Autosave (D-104)

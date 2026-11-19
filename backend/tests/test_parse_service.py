@@ -163,7 +163,7 @@ def test_date_candidate_labels_rebuilt_on_weekday_slip_and_capped():
 
 
 def test_invalid_pairs_and_disabled_kinds_dropped_none_left_is_phase_not_enabled():
-    out = run(draft(step("call", "create"), step("emailReply", "create")))
+    out = run(draft(step("call", "create"), step("ride", "prepare")))
     assert out == {"steps": [], "followUpQuestion": None,
                    "unsupported": {"reason": "phaseNotEnabled", "message": ps.FALLBACK_UNSUPPORTED_MESSAGE,
                                    "date": None}}
@@ -186,6 +186,11 @@ def test_view_calendar_keeps_a_valid_day_else_today():  # D-294
     assert bad["reason"] == "viewCalendar" and len(bad["date"]) == 10      # today in the request timezone
     other = run(draft(unsupported={"reason": "recurringEvent", "message": "x", "date": "2026-11-13"}))
     assert other["unsupported"]["date"] is None                           # only viewCalendar carries a day
+
+
+def test_check_mail_has_no_day():  # D-304: S21 Mail summary, prompt v4
+    u = {"reason": "checkMail", "message": "Mở thư mới của bạn.", "date": "2026-11-13"}
+    assert run(draft(unsupported=u))["unsupported"] == {**u, "date": None}
 
 
 def test_two_deletes_become_bulk_action():

@@ -6,11 +6,12 @@ import Testing
 /// (synchronized folder in `project.xcproj`), so pytest and Swift test the same bytes.
 @Suite("Contract fixtures (API_CONTRACT §11)")
 struct ContractFixtureTests {
-    /// The 13 codes of API_CONTRACT §3.2 (backend `schemas/error.py` `ErrorCode`).
+    /// The 13 codes of API_CONTRACT §3.2 + 3 Gmail codes of API_GMAIL §6 (backend `schemas/error.py` `ErrorCode`).
     static let errorCodes = [
         "billing_invalid", "unauthorized", "quota_exceeded", "billing_account_mismatch", "not_found",
         "payload_too_large", "invalid_input", "client_outdated", "rate_limited", "internal",
         "llm_invalid_output", "upstream_error", "spend_cap",
+        "gmail_not_connected", "gmail_account_limit", "gmail_reconnect_required",
     ]
 
     private static var bundle: Bundle { Bundle(for: BundleToken.self) }
@@ -48,6 +49,10 @@ struct ContractFixtureTests {
         case "transcribe": reencoded = try JSONEncoder().encode(Self.decode(TranscribeResponse.self, name))
         case "ocr": reencoded = try JSONEncoder().encode(Self.decode(OCRResponse.self, name))
         case "extract": reencoded = try JSONEncoder().encode(Self.decode(ExtractResponse.self, name))
+        case "gmailaccount": reencoded = try JSONEncoder().encode(Self.decode(GmailAccountResponse.self, name))
+        case "gmailaccounts": reencoded = try JSONEncoder().encode(Self.decode(GmailAccountsResponse.self, name))
+        case "gmailsummary": reencoded = try JSONEncoder().encode(Self.decode(GmailSummaryResponse.self, name))
+        case "gmaildraft": reencoded = try JSONEncoder().encode(Self.decode(GmailDraftResponse.self, name))
         default:
             Issue.record("no DTO mapped for \(name)")
             return
@@ -94,6 +99,8 @@ struct ContractFixtureTests {
         #expect(ParsedDraft.mockSMS == (try Self.decode(ParsedDraft.self, "parse.sms.response.json")))
         #expect(OCRResponse.mock == (try Self.decode(OCRResponse.self, "ocr.ok.response.json")))
         #expect(ExtractResponse.mock == (try Self.decode(ExtractResponse.self, "extract.appointment.response.json")))
+        #expect(GmailSummaryResponse.mock == (try Self.decode(GmailSummaryResponse.self, "gmailsummary.ok.response.json")))
+        #expect(GmailDraftResponse.mock == (try Self.decode(GmailDraftResponse.self, "gmaildraft.created.response.json")))
     }
 
     static var requestFixtureNames: [String] {
@@ -111,6 +118,10 @@ struct ContractFixtureTests {
         switch name.split(separator: ".").first {
         case "parse": encoded = try JSONEncoder().encode(Self.decode(ParseRequest.self, name))
         case "extract": encoded = try JSONEncoder().encode(Self.decode(ExtractRequest.self, name))
+        case "gmailaccount": encoded = try JSONEncoder().encode(Self.decode(GmailConnectRequest.self, name))
+        case "gmailsummary": encoded = try JSONEncoder().encode(Self.decode(GmailSummaryRequest.self, name))
+        case "gmaildraft": encoded = try JSONEncoder().encode(Self.decode(GmailDraftRequest.self, name))
+        case "billing": encoded = try JSONEncoder().encode(Self.decode(BillingVerifyRequest.self, name))
         default:
             Issue.record("no DTO mapped for \(name)")
             return

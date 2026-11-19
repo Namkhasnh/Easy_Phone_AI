@@ -108,6 +108,61 @@ actor APIClient: APIClientProtocol {
                                        contentType: contentType, idempotencyKey: idempotencyKey))
     }
 
+    func gmailConnect(_ request: GmailConnectRequest) async throws -> GmailAccountResponse {
+        let body: Data
+        do {
+            body = try JSONEncoder().encode(request)
+        } catch {
+            throw AppError.decoding(requestId: nil)
+        }
+        return try await send(Endpoint(method: "POST", path: "/v1/gmail/accounts", authorized: true, body: body))
+    }
+
+    func gmailAccounts() async throws -> GmailAccountsResponse {
+        try await send(Endpoint(method: "GET", path: "/v1/gmail/accounts", authorized: true))
+    }
+
+    func gmailDisconnect(accountId: String) async throws {
+        let _: NoContent = try await send(Endpoint(method: "DELETE", path: "/v1/gmail/accounts/\(accountId)",
+                                                   authorized: true))
+    }
+
+    func gmailSummary(_ request: GmailSummaryRequest, idempotencyKey: IdempotencyKey) async throws -> GmailSummaryResponse {
+        let body: Data
+        do {
+            body = try JSONEncoder().encode(request)
+        } catch {
+            throw AppError.decoding(requestId: nil)
+        }
+        return try await send(Endpoint(method: "POST", path: "/v1/gmail/summary", authorized: true,
+                                       body: body, idempotencyKey: idempotencyKey))
+    }
+
+    func gmailDraft(_ request: GmailDraftRequest, idempotencyKey: IdempotencyKey) async throws -> GmailDraftResponse {
+        let body: Data
+        do {
+            body = try JSONEncoder().encode(request)
+        } catch {
+            throw AppError.decoding(requestId: nil)
+        }
+        return try await send(Endpoint(method: "POST", path: "/v1/gmail/drafts", authorized: true,
+                                       body: body, idempotencyKey: idempotencyKey))
+    }
+
+    func verifyTransaction(jws: String) async throws -> MeResponse {
+        let body: Data
+        do {
+            body = try JSONEncoder().encode(BillingVerifyRequest(signedTransaction: jws))
+        } catch {
+            throw AppError.decoding(requestId: nil)
+        }
+        return try await send(Endpoint(method: "POST", path: "/v1/billing/verify", authorized: true, body: body))
+    }
+
+    func deleteAccount() async throws {
+        let _: NoContent = try await send(Endpoint(method: "DELETE", path: "/v1/me", authorized: true))
+    }
+
     // MARK: - Pipeline
 
     private func send<Response: Decodable & Sendable>(_ endpoint: Endpoint) async throws -> Response {
@@ -124,13 +179,22 @@ actor APIClient: APIClientProtocol {
             let error: AppError
             var retryAfter: Double?
             do {
+                let started = ContinuousClock.now
                 let (data, http) = try await transport.send(request)
                 let requestId = http.value(forHTTPHeaderField: "X-Request-Id")
+                if (200..<300).contains(http.statusCode) {                              // D-319
+                    let elapsed = started.duration(to: .now)
+                    LatencyLog.shared.record(path: endpoint.path,
+                                             totalMs: Double(elapsed.components.seconds) * 1000
+                                                 + Double(elapsed.components.attoseconds) / 1e15,
+                                             serverTiming: http.value(forHTTPHeaderField: "Server-Timing"))
+                }
                 // D-059: ids and status only, never bodies.
                 Self.logger.info("\(endpoint.method, privacy: .public) \(endpoint.path, privacy: .public) \(http.statusCode) attempt=\(attempt) \(requestId ?? "-", privacy: .public)")
 
                 if (200..<300).contains(http.statusCode) {
                     if let quota = Self.quota(from: http) { self.quota.yield(quota) }
+                    if http.statusCode == 204, let empty = NoContent() as? Response { return empty }
                     do {
                         return try Self.decoder().decode(Response.self, from: data)
                     } catch {
@@ -250,3 +314,6 @@ actor APIClient: APIClientProtocol {
         return Quota(limit: limit, used: max(0, limit - remaining), remaining: remaining, resetsAt: resetsAt)
     }
 }
+
+/// A `204 No Content` answer (e.g. `DELETE /v1/gmail/accounts/{id}`).
+struct NoContent: Decodable, Sendable {}

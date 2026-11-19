@@ -15,6 +15,7 @@ ALLOWED_OPERATIONS = {
     "sms": {"open"},
     "place": {"create", "open"},
     "ocr": {"create"},
+    "emailReply": {"create"},  # D-303
 }
 FIELD_TYPES = {
     "text", "longText", "dateTime", "date", "durationMinutes", "bool", "phone",
@@ -63,6 +64,7 @@ def test_locked_fields_match_d056() -> None:
     locked = {f"{k['kind']}.{f['id']}" for k in CATALOG["kinds"] for f in k["fields"] if f["deviceOnly"]}
     assert locked == {
         "calendarEvent.calendarId", "call.contactId", "call.phoneNumber", "sms.contactId", "sms.phoneNumber",
+        "emailReply.toAddress",  # D-307
     }
     built = {f"{k['kind']}.{f['id']}" for k in CATALOG["kinds"] for f in k["fields"] if f["appBuilt"]}
-    assert built == {"reminder.completed"}
+    assert built == {"reminder.completed", "emailReply.accountEmail", "emailReply.threadId", "emailReply.messageId"}

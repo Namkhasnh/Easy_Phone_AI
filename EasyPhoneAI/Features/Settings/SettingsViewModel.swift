@@ -5,11 +5,18 @@ import Observation
 @Observable @MainActor final class SettingsViewModel {
     /// Destructive confirms (S20, `ConfirmSheet`). Delete always needs a tap (D-108).
     enum Confirm: String, Identifiable, Sendable {
-        case clearHistory, clearMemory, signOut
+        case clearHistory, clearMemory, signOut, gmailDisconnect, deleteAccount
         var id: String { rawValue }
         var titleKey: String { "confirm.\(rawValue).title" }
         var bodyKey: String { "confirm.\(rawValue).body" }
-        var confirmKey: String { self == .signOut ? "confirm.signOut.yes" : "confirm.delete" }
+        var confirmKey: String {
+            switch self {
+            case .signOut: "confirm.signOut.yes"
+            case .gmailDisconnect: "confirm.gmailDisconnect.yes"
+            case .deleteAccount: "confirm.deleteAccount.yes"
+            case .clearHistory, .clearMemory: "confirm.delete"
+            }
+        }
     }
 
     let settings: AppSettings
@@ -20,6 +27,13 @@ import Observation
     /// S15 "Quyền truy cập": one row per capability (UI_SCREENS S15, §10.4). Re-read when the app is active again,
     /// because the user may have changed it in iOS Settings.
     private(set) var permissionStatuses: [(capability: Capability, status: PermissionStatus)] = []
+    /// S15 "Kết nối" (API_GMAIL §3, D-306): the one connected Gmail account, if any.
+    private(set) var gmailAccount: GmailAccount?
+    private(set) var gmailBusy = false
+    /// Last connect / disconnect failure, shown under the Gmail row.
+    private(set) var gmailMessage: UserMessage?
+    /// `GMAIL_CLIENT_ID` is set (Config/Secrets.xcconfig); otherwise the row says "Gmail — sắp có".
+    let gmailAvailable: Bool
 
     private let localData: any LocalDataRepository
     private let drafts: any TaskRepository
@@ -28,11 +42,24 @@ import Observation
     private let permissions: any PermissionManager
     private let contacts: any ContactsService
     private let photoLibrary: any PhotoLibraryService
+    private let gmail: any GmailService
+    private let api: (any APIClientProtocol)?
+    private let images: any ImageStore
+    /// S20 "Đang xóa…" while `DELETE /v1/me` runs.
+    private(set) var deletingAccount = false
+    /// A failed deletion (network / server): shown in the account section; nothing was wiped.
+    private(set) var accountMessage: UserMessage?
 
     init(localData: any LocalDataRepository, drafts: any TaskRepository, auth: any AuthService,
          tts: any TTSService = MockTTSService(), permissions: any PermissionManager = MockPermissionManager(),
          contacts: any ContactsService = MockContactsService(),
-         photoLibrary: any PhotoLibraryService = MockPhotoLibraryService()) {
+         photoLibrary: any PhotoLibraryService = MockPhotoLibraryService(),
+         gmail: any GmailService = MockGmailService(), gmailAvailable: Bool = true,
+         api: (any APIClientProtocol)? = nil, images: any ImageStore = MockImageStore()) {
+        self.api = api
+        self.images = images
+        self.gmail = gmail
+        self.gmailAvailable = gmailAvailable
         self.photoLibrary = photoLibrary
         self.permissions = permissions
         self.contacts = contacts
@@ -80,6 +107,31 @@ import Observation
     static let snoozeHours = Array(5...11)            // picker 5–11 (S15)
     static let mapsApps = ["appleMaps", "googleMaps"] // DATA_MODEL §4 `mapsApp` options
 
+    /// D-319: the latest AI request timings (memory only), refreshed when the Nâng cao page opens.
+    var latency: [LatencySample] = []
+
+    func loadLatency() { latency = LatencyLog.shared.recent }
+
+    nonisolated static func seconds(_ ms: Double) -> String {
+        (ms / 1000).formatted(.number.precision(.fractionLength(1)).locale(Locale(identifier: "vi_VN")))
+    }
+
+    nonisolated static func latencyLabelKey(_ path: String) -> String {
+        switch path {
+        case "/v1/gmail/summary": "settings.latency.mail"
+        case "/v1/transcribe": "settings.latency.transcribe"
+        default: "settings.latency.parse"
+        }
+    }
+
+    /// D-318: the app's own text size (applied at the root, `RootView`).
+    var textSize: AppTextSize { AppTextSize(stored: settings.textSize) }
+
+    func setTextSize(_ size: AppTextSize) {
+        settings.textSize = size.rawValue
+        save()
+    }
+
     /// Simple mode hides ★ rows (P-40).
     var showsAdvanced: Bool { !settings.simpleMode }
 
@@ -112,6 +164,86 @@ import Observation
             localData.wipeMemory()                                // nicknames + saved places (§5)
             nicknames = []
         case .signOut: await auth.signOut()                       // drafts stay on the phone (S20)
+        case .gmailDisconnect: await disconnectGmail()
+        case .deleteAccount: await deleteAccount()
+        }
+    }
+
+    /// ARCHITECTURE §6.6 (D-073): `DELETE /v1/me` → only after `204` wipe drafts, saved data and photos on the phone →
+    /// sign out (S01). A failure wipes nothing (D-104) and shows the error.
+    private func deleteAccount() async {
+        guard let api, !deletingAccount else { return }
+        deletingAccount = true
+        accountMessage = nil
+        defer { deletingAccount = false }
+        do {
+            try await api.deleteAccount()
+        } catch {
+            let code = (error as? AppError)?.code ?? "generic"
+            accountMessage = UserMessage(key: ConversationViewModel.noticeKey(forParseError: code))
+            return
+        }
+        drafts.wipeAll()
+        localData.wipeAll()
+        await images.deleteAll()
+        await auth.signOut()
+    }
+
+    // MARK: - Gmail (API_GMAIL §2–§3)
+
+    func loadGmail() async {
+        guard gmailAvailable else { return }
+        do {
+            gmailAccount = try await gmail.accounts().first
+        } catch {
+            // Offline etc.: keep what we showed; the row still offers "Kết nối Gmail".
+        }
+    }
+
+    /// "Kết nối Gmail" / "Kết nối lại Gmail": Google consent sheet → backend. Closing the sheet is not an error.
+    func connectGmail() async {
+        guard !gmailBusy else { return }
+        gmailBusy = true
+        gmailMessage = nil
+        defer { gmailBusy = false }
+        do {
+            gmailAccount = try await gmail.connect()
+        } catch is CancellationError {
+        } catch {
+            gmailMessage = Self.gmailFailure(error)
+        }
+    }
+
+    private func disconnectGmail() async {
+        guard let account = gmailAccount else { return }
+        gmailBusy = true
+        gmailMessage = nil
+        defer { gmailBusy = false }
+        do {
+            try await gmail.disconnect(accountId: account.accountId)
+            gmailAccount = nil
+        } catch {
+            gmailMessage = Self.gmailFailure(error)
+        }
+    }
+
+    /// "Gmail: khanh@gmail.com" (S15).
+    var gmailAccountText: String? {
+        gmailAccount.map { UserMessage(key: "settings.gmail.account", args: [$0.email]).text }
+    }
+
+    static func gmailFailure(_ error: any Error) -> UserMessage {
+        guard let error = error as? AppError else { return UserMessage(key: "settings.gmail.failed") }
+        switch error {
+        case .network: return UserMessage(key: "error.network.offline")
+        case .api(_, _, let details, _) where details?.reason == "missingScope":
+            // TODO(spec): API_GMAIL §3.1 gives the words, UI_SCREENS S15 no key → `settings.gmail.missingScope`.
+            return UserMessage(key: "settings.gmail.missingScope")
+        case .api(let code, _, _, _) where code.hasPrefix("gmail_"):
+            return UserMessage(key: "error.\(code)")
+        default:
+            // TODO(spec): no generic connect-failure key in UI_SCREENS S15 → `settings.gmail.failed`.
+            return UserMessage(key: "settings.gmail.failed")
         }
     }
 }

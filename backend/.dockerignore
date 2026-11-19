@@ -1,0 +1,11 @@
+.env
+.env.*
+certs/
+.venv/
+__pycache__/
+**/__pycache__/
+tests/
+evals/
+migrations/
+.pytest_cache/
+*.pyc

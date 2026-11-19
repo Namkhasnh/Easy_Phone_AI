@@ -25,6 +25,7 @@ final class LiveImageStore: ImageStore {
     func load(_ relativePath: String) async -> Data? { try? Data(contentsOf: base.appending(path: relativePath)) }
 
     func delete(_ relativePath: String) async { try? FileManager.default.removeItem(at: base.appending(path: relativePath)) }
+    func deleteAll() async { try? FileManager.default.removeItem(at: base.appending(path: "ocr")) }
 
     static func downscaledJPEG(_ data: Data, maxPixelSize: Int = ImageStoreLimits.maxPixelSize) throws -> Data {
         guard let source = CGImageSourceCreateWithData(data as CFData, nil),

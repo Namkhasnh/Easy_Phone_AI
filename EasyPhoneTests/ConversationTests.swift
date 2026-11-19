@@ -163,12 +163,12 @@ struct ConversationTests {
         #expect(!vm.canSend)
         await vm.send()
         #expect(api.parseCalls.isEmpty)
-        vm.text = "Gọi cho mẹ"
+        vm.text = "Nhắn mẹ là con về muộn"
         #expect(vm.canSend)
         #expect(api.parseCalls.isEmpty)                                  // only "Gửi" sends
         await vm.send()
-        #expect(api.parseCalls.count == 1)
-        #expect(repo.draft(vm.draftId!)?.originalInput == "Gọi cho mẹ")
+        #expect(api.parseCalls.count == 1)          // not a D-313 local phrase
+        #expect(repo.draft(vm.draftId!)?.originalInput == "Nhắn mẹ là con về muộn")
     }
 
     @Test func readAloudUsesSettingsRate() async {
@@ -211,12 +211,12 @@ struct ConversationTests {
 
     @Test func autoSendOnSendsAfterSilence() async {
         local.settings().autoSend = true
-        speech.script = [Transcript(text: "Gọi cho mẹ", isFinal: false)]
+        speech.script = [Transcript(text: "Nhắn mẹ là con về muộn", isFinal: false)]
         speech.holdsUntilStop = true
         let vm = fastModel()
         await vm.onAppear()                                              // listening → 2 s silence → send
         #expect(api.parseCalls.count == 1)
-        #expect(api.parseCalls.first?.request.text == "Gọi cho mẹ")
+        #expect(api.parseCalls.first?.request.text == "Nhắn mẹ là con về muộn")
         #expect(api.parseCalls.first?.request.inputMode == .voice)
         #expect(vm.reviewDraftId != nil || vm.mode != .transcript)       // moved on; nothing executed (D-100)
     }

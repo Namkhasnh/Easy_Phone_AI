@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import SwiftData
 
 // DATA_MODEL §5 — local only, never sent to the backend (🔒, D-056). Saved-place addresses stay on device;
@@ -54,7 +55,31 @@ import SwiftData
     var petEnabled: Bool = true       // "Hiện bạn Khoai" (D-289)
     var autoSend: Bool = true         // "Tự gửi khi nói xong" (D-296)
     var autoConfirm: Bool = false     // "Làm luôn, không cần xác nhận" (D-299), safe kinds only
+    var handsFree: Bool = true        // "Nói chuyện rảnh tay" (D-312)
     var savePhotos: Bool = false      // "Lưu ảnh chụp vào Ảnh" (D-301), camera photos only
+    var textSize: String = AppTextSize.system.rawValue   // "Cỡ chữ" for this app only (D-318)
 
     init() {}
+}
+
+/// D-318 (owner 2026-11-19): the app's own text size, independent of the iPhone setting. `system` = follow iOS.
+/// Steps grow quickly because many users are elderly; the biggest one is an accessibility size (D-180: AX5 must work).
+enum AppTextSize: String, CaseIterable, Sendable, Identifiable {
+    case system, medium, large, xLarge, huge
+
+    var id: String { rawValue }
+    var labelKey: String { "settings.textSize.option.\(rawValue)" }
+
+    /// nil = do not override (Dynamic Type from iOS).
+    var dynamicTypeSize: DynamicTypeSize? {
+        switch self {
+        case .system: nil
+        case .medium: .large
+        case .large: .xxLarge
+        case .xLarge: .accessibility1
+        case .huge: .accessibility3
+        }
+    }
+
+    init(stored: String) { self = AppTextSize(rawValue: stored) ?? .system }
 }

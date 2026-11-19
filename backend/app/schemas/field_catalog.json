@@ -431,8 +431,6 @@
           "fields": [
             "query",
             "name",
-            "address",
-            "coordinate",
             "mapsApp"
           ],
           "conditional": []
@@ -497,6 +495,65 @@
           "requiresTargetRef": false,
           "fields": [
             "extractedText"
+          ],
+          "conditional": []
+        }
+      ]
+    },
+    {
+      "kind": "emailReply",
+      "fields": [
+        {
+          "id": "recipientName",
+          "type": "text",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "toAddress",
+          "type": "text",
+          "deviceOnly": true,
+          "appBuilt": false
+        },
+        {
+          "id": "subject",
+          "type": "text",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "body",
+          "type": "longText",
+          "deviceOnly": false,
+          "appBuilt": false
+        },
+        {
+          "id": "accountEmail",
+          "type": "text",
+          "deviceOnly": false,
+          "appBuilt": true
+        },
+        {
+          "id": "threadId",
+          "type": "text",
+          "deviceOnly": false,
+          "appBuilt": true
+        },
+        {
+          "id": "messageId",
+          "type": "text",
+          "deviceOnly": false,
+          "appBuilt": true
+        }
+      ],
+      "required": [
+        {
+          "operation": "create",
+          "requiresTargetRef": false,
+          "fields": [
+            "recipientName",
+            "toAddress",
+            "body"
           ],
           "conditional": []
         }

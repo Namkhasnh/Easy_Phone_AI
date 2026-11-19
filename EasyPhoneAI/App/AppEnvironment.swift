@@ -40,6 +40,10 @@ struct AppEnvironment: Sendable {
     let photoLibrary: any PhotoLibraryService
     /// Text from the photo: Vision first, `/v1/ocr` fallback (1D.3, ARCHITECTURE §4.3, D-061).
     let ocr: any OCRService
+    /// Gmail connection (Phase 2, API_GMAIL §2–§3).
+    let gmail: any GmailService
+    /// StoreKit 2 (Phase 1F, ARCHITECTURE §6.5).
+    let purchases: any PurchaseService
 
     @MainActor static func live(container: ModelContainer) -> AppEnvironment {
         let config = AppConfig.fromMainBundle()
@@ -53,6 +57,7 @@ struct AppEnvironment: Sendable {
         let system = LiveSystemService()
         let places = LivePlacesService(system: system)
         let api = APIClient(config: config, auth: auth, client: .fromMainBundle())
+        let gmail = LiveGmailService(api: api, clientID: config.gmailClientID)
         return AppEnvironment(config: config, auth: auth,
                               api: api,
                               drafts: drafts,
@@ -60,7 +65,8 @@ struct AppEnvironment: Sendable {
                               engine: TaskEngine(repository: drafts,
                                                  executors: executors(calendar, reminders, permissions, localData,
                                                                       calls: LiveCallService(), messages: LiveMessagesService(),
-                                                                      system: system, places: places),
+                                                                      system: system, places: places,
+                                                                      api: api, gmail: gmail),
                                                  serviceIds: SupportedServices.bundled.ids,
                                                  resolver: DeviceResolver(contacts: contacts, calendar: calendar,
                                                                           permissions: permissions, places: places,
@@ -69,7 +75,8 @@ struct AppEnvironment: Sendable {
                               permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts,
                               system: system, places: places,
                               images: LiveImageStore(), photoLibrary: LivePhotoLibraryService(),
-                              ocr: RoutingOCRService(device: VisionOCRService(), remote: APIRemoteOCR(api: api)))
+                              ocr: RoutingOCRService(device: VisionOCRService(), remote: APIRemoteOCR(api: api)),
+                              gmail: gmail, purchases: LivePurchaseService())
     }
 
     static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
@@ -86,6 +93,7 @@ struct AppEnvironment: Sendable {
         let auth = scenario == .uiTest ? MockAuthService(initial: .signedIn(userId: MockAuthService.userId)) : MockAuthService()
         let api = scenario == .uiTest ? MockAPIClient(parseRouter: uiTestParse, extract: .success(uiTestExtract()))
                                       : MockAPIClient()
+        let gmail = MockGmailService(accounts: scenario == .uiTest ? [MockGmailService.sample] : [])
         return AppEnvironment(config: .mock, auth: auth, api: api, drafts: drafts,
                               localData: localData,
                               engine: TaskEngine(repository: drafts,
@@ -94,7 +102,8 @@ struct AppEnvironment: Sendable {
                                                                       // Simulator cannot send SMS; the system composer
                                                                       // cannot be driven by XCUITest either (1C.18b).
                                                                       messages: MockMessagesService(canSendText: scenario != .uiTest),
-                                                                      system: system, places: places),
+                                                                      system: system, places: places,
+                                                                      api: api, gmail: gmail),
                                                  serviceIds: SupportedServices.bundled.ids,
                                                  resolver: DeviceResolver(contacts: contacts, calendar: calendar,
                                                                           permissions: permissions, places: places,
@@ -103,7 +112,7 @@ struct AppEnvironment: Sendable {
                               permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts,
                               system: system, places: places,
                               images: MockImageStore(), photoLibrary: MockPhotoLibraryService(),
-                              ocr: MockOCRService())
+                              ocr: MockOCRService(), gmail: gmail, purchases: MockPurchaseService())
     }
 
     /// `MockScenario.uiTest` `/v1/extract` (flow 1, 1D.11): `ExtractResponse.mock` with the date moved to tomorrow
@@ -141,14 +150,17 @@ struct AppEnvironment: Sendable {
                                   calls: any CallService,
                                   messages: any MessagesService,
                                   system: any SystemService,
-                                  places: any PlacesService) -> [TaskKind: any StepExecutor] {
+                                  places: any PlacesService,
+                                  api: any APIClientProtocol,
+                                  gmail: any GmailService) -> [TaskKind: any StepExecutor] {
         [.calendarEvent: CalendarExecutor(calendar: calendar, permissions: permissions),
          .call: CallExecutor(calls: calls),
          .sms: SMSExecutor(messages: messages, system: system),
          .place: PlaceExecutor(places: places, localData: localData),
          .reminder: RemindersExecutor(reminders: reminders, permissions: permissions,
                                       morningHour: { localData.settings().snoozeMorningHour }),
-         .ocr: OCRExecutor(system: system)]
+         .ocr: OCRExecutor(system: system),
+         .emailReply: EmailDraftExecutor(api: api, gmail: gmail)]
     }
 }
 

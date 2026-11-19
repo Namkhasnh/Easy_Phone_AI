@@ -7,15 +7,16 @@ final class MockContactsService: ContactsService {
     private struct State {
         var contacts: [ContactRecord]
         var phones: [String: [PhoneEntry]]
+        var emails: [String: [String]]
         var nicknames: [String: String]
         var access: PermissionStatus
     }
 
     private let state: Mutex<State>
 
-    init(_ contacts: [ContactRecord] = [], phones: [String: [PhoneEntry]] = [:], nicknames: [String: String] = [:],
-         access: PermissionStatus = .granted) {
-        state = Mutex(State(contacts: contacts, phones: phones, nicknames: nicknames, access: access))
+    init(_ contacts: [ContactRecord] = [], phones: [String: [PhoneEntry]] = [:], emails: [String: [String]] = [:],
+         nicknames: [String: String] = [:], access: PermissionStatus = .granted) {
+        state = Mutex(State(contacts: contacts, phones: phones, emails: emails, nicknames: nicknames, access: access))
     }
 
     /// `MockScenario.uiTest`: one "anh Minh" with one mobile number (Dữ liệu mẫu, D-189).
@@ -48,6 +49,14 @@ final class MockContactsService: ContactsService {
             guard s.access.isUsable else { throw ServiceError.permissionDenied(.contacts) }
             guard s.contacts.contains(where: { $0.id == contactId }) else { throw ServiceError.notFound }
             return s.phones[contactId] ?? []
+        }
+    }
+
+    func emailAddresses(contactId: String) async throws -> [String] {
+        try state.withLock { s in
+            guard s.access.isUsable else { throw ServiceError.permissionDenied(.contacts) }
+            guard s.contacts.contains(where: { $0.id == contactId }) else { throw ServiceError.notFound }
+            return s.emails[contactId] ?? []
         }
     }
 }

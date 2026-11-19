@@ -13,6 +13,11 @@ struct ConversationView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Tokens.Space.l) {
+                if let caption = viewModel.replyCaption {
+                    Label { Text(verbatim: caption) } icon: { Image(systemName: "arrowshape.turn.up.left") }
+                        .font(Tokens.Fonts.label)
+                        .foregroundStyle(Tokens.Colors.textSecondary)
+                }
                 switch viewModel.mode {
                 case .listening: listening
                 case .transcript: transcript
@@ -42,7 +47,16 @@ struct ConversationView: View {
         .onChange(of: viewModel.calendarDay) { _, day in
             if let day { router.replaceLast(with: .calendarDay(day)) } // D-294: S11 for that day
         }
+        .onChange(of: viewModel.opensReminders) { _, opens in
+            if opens { router.replaceLast(with: .reminders) }           // D-313: S12
+        }
+        .onChange(of: viewModel.opensMail) { _, opens in
+            if opens { router.replaceLast(with: .mail(codesOnly: viewModel.mailCodesOnly)) }   // D-304: S21
+        }
         .onDisappear { viewModel.onDisappear() }
+        .sheet(item: $viewModel.quotaBlock) { block in
+            QuotaBlockSheet(block: block)                                 // 1F.7: S16 (free) / S17 (premium)
+        }
         .sheet(item: $viewModel.pendingPermission) { pending in
             PermissionSheet(pending: pending,
                             onAllow: { Task { await viewModel.allowPermission() } },

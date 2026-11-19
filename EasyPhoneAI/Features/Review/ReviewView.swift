@@ -48,6 +48,7 @@ struct ReviewView: View {
             viewModel.openPendingPicker()
             await viewModel.openPendingEventChoice()
             viewModel.startAutoConfirmIfAllowed()                       // D-299, only when the toggle is on
+            viewModel.startHandsFreeIfAllowed()                         // D-312, spoken requests only
         }
         .onDisappear {
             viewModel.cancelAutoConfirm()
@@ -280,6 +281,23 @@ struct ReviewView: View {
         .accessibilityElement(children: .combine)
     }
 
+    /// D-312: Khoai listens for "đồng ý" / "sửa" / "thôi"; "Dừng nghe" stops it (the step stays for the tap).
+    private var voiceCard: some View {
+        VStack(alignment: .leading, spacing: Tokens.Space.s) {
+            Label {
+                Text("review.voice.listening").fixedSize(horizontal: false, vertical: true)
+            } icon: {
+                Image(systemName: "mic.fill").foregroundStyle(Tokens.Colors.primary).accessibilityHidden(true)
+            }
+            .font(Tokens.Fonts.body.weight(.semibold))
+            .foregroundStyle(Tokens.Colors.textPrimary)
+            SecondaryButton("review.voice.stop", systemImage: "hand.raised") { viewModel.stopHandsFree() }
+        }
+        .padding(Tokens.Space.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+    }
+
     /// D-299: "Khoai sẽ làm sau {n} giây…" + "Để tôi xem lại" (cancels; the step stays for "Xác nhận").
     private func autoConfirmCard(_ seconds: Int) -> some View {
         VStack(alignment: .leading, spacing: Tokens.Space.s) {
@@ -307,6 +325,7 @@ struct ReviewView: View {
     private var actionBar: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.m) {
             if let seconds = viewModel.autoConfirmSeconds { autoConfirmCard(seconds) }
+            if viewModel.voiceListening { voiceCard }
             if !viewModel.batchDeleteRows.isEmpty { batchDeleteCard }
             PrimaryButton(LocalizedStringKey(viewModel.confirmKey),
                           role: viewModel.isDelete ? .destructive : nil,
@@ -360,15 +379,19 @@ extension ReviewView {
             .accessibilityElement(children: .combine)
             // Titles are already localized (with args); a lookup of the text itself falls back to the text.
             if let primary = card.primary {
-                PrimaryButton(LocalizedStringKey(primary.title)) { viewModel.perform(primary.action) }
+                PrimaryButton(LocalizedStringKey(primary.title)) { run(primary.action) }
             }
             if let secondary = card.secondary {
-                SecondaryButton(LocalizedStringKey(secondary.title)) { viewModel.perform(secondary.action) }
+                SecondaryButton(LocalizedStringKey(secondary.title)) { run(secondary.action) }
             }
         }
         .padding(Tokens.Space.screenPadding)
         .background(Tokens.Colors.bg)
         .overlay(alignment: .top) { Divider() }
+    }
+
+    private func run(_ action: ReviewViewModel.ResultAction) {
+        if case .open(let url) = action { openURL(url) } else { viewModel.perform(action) }
     }
 
     private static func tint(_ state: TaskState) -> Color {
