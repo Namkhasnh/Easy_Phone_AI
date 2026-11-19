@@ -273,9 +273,10 @@ import OSLog
                 for try await transcript in speech.start(locale: Self.locale) {
                     // On-device Speech can end with an empty "final" after `endAudio`; never let it wipe the
                     // words already shown (owner report 2026-11-10: "Gọi cho mẹ" vanished after "Dừng").
-                    guard !transcript.text.isEmpty, transcript.text != listeningText else { continue }
-                    if case .answer = self.target { answerText = transcript.text } else { text = transcript.text }
-                    armAutoStop(after: silenceDelay(for: transcript.text))
+                    let heard = SpeechCleanup.fix(transcript.text)               // "thứ 79h" → "thứ 7 9h" (D-322)
+                    guard !heard.isEmpty, heard != listeningText else { continue }
+                    if case .answer = self.target { answerText = heard } else { text = heard }
+                    armAutoStop(after: silenceDelay(for: heard))
                 }
                 finishListening(errorCode: nil)
             } catch {
@@ -384,7 +385,7 @@ import OSLog
             do {
                 let result = try await self.api.transcribe(m4a: audio, meta: .vietnamese)
                 guard !Task.isCancelled else { return }
-                self.endTranscribe(result.text, unavailable: false, target: target)
+                self.endTranscribe(SpeechCleanup.fix(result.text), unavailable: false, target: target)
             } catch {
                 guard !Task.isCancelled else { return }
                 // D-059: code only. 429 / spend cap / offline → keyboard (ARCHITECTURE §9.2).
