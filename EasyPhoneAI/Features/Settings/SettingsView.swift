@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// S15 Settings (UI_SCREENS S15). `List(.insetGrouped)`, rows ≥ 56pt, sections in the documented order.
+/// S15 Settings (UI_SCREENS S15, regrouped by D-317): a short first screen of groups; each group is its own page.
 struct SettingsView: View {
     @State var viewModel: SettingsViewModel
     @Environment(AppState.self) private var appState
@@ -11,153 +11,45 @@ struct SettingsView: View {
     @State private var showsPaywall = false
     @State private var legal: LegalView.Document?
 
+    /// Owner 2026-11-18 (D-317): the first screen lists the groups; each opens its own page (like iOS Settings).
+    enum Page: String, CaseIterable, Hashable, Identifiable {
+        case account, voice, display, memory, connections, advanced, data, about
+        var id: String { rawValue }
+        var titleKey: LocalizedStringKey { LocalizedStringKey("settings.\(rawValue)") }
+        var symbol: String {
+            switch self {
+            case .account: "person.crop.circle.fill"
+            case .voice: "waveform"
+            case .display: "textformat.size"
+            case .memory: "heart.text.square.fill"
+            case .connections: "envelope.fill"
+            case .advanced: "slider.horizontal.3"
+            case .data: "externaldrive.fill"
+            case .about: "info.circle.fill"
+            }
+        }
+    }
+
     var body: some View {
-        @Bindable var settings = viewModel.settings
         List {
             Group {
-            accountSection
-
-            Section(header: header("settings.voice")) {
-                Toggle(isOn: $settings.voiceEnabled) { rowText("settings.voice.enabled") }
-                    .onChange(of: settings.voiceEnabled) { viewModel.save() }
-                    .frame(minHeight: Tokens.Size.buttonMinHeight)
-                VStack(alignment: .leading, spacing: Tokens.Space.s) {
-                    rowText("settings.voice.rate")
-                    Slider(value: $settings.speechRate, in: 0.3...0.6) {
-                        Text("settings.voice.rate")
-                    } minimumValueLabel: {
-                        Text("settings.voice.rate.slow").font(Tokens.Fonts.label)
-                    } maximumValueLabel: {
-                        Text("settings.voice.rate.fast").font(Tokens.Fonts.label)
-                    } onEditingChanged: { editing in if !editing { viewModel.save() } }
+                Section { row(.account, summary: accountSummary) }
+                Section {
+                    row(.voice, summary: nil)
+                    row(.display, summary: nil)
+                    row(.memory, summary: memorySummary)
+                    row(.connections, summary: gmailSummary)
                 }
-                .padding(.vertical, Tokens.Space.s)
-                // TODO(spec): range of the rate slider is not specified; 0.3–0.6 around the 0.45 default (DATA_MODEL §5).
-                toggleRow("settings.autoSend", note: "settings.autoSend.note", isOn: $settings.autoSend)   // D-296
-                toggleRow("settings.handsFree", note: "settings.handsFree.note", isOn: $settings.handsFree) // D-312
-                SecondaryButton("settings.voice.test", systemImage: "speaker.wave.2") {
-                    Task { await viewModel.testVoice() }
-                }
-                .padding(.vertical, Tokens.Space.s)
-            }
-
-            Section(header: header("settings.display")) {
-                VStack(alignment: .leading, spacing: Tokens.Space.s) {
-                    rowText("settings.textSize")
-                    Text("settings.textSize.note")
-                        .font(Tokens.Fonts.body)
-                        .foregroundStyle(Tokens.Colors.textSecondary)
-                    // TODO(spec): the "live preview" content of the text-size row is not specified.
-                }
-                .padding(.vertical, Tokens.Space.s)
-                toggleRow("settings.simpleMode", note: "settings.simpleMode.note", isOn: $settings.simpleMode)
-                toggleRow("settings.pet", note: "settings.pet.note", isOn: $settings.petEnabled)
-            }
-
-            Section(header: header("settings.memory")) {
-                rowText("settings.nicknames")
-                if viewModel.nicknames.isEmpty {
-                    Text("settings.nicknames.empty")
-                        .font(Tokens.Fonts.body)
-                        .foregroundStyle(Tokens.Colors.textSecondary)
-                } else {
-                    ForEach(viewModel.nicknames) { nickname in
-                        Text(verbatim: viewModel.nicknameRow(nickname))
-                            .font(Tokens.Fonts.fieldValue)
-                            .frame(minHeight: Tokens.Size.buttonMinHeight)
-                            .swipeActions { Button("confirm.delete", role: .destructive) { viewModel.deleteNickname(nickname) } }
-                    }
-                }
-                Button { router.push(.places) } label: {
-                    HStack {
-                        rowText("settings.savedPlaces")
-                        Spacer(minLength: Tokens.Space.s)
-                        Image(systemName: "chevron.right")
-                            .font(Tokens.Fonts.label)
-                            .foregroundStyle(Tokens.Colors.textSecondary)
-                            .accessibilityHidden(true)
-                    }
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-            }
-
-            if viewModel.showsAdvanced {                       // ★ section, hidden in simple mode (P-40)
-                Section(header: header("settings.advanced")) {
-                    toggleRow("settings.autoConfirm", note: "settings.autoConfirm.note", isOn: $settings.autoConfirm)  // D-299
-                    Picker(selection: $settings.snoozeMorningHour) {
-                        ForEach(SettingsViewModel.snoozeHours, id: \.self) { hour in
-                            Text(verbatim: UserMessage(key: "settings.snoozeHour.value", args: ["\(hour)"]).text).tag(hour)
-                        }
-                    } label: { rowText("settings.snoozeHour") }
-                    .onChange(of: settings.snoozeMorningHour) { viewModel.save() }
-                    .frame(minHeight: Tokens.Size.buttonMinHeight)
-                    Picker(selection: $settings.preferredMapsApp) {
-                        ForEach(SettingsViewModel.mapsApps, id: \.self) { app in
-                            Text(verbatim: FieldFormatter.option(fieldId: "mapsApp", value: app) ?? app).tag(app)
-                        }
-                    } label: { rowText("settings.mapsApp") }
-                    .onChange(of: settings.preferredMapsApp) { viewModel.save() }
-                    .frame(minHeight: Tokens.Size.buttonMinHeight)
-                }
-                permissionsSection
-            }
-
-            gmailSection
-
-            Section(header: header("settings.data")) {
-                VStack(alignment: .leading, spacing: Tokens.Space.xs) {          // D-301
-                    Toggle(isOn: $settings.savePhotos) { rowText("settings.savePhotos") }
-                        .onChange(of: settings.savePhotos) { Task { await viewModel.savePhotosChanged() } }
-                    Text("settings.savePhotos.note")
-                        .font(Tokens.Fonts.body)
-                        .foregroundStyle(Tokens.Colors.textSecondary)
-                }
-                .padding(.vertical, Tokens.Space.xs)
-                actionRow("settings.clearHistory", danger: true) { viewModel.pendingConfirm = .clearHistory }
-                actionRow("settings.clearMemory", danger: true) { viewModel.pendingConfirm = .clearMemory }
-            }
-
-            Section(header: header("settings.about")) {
-                Text("settings.aiDisclosure")                        // D-187
-                    .font(Tokens.Fonts.body)
-                    .foregroundStyle(Tokens.Colors.textPrimary)
-                    .padding(.vertical, Tokens.Space.s)
-                TextLinkButton("settings.privacy") { legal = .privacy }          // 1G.6 in-app text (D-284)
-                TextLinkButton("settings.terms") { legal = .terms }
-                Text(verbatim: viewModel.versionText)
-                    .font(Tokens.Fonts.caption)
-                    .foregroundStyle(Tokens.Colors.textSecondary)
-            }
-
-            Section {
-                actionRow("settings.signOut", danger: false) { viewModel.pendingConfirm = .signOut }
-                actionRow("settings.deleteAccount", danger: true) { viewModel.pendingConfirm = .deleteAccount }  // S20
-                    .disabled(viewModel.deletingAccount)
-                if viewModel.deletingAccount {
-                    Label { Text("confirm.deleteAccount.progress") } icon: { ProgressView() }
-                }
-                if let message = viewModel.accountMessage {
-                    Text(verbatim: message.text).font(Tokens.Fonts.body).foregroundStyle(Tokens.Colors.danger)
+                Section {
+                    if viewModel.showsAdvanced { row(.advanced, summary: nil) }           // ★ hidden in simple mode (P-40)
+                    row(.data, summary: nil)
+                    row(.about, summary: viewModel.versionText)
                 }
             }
-            }
-            .listRowBackground(Tokens.Colors.surface)          // cards = `surface` (UI_SCREENS §1.1)
+            .listRowBackground(Tokens.Colors.surface)
         }
-        .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .background(Tokens.Colors.bg)
-        .tint(Tokens.Colors.primary)
+        .settingsList()
         .navigationTitle(Text("settings.title"))
-        .sheet(item: $viewModel.pendingConfirm) { confirm in
-            ConfirmSheet(titleKey: LocalizedStringKey(confirm.titleKey), bodyKey: LocalizedStringKey(confirm.bodyKey),
-                         // S20: the App Store subscription is not cancelled by deleting the account (API_CONTRACT §6.3).
-                         noteKey: confirm == .deleteAccount ? "confirm.deleteAccount.subNote" : nil,
-                         confirmKey: LocalizedStringKey(confirm.confirmKey),
-                         cancelKey: confirm == .deleteAccount ? "confirm.deleteAccount.no" : "common.cancel",
-                         onConfirm: { Task { await viewModel.perform(confirm) } },
-                         onCancel: { viewModel.pendingConfirm = nil })
-        }
         .onDisappear { viewModel.stopVoice() }
         .onChange(of: scenePhase) { _, phase in
             guard phase == .active else { return }
@@ -168,12 +60,227 @@ struct SettingsView: View {
             await viewModel.loadContactNames()
             await viewModel.loadGmail()
         }
+        .accessibilityIdentifier("screen.S15")
+    }
+
+    /// One group row: icon tile + title + one-line summary + chevron, ≥ 64pt, opens the page.
+    private func row(_ page: Page, summary: String?) -> some View {
+        NavigationLink { pageView(page) } label: {
+            HStack(spacing: Tokens.Space.m) {
+                Image(systemName: page.symbol)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(Tokens.Colors.onPrimary)
+                    .frame(width: 34, height: 34)
+                    .background(Tokens.Colors.primary, in: RoundedRectangle(cornerRadius: 8))
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(page.titleKey)
+                        .font(Tokens.Fonts.fieldValue)
+                        .foregroundStyle(Tokens.Colors.textPrimary)
+                    if let summary {
+                        Text(verbatim: summary)
+                            .font(Tokens.Fonts.body)
+                            .foregroundStyle(Tokens.Colors.textSecondary)
+                    }
+                }
+                .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(minHeight: Tokens.Size.rowMinHeight, alignment: .leading)
+            .accessibilityElement(children: .combine)
+        }
+        .accessibilityIdentifier("settings.row.\(page.rawValue)")
+    }
+
+    // MARK: - Row summaries
+
+    private var accountSummary: String? {
+        guard let entitlement = appState.entitlement else { return nil }
+        let plan = UserMessage(key: entitlement.plan == .premium ? "settings.plan.premium" : "settings.plan.free").text
+        guard let limit = entitlement.quotaLimit else { return plan }
+        return "\(plan) · " + UserMessage(key: "settings.quota.short", args: ["\(entitlement.quotaRemaining)", "\(limit)"]).text
+    }
+
+    private var memorySummary: String? {
+        viewModel.nicknames.isEmpty ? nil
+            : UserMessage(key: "settings.nicknames.count", args: ["\(viewModel.nicknames.count)"]).text
+    }
+
+    private var gmailSummary: String? {
+        guard viewModel.gmailAvailable else { return nil }
+        guard let account = viewModel.gmailAccount else { return UserMessage(key: "settings.gmail.notConnected").text }
+        return account.status == .needsReconnect ? UserMessage(key: "settings.gmail.reconnect").text : account.email
+    }
+
+    // MARK: - Pages
+
+    @ViewBuilder private func pageView(_ page: Page) -> some View {
+        @Bindable var settings = viewModel.settings
+        List {
+            Group {
+                switch page {
+                case .account: accountPage
+                case .voice: voicePage(settings: $settings)
+                case .display: displayPage(settings: $settings)
+                case .memory: memoryPage
+                case .connections: gmailSection
+                case .advanced:
+                    advancedPage(settings: $settings)
+                    permissionsSection
+                case .data: dataPage(settings: $settings)
+                case .about: aboutPage
+                }
+            }
+            .listRowBackground(Tokens.Colors.surface)
+        }
+        .settingsList()
+        .navigationTitle(Text(page.titleKey))
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(item: $viewModel.pendingConfirm) { confirm in
+            ConfirmSheet(titleKey: LocalizedStringKey(confirm.titleKey), bodyKey: LocalizedStringKey(confirm.bodyKey),
+                         // S20: the App Store subscription is not cancelled by deleting the account (API_CONTRACT §6.3).
+                         noteKey: confirm == .deleteAccount ? "confirm.deleteAccount.subNote" : nil,
+                         confirmKey: LocalizedStringKey(confirm.confirmKey),
+                         cancelKey: confirm == .deleteAccount ? "confirm.deleteAccount.no" : "common.cancel",
+                         onConfirm: { Task { await viewModel.perform(confirm) } },
+                         onCancel: { viewModel.pendingConfirm = nil })
+        }
         .sheet(item: $legal) { LegalView(document: $0) }
         .sheet(isPresented: $showsPaywall) {
             PaywallView(viewModel: PaywallViewModel(purchases: env.purchases, api: env.api, userId: signedInUser,
                                                     onPlan: { appState.apply(me: $0) }))
         }
-        .accessibilityIdentifier("screen.S15")
+        .accessibilityIdentifier("screen.S15.\(page.rawValue)")
+    }
+
+    @ViewBuilder private func voicePage(settings: Bindable<AppSettings>) -> some View {
+        Section {
+            Toggle(isOn: settings.voiceEnabled) { rowText("settings.voice.enabled") }
+                .onChange(of: settings.wrappedValue.voiceEnabled) { viewModel.save() }
+                .frame(minHeight: Tokens.Size.buttonMinHeight)
+            VStack(alignment: .leading, spacing: Tokens.Space.s) {
+                rowText("settings.voice.rate")
+                Slider(value: settings.speechRate, in: 0.3...0.6) {
+                    Text("settings.voice.rate")
+                } minimumValueLabel: {
+                    Text("settings.voice.rate.slow").font(Tokens.Fonts.label)
+                } maximumValueLabel: {
+                    Text("settings.voice.rate.fast").font(Tokens.Fonts.label)
+                } onEditingChanged: { editing in if !editing { viewModel.save() } }
+            }
+            .padding(.vertical, Tokens.Space.s)
+            // TODO(spec): range of the rate slider is not specified; 0.3–0.6 around the 0.45 default (DATA_MODEL §5).
+            SecondaryButton("settings.voice.test", systemImage: "speaker.wave.2") {
+                Task { await viewModel.testVoice() }
+            }
+            .padding(.vertical, Tokens.Space.s)
+        }
+        Section {
+            toggleRow("settings.autoSend", note: "settings.autoSend.note", isOn: settings.autoSend)      // D-296
+            toggleRow("settings.handsFree", note: "settings.handsFree.note", isOn: settings.handsFree)   // D-312
+        }
+    }
+
+    @ViewBuilder private func displayPage(settings: Bindable<AppSettings>) -> some View {
+        Section {
+            VStack(alignment: .leading, spacing: Tokens.Space.s) {
+                rowText("settings.textSize")
+                Text("settings.textSize.note")
+                    .font(Tokens.Fonts.body)
+                    .foregroundStyle(Tokens.Colors.textSecondary)
+                // TODO(spec): the "live preview" content of the text-size row is not specified.
+            }
+            .padding(.vertical, Tokens.Space.s)
+        }
+        Section {
+            toggleRow("settings.simpleMode", note: "settings.simpleMode.note", isOn: settings.simpleMode)
+            toggleRow("settings.pet", note: "settings.pet.note", isOn: settings.petEnabled)
+        }
+    }
+
+    @ViewBuilder private var memoryPage: some View {
+        Section(header: header("settings.nicknames")) {
+            if viewModel.nicknames.isEmpty {
+                Text("settings.nicknames.empty")
+                    .font(Tokens.Fonts.body)
+                    .foregroundStyle(Tokens.Colors.textSecondary)
+            } else {
+                ForEach(viewModel.nicknames) { nickname in
+                    Text(verbatim: viewModel.nicknameRow(nickname))
+                        .font(Tokens.Fonts.fieldValue)
+                        .frame(minHeight: Tokens.Size.buttonMinHeight)
+                        .swipeActions { Button("confirm.delete", role: .destructive) { viewModel.deleteNickname(nickname) } }
+                }
+            }
+        }
+        Section {
+            Button { router.push(.places) } label: {
+                HStack {
+                    rowText("settings.savedPlaces")
+                    Spacer(minLength: Tokens.Space.s)
+                    Image(systemName: "chevron.right")
+                        .font(Tokens.Fonts.label)
+                        .foregroundStyle(Tokens.Colors.textSecondary)
+                        .accessibilityHidden(true)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    @ViewBuilder private func advancedPage(settings: Bindable<AppSettings>) -> some View {
+        Section {
+            toggleRow("settings.autoConfirm", note: "settings.autoConfirm.note", isOn: settings.autoConfirm)  // D-299
+            Picker(selection: settings.snoozeMorningHour) {
+                ForEach(SettingsViewModel.snoozeHours, id: \.self) { hour in
+                    Text(verbatim: UserMessage(key: "settings.snoozeHour.value", args: ["\(hour)"]).text).tag(hour)
+                }
+            } label: { rowText("settings.snoozeHour") }
+            .onChange(of: settings.wrappedValue.snoozeMorningHour) { viewModel.save() }
+            .frame(minHeight: Tokens.Size.buttonMinHeight)
+            Picker(selection: settings.preferredMapsApp) {
+                ForEach(SettingsViewModel.mapsApps, id: \.self) { app in
+                    Text(verbatim: FieldFormatter.option(fieldId: "mapsApp", value: app) ?? app).tag(app)
+                }
+            } label: { rowText("settings.mapsApp") }
+            .onChange(of: settings.wrappedValue.preferredMapsApp) { viewModel.save() }
+            .frame(minHeight: Tokens.Size.buttonMinHeight)
+        }
+    }
+
+    @ViewBuilder private func dataPage(settings: Bindable<AppSettings>) -> some View {
+        Section {
+            VStack(alignment: .leading, spacing: Tokens.Space.xs) {          // D-301
+                Toggle(isOn: settings.savePhotos) { rowText("settings.savePhotos") }
+                    .onChange(of: settings.wrappedValue.savePhotos) { Task { await viewModel.savePhotosChanged() } }
+                Text("settings.savePhotos.note")
+                    .font(Tokens.Fonts.body)
+                    .foregroundStyle(Tokens.Colors.textSecondary)
+            }
+            .padding(.vertical, Tokens.Space.xs)
+        }
+        Section {
+            actionRow("settings.clearHistory", danger: true) { viewModel.pendingConfirm = .clearHistory }
+            actionRow("settings.clearMemory", danger: true) { viewModel.pendingConfirm = .clearMemory }
+        }
+    }
+
+    @ViewBuilder private var aboutPage: some View {
+        Section {
+            Text("settings.aiDisclosure")                        // D-187
+                .font(Tokens.Fonts.body)
+                .foregroundStyle(Tokens.Colors.textPrimary)
+                .padding(.vertical, Tokens.Space.s)
+        }
+        Section {
+            actionRow("settings.privacy", danger: false) { legal = .privacy }          // 1G.6 in-app text (D-284)
+            actionRow("settings.terms", danger: false) { legal = .terms }
+        }
+        Section {
+            Text(verbatim: viewModel.versionText)
+                .font(Tokens.Fonts.caption)
+                .foregroundStyle(Tokens.Colors.textSecondary)
+        }
     }
 
     /// ★ "Quyền truy cập" (UI_SCREENS S15): capability + status (§10.4) + "Mở Cài đặt". Read-only; never prompts.
@@ -255,8 +362,8 @@ struct SettingsView: View {
         if case .signedIn(let id) = appState.session { id } else { nil }
     }
 
-    @ViewBuilder private var accountSection: some View {
-        Section(header: header("settings.account")) {
+    @ViewBuilder private var accountPage: some View {
+        Section {
             if let plan = appState.entitlement?.plan {
                 rowText(plan == .premium ? "settings.plan.premium" : "settings.plan.free")
             }
@@ -276,6 +383,17 @@ struct SettingsView: View {
                 actionRow("settings.upgrade", danger: false) { showsPaywall = true }      // → S16 (1F.6)
             }
             // TODO(spec): "Quản lý gói" needs StoreKit's manage-subscriptions sheet (a View import, D-015) → later.
+        }
+        Section {
+            actionRow("settings.signOut", danger: false) { viewModel.pendingConfirm = .signOut }
+            actionRow("settings.deleteAccount", danger: true) { viewModel.pendingConfirm = .deleteAccount }  // S20
+                .disabled(viewModel.deletingAccount)
+            if viewModel.deletingAccount {
+                Label { Text("confirm.deleteAccount.progress") } icon: { ProgressView() }
+            }
+            if let message = viewModel.accountMessage {
+                Text(verbatim: message.text).font(Tokens.Fonts.body).foregroundStyle(Tokens.Colors.danger)
+            }
         }
     }
 
@@ -337,4 +455,14 @@ struct SettingsView: View {
     .environment(Router())
     .preferredColorScheme(.dark)
     .dynamicTypeSize(.accessibility5)
+}
+
+private extension View {
+    /// S15 list look (UI_SCREENS §1.1): inset grouped, `bg` behind, `primary` tint.
+    func settingsList() -> some View {
+        listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .background(Tokens.Colors.bg)
+            .tint(Tokens.Colors.primary)
+    }
 }

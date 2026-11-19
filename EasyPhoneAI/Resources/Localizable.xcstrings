@@ -4939,6 +4939,42 @@
         }
       }
     },
+    "settings.gmail.notConnected" : {
+      "comment" : "S15 regrouped (D-317)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa kết nối Gmail"
+          }
+        }
+      }
+    },
+    "settings.nicknames.count" : {
+      "comment" : "S15 regrouped (D-317)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ tên gọi thân mật"
+          }
+        }
+      }
+    },
+    "settings.quota.short" : {
+      "comment" : "S15 regrouped (D-317)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "còn %@/%@ lượt AI hôm nay"
+          }
+        }
+      }
+    },
     "settings.quota.reset": {
       "comment": "UI_SCREENS S15",
       "extractionState": "manual",
