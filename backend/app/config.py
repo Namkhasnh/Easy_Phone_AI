@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     # gpt-6-luna: parse 3.2–5.8 s at the default vs ≈ 2.1 s with "none", same fields on everyday requests.
     # The model accepts none / low / medium / high (not "minimal").
     LLM_REASONING_EFFORT: dict[str, str] = {"parse": "none", "summarize": "none"}
+    # D-323: hard parse requests (weekday / date / bare hour / several times / long) think a little: 28 hard eval cases
+    # went 17/28 → 23/28 with "low" (+~1 s); easy ones stay fast. Empty string = same effort for every request.
+    PARSE_HARD_REASONING_EFFORT: str = "low"
     # USD per 1M tokens [input, output], for `usage_events.cost_usd` + the spend cap (D-087).
     # Values = OpenAI list prices read 2026-11-10 at D-052 (developers.openai.com/api/docs/pricing); cached input
     # is not modelled, so the recorded cost can only be a little high (spend cap trips early, never late).

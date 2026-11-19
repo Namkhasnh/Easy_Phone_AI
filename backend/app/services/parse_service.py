@@ -66,10 +66,34 @@ def build_messages(req: ParseRequest, settings: Settings) -> list[dict[str, str]
     ]
 
 
+_HARD = re.compile(
+    r"\bthu\s*([2-7]|hai|ba|tu|nam|sau|bay)\b|\bchu nhat\b|\bcn\b|\btuan\b|\bthang\b|\bmung\b|\bam lich\b"
+    r"|\bram\b|\b\d{1,2}\s*/\s*\d{1,2}\b|\bluu\b"
+)
+_HOUR = re.compile(r"\b\d{1,2}\s*(?:gio|h|g)(?:\d{2})?\b(?:\s*(?:\d{1,2}|ruoi)\b)?(?:\s*phut)?(?P<part>\s+(?:sang|trua|chieu|toi|dem))?")
+
+
+def _fold(text: str) -> str:
+    text = unicodedata.normalize("NFD", text.lower().replace("đ", "d"))
+    return "".join(c for c in text if unicodedata.category(c) != "Mn")
+
+
+def is_hard(text: str) -> bool:
+    """D-323: requests where the model needs to think about dates: a weekday / week / month / lunar word, a numeric
+    date, saving an address, an hour without a day part ("2 giờ"), several hours, or a long dictation. Only used to
+    choose the reasoning effort; the text is not logged (D-059)."""
+    t = _fold(text)
+    if len(t) > 90 or _HARD.search(t):
+        return True
+    hours = list(_HOUR.finditer(t))
+    return len(hours) > 1 or any(m.group("part") is None for m in hours)
+
+
 async def parse(req: ParseRequest, settings: Settings, llm: LLMClient, budget: Deadline, meter: CostMeter) -> dict:
     schema = build(settings.ENABLED_KINDS)
+    hard = settings.PARSE_HARD_REASONING_EFFORT if settings.PARSE_HARD_REASONING_EFFORT and is_hard(req.text) else None
     call = StructuredCall("parse", settings.PROMPT_VERSION_PARSE, settings.MODEL_PARSE,
-                          build_messages(req, settings), SCHEMA_NAME, schema)
+                          build_messages(req, settings), SCHEMA_NAME, schema, reasoning_effort=hard)
     raw = await llm.structured(call, lambda value: check(value, schema), budget, meter)
     return post_process(raw, req, settings)
 
