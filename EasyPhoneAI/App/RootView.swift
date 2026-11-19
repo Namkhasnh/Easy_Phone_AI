@@ -45,7 +45,10 @@ struct RootView: View {
         .onChange(of: scenePhase, initial: true) { _, phase in
             switch phase {
             case .background: handoff.didEnterBackground()
-            case .active: if case .signedIn = appState.session { handoff.didBecomeActive() }
+            case .active:
+                if case .signedIn = appState.session { handoff.didBecomeActive() }
+                // D-316: wake the hosted backend while the user is still speaking (free hosts may sleep).
+                Task { _ = try? await env.api.health() }
             default: break
             }
         }
