@@ -1,6 +1,7 @@
 """Shared `Depends` (ARCHITECTURE §7)."""
 
 import re
+import time
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -8,6 +9,7 @@ from datetime import UTC, datetime
 import asyncpg
 from fastapi import Depends, Header, Request
 
+from app import timing
 from app.auth import CurrentUser, verify_token
 from app.config import Settings, get_settings
 from app.errors import AppError
@@ -91,12 +93,15 @@ def current_user(
     scheme, _, token = (authorization or "").partition(" ")
     if scheme.lower() != "bearer" or not token.strip():
         raise AppError("unauthorized", 401, False)
-    return verify_token(token.strip(), settings)
+    with timing.span("auth"):
+        return verify_token(token.strip(), settings)
 
 
 async def db(request: Request, settings: Settings = Depends(get_settings)) -> AsyncIterator[asyncpg.Connection]:
+    start = time.perf_counter()
     pool = await request.app.state.db.pool(settings)
     async with pool.acquire() as conn:
+        timing.add("pool", time.perf_counter() - start)
         yield conn
 
 
@@ -107,5 +112,6 @@ async def authed_user(
     accept_language: str | None = Header(default=None),
 ) -> AuthedUser:
     """Every authenticated endpoint except `DELETE /v1/me`: JWT → client version → profile upsert (D-236)."""
-    locale = await accounts.ensure_profile(conn, user.id, accept_language)
+    with timing.span("profile"):
+        locale = await accounts.ensure_profile(conn, user.id, accept_language)
     return AuthedUser(id=user.id, locale=locale)

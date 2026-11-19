@@ -10,6 +10,7 @@ from app import errors
 from app.config import get_settings
 from app.db import Database
 from app.routers import billing, extract, gmail, health, me, media, parse
+from app.timing import TimingMiddleware
 from app.request_id import RequestIdMiddleware
 
 ROUTERS: list[APIRouter] = [health.router, me.router, parse.router, extract.router, media.router, gmail.router, billing.router]
@@ -39,6 +40,7 @@ def create_app(extra_routers: list[APIRouter] | None = None) -> FastAPI:
     settings = get_settings()
     app = FastAPI(title="EasyPhone AI", version=settings.APP_VERSION, lifespan=lifespan)  # CORS off: native app only
     app.state.db = Database()  # pool opens on first use (health never needs it)
+    app.add_middleware(TimingMiddleware)  # inner: added first (D-319)
     app.add_middleware(RequestIdMiddleware)
     errors.install(app)
     for router in [*ROUTERS, *(extra_routers or [])]:

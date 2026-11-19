@@ -19,6 +19,7 @@ from typing import Any, Protocol
 
 import openai
 
+from app import timing
 from app.config import Settings
 from app.errors import AppError
 from app.services import prompts
@@ -204,7 +205,8 @@ class LLMClient:
             kwargs["reasoning_effort"] = effort  # speed (owner 2026-11-18); the repair call uses the same value
         started = time.monotonic()
         try:
-            resp = await self._completions.create(**kwargs)
+            with timing.span("llm" if phase == "first" else f"llm_{phase}"):
+                resp = await self._completions.create(**kwargs)
         except (openai.APITimeoutError, openai.APIConnectionError, openai.RateLimitError, openai.InternalServerError) as exc:
             self._log(call, f"{phase}:{type(exc).__name__}", started=started)
             raise AppError("upstream_error", 503, True) from None

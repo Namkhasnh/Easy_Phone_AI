@@ -4987,6 +4987,102 @@
         }
       }
     },
+    "settings.latency.detail" : {
+      "comment" : "S15 Nâng cao — response timings (D-319)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI %@ · máy chủ %@ · mạng %@"
+          }
+        }
+      }
+    },
+    "settings.latency.total" : {
+      "comment" : "S15 Nâng cao — response timings (D-319)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ giây"
+          }
+        }
+      }
+    },
+    "settings.latency.transcribe" : {
+      "comment" : "S15 Nâng cao — response timings (D-319)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chuyển giọng nói"
+          }
+        }
+      }
+    },
+    "settings.latency.mail" : {
+      "comment" : "S15 Nâng cao — response timings (D-319)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tóm tắt thư"
+          }
+        }
+      }
+    },
+    "settings.latency.parse" : {
+      "comment" : "S15 Nâng cao — response timings (D-319)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hiểu yêu cầu"
+          }
+        }
+      }
+    },
+    "settings.latency.empty" : {
+      "comment" : "S15 Nâng cao — response timings (D-319)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa có số đo. Bạn nói thử một yêu cầu nhé."
+          }
+        }
+      }
+    },
+    "settings.latency.note" : {
+      "comment" : "S15 Nâng cao — response timings (D-319)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Các lần dùng AI gần nhất. Chỉ lưu trên máy này cho đến khi tắt app. Chưa tính lúc chờ bạn ngừng nói."
+          }
+        }
+      }
+    },
+    "settings.latency" : {
+      "comment" : "S15 Nâng cao — response timings (D-319)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thời gian phản hồi"
+          }
+        }
+      }
+    },
     "settings.gmail.notConnected" : {
       "comment" : "S15 regrouped (D-317)",
       "extractionState" : "manual",

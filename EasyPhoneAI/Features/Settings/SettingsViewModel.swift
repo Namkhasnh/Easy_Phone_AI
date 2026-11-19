@@ -107,6 +107,23 @@ import Observation
     static let snoozeHours = Array(5...11)            // picker 5–11 (S15)
     static let mapsApps = ["appleMaps", "googleMaps"] // DATA_MODEL §4 `mapsApp` options
 
+    /// D-319: the latest AI request timings (memory only), refreshed when the Nâng cao page opens.
+    var latency: [LatencySample] = []
+
+    func loadLatency() { latency = LatencyLog.shared.recent }
+
+    nonisolated static func seconds(_ ms: Double) -> String {
+        (ms / 1000).formatted(.number.precision(.fractionLength(1)).locale(Locale(identifier: "vi_VN")))
+    }
+
+    nonisolated static func latencyLabelKey(_ path: String) -> String {
+        switch path {
+        case "/v1/gmail/summary": "settings.latency.mail"
+        case "/v1/transcribe": "settings.latency.transcribe"
+        default: "settings.latency.parse"
+        }
+    }
+
     /// D-318: the app's own text size (applied at the root, `RootView`).
     var textSize: AppTextSize { AppTextSize(stored: settings.textSize) }
 

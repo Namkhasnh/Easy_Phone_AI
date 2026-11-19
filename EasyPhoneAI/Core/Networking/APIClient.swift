@@ -179,8 +179,16 @@ actor APIClient: APIClientProtocol {
             let error: AppError
             var retryAfter: Double?
             do {
+                let started = ContinuousClock.now
                 let (data, http) = try await transport.send(request)
                 let requestId = http.value(forHTTPHeaderField: "X-Request-Id")
+                if (200..<300).contains(http.statusCode) {                              // D-319
+                    let elapsed = started.duration(to: .now)
+                    LatencyLog.shared.record(path: endpoint.path,
+                                             totalMs: Double(elapsed.components.seconds) * 1000
+                                                 + Double(elapsed.components.attoseconds) / 1e15,
+                                             serverTiming: http.value(forHTTPHeaderField: "Server-Timing"))
+                }
                 // D-059: ids and status only, never bodies.
                 Self.logger.info("\(endpoint.method, privacy: .public) \(endpoint.path, privacy: .public) \(http.statusCode) attempt=\(attempt) \(requestId ?? "-", privacy: .public)")
 

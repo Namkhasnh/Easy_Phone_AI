@@ -125,6 +125,7 @@ struct SettingsView: View {
                 case .connections: gmailSection
                 case .advanced:
                     advancedPage(settings: $settings)
+                    latencySection
                     permissionsSection
                 case .data: dataPage(settings: $settings)
                 case .about: aboutPage
@@ -266,6 +267,41 @@ struct SettingsView: View {
             .onChange(of: settings.wrappedValue.preferredMapsApp) { viewModel.save() }
             .frame(minHeight: Tokens.Size.buttonMinHeight)
         }
+    }
+
+    /// D-319: the latest AI timings, so slow parts are measured, not guessed.
+    private var latencySection: some View {
+        Section(header: header("settings.latency"), footer: Text("settings.latency.note")) {
+            if viewModel.latency.isEmpty {
+                Text("settings.latency.empty")
+                    .font(Tokens.Fonts.body)
+                    .foregroundStyle(Tokens.Colors.textSecondary)
+            }
+            ForEach(viewModel.latency.prefix(5)) { sample in
+                VStack(alignment: .leading, spacing: Tokens.Space.xs) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(LocalizedStringKey(SettingsViewModel.latencyLabelKey(sample.path)))
+                            .font(Tokens.Fonts.fieldValue)
+                            .foregroundStyle(Tokens.Colors.textPrimary)
+                        Spacer(minLength: Tokens.Space.s)
+                        Text(verbatim: UserMessage(key: "settings.latency.total",
+                                                   args: [SettingsViewModel.seconds(sample.totalMs)]).text)
+                            .font(Tokens.Fonts.fieldValue.bold())
+                            .foregroundStyle(Tokens.Colors.textPrimary)
+                    }
+                    Text(verbatim: UserMessage(key: "settings.latency.detail",
+                                               args: [SettingsViewModel.seconds(sample.aiMs),
+                                                      SettingsViewModel.seconds(sample.serverOtherMs),
+                                                      SettingsViewModel.seconds(sample.networkMs)]).text)
+                        .font(Tokens.Fonts.body)
+                        .foregroundStyle(Tokens.Colors.textSecondary)
+                }
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.vertical, Tokens.Space.xs)
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .onAppear { viewModel.loadLatency() }
     }
 
     @ViewBuilder private func dataPage(settings: Bindable<AppSettings>) -> some View {
