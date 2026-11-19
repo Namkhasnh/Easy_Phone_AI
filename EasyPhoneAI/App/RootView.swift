@@ -6,6 +6,8 @@ import SwiftUI
 struct RootView: View {
     @Environment(Router.self) private var router
     @Environment(AppState.self) private var appState
+    /// The iPhone's own Dynamic Type size (read above our override, D-318 "Theo iPhone").
+    @Environment(\.dynamicTypeSize) private var systemTextSize
     @Environment(\.appEnv) private var env
     @Environment(HandoffPromptCoordinator.self) private var handoff
     @Environment(\.scenePhase) private var scenePhase
@@ -19,6 +21,9 @@ struct RootView: View {
                     destination(route)
                 }
         }
+        // D-318: whole app, sheets included. Always the same modifier (no if/else), so changing the size never
+        // rebuilds the navigation stack (the user stays on the Settings page).
+        .dynamicTypeSize(AppTextSize(stored: env.localData.settings().textSize).dynamicTypeSize ?? systemTextSize)
         .task {
             for await session in env.auth.sessionUpdates {
                 appState.session = session

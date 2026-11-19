@@ -5527,6 +5527,78 @@
         }
       }
     },
+    "settings.textSize.option.system" : {
+      "comment" : "S15 Hiển thị — app text size (D-318)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Theo iPhone"
+          }
+        }
+      }
+    },
+    "settings.textSize.option.medium" : {
+      "comment" : "S15 Hiển thị — app text size (D-318)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vừa"
+          }
+        }
+      }
+    },
+    "settings.textSize.option.large" : {
+      "comment" : "S15 Hiển thị — app text size (D-318)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lớn"
+          }
+        }
+      }
+    },
+    "settings.textSize.option.xLarge" : {
+      "comment" : "S15 Hiển thị — app text size (D-318)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rất lớn"
+          }
+        }
+      }
+    },
+    "settings.textSize.option.huge" : {
+      "comment" : "S15 Hiển thị — app text size (D-318)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cực lớn"
+          }
+        }
+      }
+    },
+    "settings.textSize.preview" : {
+      "comment" : "S15 Hiển thị — app text size (D-318)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xin chào! Mình là Khoai. Chữ trong app sẽ to như thế này."
+          }
+        }
+      }
+    },
     "settings.textSize" : {
       "comment" : "UI_SCREENS S15",
       "extractionState" : "manual",
@@ -5546,7 +5618,7 @@
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đổi cỡ chữ trong Cài đặt iPhone > Màn hình & Độ sáng > Cỡ chữ."
+            "value" : "Chỉ đổi cỡ chữ trong EasyPhoneK. “Theo iPhone” dùng cỡ chữ trong Cài đặt iPhone > Màn hình & Độ sáng > Cỡ chữ."
           }
         }
       }

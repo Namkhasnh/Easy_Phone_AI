@@ -36,7 +36,7 @@ struct SettingsView: View {
                 Section { row(.account, summary: accountSummary) }
                 Section {
                     row(.voice, summary: nil)
-                    row(.display, summary: nil)
+                    row(.display, summary: UserMessage(key: viewModel.textSize.labelKey).text)
                     row(.memory, summary: memorySummary)
                     row(.connections, summary: gmailSummary)
                 }
@@ -181,15 +181,35 @@ struct SettingsView: View {
     }
 
     @ViewBuilder private func displayPage(settings: Bindable<AppSettings>) -> some View {
-        Section {
-            VStack(alignment: .leading, spacing: Tokens.Space.s) {
-                rowText("settings.textSize")
-                Text("settings.textSize.note")
-                    .font(Tokens.Fonts.body)
-                    .foregroundStyle(Tokens.Colors.textSecondary)
-                // TODO(spec): the "live preview" content of the text-size row is not specified.
+        Section(header: header("settings.textSize"), footer: Text("settings.textSize.note")) {   // D-318
+            ForEach(AppTextSize.allCases) { size in
+                Button { viewModel.setTextSize(size) } label: {
+                    HStack(spacing: Tokens.Space.m) {
+                        Image(systemName: viewModel.textSize == size ? "largecircle.fill.circle" : "circle")
+                            .font(.title2)
+                            .foregroundStyle(viewModel.textSize == size ? Tokens.Colors.primary : Tokens.Colors.border)
+                            .accessibilityHidden(true)
+                        Text(LocalizedStringKey(size.labelKey))
+                            .font(Tokens.Fonts.fieldValue)
+                            .foregroundStyle(Tokens.Colors.textPrimary)
+                        Spacer(minLength: 0)
+                    }
+                    .frame(minHeight: Tokens.Size.buttonMinHeight)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(viewModel.textSize == size ? [.isSelected] : [])
+                .accessibilityIdentifier("settings.textSize.\(size.rawValue)")
             }
-            .padding(.vertical, Tokens.Space.s)
+            // Preview at the chosen size (the whole app already follows it).
+            Text("settings.textSize.preview")
+                .font(Tokens.Fonts.body)
+                .foregroundStyle(Tokens.Colors.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(Tokens.Space.m)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Tokens.Colors.honey.opacity(0.35), in: RoundedRectangle(cornerRadius: 12))
+                .padding(.vertical, Tokens.Space.s)
         }
         Section {
             toggleRow("settings.simpleMode", note: "settings.simpleMode.note", isOn: settings.simpleMode)

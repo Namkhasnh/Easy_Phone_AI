@@ -107,6 +107,14 @@ import Observation
     static let snoozeHours = Array(5...11)            // picker 5–11 (S15)
     static let mapsApps = ["appleMaps", "googleMaps"] // DATA_MODEL §4 `mapsApp` options
 
+    /// D-318: the app's own text size (applied at the root, `RootView`).
+    var textSize: AppTextSize { AppTextSize(stored: settings.textSize) }
+
+    func setTextSize(_ size: AppTextSize) {
+        settings.textSize = size.rawValue
+        save()
+    }
+
     /// Simple mode hides ★ rows (P-40).
     var showsAdvanced: Bool { !settings.simpleMode }
 

@@ -27,4 +27,21 @@ final class SettingsUITests: XCTestCase {
         app.buttons["Chính sách quyền riêng tư"].firstMatch.tap()
         XCTAssertTrue(app.descendants(matching: .any)["screen.legal.privacy"].firstMatch.waitForExistence(timeout: 5))
     }
+
+    func testAppTextSizeCanBeChanged() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTestScenario", "uiTest"]
+        app.launch()
+        XCTAssertTrue(app.descendants(matching: .any)["screen.S02"].firstMatch.waitForExistence(timeout: 10))
+        app.buttons["Cài đặt"].firstMatch.tap()
+        app.descendants(matching: .any)["settings.row.display"].firstMatch.tap()
+        let big = app.descendants(matching: .any)["settings.textSize.xLarge"].firstMatch
+        XCTAssertTrue(big.waitForExistence(timeout: 5))
+        big.tap()                                       // the whole app grows at once: rows move, find them again
+        let system = app.descendants(matching: .any)["settings.textSize.system"].firstMatch
+        for _ in 0..<4 where !system.isHittable { app.swipeDown() }
+        XCTAssertTrue(system.waitForExistence(timeout: 5))
+        system.tap()                                    // back to the iPhone size
+        XCTAssertTrue(app.descendants(matching: .any)["settings.textSize.system"].firstMatch.isSelected)
+    }
 }
