@@ -55,6 +55,9 @@ import OSLog
     /// UI_SCREENS S03 (DOC-29): silence after the last recognized words → stop by itself, like Siri. "Dừng" stays visible (AC1).
     // Owner 2026-11-18 (speed): 2 s → 1.5 s; DOC-29 gave 2 s. TODO(decision): record in UI_SCREENS S03.
     static let silenceAfterSpeech: Duration = .milliseconds(1500)
+    /// D-320: when the words so far are already a complete request the phone understands (`LocalIntent`), stop sooner.
+    /// Other requests keep 1.5 s so a slow speaker who pauses mid-sentence is not cut off.
+    static let quickSilence: Duration = .milliseconds(1000)
     /// Nothing recognized at all → stop and show `conv.speech.empty`.
     static let noSpeechTimeout: Duration = .seconds(8)
 
@@ -272,7 +275,7 @@ import OSLog
                     // words already shown (owner report 2026-11-10: "Gọi cho mẹ" vanished after "Dừng").
                     guard !transcript.text.isEmpty, transcript.text != listeningText else { continue }
                     if case .answer = self.target { answerText = transcript.text } else { text = transcript.text }
-                    armAutoStop(after: silenceAfterSpeech)
+                    armAutoStop(after: silenceDelay(for: transcript.text))
                 }
                 finishListening(errorCode: nil)
             } catch {
@@ -304,6 +307,16 @@ import OSLog
     }
 
     /// Restarts the silence timer; when it fires while still listening, recording stops like "Dừng".
+    /// D-320: 1 s after a request the phone already understands, else `silenceAfterSpeech`. Follow-up answers unchanged.
+    func silenceDelay(for spoken: String) -> Duration {
+        guard case .answer = target else {
+            let zone = TimeZone(identifier: currentDraft?.timeZoneId ?? "") ?? .current
+            return reply == nil && LocalIntent.match(spoken, now: now(), timeZone: zone) != nil
+                ? min(Self.quickSilence, silenceAfterSpeech) : silenceAfterSpeech
+        }
+        return silenceAfterSpeech
+    }
+
     private func armAutoStop(after delay: Duration) {
         silenceTask?.cancel()
         silenceTask = Task { @MainActor [weak self] in
@@ -548,13 +561,26 @@ import OSLog
         case .directions(let label):
             await handle(Self.localDraft("place", "open", [("query", label)]),
                          isAnswer: false, draft: draft, returnMode: .transcript)
+        case .schedule(let s):                                            // D-320
+            let parsed = switch s.kind {
+            case .reminder:
+                Self.localDraft("reminder", "create", [("title", s.title), ("dueDate", s.date)],
+                                confidence: ["dueDate": s.dateConfidence])
+            case .event:
+                Self.localDraft("calendarEvent", "create",
+                                [("title", s.title), ("startDate", s.date)] + (s.location.map { [("location", $0)] } ?? []),
+                                confidence: ["startDate": s.dateConfidence])
+            }
+            await handle(parsed, isAnswer: false, draft: draft, returnMode: .transcript)
         }
     }
 
-    static func localDraft(_ kind: String, _ operation: String, _ fields: [(String, String)]) -> ParsedDraft {
+    static func localDraft(_ kind: String, _ operation: String, _ fields: [(String, String)],
+                           confidence: [String: Double] = [:]) -> ParsedDraft {
         ParsedDraft(schemaVersion: 1, requestId: nil,
                     steps: [ParsedStep(kind: kind, operation: operation,
-                                       fields: fields.map { ParsedField(id: $0.0, value: $0.1, confidence: 1, sourceQuote: nil) },
+                                       fields: fields.map { ParsedField(id: $0.0, value: $0.1,
+                                                                        confidence: confidence[$0.0] ?? 1, sourceQuote: nil) },
                                        dateCandidates: [])],
                     followUpQuestion: nil, unsupported: nil)
     }
@@ -571,6 +597,7 @@ import OSLog
         noticeKey = nil
         workingReturnMode = returnMode
         mode = .working
+        acknowledge(draft)
         let zone = TimeZone(identifier: draft.timeZoneId) ?? .current
         let request = ParseRequest(text: text, inputMode: inputMode, now: ParseRequest.nowString(now(), in: zone),
                                    timezone: zone.identifier, locale: draft.locale,
@@ -697,6 +724,18 @@ import OSLog
         tts.stop()
         isReading = false
     }
+
+    /// D-320: a spoken request that goes to the AI (~3–4 s) gets an instant "Để Khoai xem nhé." so the wait is not
+    /// silent. Only with "Đọc to" on and a spoken request; the next thing Khoai says stops it (`TTSService.speak`).
+    private func acknowledge(_ draft: TaskDraft) {
+        guard settings.voiceEnabled, draft.inputMode == .voice else { return }
+        acknowledged = true
+        let text = UserMessage(key: "conv.ack").text
+        Task { @MainActor [tts, settings] in await tts.speak(text, rate: settings.speechRate) }
+    }
+
+    /// Test hook: the last AI request was acknowledged aloud.
+    private(set) var acknowledged = false
 
     // MARK: - Hands-free (D-312)
 

@@ -57,7 +57,7 @@ struct ConversationParseTests {
 
     @Test func completeDraftOpensReview() async throws {
         let api = MockAPIClient(parse: .success(try Self.fixture("followUpAnswer")))
-        let draft = typed("Nhắc tôi 8 giờ sáng mai uống thuốc")
+        let draft = typed("Nhắc tôi thứ Bảy 8 giờ sáng uống thuốc")   // weekday → AI ("8 giờ sáng mai" is on device, D-320)
         let vm = model(api, draft: draft)
         await vm.onAppear()
         #expect(vm.reviewDraftId == draft.id)

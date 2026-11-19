@@ -913,6 +913,18 @@
         }
       }
     },
+    "conv.ack" : {
+      "comment" : "Spoken at once while the AI works on a spoken request (D-320)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Để Khoai xem nhé."
+          }
+        }
+      }
+    },
     "conv.followup.skip" : {
       "comment" : "UI_SCREENS S03",
       "extractionState" : "manual",

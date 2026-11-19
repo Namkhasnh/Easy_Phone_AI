@@ -14,10 +14,13 @@ enum LocalIntent: Equatable, Sendable {
     case directions(label: String)
     /// S12.
     case reminders
+    /// D-320: a reminder / event with a clear time (`LocalSchedule`).
+    case schedule(LocalSchedule.Result)
 
     /// The first rule that matches, or nil (→ `/v1/parse`).
     static func match(_ text: String, now: Date = .now, timeZone: TimeZone = .current) -> LocalIntent? {
         if isCheckMail(text) { return .checkMail(codesOnly: wantsCode(text)) }
+        if let schedule = LocalSchedule.match(text, now: now, timeZone: timeZone) { return .schedule(schedule) }
         let words = Words(text)
         guard !words.folded.isEmpty, words.folded.count <= 9 else { return nil }
         if let name = callName(words) { return .call(name: name) }
