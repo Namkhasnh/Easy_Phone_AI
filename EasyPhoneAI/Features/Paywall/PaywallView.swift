@@ -5,6 +5,7 @@ import SwiftUI
 struct PaywallView: View {
     @State var viewModel: PaywallViewModel
     @Environment(\.dismiss) private var dismiss
+    @State private var legal: LegalView.Document?
 
     var body: some View {
         NavigationStack {
@@ -34,10 +35,9 @@ struct PaywallView: View {
                         .disabled(viewModel.phase != .ready || viewModel.isBusy)
                     SecondaryButton("common.later") { dismiss() }
                     TextLinkButton("paywall.restore") { Task { await viewModel.restore() } }
-                    // TODO(spec): Terms / Privacy open the in-app texts of 1G.6 (D-284); links shown, no target yet.
-                    HStack(spacing: Tokens.Space.l) {
-                        TextLinkButton("settings.terms") {}
-                        TextLinkButton("settings.privacy") {}
+                    HStack(spacing: Tokens.Space.l) {                     // D-089: Terms + Privacy (1G.6 in-app text)
+                        TextLinkButton("settings.terms") { legal = .terms }
+                        TextLinkButton("settings.privacy") { legal = .privacy }
                     }
                 }
                 .padding(Tokens.Space.screenPadding)
@@ -50,6 +50,7 @@ struct PaywallView: View {
             }
         }
         .task { await viewModel.load() }
+        .sheet(item: $legal) { LegalView(document: $0) }
         .onChange(of: viewModel.didSucceed) { _, done in
             guard done else { return }
             Task {

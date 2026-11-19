@@ -2641,6 +2641,30 @@
         }
       }
     },
+    "legal.privacy.body" : {
+      "comment" : "1G.6 in-app legal text (D-188, D-284); drafted by Claude, owner to review",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cập nhật: 19/11/2026\n\nEasyPhoneK là sản phẩm luận văn đại học. Trang này nói rõ app làm gì với dữ liệu của bạn.\n\n1. Dữ liệu ở lại trên điện thoại\nDanh bạ, lịch, lời nhắc, địa điểm đã lưu, tên gọi thân mật, ảnh giấy tờ và các bản nháp việc cần làm chỉ được xử lý trên iPhone của bạn. App không gửi danh sách danh bạ, nội dung lịch hay địa chỉ đã lưu lên máy chủ.\n\n2. Dữ liệu gửi lên máy chủ của app\n• Địa chỉ email Google khi bạn đăng nhập.\n• Câu yêu cầu bạn nói hoặc gõ (dạng chữ), để AI hiểu và soạn bản nháp.\n• Đoạn ghi âm, chỉ khi iPhone không tự nhận được tiếng Việt. Đoạn ghi âm không được lưu lại.\n• Số lượt AI đã dùng mỗi ngày và giao dịch gói Premium, để tính lượt và xác nhận gói.\n\n3. Trí tuệ nhân tạo (AI)\nYêu cầu của bạn được xử lý bởi một nhà cung cấp AI bên thứ ba (OpenAI) thông qua máy chủ của app. App yêu cầu OpenAI không lưu nội dung. Máy chủ của app không lưu câu yêu cầu hay câu trả lời của AI, chỉ lưu số đếm, thời gian và chi phí.\n\n4. Gmail (chỉ khi bạn tự kết nối)\nApp xin quyền đọc thư và soạn thư nháp. App không bao giờ tự gửi thư. Thư được đọc để tóm tắt rồi bỏ đi, không lưu trên máy chủ và không bị đánh dấu là đã đọc. Khóa truy cập Gmail được mã hóa trên máy chủ. Địa chỉ người nhận chỉ được gửi lên máy chủ khi bạn bấm Xác nhận lưu thư nháp. Bạn có thể ngắt kết nối Gmail trong Cài đặt bất cứ lúc nào.\n\n5. Nơi lưu dữ liệu\nTài khoản và số lượt dùng được lưu trên Supabase. Máy chủ của app chạy trên Render (Singapore).\n\n6. Xóa dữ liệu\nCài đặt → Xóa tài khoản: xóa toàn bộ dữ liệu của bạn trên máy chủ và trên điện thoại này. Cài đặt → Xóa lịch sử / Xóa dữ liệu ghi nhớ: xóa dữ liệu trên điện thoại.\n\n7. Không quảng cáo, không theo dõi\nApp không có quảng cáo, không theo dõi bạn qua các app khác và không bán dữ liệu."
+          }
+        }
+      }
+    },
+    "legal.terms.body" : {
+      "comment" : "1G.6 in-app legal text (D-188, D-284); drafted by Claude, owner to review",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cập nhật: 19/11/2026\n\n1. Sản phẩm thử nghiệm\nEasyPhoneK là sản phẩm luận văn đại học, đang trong giai đoạn thử nghiệm. App có thể gián đoạn hoặc thay đổi, và có thể ngừng hoạt động sau khi luận văn kết thúc.\n\n2. Bạn luôn là người quyết định\nAI có thể hiểu sai yêu cầu. App luôn cho bạn xem lại và sửa bản nháp trước khi bấm Xác nhận. App không tự gửi tin nhắn, thư hay tự gọi điện. Bạn chịu trách nhiệm về nội dung bạn xác nhận và gửi đi.\n\n3. Không dùng cho trường hợp khẩn cấp\nKhi khẩn cấp, hãy gọi trực tiếp 113, 114 hoặc 115. Đừng chờ vào app.\n\n4. Lượt dùng và gói Premium\nGói miễn phí có đủ mọi tính năng và một số lượt AI mỗi ngày. Gói Premium chỉ thêm lượt AI. Trong giai đoạn thử nghiệm, giao dịch mua gói là giao dịch thử và không trừ tiền thật. Gói tự gia hạn và có thể hủy trong Cài đặt iPhone.\n\n5. Gmail và dịch vụ khác\nKhi kết nối Gmail, bạn cũng tuân theo điều khoản của Google. Hãy tôn trọng quyền riêng tư của người khác khi dùng thông tin của họ.\n\n6. Thay đổi điều khoản\nĐiều khoản có thể được cập nhật. Ngày cập nhật được ghi ở đầu trang."
+          }
+        }
+      }
+    },
     "mail.account" : {
       "comment" : "UI_SCREENS S21 (D-304)",
       "extractionState" : "manual",

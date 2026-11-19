@@ -9,6 +9,7 @@ struct SettingsView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.appEnv) private var env
     @State private var showsPaywall = false
+    @State private var legal: LegalView.Document?
 
     var body: some View {
         @Bindable var settings = viewModel.settings
@@ -122,9 +123,8 @@ struct SettingsView: View {
                     .font(Tokens.Fonts.body)
                     .foregroundStyle(Tokens.Colors.textPrimary)
                     .padding(.vertical, Tokens.Space.s)
-                // TODO(spec): "Chính sách quyền riêng tư" / "Điều khoản sử dụng" open in-app text (1G.6, D-284).
-                TextLinkButton("settings.privacy") {}
-                TextLinkButton("settings.terms") {}
+                TextLinkButton("settings.privacy") { legal = .privacy }          // 1G.6 in-app text (D-284)
+                TextLinkButton("settings.terms") { legal = .terms }
                 Text(verbatim: viewModel.versionText)
                     .font(Tokens.Fonts.caption)
                     .foregroundStyle(Tokens.Colors.textSecondary)
@@ -168,6 +168,7 @@ struct SettingsView: View {
             await viewModel.loadContactNames()
             await viewModel.loadGmail()
         }
+        .sheet(item: $legal) { LegalView(document: $0) }
         .sheet(isPresented: $showsPaywall) {
             PaywallView(viewModel: PaywallViewModel(purchases: env.purchases, api: env.api, userId: signedInUser,
                                                     onPlan: { appState.apply(me: $0) }))
