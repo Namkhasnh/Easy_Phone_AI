@@ -57,4 +57,9 @@ struct KhoaiPanelTests {
             #expect(UserMessage(key: key).text != key, "missing \(key)")
         }
     }
+
+    @Test func sharedShortcutLinkIsAnICloudShortcut() throws {
+        let url = try #require(KhoaiShortcut.iCloudURL)
+        #expect(url.scheme == "https" && url.host() == "www.icloud.com" && url.path().hasPrefix("/shortcuts/"))
+    }
 }

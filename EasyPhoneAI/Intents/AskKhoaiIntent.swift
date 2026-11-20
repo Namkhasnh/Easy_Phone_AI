@@ -289,5 +289,5 @@ struct KhoaiSnippet: View {
 /// D-325: the ready-made "Khoai nghe" shortcut (Dictate Text in Vietnamese → "Hỏi Khoai") shared from the owner's
 /// iPhone as an iCloud link; S15 "Gọi Khoai nhanh" opens it so users only tap "Thêm phím tắt". nil → manual steps.
 enum KhoaiShortcut {
-    static let iCloudURL: URL? = nil   // TODO(spec): owner shares the iCloud link of "Khoai nghe"
+    static let iCloudURL: URL? = URL(string: "https://www.icloud.com/shortcuts/3c4d1c82c2124ee8ab79912d3f7d05f6")   // owner 2026-11-20
 }
