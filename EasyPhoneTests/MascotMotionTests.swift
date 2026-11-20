@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import UIKit
 @testable import EasyPhoneAI
 
 /// 1G.K2 — Khoai motion layer (UI_SCREENS §2, §10.5; D-327).
@@ -30,9 +31,10 @@ struct MascotMotionTests {
 
     @Test func askingTiltsAndHolds() {
         let rotations = Self.times.map { MascotMotion.transform(pose: .asking, time: $0, reduceMotion: false).rotation }
-        #expect(rotations.max()! > 7.9)
-        #expect(rotations.min()! < -7.9)
-        #expect(rotations.filter { abs($0) > 7.9 }.count > 10)          // holds the tilt a moment
+        let tilt = MascotMotion.tiltDegrees - 0.1
+        #expect(rotations.max()! > tilt)
+        #expect(rotations.min()! < -tilt)
+        #expect(rotations.filter { abs($0) > tilt }.count > 10)          // holds the tilt a moment
     }
 
     @Test func happyHopsWithSquashAndShadow() {
@@ -40,7 +42,8 @@ struct MascotMotionTests {
         #expect(abs(up.offsetY + MascotMotion.hopHeight) < 0.0001)       // top of the hop
         #expect(up.shadowScale < 0.7)                                    // shadow shrinks in the air
         let land = MascotMotion.hop(phase: 0.85, height: MascotMotion.hopHeight)
-        #expect(land.offsetY == 0 && land.scaleY < 0.95 && land.scaleX > 1.03)
+        #expect(land.offsetY == 0 && land.scaleY < 0.97 && land.scaleX > 1.02)
+        #expect(land.scaleY > 0.95)                                      // never squashes the face hard
         #expect(MascotMotion.hop(phase: 0, height: 0.2) == .identity)
     }
 
@@ -66,6 +69,15 @@ struct MascotMotionTests {
         #expect(MascotMotion.hearts(elapsed: 1.3, reduceMotion: false) == nil)
     }
 
+    @Test(arguments: MascotPose.allCases)
+    func puppetKeepsOneFacePerPose(pose: MascotPose) throws {
+        let clip = pose.clip(.puppet)
+        #expect(clip.loop.count == 1)                                    // no face changes while looping
+        #expect(clip.intro.isEmpty == (pose != .greeting))               // only the wave plays its frames, once
+        _ = try #require(UIImage(named: clip.loop[0].name))
+        #expect(pose.clip(.frames) == pose.clip)
+    }
+
     @Test func tipsRotateThroughCatalogKeys() throws {
         var index: Int?
         var seen: [String] = []
@@ -79,7 +91,7 @@ struct MascotMotionTests {
         let keys = try StringScanTests.keys("EasyPhoneAI/Resources/Localizable.xcstrings")
         let mine = KhoaiLines.tips + [KhoaiLines.petReply, "settings.khoaiPlayground", "dev.khoai.title",
                                       "dev.khoai.hint", "dev.khoai.tap", "dev.khoai.pet", "dev.khoai.level",
-                                      "dev.khoai.forceStill"] + MascotPose.allCases.map { "dev.khoai.pose." + $0.rawValue }
+                                      "dev.khoai.forceStill", "dev.khoai.puppet"] + MascotPose.allCases.map { "dev.khoai.pose." + $0.rawValue }
         for key in mine { #expect(keys.contains(key), "missing \(key)") }
     }
 }

@@ -18,6 +18,28 @@ enum MascotPose: String, CaseIterable, Sendable {
         case .sorry: MascotClip(intro: [], loop: MascotClip.failed)
         }
     }
+
+    /// Owner 2026-11-20 ("vẫn giật", "mặt không tự nhiên"): the frames are separate paintings (the face changes
+    /// every frame, the body drifts 2–9 px), so the puppet style keeps ONE face per pose and lets `MascotMotion`
+    /// move it at 60 fps. Only the greeting wave keeps its frames (code cannot draw a waving paw), played once.
+    var puppetClip: MascotClip {
+        func still(_ name: String) -> [MascotFrame] { [MascotFrame(name: name, duration: .seconds(1))] }
+        switch self {
+        case .greeting: return MascotClip(intro: MascotClip.waving, loop: still("mascot.idle.00"))
+        case .listening: return MascotClip(intro: [], loop: still("mascot.idle.00"))
+        case .thinking: return MascotClip(intro: [], loop: still("mascot.running.00"))
+        case .asking: return MascotClip(intro: [], loop: still("mascot.waiting.00"))
+        case .happy: return MascotClip(intro: [], loop: still("mascot.waving.01"))
+        case .sorry: return MascotClip(intro: [], loop: still("mascot.failed.03"))
+        }
+    }
+
+    func clip(_ style: MascotStyle) -> MascotClip { style == .puppet ? puppetClip : clip }
+}
+
+/// D-327: `frames` = the owner's sprite rows (current screens); `puppet` = one face per pose + code motion.
+enum MascotStyle: String, Sendable, CaseIterable {
+    case frames, puppet
 }
 
 struct MascotFrame: Hashable, Sendable {
@@ -62,13 +84,15 @@ struct MascotView: View {
     var level: Double = 0
     /// Debug preview only: behave as if Reduce Motion were on.
     var forceStill = false
+    /// D-327: sprite rows (default, current screens) or one face + code motion.
+    var style: MascotStyle = .frames
 
     @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
     @State private var frame: String?
     @State private var reactionStart: Date?
 
     private var reduceMotion: Bool { systemReduceMotion || forceStill }
-    private struct PlayKey: Hashable { let pose: MascotPose; let reduceMotion: Bool }
+    private struct PlayKey: Hashable { let pose: MascotPose; let reduceMotion: Bool; let style: MascotStyle }
 
     var body: some View {
         TimelineView(.animation(paused: reduceMotion)) { context in
@@ -84,12 +108,10 @@ struct MascotView: View {
                     .blur(radius: size * 0.04)
                     .scaleEffect(m.shadowScale)
                     .offset(y: size * 0.02)
-                Image(frame ?? pose.clip.stillFrame.name)
+                Image(frame ?? pose.clip(style).stillFrame.name)
                     .resizable()
                     .interpolation(.high)
                     .scaledToFit()
-                    .contentTransition(.opacity)
-                    .animation(reduceMotion ? nil : .linear(duration: 0.08), value: frame)
                     .scaleEffect(x: m.scaleX, y: m.scaleY, anchor: .bottom)
                     .rotationEffect(.degrees(m.rotation), anchor: .bottom)
                     .offset(y: size * m.offsetY)
@@ -111,15 +133,16 @@ struct MascotView: View {
         }
         .frame(width: size, height: size)              // decorative, fixed-size slot (not text)
         .accessibilityHidden(true)
-        .task(id: PlayKey(pose: pose, reduceMotion: reduceMotion)) { await play() }
+        .task(id: PlayKey(pose: pose, reduceMotion: reduceMotion, style: style)) { await play() }
         .onChange(of: reaction) { _, event in reactionStart = event == nil ? nil : .now }
         .sensoryFeedback(.impact(weight: .light), trigger: reaction) { _, new in new?.kind == .pet }
     }
 
     /// Cancelled automatically when the view disappears or the pose changes.
     private func play() async {
-        let (intro, loop) = pose.clip.playlist(reduceMotion: reduceMotion)
-        frame = pose.clip.stillFrame.name
+        let clip = pose.clip(style)
+        let (intro, loop) = clip.playlist(reduceMotion: reduceMotion)
+        frame = clip.stillFrame.name
         for f in intro {
             frame = f.name
             guard (try? await Task.sleep(for: f.duration)) != nil else { return }

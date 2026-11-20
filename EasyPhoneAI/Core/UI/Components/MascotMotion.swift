@@ -37,7 +37,7 @@ struct MascotTransform: Sendable, Equatable {
 enum MascotMotion {
     static let breatheAmount = 0.02
     static let breathePeriod = 2.4
-    static let tiltDegrees = 8.0
+    static let tiltDegrees = 6.0
     static let hopHeight = 0.12
     static let tapHopHeight = 0.18
 
@@ -97,12 +97,12 @@ enum MascotMotion {
             let h = sin(.pi * p / air)
             m.offsetY = -height * h
             m.shadowScale = 1 - 0.4 * h
-            m.scaleY = 1 + 0.04 * h                      // stretch while rising / falling
-            m.scaleX = 1 - 0.03 * h
+            m.scaleY = 1 + 0.02 * h                      // light stretch: a bigger one distorts the face (owner)
+            m.scaleX = 1 - 0.015 * h
         } else {
             let q = sin(.pi * (p - air) / (1 - air))
-            m.scaleY = 1 - 0.08 * q                      // squash
-            m.scaleX = 1 + 0.06 * q
+            m.scaleY = 1 - 0.04 * q                      // light squash on landing
+            m.scaleX = 1 + 0.03 * q
         }
         return m
     }

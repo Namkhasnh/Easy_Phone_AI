@@ -7,6 +7,7 @@ struct KhoaiPlaygroundView: View {
     @State private var pose: MascotPose = .greeting
     @State private var level = 0.5
     @State private var forceStill = false
+    @State private var puppet = true
     @State private var reaction: MascotReactionEvent?
     @State private var tipIndex: Int?
     @State private var lineKey = "dev.khoai.hint"
@@ -23,7 +24,8 @@ struct KhoaiPlaygroundView: View {
                     .padding(.vertical, Tokens.Space.m)
                     .background(Tokens.Colors.honey, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
 
-                MascotView(pose: pose, size: 176, reaction: reaction, level: level, forceStill: forceStill)
+                MascotView(pose: pose, size: 176, reaction: reaction, level: level, forceStill: forceStill,
+                           style: puppet ? .puppet : .frames)
                     .contentShape(Rectangle())
                     .onTapGesture(perform: tap)
                     .gesture(DragGesture(minimumDistance: 12).onEnded { _ in pet() })
@@ -58,6 +60,12 @@ struct KhoaiPlaygroundView: View {
                     Slider(value: $level, in: 0...1)
                         .tint(Tokens.Colors.primary)
                 }
+                Toggle(isOn: $puppet) {
+                    Text("dev.khoai.puppet")
+                        .font(Tokens.Fonts.body)
+                        .foregroundStyle(Tokens.Colors.textPrimary)
+                }
+                .frame(minHeight: Tokens.Size.buttonMinHeight)
                 Toggle(isOn: $forceStill) {
                     Text("dev.khoai.forceStill")
                         .font(Tokens.Fonts.body)
