@@ -23,11 +23,9 @@ import OSLog
         // TODO(spec): no fallback is specified when the phone has no vi-VN voice; the system default voice is used.
         let prefs = preferences()
         // Siri voices are not available to apps, not even through `prefersAssistiveTechnologySettings` (tried on the
-        // owner's iPhone 2026-11-20). Default = the best installed vi voice (Linh Nâng cao when downloaded).
+        // owner's iPhone 2026-11-20). Default = the iPhone's vi-VN voice (Linh): the owner prefers it to Linh Nâng cao.
         if let id = prefs.voiceId, let chosen = AVSpeechSynthesisVoice(identifier: id) {   // D-324
             utterance.voice = chosen
-        } else if let best = Self.bestVietnameseVoice() {
-            utterance.voice = best
         } else if let voice = AVSpeechSynthesisVoice(language: "vi-VN") {
             utterance.voice = voice
         } else {
@@ -49,12 +47,6 @@ import OSLog
         if waiters.isEmpty && !synthesizer.isSpeaking {
             try? audio.setActive(false, options: .notifyOthersOnDeactivation)
         }
-    }
-
-    static func bestVietnameseVoice() -> AVSpeechSynthesisVoice? {
-        AVSpeechSynthesisVoice.speechVoices()
-            .filter { $0.language.hasPrefix("vi") }
-            .max { $0.quality.rawValue < $1.quality.rawValue }
     }
 
     func vietnameseVoices() -> [TTSVoice] {
