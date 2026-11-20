@@ -62,4 +62,24 @@ struct KhoaiPanelTests {
         let url = try #require(KhoaiShortcut.iCloudURL)
         #expect(url.scheme == "https" && url.host() == "www.icloud.com" && url.path().hasPrefix("/shortcuts/"))
     }
+
+    /// D-326: "Làm luôn" on → a safe create runs at once in the panel; "Hoàn tác" deletes it through TaskEngine.
+    @Test func autoModeCreatesAtOnceAndUndoDeletes() async throws {
+        let env = AppEnvironment.mock(.uiTest)                                    // all permissions granted
+        env.localData.settings().autoConfirm = true
+        let panel = KhoaiPanel(env: env, state: AppState(), text: "nhắc tôi uống thuốc 30 phút nữa",
+                               zone: TimeZone(identifier: "Asia/Ho_Chi_Minh")!)
+        let draft = panel.newDraft()
+        let due = ISO8601DateFormatter().string(from: Date.now.addingTimeInterval(1800))
+        let reply = try await panel.finish(ConversationViewModel.localDraft("reminder", "create",
+                                                                             [("title", "Uống thuốc"), ("dueDate", due)]),
+                                           in: draft, intent: AskKhoaiIntent())
+        guard case .done(_, let undoId?) = reply.view.content else { Issue.record("not done: \(reply.dialog)"); return }
+        #expect(draft.steps.first?.state == .succeeded)
+        #expect(try await env.reminders.incomplete().contains { $0.title == "Uống thuốc" })
+
+        let undone = await panel.undo(draftId: try #require(UUID(uuidString: undoId)))
+        guard case .undone = undone.view.content else { Issue.record("not undone: \(undone.dialog)"); return }
+        #expect(try await env.reminders.incomplete().contains { $0.title == "Uống thuốc" } == false)
+    }
 }

@@ -149,6 +149,10 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
         let merged = KhoaiSnippet.Summary(symbol: summaries.count == 1 ? summaries[0].symbol : "list.bullet",
                                           lines: summaries.flatMap(\.lines),
                                           spoken: summaries.map(\.spoken).joined(separator: ". "))
+        // D-326 (owner 2026-11-20): "Làm luôn, không cần xác nhận" (D-299) in the panel = no confirmation for safe
+        // creates; the done card has "Hoàn tác" instead of the in-app 3 s countdown.
+        let auto = env.localData.settings().autoConfirm && steps.allSatisfy(Self.panelKind)
+        if auto { return await runAll(steps, draft: draft, merged: merged, undo: true) }
         do {
             try await intent.requestConfirmation(
                 result: .result(dialog: IntentDialog(stringLiteral: merged.spoken), view: KhoaiSnippet(.draft(merged))),
@@ -165,15 +169,46 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
                 appState.pendingRoute = .review(draft.id)
             }
         }
+        return await runAll(steps, draft: draft, merged: merged, undo: false)
+    }
+
+    private func runAll(_ steps: [TaskStep], draft: TaskDraft, merged: KhoaiSnippet.Summary, undo: Bool) async -> Reply {
         var allDone = true
         for step in steps {
-            let result = await engine.confirm(stepId: step.id, in: draft)
+            let result = await env.engine.confirm(stepId: step.id, in: draft)
             if case .finished(.succeeded) = result { continue }
             allDone = false
             break
         }
         let message = UserMessage(key: allDone ? "intent.ask.done" : "intent.ask.failed").text
-        return Reply(dialog: message, view: KhoaiSnippet(allDone ? .done(merged) : .failed(message)))
+        let undoId = undo && allDone ? draft.id.uuidString : nil
+        return Reply(dialog: message, view: KhoaiSnippet(allDone ? .done(merged, undoDraftId: undoId) : .failed(message)))
+    }
+
+    /// D-326 "Hoàn tác": each item the draft created gets a delete step, confirmed by this tap (D-108: a tap, never
+    /// voice). Through `TaskEngine` like S11 / S12 deletes, so history shows both.
+    func undo(draftId: UUID) async -> Reply {
+        guard let draft = env.drafts.draft(draftId) else {
+            let message = UserMessage(key: "intent.ask.failed").text
+            return Reply(dialog: message, view: KhoaiSnippet(.failed(message)))
+        }
+        var ok = true
+        for step in draft.steps where step.state == .succeeded {
+            var undoDraft: TaskDraft?
+            if let id = CalendarExecutor.eventId(step.resultEvidence), let event = try? await env.calendar.find(identifier: id) {
+                undoDraft = env.engine.startDraft(from: event, operation: .delete, timeZoneId: draft.timeZoneId)
+            } else if let id = RemindersExecutor.reminderId(step.resultEvidence),
+                      let reminder = try? await env.reminders.find(identifier: id) {
+                undoDraft = env.engine.startDraft(from: reminder, operation: .delete, timeZoneId: draft.timeZoneId)
+            }
+            guard let undoDraft, let undoStep = undoDraft.steps.first,
+                  case .finished(.succeeded) = await env.engine.confirm(stepId: undoStep.id, in: undoDraft) else {
+                ok = false
+                continue
+            }
+        }
+        let message = UserMessage(key: ok ? "intent.ask.undone" : "intent.ask.failed").text
+        return Reply(dialog: message, view: KhoaiSnippet(ok ? .undone(message) : .failed(message)))
     }
 
     /// "Xem lịch ngày mai": the day's events in the panel (read only). No permission yet → S11 in the app.
@@ -223,7 +258,10 @@ struct KhoaiSnippet: View {
         var spoken: String
     }
 
-    enum Content { case draft(Summary), done(Summary), failed(String), list(title: String, rows: [String]) }
+    enum Content {
+        case draft(Summary), done(Summary, undoDraftId: String? = nil), failed(String), undone(String)
+        case list(title: String, rows: [String])
+    }
 
     let content: Content
 
@@ -239,13 +277,18 @@ struct KhoaiSnippet: View {
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 6) {
                 switch content {
-                case .draft(let s), .done(let s):
+                case .draft(let s), .done(let s, _):
                     Label {
                         VStack(alignment: .leading, spacing: 2) {
                             ForEach(s.lines, id: \.self) { Text(verbatim: $0) }
                         }
                     } icon: { Image(systemName: isDone ? "checkmark.circle.fill" : s.symbol) }
                     .font(.headline)
+                    if case .done(_, let undoId?) = content {
+                        undoButton(undoId)
+                    }
+                case .undone(let message):
+                    Label { Text(verbatim: message) } icon: { Image(systemName: "arrow.uturn.backward.circle") }
                 case .failed(let message):
                     Label { Text(verbatim: message) } icon: { Image(systemName: "exclamationmark.circle") }
                 case .list(let title, let rows):
@@ -259,6 +302,17 @@ struct KhoaiSnippet: View {
     }
 
     private var isDone: Bool { if case .done = content { true } else { false } }
+
+    /// D-326: interactive snippet buttons exist from iOS 26; earlier the item stays (S11 / S12 can delete it).
+    @ViewBuilder private func undoButton(_ draftId: String) -> some View {
+        if #available(iOS 26.0, *) {
+            Button(intent: UndoKhoaiIntent(draftId: draftId)) {
+                Label { Text("intent.ask.undo") } icon: { Image(systemName: "arrow.uturn.backward") }
+            }
+            .buttonStyle(.bordered)
+            .padding(.top, 4)
+        }
+    }
 
     private var pose: String {
         switch content {
@@ -290,4 +344,26 @@ struct KhoaiSnippet: View {
 /// iPhone as an iCloud link; S15 "Gọi Khoai nhanh" opens it so users only tap "Thêm phím tắt". nil → manual steps.
 enum KhoaiShortcut {
     static let iCloudURL: URL? = URL(string: "https://www.icloud.com/shortcuts/81b9237515f9486f879eec543839fc5b")   // owner 2026-11-20
+}
+
+/// D-326: "Hoàn tác" on the done card of an automatic panel run. Not shown in Shortcuts (only the card uses it).
+struct UndoKhoaiIntent: AppIntent {
+    static let title: LocalizedStringResource = "intent.ask.undo"
+    static let openAppWhenRun = false
+    static let isDiscoverable = false
+
+    @Parameter(title: "intent.ask.undo") var draftId: String
+
+    init() {}
+    init(draftId: String) { self.draftId = draftId }
+
+    @MainActor
+    func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView {
+        guard let env = KhoaiPanel.env, let state = KhoaiPanel.appState, let id = UUID(uuidString: draftId) else {
+            let message = UserMessage(key: "intent.ask.failed").text
+            return .result(dialog: IntentDialog(stringLiteral: message), view: KhoaiSnippet(.failed(message)))
+        }
+        let reply = await KhoaiPanel(env: env, state: state, text: "", zone: .current).undo(draftId: id)
+        return .result(dialog: IntentDialog(stringLiteral: reply.dialog), view: reply.view)
+    }
 }

@@ -2857,6 +2857,30 @@
         }
       }
     },
+    "intent.ask.undo" : {
+      "comment" : "Hỏi Khoai panel auto mode (D-326)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoàn tác"
+          }
+        }
+      }
+    },
+    "intent.ask.undone" : {
+      "comment" : "Hỏi Khoai panel auto mode (D-326)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã hoàn tác, Khoai xóa việc vừa tạo rồi."
+          }
+        }
+      }
+    },
     "intent.listen.desc" : {
       "comment" : "UI_SCREENS §7 (1E.1)",
       "extractionState" : "manual",
