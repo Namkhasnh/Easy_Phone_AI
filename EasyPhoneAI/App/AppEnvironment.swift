@@ -71,7 +71,11 @@ struct AppEnvironment: Sendable {
                                                  resolver: DeviceResolver(contacts: contacts, calendar: calendar,
                                                                           permissions: permissions, places: places,
                                                                           savedPlaces: { localData.savedPlaces() })),
-                              speech: LiveSpeechService(), tts: LiveTTSService(),
+                              speech: LiveSpeechService(),
+                              tts: LiveTTSService(preferences: {                       // D-324
+                                  let s = localData.settings()
+                                  return TTSPreferences(voiceId: s.ttsVoiceId, pitch: s.ttsPitch)
+                              }),
                               permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts,
                               system: system, places: places,
                               images: LiveImageStore(), photoLibrary: LivePhotoLibraryService(),

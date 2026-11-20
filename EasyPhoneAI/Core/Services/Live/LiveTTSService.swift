@@ -6,8 +6,10 @@ import OSLog
     private let synthesizer = AVSpeechSynthesizer()
     /// One waiter per utterance; resumed on finish or cancel.
     private var waiters: [ObjectIdentifier: CheckedContinuation<Void, Never>] = [:]
+    private let preferences: @MainActor () -> TTSPreferences
 
-    override init() {
+    init(preferences: @escaping @MainActor () -> TTSPreferences = { TTSPreferences() }) {
+        self.preferences = preferences
         super.init()
         synthesizer.delegate = self
     }
@@ -19,11 +21,17 @@ import OSLog
 
         let utterance = AVSpeechUtterance(string: trimmed)
         // TODO(spec): no fallback is specified when the phone has no vi-VN voice; the system default voice is used.
-        if let voice = AVSpeechSynthesisVoice(language: "vi-VN") {
+        let prefs = preferences()
+        // Siri voices are not available to apps, not even through `prefersAssistiveTechnologySettings` (tried on the
+        // owner's iPhone 2026-11-20). Default = the iPhone's vi-VN voice (Linh): the owner prefers it to Linh Nâng cao.
+        if let id = prefs.voiceId, let chosen = AVSpeechSynthesisVoice(identifier: id) {   // D-324
+            utterance.voice = chosen
+        } else if let voice = AVSpeechSynthesisVoice(language: "vi-VN") {
             utterance.voice = voice
         } else {
             Self.logger.info("tts: no vi-VN voice installed")
         }
+        utterance.pitchMultiplier = Float(min(max(prefs.pitch, 0.5), 2.0))
         utterance.rate = Float(min(max(rate, Double(AVSpeechUtteranceMinimumSpeechRate)),
                                    Double(AVSpeechUtteranceMaximumSpeechRate)))
 
@@ -39,6 +47,16 @@ import OSLog
         if waiters.isEmpty && !synthesizer.isSpeaking {
             try? audio.setActive(false, options: .notifyOthersOnDeactivation)
         }
+    }
+
+    func vietnameseVoices() -> [TTSVoice] {
+        AVSpeechSynthesisVoice.speechVoices()
+            .filter { $0.language.hasPrefix("vi") }
+            .map { v in
+                TTSVoice(id: v.identifier, name: v.name,
+                         quality: v.quality == .premium ? .premium : v.quality == .enhanced ? .enhanced : .standard)
+            }
+            .sorted { ($0.quality.rawValue, $0.name) > ($1.quality.rawValue, $1.name) }
     }
 
     /// AC5: immediate, not at the next word.

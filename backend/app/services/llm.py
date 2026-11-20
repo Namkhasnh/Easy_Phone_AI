@@ -67,6 +67,7 @@ class StructuredCall:
     messages: list[dict[str, Any]]  # system / developer / user layers (AI_PROMPTS §1); `/v1/ocr` adds an image part
     schema_name: str  # e.g. "ParsedDraftLLM"
     schema: dict[str, Any]
+    reasoning_effort: str | None = None  # per-request override of `LLM_REASONING_EFFORT` (D-323)
 
 
 def make_openai(settings: Settings) -> openai.AsyncOpenAI:
@@ -203,7 +204,7 @@ class LLMClient:
         }
         if self._settings.LLM_TEMPERATURE is not None:
             kwargs["temperature"] = self._settings.LLM_TEMPERATURE
-        effort = self._settings.LLM_REASONING_EFFORT.get(call.prompt_name)
+        effort = call.reasoning_effort or self._settings.LLM_REASONING_EFFORT.get(call.prompt_name)
         if effort:
             kwargs["reasoning_effort"] = effort  # speed (owner 2026-11-18); the repair call uses the same value
         started = time.monotonic()
@@ -234,8 +235,10 @@ class LLMClient:
              tokens: tuple[int, int] = (0, 0), n_errors: int = 0, cached: int = 0) -> None:
         latency_ms = int((time.monotonic() - started) * 1000) if started is not None else 0
         logger.info(
-            "llm prompt=%s.v%s model=%s result=%s errors=%s tokens_in=%s cached_in=%s tokens_out=%s latency_ms=%s",
-            call.prompt_name, call.prompt_version, call.model, result, n_errors, tokens[0], cached, tokens[1],
+            "llm prompt=%s.v%s model=%s effort=%s result=%s errors=%s tokens_in=%s cached_in=%s tokens_out=%s "
+            "latency_ms=%s",
+            call.prompt_name, call.prompt_version, call.model, call.reasoning_effort or "-", result, n_errors,
+            tokens[0], cached, tokens[1],
             latency_ms,
         )
 

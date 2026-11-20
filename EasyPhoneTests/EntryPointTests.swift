@@ -18,8 +18,8 @@ struct EntryPointTests {
     }
 
     @Test func shortcutsAndStrings() {
-        #expect(EasyPhoneShortcuts.appShortcuts.count == 1)
-        for key in ["intent.listen.title", "intent.listen.desc"] {
+        #expect(EasyPhoneShortcuts.appShortcuts.count == 2)                      // listen + "Hỏi Khoai" (D-325)
+        for key in ["intent.listen.title", "intent.listen.desc", "intent.ask.title", "intent.ask.desc", "intent.ask.prompt"] {
             #expect(UserMessage(key: key).text != key, "missing \(key)")
         }
         let info = Bundle.main.infoDictionary ?? [:]

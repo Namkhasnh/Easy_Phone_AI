@@ -147,6 +147,25 @@ import Observation
         await tts.speak(UserMessage(key: "settings.voice.sample").text, rate: settings.speechRate)
     }
 
+    /// D-324: installed Vietnamese voices for the "Giọng đọc" picker; refreshed when the page opens (after a download).
+    var voices: [TTSVoice] = []
+
+    func loadVoices() { voices = tts.vietnameseVoices() }
+
+    /// The stored voice if it is still installed, else nil (= iPhone default).
+    var selectedVoiceId: String? {
+        get { voices.contains { $0.id == settings.ttsVoiceId } ? settings.ttsVoiceId : nil }
+        set { settings.ttsVoiceId = newValue; save() }
+    }
+
+    nonisolated static func voiceLabel(_ v: TTSVoice) -> String {
+        switch v.quality {
+        case .premium: UserMessage(key: "settings.voice.quality.premium", args: [v.name]).text
+        case .enhanced: UserMessage(key: "settings.voice.quality.enhanced", args: [v.name]).text
+        case .standard: v.name
+        }
+    }
+
     /// Leaving Settings or starting a new sample cuts the voice off (spec §6.2 AC5).
     func stopVoice() { tts.stop() }
 

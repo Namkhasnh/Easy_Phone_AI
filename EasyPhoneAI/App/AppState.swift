@@ -7,6 +7,8 @@ import Observation
     var entitlement: CachedEntitlement?      // display only (D-085)
     var startListeningRequested = false      // set by StartListeningIntent / easyphone://listen / widgets (D-172)
     var blockingScreen: BlockingScreen?      // .clientOutdated(minVersion) on 426
+    /// D-325: a screen the "Hỏi Khoai" panel asked the app to open when it continues in the app.
+    var pendingRoute: Route?
 
     init() {}
 

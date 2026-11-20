@@ -45,7 +45,7 @@ enum VoiceReply: Equatable, Sendable {
         arm(noSpeech)
         do {
             for try await transcript in speech.start(locale: locale) where !transcript.text.isEmpty {
-                heard = transcript.text
+                heard = SpeechCleanup.fix(transcript.text)                      // D-322
                 arm(silence)
             }
         } catch {

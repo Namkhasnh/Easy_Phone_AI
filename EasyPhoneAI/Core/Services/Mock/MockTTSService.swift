@@ -13,4 +13,7 @@ import Foundation
     }
 
     func stop() { stopCount += 1 }
+
+    var voices: [TTSVoice] = [TTSVoice(id: "mock.linh", name: "Linh", quality: .standard)]
+    func vietnameseVoices() -> [TTSVoice] { voices }
 }

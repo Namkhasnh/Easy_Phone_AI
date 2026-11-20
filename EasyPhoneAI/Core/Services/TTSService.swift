@@ -7,4 +7,21 @@ import Foundation
     /// `rate` = `AppSettings.speechRate` (`AVSpeechUtterance` scale, DATA_MODEL §5).
     func speak(_ text: String, rate: Double) async
     func stop()
+    /// D-324: the Vietnamese voices installed on this phone (S15 Giọng nói → "Giọng đọc").
+    func vietnameseVoices() -> [TTSVoice]
+}
+
+/// One installed voice (no AVFoundation type in Views, D-015).
+struct TTSVoice: Sendable, Hashable, Identifiable {
+    enum Quality: Int, Sendable { case standard, enhanced, premium }
+    let id: String          // `AVSpeechSynthesisVoice.identifier`
+    let name: String        // "Linh"
+    let quality: Quality
+}
+
+/// D-324: what `speak` uses besides the rate. Read at every utterance, so a change applies at once.
+struct TTSPreferences: Sendable, Hashable {
+
+    var voiceId: String?    // nil = the iPhone's default vi-VN voice
+    var pitch: Double = 1.0 // `AVSpeechUtterance.pitchMultiplier`
 }
