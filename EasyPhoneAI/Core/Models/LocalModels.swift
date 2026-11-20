@@ -58,6 +58,8 @@ import SwiftData
     var handsFree: Bool = true        // "Nói chuyện rảnh tay" (D-312)
     var savePhotos: Bool = false      // "Lưu ảnh chụp vào Ảnh" (D-301), camera photos only
     var textSize: String = AppTextSize.system.rawValue   // "Cỡ chữ" for this app only (D-318)
+    var ttsVoiceId: String?           // "Giọng đọc" (D-324); nil = iPhone default vi-VN voice
+    var ttsPitch: Double = 1.0        // "Cao độ giọng" (D-324), 0.8–1.4
 
     init() {}
 }

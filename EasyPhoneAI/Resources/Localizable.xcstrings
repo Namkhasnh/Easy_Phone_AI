@@ -5815,6 +5815,102 @@
         }
       }
     },
+    "settings.voice.download" : {
+      "comment" : "S15 Giọng nói — voice + pitch (D-324)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muốn giọng tự nhiên hơn? Vào Cài đặt iPhone > Trợ năng > Nội dung được đọc > Giọng nói > Tiếng Việt, tải giọng “Nâng cao” (miễn phí), rồi quay lại đây chọn."
+          }
+        }
+      }
+    },
+    "settings.voice.pitch.high" : {
+      "comment" : "S15 Giọng nói — voice + pitch (D-324)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cao"
+          }
+        }
+      }
+    },
+    "settings.voice.pitch.low" : {
+      "comment" : "S15 Giọng nói — voice + pitch (D-324)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trầm"
+          }
+        }
+      }
+    },
+    "settings.voice.pitch" : {
+      "comment" : "S15 Giọng nói — voice + pitch (D-324)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cao độ giọng"
+          }
+        }
+      }
+    },
+    "settings.voice.quality.premium" : {
+      "comment" : "S15 Giọng nói — voice + pitch (D-324)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (cao cấp)"
+          }
+        }
+      }
+    },
+    "settings.voice.quality.enhanced" : {
+      "comment" : "S15 Giọng nói — voice + pitch (D-324)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (nâng cao)"
+          }
+        }
+      }
+    },
+    "settings.voice.default" : {
+      "comment" : "S15 Giọng nói — voice + pitch (D-324)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mặc định của iPhone"
+          }
+        }
+      }
+    },
+    "settings.voice.choice" : {
+      "comment" : "S15 Giọng nói — voice + pitch (D-324)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giọng đọc"
+          }
+        }
+      }
+    },
     "settings.voice" : {
       "comment" : "UI_SCREENS S15",
       "extractionState" : "manual",

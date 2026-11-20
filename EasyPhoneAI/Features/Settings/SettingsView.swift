@@ -170,15 +170,69 @@ struct SettingsView: View {
             }
             .padding(.vertical, Tokens.Space.s)
             // TODO(spec): range of the rate slider is not specified; 0.3–0.6 around the 0.45 default (DATA_MODEL §5).
+            // D-324 (owner 2026-11-20): voice + pitch. TODO(spec): rows not in UI_SCREENS S15.
+            VStack(alignment: .leading, spacing: Tokens.Space.s) {
+                rowText("settings.voice.pitch")
+                Slider(value: settings.ttsPitch, in: 0.8...1.4) {
+                    Text("settings.voice.pitch")
+                } minimumValueLabel: {
+                    Text("settings.voice.pitch.low").font(Tokens.Fonts.label)
+                } maximumValueLabel: {
+                    Text("settings.voice.pitch.high").font(Tokens.Fonts.label)
+                } onEditingChanged: { editing in
+                    if !editing { viewModel.save(); Task { await viewModel.testVoice() } }   // hear it at once
+                }
+            }
+            .padding(.vertical, Tokens.Space.s)
             SecondaryButton("settings.voice.test", systemImage: "speaker.wave.2") {
                 Task { await viewModel.testVoice() }
             }
             .padding(.vertical, Tokens.Space.s)
         }
         Section {
+            voiceRow(nil, label: UserMessage(key: "settings.voice.default").text)
+            ForEach(viewModel.voices) { voice in
+                voiceRow(voice.id, label: SettingsViewModel.voiceLabel(voice))
+            }
+        } header: { header("settings.voice.choice") }
+        Section {
+            Text("settings.voice.download")                                                  // D-324
+                .font(Tokens.Fonts.body)
+                .foregroundStyle(Tokens.Colors.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.vertical, Tokens.Space.xs)
+        }
+        .onAppear { viewModel.loadVoices() }
+        Section {
             toggleRow("settings.autoSend", note: "settings.autoSend.note", isOn: settings.autoSend)      // D-296
             toggleRow("settings.handsFree", note: "settings.handsFree.note", isOn: settings.handsFree)   // D-312
         }
+    }
+
+    /// D-324: one radio row per installed Vietnamese voice (a Picker clipped its value at AX5); tap = choose + hear it.
+    private func voiceRow(_ id: String?, label: String) -> some View {
+        let selected = viewModel.selectedVoiceId == id
+        return Button {
+            viewModel.selectedVoiceId = id
+            Task { await viewModel.testVoice() }
+        } label: {
+            HStack(spacing: Tokens.Space.m) {
+                Image(systemName: selected ? "largecircle.fill.circle" : "circle")
+                    .font(.title2)
+                    .foregroundStyle(selected ? Tokens.Colors.primary : Tokens.Colors.border)
+                    .accessibilityHidden(true)
+                Text(verbatim: label)
+                    .font(Tokens.Fonts.fieldValue)
+                    .foregroundStyle(Tokens.Colors.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+            }
+            .frame(minHeight: Tokens.Size.buttonMinHeight)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? [.isSelected] : [])
+        .accessibilityIdentifier("settings.voice.\(id ?? "default")")
     }
 
     @ViewBuilder private func displayPage(settings: Bindable<AppSettings>) -> some View {
