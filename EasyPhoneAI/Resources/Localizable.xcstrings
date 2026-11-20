@@ -6786,6 +6786,234 @@
           }
         }
       }
+    },
+    "khoai.tip.1" : {
+      "comment" : "Khoai tip on tap (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn thử nói: “Nhắc tôi 8 giờ sáng uống thuốc”"
+          }
+        }
+      }
+    },
+    "khoai.tip.2" : {
+      "comment" : "Khoai tip on tap (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn thử nói: “Gọi cho mẹ”"
+          }
+        }
+      }
+    },
+    "khoai.tip.3" : {
+      "comment" : "Khoai tip on tap (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn thử nói: “Mai 9 giờ khám răng”"
+          }
+        }
+      }
+    },
+    "khoai.tip.4" : {
+      "comment" : "Khoai tip on tap (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn thử nói: “Chỉ đường đến chợ Bến Thành”"
+          }
+        }
+      }
+    },
+    "khoai.tip.5" : {
+      "comment" : "Khoai tip on tap (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn thử nói: “Lịch hôm nay có gì?”"
+          }
+        }
+      }
+    },
+    "khoai.pet.reply" : {
+      "comment" : "Khoai reply when petted (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hihi, nhột quá!"
+          }
+        }
+      }
+    },
+    "settings.khoaiPlayground" : {
+      "comment" : "S15 Nâng cao, Debug only (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xem thử Khoai"
+          }
+        }
+      }
+    },
+    "dev.khoai.title" : {
+      "comment" : "Debug preview screen title (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xem thử Khoai"
+          }
+        }
+      }
+    },
+    "dev.khoai.hint" : {
+      "comment" : "Debug preview hint (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chạm vào Khoai, hoặc vuốt nhẹ để xoa đầu"
+          }
+        }
+      }
+    },
+    "dev.khoai.tap" : {
+      "comment" : "Debug preview: tap reaction (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chạm"
+          }
+        }
+      }
+    },
+    "dev.khoai.pet" : {
+      "comment" : "Debug preview: pet reaction (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xoa đầu"
+          }
+        }
+      }
+    },
+    "dev.khoai.level" : {
+      "comment" : "Debug preview: voice level slider (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Độ to giọng nói (khi đang nghe)"
+          }
+        }
+      }
+    },
+    "dev.khoai.forceStill" : {
+      "comment" : "Debug preview: Reduce Motion simulation (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giả lập tắt chuyển động"
+          }
+        }
+      }
+    },
+    "dev.khoai.pose.greeting" : {
+      "comment" : "Debug preview pose (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chào"
+          }
+        }
+      }
+    },
+    "dev.khoai.pose.listening" : {
+      "comment" : "Debug preview pose (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang nghe"
+          }
+        }
+      }
+    },
+    "dev.khoai.pose.thinking" : {
+      "comment" : "Debug preview pose (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang xử lý"
+          }
+        }
+      }
+    },
+    "dev.khoai.pose.asking" : {
+      "comment" : "Debug preview pose (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hỏi thêm"
+          }
+        }
+      }
+    },
+    "dev.khoai.pose.happy" : {
+      "comment" : "Debug preview pose (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mừng"
+          }
+        }
+      }
+    },
+    "dev.khoai.pose.sorry" : {
+      "comment" : "Debug preview pose (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buồn, xin lỗi"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// Guide mascot **Khoai** (UI_SCREENS §2, P-41, D-289). Owner-supplied sprite frames (192×208 px PNG, transparent),
-/// asset `mascot.<row>.<nn>` in `Assets.xcassets/Mascot`. Decorative only: VoiceOver skips it, no tap action, no text,
-/// never signals a result on its own (D-102, D-124). Reduce Motion → one still frame (UI_SCREENS §9).
+/// Guide mascot **Khoai** (UI_SCREENS §2, P-41, D-289, D-327). Owner-supplied sprite frames (192×208 px PNG,
+/// transparent), asset `mascot.<row>.<nn>` in `Assets.xcassets/Mascot`, plus a code motion layer (`MascotMotion`).
+/// VoiceOver skips it, it has no text of its own and never signals a result on its own (D-102, D-124); touches only
+/// play a reaction (D-327). Reduce Motion → one still frame, no motion (UI_SCREENS §9).
 enum MascotPose: String, CaseIterable, Sendable {
     case greeting, listening, thinking, asking, happy, sorry
 
@@ -55,29 +56,64 @@ struct MascotClip: Hashable, Sendable {
 struct MascotView: View {
     let pose: MascotPose
     var size: CGFloat = 96
+    /// D-327: a one-shot touch reaction (tap → hop, pet → wiggle + hearts + light haptic).
+    var reaction: MascotReactionEvent?
+    /// D-327: voice loudness 0…1 while listening (bob).
+    var level: Double = 0
+    /// Debug preview only: behave as if Reduce Motion were on.
+    var forceStill = false
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
     @State private var frame: String?
+    @State private var reactionStart: Date?
 
+    private var reduceMotion: Bool { systemReduceMotion || forceStill }
     private struct PlayKey: Hashable { let pose: MascotPose; let reduceMotion: Bool }
 
     var body: some View {
-        Image(frame ?? pose.clip.stillFrame.name)
-            .resizable()
-            .interpolation(.high)
-            .scaledToFit()
-            // Depth without a backdrop (owner 2026-11-10): soft ground shadow under the paws + light drop shadow.
-            .background(alignment: .bottom) {
+        TimelineView(.animation(paused: reduceMotion)) { context in
+            let now = context.date
+            let elapsed = reactionStart.map { now.timeIntervalSince($0) } ?? -1
+            let m = MascotMotion.transform(pose: pose, time: now.timeIntervalSinceReferenceDate, level: level,
+                                           reaction: reaction?.kind, elapsed: elapsed, reduceMotion: reduceMotion)
+            ZStack(alignment: .bottom) {
+                // Depth without a backdrop (owner 2026-11-10): soft ground shadow under the paws + light drop shadow.
                 Ellipse()
                     .fill(.black.opacity(0.22))
                     .frame(width: size * 0.62, height: size * 0.12)
                     .blur(radius: size * 0.04)
+                    .scaleEffect(m.shadowScale)
                     .offset(y: size * 0.02)
+                Image(frame ?? pose.clip.stillFrame.name)
+                    .resizable()
+                    .interpolation(.high)
+                    .scaledToFit()
+                    .contentTransition(.opacity)
+                    .animation(reduceMotion ? nil : .linear(duration: 0.08), value: frame)
+                    .scaleEffect(x: m.scaleX, y: m.scaleY, anchor: .bottom)
+                    .rotationEffect(.degrees(m.rotation), anchor: .bottom)
+                    .offset(y: size * m.offsetY)
+                    .shadow(color: .black.opacity(0.18), radius: size * 0.05, x: 0, y: size * 0.04)
             }
-            .shadow(color: .black.opacity(0.18), radius: size * 0.05, x: 0, y: size * 0.04)
-            .frame(width: size, height: size)              // decorative, fixed-size slot (not text)
-            .accessibilityHidden(true)
-            .task(id: PlayKey(pose: pose, reduceMotion: reduceMotion)) { await play() }
+            .overlay {
+                if reaction?.kind == .pet, let hearts = MascotMotion.hearts(elapsed: elapsed, reduceMotion: reduceMotion) {
+                    ForEach(hearts.indices, id: \.self) { i in
+                        Image(systemName: "heart.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: size * 0.14, height: size * 0.14)   // decorative, sized to the mascot
+                            .foregroundStyle(Tokens.Colors.danger)
+                            .opacity(hearts[i].opacity)
+                            .offset(x: size * hearts[i].x, y: size * hearts[i].y)
+                    }
+                }
+            }
+        }
+        .frame(width: size, height: size)              // decorative, fixed-size slot (not text)
+        .accessibilityHidden(true)
+        .task(id: PlayKey(pose: pose, reduceMotion: reduceMotion)) { await play() }
+        .onChange(of: reaction) { _, event in reactionStart = event == nil ? nil : .now }
+        .sensoryFeedback(.impact(weight: .light), trigger: reaction) { _, new in new?.kind == .pet }
     }
 
     /// Cancelled automatically when the view disappears or the pose changes.
