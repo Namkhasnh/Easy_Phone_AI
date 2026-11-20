@@ -30,14 +30,4 @@ struct VoiceChoiceTests {
         let s = MockLocalDataRepository().settings()
         #expect(s.ttsVoiceId == nil && s.ttsPitch == 1.0)
     }
-
-    @Test func spokenContentChoiceSurvivesAnEmptyVoiceList() {
-        let local = MockLocalDataRepository()
-        let tts = MockTTSService()
-        tts.voices = []
-        let vm = SettingsViewModel(localData: local, drafts: MockTaskRepository(), auth: MockAuthService(), tts: tts)
-        vm.loadVoices()
-        vm.selectedVoiceId = TTSPreferences.spokenContentVoiceId
-        #expect(vm.selectedVoiceId == TTSPreferences.spokenContentVoiceId)    // not an installed voice, still kept
-    }
 }
