@@ -2845,6 +2845,18 @@
         }
       }
     },
+    "intent.ask.unsupported" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoai chưa hỗ trợ việc này."
+          }
+        }
+      }
+    },
     "intent.listen.desc" : {
       "comment" : "UI_SCREENS §7 (1E.1)",
       "extractionState" : "manual",
@@ -5163,6 +5175,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Việc này cần bạn bấm nút trên màn hình."
+          }
+        }
+      }
+    },
+    "settings.quickOpen.other" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muốn dùng nút khác? Bạn có thể gán “Khoai nghe” cho nút Tác vụ (nếu iPhone có), hoặc thêm nút Khoai vào Trung tâm điều khiển và màn hình khóa."
+          }
+        }
+      }
+    },
+    "settings.quickOpen.backTap" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Mở Cài đặt iPhone.\n2. Vào Trợ năng → Cảm ứng → Chạm vào mặt sau.\n3. Chọn Chạm hai lần, kéo xuống phần Phím tắt và chọn “Khoai nghe”."
+          }
+        }
+      }
+    },
+    "settings.quickOpen.step2" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bước 2: Gõ lưng máy để gọi Khoai"
+          }
+        }
+      }
+    },
+    "settings.quickOpen.manual" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Mở app Phím tắt, bấm dấu +.\n2. Thêm tác vụ “Đọc chính tả văn bản”, chọn Tiếng Việt, Dừng nghe: “Sau khi tạm dừng”.\n3. Thêm tác vụ “Hỏi Khoai”, bấm ô “Yêu cầu” và chọn “Văn bản đã đọc chính tả”.\n4. Đặt tên “Khoai nghe” rồi bấm Xong."
+          }
+        }
+      }
+    },
+    "settings.quickOpen.add.note" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Phím tắt sẽ mở ra. Bạn bấm “Thêm phím tắt” rồi quay lại đây."
+          }
+        }
+      }
+    },
+    "settings.quickOpen.add" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm phím tắt"
+          }
+        }
+      }
+    },
+    "settings.quickOpen.step1" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bước 1: Thêm phím tắt “Khoai nghe”"
+          }
+        }
+      }
+    },
+    "settings.quickOpen.intro" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gõ 2 lần vào lưng iPhone là Khoai nghe ngay, trên bất kỳ màn hình nào, không cần mở app. Chỉ cần cài một lần, theo 2 bước dưới đây."
+          }
+        }
+      }
+    },
+    "settings.quickOpen.summary" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gõ 2 lần vào lưng máy"
+          }
+        }
+      }
+    },
+    "settings.quickOpen" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gọi Khoai nhanh"
           }
         }
       }

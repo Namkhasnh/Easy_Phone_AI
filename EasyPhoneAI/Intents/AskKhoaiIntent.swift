@@ -39,14 +39,14 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
                                                    [("title", s.title), ("startDate", s.date)]
                                                        + (s.location.map { [("location", $0)] } ?? []),
                                                    confidence: ["startDate": s.dateConfidence])
-            return try await panel.run(parsed, inPanel: true, intent: self)
+            return try await panel.finish(parsed, in: panel.newDraft(), intent: self)
         case .call(let name)?:
-            return try await panel.run(ConversationViewModel.localDraft("call", "open",
-                                                                        [("recipientName", name), ("callType", "phone")]),
-                                       inPanel: false, intent: self)
+            return try await panel.finish(ConversationViewModel.localDraft("call", "open",
+                                                                           [("recipientName", name), ("callType", "phone")]),
+                                          in: panel.newDraft(), intent: self)
         case .directions(let label)?:
-            return try await panel.run(ConversationViewModel.localDraft("place", "open", [("query", label)]),
-                                       inPanel: false, intent: self)
+            return try await panel.finish(ConversationViewModel.localDraft("place", "open", [("query", label)]),
+                                          in: panel.newDraft(), intent: self)
         case .calendarDay(let day)?:
             return try await panel.showDay(day, intent: self)
         case .reminders?:
@@ -54,7 +54,7 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
         case .checkMail(let codesOnly)?:
             throw panel.continueInApp(.mail(codesOnly: codesOnly), intent: self)
         case nil:
-            throw panel.continueWithText(intent: self)
+            return try await panel.askAI(intent: self)                       // step 2 (D-325)
         }
     }
 }
@@ -73,47 +73,107 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
     /// What the panel says and shows at the end.
     struct Reply { let dialog: String; let view: KhoaiSnippet }
 
-    /// A local draft → S04 rules on device (resolution, validation) → the system confirmation → execute.
-    func run(_ parsed: ParsedDraft, inPanel: Bool, intent: AskKhoaiIntent) async throws -> Reply {
-        let draft = TaskDraft(inputMode: .voice, originalInput: text, timeZoneId: zone.identifier)
+    /// The panel's draft: typed, so if it continues in the app S03 sends / resumes it like a typed request (D-104).
+    func newDraft() -> TaskDraft {
+        let draft = TaskDraft(inputMode: .text, originalInput: text, timeZoneId: zone.identifier)
         env.drafts.save(draft)
+        return draft
+    }
+
+    /// Step 2: `/v1/parse` from the panel (1 unit, same pipeline and idempotency as S03). Errors (offline, quota,
+    /// sign-in) continue in the app, where S03 shows the proper screen for them.
+    func askAI(intent: AskKhoaiIntent) async throws -> Reply {
+        let draft = newDraft()
+        var seen = Set<String>()
+        let labels = env.localData.savedPlaces().map(\.label).filter { seen.insert($0).inserted }   // labels only
+        let request = ParseRequest(text: text, inputMode: .voice, now: ParseRequest.nowString(.now, in: zone),
+                                   timezone: zone.identifier, locale: draft.locale, savedPlaceLabels: labels,
+                                   context: .none)
+        let parsed: ParsedDraft
+        do {
+            parsed = try await env.api.parse(request, idempotencyKey: IdempotencyKey())
+        } catch {
+            Self.logger.info("ask khoai parse failed: \((error as? AppError)?.code ?? "unknown", privacy: .public)")
+            throw continueInApp(.conversation(draft.id), intent: intent)
+        }
+        if let u = parsed.unsupported {
+            switch u.reason {
+            case "viewCalendar":
+                return try await showDay(u.date ?? ConversationViewModel.dayString(.now, timeZoneId: zone.identifier),
+                                         intent: intent)
+            case "checkMail":
+                throw continueInApp(.mail(codesOnly: LocalIntent.wantsCode(text)), intent: intent)
+            default:
+                let message = UserMessage(key: "intent.ask.unsupported").text           // spec §11 "Chưa hỗ trợ"
+                return Reply(dialog: message, view: KhoaiSnippet(.failed(message)))
+            }
+        }
+        return try await finish(parsed, in: draft, intent: intent)
+    }
+
+    /// Kinds the panel may finish itself (create only: edit / delete always go to S04, D-108).
+    static func panelKind(_ step: TaskStep) -> Bool {
+        step.operation == .create && (step.kind == .reminder || step.kind == .calendarEvent)
+    }
+
+    /// Kinds confirmed in the panel but run by the app in front (Phone / Maps hand-off, D-102).
+    static func handoffKind(_ step: TaskStep) -> Bool {
+        step.operation == .open && (step.kind == .call || step.kind == .place)
+    }
+
+    /// A parsed draft (local or AI) → device resolution and S04 rules → one system confirmation for all steps →
+    /// run. Anything the panel cannot show or decide continues in S03 / S04 with this same draft (nothing re-parsed).
+    func finish(_ parsed: ParsedDraft, in draft: TaskDraft, intent: AskKhoaiIntent) async throws -> Reply {
         let defaults = DraftBuilder.Defaults(mapsApp: env.localData.settings().preferredMapsApp)
         guard env.engine.applyParsed(parsed, to: draft, defaults: defaults) else {
-            throw continueWithText(intent: intent)
+            let message = UserMessage(key: "intent.ask.unsupported").text
+            return Reply(dialog: message, view: KhoaiSnippet(.failed(message)))
         }
         await env.engine.resolveDevice(in: draft)
-        guard let step = draft.steps.first else { throw continueWithText(intent: intent) }
-        // A choice to make (several "Minh"), a missing field or a permission never asked → S04 in the app.
-        let permission: Capability? = switch step.kind {
-        case .reminder: .reminders
-        case .calendarEvent: .calendar
-        default: nil
+        let steps = draft.steps.sorted { $0.order < $1.order }
+        let allowed = steps.allSatisfy { Self.panelKind($0) || Self.handoffKind($0) }
+        let permitted = steps.allSatisfy { step in
+            switch step.kind {
+            case .reminder: env.permissions.status(.reminders).isUsable
+            case .calendarEvent: env.permissions.status(.calendar).isUsable
+            default: true
+            }
         }
-        let permitted = permission.map { env.permissions.status($0).isUsable } ?? true
-        guard env.engine.confirmBlocker(stepId: step.id, in: draft) == nil, permitted else {
-            throw continueInApp(.review(draft.id), intent: intent)
+        // Only the first step can be confirmable before the others are done (linked steps, DATA_MODEL §3.3).
+        let ready = steps.first.map { env.engine.confirmBlocker(stepId: $0.id, in: draft) == nil } ?? false
+        let complete = steps.allSatisfy { Validator.validate($0, now: .now).isEmpty }
+        guard allowed, permitted, ready, complete, env.engine.nextFollowUp(in: draft) == nil else {
+            throw continueInApp(.conversation(draft.id), intent: intent)        // S03 resumes: follow-up / S04
         }
-        let summary = KhoaiSnippet.summary(of: step, timeZoneId: draft.timeZoneId)
+        let summaries = steps.map { KhoaiSnippet.summary(of: $0, timeZoneId: draft.timeZoneId) }
+        let merged = KhoaiSnippet.Summary(symbol: summaries.count == 1 ? summaries[0].symbol : "list.bullet",
+                                          lines: summaries.flatMap(\.lines),
+                                          spoken: summaries.map(\.spoken).joined(separator: ". "))
         do {
             try await intent.requestConfirmation(
-                result: .result(dialog: IntentDialog(stringLiteral: summary.spoken), view: KhoaiSnippet(.draft(summary))),
+                result: .result(dialog: IntentDialog(stringLiteral: merged.spoken), view: KhoaiSnippet(.draft(merged))),
                 confirmationActionName: .add, showPrompt: false)
         } catch {
-            env.engine.cancel(stepId: step.id, in: draft)             // "Hủy" in the panel: nothing done
+            for step in steps { env.engine.cancel(stepId: step.id, in: draft) }   // "Hủy": nothing done
             throw error
         }
-        guard inPanel else {
-            // Call / directions: Phone / Maps open only from an app in front (D-102 handedOff there).
-            let engine = env.engine, appState = state
+        let engine = env.engine
+        if steps.contains(where: Self.handoffKind) {
+            let appState = state
             throw intent.needsToContinueInForegroundError(IntentDialog("intent.ask.opening")) {
-                _ = await engine.confirm(stepId: step.id, in: draft)
+                for step in steps { _ = await engine.confirm(stepId: step.id, in: draft) }
                 appState.pendingRoute = .review(draft.id)
             }
         }
-        let result = await env.engine.confirm(stepId: step.id, in: draft)
-        let done: Bool = if case .finished(.succeeded) = result { true } else { false }
-        let message = UserMessage(key: done ? "intent.ask.done" : "intent.ask.failed").text
-        return Reply(dialog: message, view: KhoaiSnippet(done ? .done(summary) : .failed(message)))
+        var allDone = true
+        for step in steps {
+            let result = await engine.confirm(stepId: step.id, in: draft)
+            if case .finished(.succeeded) = result { continue }
+            allDone = false
+            break
+        }
+        let message = UserMessage(key: allDone ? "intent.ask.done" : "intent.ask.failed").text
+        return Reply(dialog: message, view: KhoaiSnippet(allDone ? .done(merged) : .failed(message)))
     }
 
     /// "Xem lịch ngày mai": the day's events in the panel (read only). No permission yet → S11 in the app.
@@ -135,13 +195,6 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
         return intent.needsToContinueInForegroundError(IntentDialog("intent.ask.opening")) {
             appState.pendingRoute = route
         }
-    }
-
-    /// AI requests and the rest: the same words become a typed request in S03 (sent on arrival, D-104 saved first).
-    func continueWithText(intent: AskKhoaiIntent) -> Error {
-        let draft = TaskDraft(inputMode: .text, originalInput: text, timeZoneId: zone.identifier)
-        env.drafts.save(draft)
-        return continueInApp(.conversation(draft.id), intent: intent)
     }
 
     static func interval(_ day: String, _ zone: TimeZone) -> DateInterval? {
@@ -231,4 +284,10 @@ struct KhoaiSnippet: View {
         let lines = [first] + (detail.map { [$0] } ?? [])
         return Summary(symbol: symbol, lines: lines, spoken: lines.joined(separator: ", "))
     }
+}
+
+/// D-325: the ready-made "Khoai nghe" shortcut (Dictate Text in Vietnamese → "Hỏi Khoai") shared from the owner's
+/// iPhone as an iCloud link; S15 "Gọi Khoai nhanh" opens it so users only tap "Thêm phím tắt". nil → manual steps.
+enum KhoaiShortcut {
+    static let iCloudURL: URL? = nil   // TODO(spec): owner shares the iCloud link of "Khoai nghe"
 }

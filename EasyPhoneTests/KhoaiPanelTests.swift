@@ -38,4 +38,23 @@ struct KhoaiPanelTests {
         #expect(range.duration == 86_400)
         #expect(KhoaiPanel.interval("bad", zone) == nil)
     }
+
+    /// Step 2: what the panel may finish itself; edit / delete / SMS / mail always go to the app (D-108, D-103).
+    @Test func whatThePanelMayDo() throws {
+        let (r, _) = try step("reminder", "create", [("title", "Uống thuốc"), ("dueDate", "2026-11-20T20:00:00+07:00")])
+        #expect(KhoaiPanel.panelKind(r) && !KhoaiPanel.handoffKind(r))
+        let (c, _) = try step("call", "open", [("recipientName", "mẹ"), ("callType", "phone")])
+        #expect(!KhoaiPanel.panelKind(c) && KhoaiPanel.handoffKind(c))
+        let (sms, _) = try step("sms", "open", [("recipientName", "mẹ"), ("body", "Con về muộn"), ("channel", "sms")])
+        #expect(!KhoaiPanel.panelKind(sms) && !KhoaiPanel.handoffKind(sms))
+        let (del, _) = try step("reminder", "delete", [("title", "Uống thuốc")])
+        #expect(!KhoaiPanel.panelKind(del) && !KhoaiPanel.handoffKind(del))
+    }
+
+    @Test func quickOpenStrings() {
+        for key in ["settings.quickOpen", "settings.quickOpen.intro", "settings.quickOpen.manual", "settings.quickOpen.backTap",
+                    "intent.ask.unsupported"] {
+            #expect(UserMessage(key: key).text != key, "missing \(key)")
+        }
+    }
 }

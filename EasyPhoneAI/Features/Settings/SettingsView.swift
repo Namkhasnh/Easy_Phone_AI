@@ -13,13 +13,14 @@ struct SettingsView: View {
 
     /// Owner 2026-11-18 (D-317): the first screen lists the groups; each opens its own page (like iOS Settings).
     enum Page: String, CaseIterable, Hashable, Identifiable {
-        case account, voice, display, memory, connections, advanced, data, about
+        case account, voice, quickOpen, display, memory, connections, advanced, data, about
         var id: String { rawValue }
         var titleKey: LocalizedStringKey { LocalizedStringKey("settings." + rawValue) }
         var symbol: String {
             switch self {
             case .account: "person.crop.circle.fill"
             case .voice: "waveform"
+            case .quickOpen: "hand.tap.fill"
             case .display: "textformat.size"
             case .memory: "heart.text.square.fill"
             case .connections: "envelope.fill"
@@ -36,6 +37,7 @@ struct SettingsView: View {
                 Section { row(.account, summary: accountSummary) }
                 Section {
                     row(.voice, summary: nil)
+                    row(.quickOpen, summary: UserMessage(key: "settings.quickOpen.summary").text)   // D-325
                     row(.display, summary: UserMessage(key: viewModel.textSize.labelKey).text)
                     row(.memory, summary: memorySummary)
                     row(.connections, summary: gmailSummary)
@@ -120,6 +122,7 @@ struct SettingsView: View {
                 switch page {
                 case .account: accountPage
                 case .voice: voicePage(settings: $settings)
+                case .quickOpen: quickOpenPage
                 case .display: displayPage(settings: $settings)
                 case .memory: memoryPage
                 case .connections: gmailSection
@@ -233,6 +236,41 @@ struct SettingsView: View {
         .buttonStyle(.plain)
         .accessibilityAddTraits(selected ? [.isSelected] : [])
         .accessibilityIdentifier("settings.voice.\(id ?? "default")")
+    }
+
+    /// D-325: how to call Khoai over any screen (Back Tap → "Khoai nghe"). Apple lets no app create a shortcut or
+    /// set Back Tap itself, so: one tap to add the shared shortcut, then the Back Tap steps. TODO(spec): not in UI_SCREENS.
+    @ViewBuilder private var quickOpenPage: some View {
+        Section {
+            Text("settings.quickOpen.intro")
+                .font(Tokens.Fonts.body)
+                .foregroundStyle(Tokens.Colors.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.vertical, Tokens.Space.xs)
+        }
+        Section(header: header("settings.quickOpen.step1")) {
+            if let url = KhoaiShortcut.iCloudURL {
+                PrimaryButton("settings.quickOpen.add") { openURL(url) }
+                    .padding(.vertical, Tokens.Space.s)
+                stepText("settings.quickOpen.add.note")
+            } else {
+                stepText("settings.quickOpen.manual")
+            }
+        }
+        Section(header: header("settings.quickOpen.step2")) {
+            stepText("settings.quickOpen.backTap")
+        }
+        Section {
+            stepText("settings.quickOpen.other")
+        }
+    }
+
+    private func stepText(_ key: LocalizedStringKey) -> some View {
+        Text(key)
+            .font(Tokens.Fonts.body)
+            .foregroundStyle(Tokens.Colors.textPrimary)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.vertical, Tokens.Space.xs)
     }
 
     @ViewBuilder private func displayPage(settings: Bindable<AppSettings>) -> some View {
