@@ -2677,6 +2677,174 @@
         }
       }
     },
+    "intent.ask.title" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hỏi Khoai"
+          }
+        }
+      }
+    },
+    "intent.ask.desc" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoai hiện ngay trên màn hình đang mở, không cần vào app."
+          }
+        }
+      }
+    },
+    "intent.ask.request" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yêu cầu"
+          }
+        }
+      }
+    },
+    "intent.ask.prompt" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn cần Khoai làm gì?"
+          }
+        }
+      }
+    },
+    "intent.ask.opening" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoai mở app để làm tiếp nhé."
+          }
+        }
+      }
+    },
+    "intent.ask.done" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xong rồi!"
+          }
+        }
+      }
+    },
+    "intent.ask.failed" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoai chưa làm được. Bạn mở app để xem nhé."
+          }
+        }
+      }
+    },
+    "intent.ask.day" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lịch %@"
+          }
+        }
+      }
+    },
+    "intent.ask.day.empty" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ bạn chưa có lịch nào."
+          }
+        }
+      }
+    },
+    "intent.ask.kind.reminder" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhắc: %@"
+          }
+        }
+      }
+    },
+    "intent.ask.kind.event" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lịch: %@"
+          }
+        }
+      }
+    },
+    "intent.ask.kind.call" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gọi cho %@"
+          }
+        }
+      }
+    },
+    "intent.ask.kind.place" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉ đường đến %@"
+          }
+        }
+      }
+    },
+    "intent.ask.kind.other" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        }
+      }
+    },
     "intent.listen.desc" : {
       "comment" : "UI_SCREENS §7 (1E.1)",
       "extractionState" : "manual",

@@ -26,6 +26,8 @@ import SwiftUI
         }
         let env = scenario.map { AppEnvironment.mock($0) } ?? AppEnvironment.live(container: modelContainer)
         self.env = env
+        KhoaiPanel.env = env                                     // D-325: "Hỏi Khoai" runs in this process
+        KhoaiPanel.appState = state
         _handoff = State(initialValue: HandoffPromptCoordinator(repository: env.drafts, engine: env.engine))
         launchVerifier = LaunchVerifier(repository: env.drafts, engine: env.engine)
     }

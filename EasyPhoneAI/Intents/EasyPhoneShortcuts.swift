@@ -11,5 +11,10 @@ struct EasyPhoneShortcuts: AppShortcutsProvider {
                               "Nói với \(.applicationName)", "Open \(.applicationName)", "Talk to \(.applicationName)"],
                     shortTitle: "intent.listen.title",
                     systemImageName: "mic.fill")
+        // D-325: the panel over the current screen (Back Tap → this shortcut). No Vietnamese Siri phrase works yet.
+        AppShortcut(intent: AskKhoaiIntent(),
+                    phrases: ["Hỏi \(.applicationName)", "Ask \(.applicationName)"],
+                    shortTitle: "intent.ask.title",
+                    systemImageName: "bubble.left.fill")
     }
 }

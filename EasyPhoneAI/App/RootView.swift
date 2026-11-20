@@ -59,6 +59,7 @@ struct RootView: View {
         }
         .onChange(of: appState.session) { _, session in
             if case .signedIn = session, scenePhase == .active { handoff.didBecomeActive() }
+            openPendingRoute()                                   // D-325: the panel may have asked before sign-in restored
         }
         .sheet(item: handoffPrompt) { prompt in
             HandoffPromptSheet(prompt: prompt, onDone: handoff.answerDone, onNotYet: handoff.answerNotYet)
@@ -75,7 +76,17 @@ struct RootView: View {
         }
         // D-170: Siri / Action Button / Back Tap / widget → S03 listening, once signed in (the flag waits for it).
         .onChange(of: appState.startListeningRequested, initial: true) { _, _ in openListeningIfRequested() }
+        .onChange(of: appState.pendingRoute, initial: true) { _, _ in openPendingRoute() }
         .onChange(of: appState.session) { _, _ in openListeningIfRequested() }
+    }
+
+    /// D-325: "Hỏi Khoai" continued in the app (AI request, SMS, a choice to make, a screen to show).
+    private func openPendingRoute() {
+        guard let route = appState.pendingRoute, case .signedIn = appState.session, appState.blockingScreen == nil
+        else { return }
+        appState.pendingRoute = nil
+        router.popToRoot()
+        router.push(route)
     }
 
     private func openListeningIfRequested() {
