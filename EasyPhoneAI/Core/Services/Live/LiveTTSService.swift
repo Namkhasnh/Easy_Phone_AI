@@ -22,7 +22,10 @@ import OSLog
         let utterance = AVSpeechUtterance(string: trimmed)
         // TODO(spec): no fallback is specified when the phone has no vi-VN voice; the system default voice is used.
         let prefs = preferences()
-        if let id = prefs.voiceId, let chosen = AVSpeechSynthesisVoice(identifier: id) {   // D-324
+        if prefs.voiceId == TTSPreferences.spokenContentVoiceId {                           // D-324b
+            utterance.prefersAssistiveTechnologySettings = true
+            utterance.voice = AVSpeechSynthesisVoice(language: "vi-VN")                    // used if iOS has none set
+        } else if let id = prefs.voiceId, let chosen = AVSpeechSynthesisVoice(identifier: id) {   // D-324
             utterance.voice = chosen
         } else if let voice = AVSpeechSynthesisVoice(language: "vi-VN") {
             utterance.voice = voice

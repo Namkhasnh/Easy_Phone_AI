@@ -191,6 +191,7 @@ struct SettingsView: View {
         }
         Section {
             voiceRow(nil, label: UserMessage(key: "settings.voice.default").text)
+            voiceRow(TTSPreferences.spokenContentVoiceId, label: UserMessage(key: "settings.voice.spokenContent").text)
             ForEach(viewModel.voices) { voice in
                 voiceRow(voice.id, label: SettingsViewModel.voiceLabel(voice))
             }

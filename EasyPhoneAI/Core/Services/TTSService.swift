@@ -21,6 +21,10 @@ struct TTSVoice: Sendable, Hashable, Identifiable {
 
 /// D-324: what `speak` uses besides the rate. Read at every utterance, so a change applies at once.
 struct TTSPreferences: Sendable, Hashable {
+    /// D-324b: "the voice chosen in iPhone Settings > Trợ năng > Nội dung được đọc" (may be a Siri voice, which apps
+    /// cannot pick directly). iOS then also applies its own rate / pitch from that page.
+    static let spokenContentVoiceId = "ios.spokenContent"
+
     var voiceId: String?    // nil = the iPhone's default vi-VN voice
     var pitch: Double = 1.0 // `AVSpeechUtterance.pitchMultiplier`
 }

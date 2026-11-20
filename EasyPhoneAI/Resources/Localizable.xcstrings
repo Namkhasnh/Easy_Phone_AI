@@ -5815,6 +5815,18 @@
         }
       }
     },
+    "settings.voice.spokenContent" : {
+      "comment" : "S15 voice row using the iOS Spoken Content voice (D-324b)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giọng đã chọn trong Cài đặt iPhone (Nội dung được đọc, có thể là Siri)"
+          }
+        }
+      }
+    },
     "settings.voice.download" : {
       "comment" : "S15 Giọng nói — voice + pitch (D-324)",
       "extractionState" : "manual",

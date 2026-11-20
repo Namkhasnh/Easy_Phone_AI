@@ -154,7 +154,10 @@ import Observation
 
     /// The stored voice if it is still installed, else nil (= iPhone default).
     var selectedVoiceId: String? {
-        get { voices.contains { $0.id == settings.ttsVoiceId } ? settings.ttsVoiceId : nil }
+        get {
+            let id = settings.ttsVoiceId
+            return id == TTSPreferences.spokenContentVoiceId || voices.contains { $0.id == id } ? id : nil
+        }
         set { settings.ttsVoiceId = newValue; save() }
     }
 
