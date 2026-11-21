@@ -17,6 +17,10 @@ final class KhoaiPlaygroundUITests: XCTestCase {
         row.tap()
         XCTAssertTrue(app.descendants(matching: .any)["screen.khoaiPlayground"].firstMatch.waitForExistence(timeout: 5))
         attach(app, "1 hint")
+        for i in 1...3 {                                    // video style, "Hỏi thêm" clip: frames change over time
+            Thread.sleep(forTimeInterval: 0.8)
+            attach(app, "1 video \(i)")
+        }
 
         app.buttons["Chạm"].firstMatch.tap()
         XCTAssertTrue(app.staticTexts["Bạn thử nói: “Nhắc tôi 8 giờ sáng uống thuốc”"].waitForExistence(timeout: 3))

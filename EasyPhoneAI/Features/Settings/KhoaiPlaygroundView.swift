@@ -4,10 +4,10 @@ import SwiftUI
 /// D-327 step 1: a Debug-only screen (S15 › Nâng cao › "Xem thử Khoai") to try Khoai's motion layer before it goes
 /// into S02 / S03. Touches only play a reaction and show a catalog line; nothing is created or sent (D-327).
 struct KhoaiPlaygroundView: View {
-    @State private var pose: MascotPose = .greeting
+    @State private var pose: MascotPose = .asking
     @State private var level = 0.5
     @State private var forceStill = false
-    @State private var style: MascotStyle = .rig
+    @State private var style: MascotStyle = .video
     @State private var reaction: MascotReactionEvent?
     @State private var tipIndex: Int?
     @State private var lineKey = "dev.khoai.hint"

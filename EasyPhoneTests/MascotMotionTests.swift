@@ -110,6 +110,14 @@ struct MascotMotionTests {
         }
     }
 
+    @Test func videoClipsAreBundledWithAStill() throws {
+        #expect(MascotVideoClip.name(for: .asking) == "khoai_hoi_them")     // first clip from the owner (2026-11-22)
+        _ = try #require(UIImage(named: MascotVideoClip.still))
+        for pose in MascotPose.allCases {
+            if let file = MascotVideoClip.name(for: pose) { #expect(MascotVideoClip.url(file) != nil) }
+        }
+    }
+
     @Test func tipsRotateThroughCatalogKeys() throws {
         var index: Int?
         var seen: [String] = []

@@ -38,9 +38,10 @@ enum MascotPose: String, CaseIterable, Sendable {
 }
 
 /// D-327: `frames` = the owner's sprite rows (current screens); `puppet` = one face per pose + code motion;
-/// `rig` = cut-out layers (body, head, two ears, tail) cut from the owner's high-res Khoai, each part turned by code.
+/// `rig` = cut-out layers (body, head, two ears, tail) cut from the owner's high-res Khoai, each part turned by code;
+/// `video` = AI-made clips per pose (`MascotVideoClip`), falling back to `rig` for a pose without a clip yet.
 enum MascotStyle: String, Sendable, CaseIterable {
-    case frames, puppet, rig
+    case frames, puppet, rig, video
 
     /// Rig layers, back to front: tail, then the head group (head, ears), then the body over the neck.
     static let rigLayers = ["mascot.rig.tail", "mascot.rig.head", "mascot.rig.earL", "mascot.rig.earR", "mascot.rig.body"]
@@ -103,8 +104,10 @@ struct MascotView: View {
             let now = context.date
             let elapsed = reactionStart.map { now.timeIntervalSince($0) } ?? -1
             let t = now.timeIntervalSinceReferenceDate
-            let m = MascotMotion.transform(pose: pose, time: t, level: level, reaction: reaction?.kind,
-                                           elapsed: elapsed, reduceMotion: reduceMotion, rig: style == .rig)
+            // A clip moves Khoai by itself: no code motion on top of it.
+            let m = videoFile != nil ? .identity
+                : MascotMotion.transform(pose: pose, time: t, level: level, reaction: reaction?.kind,
+                                         elapsed: elapsed, reduceMotion: reduceMotion, rig: style != .frames && style != .puppet)
             ZStack(alignment: .bottom) {
                 // Depth without a backdrop (owner 2026-11-10): soft ground shadow under the paws + light drop shadow.
                 Ellipse()
@@ -140,8 +143,17 @@ struct MascotView: View {
         .sensoryFeedback(.impact(weight: .light), trigger: reaction) { _, new in new?.kind == .pet }
     }
 
+    /// The clip to play now: video style, motion allowed, and the owner has made this pose's clip.
+    private var videoFile: String? {
+        style == .video && !reduceMotion ? MascotVideoClip.name(for: pose) : nil
+    }
+
     @ViewBuilder private func art(time t: Double, elapsed: Double) -> some View {
-        if style == .rig {
+        if let videoFile {
+            MascotVideoView(file: videoFile).id(videoFile)
+        } else if style == .video && reduceMotion && MascotVideoClip.name(for: pose) != nil {
+            layer(MascotVideoClip.still)
+        } else if style == .rig || style == .video {
             let a = MascotRig.angles(pose: pose, time: t, level: level, reaction: reaction?.kind, elapsed: elapsed,
                                      reduceMotion: reduceMotion)
             ZStack {
@@ -169,7 +181,7 @@ struct MascotView: View {
 
     /// Cancelled automatically when the view disappears or the pose changes.
     private func play() async {
-        guard style != .rig else { return }
+        guard style == .frames || style == .puppet else { return }
         let clip = pose.clip(style)
         let (intro, loop) = clip.playlist(reduceMotion: reduceMotion)
         frame = clip.stillFrame.name

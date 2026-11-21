@@ -7045,6 +7045,18 @@
         }
       }
     },
+    "dev.khoai.style.video" : {
+      "comment" : "Debug preview style: AI-made video clips per pose (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video"
+          }
+        }
+      }
+    },
     "dev.khoai.style.rig" : {
       "comment" : "Debug preview style: cut-out rig, head / ears / tail move (D-327)",
       "extractionState" : "manual",
