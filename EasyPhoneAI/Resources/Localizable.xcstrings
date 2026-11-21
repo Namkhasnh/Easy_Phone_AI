@@ -7009,14 +7009,50 @@
         }
       }
     },
-    "dev.khoai.puppet" : {
-      "comment" : "Debug preview: one face + code motion vs sprite rows (D-327)",
+    "dev.khoai.style" : {
+      "comment" : "Debug preview: which Khoai art style to show (D-327)",
       "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kiểu mới: 1 gương mặt + chuyển động mượt"
+            "value" : "Kiểu Khoai"
+          }
+        }
+      }
+    },
+    "dev.khoai.style.frames" : {
+      "comment" : "Debug preview style: the owner's sprite rows (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ảnh cũ"
+          }
+        }
+      }
+    },
+    "dev.khoai.style.puppet" : {
+      "comment" : "Debug preview style: one face + code motion (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 mặt"
+          }
+        }
+      }
+    },
+    "dev.khoai.style.rig" : {
+      "comment" : "Debug preview style: cut-out rig, head / ears / tail move (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cắt ghép"
           }
         }
       }

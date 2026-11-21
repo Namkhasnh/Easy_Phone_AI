@@ -78,6 +78,38 @@ struct MascotMotionTests {
         #expect(pose.clip(.frames) == pose.clip)
     }
 
+    @Test(arguments: MascotPose.allCases)
+    func rigPartsStayInSafeRanges(pose: MascotPose) {
+        #expect(MascotRig.angles(pose: pose, time: 1.3, level: 1, reaction: .pet, elapsed: 0.2,
+                                 reduceMotion: true) == .rest)
+        for t in Self.times {
+            for (reaction, elapsed) in [(nil, 0.0), (MascotReaction.tap, 0.3), (.pet, 0.5)] as [(MascotReaction?, Double)] {
+                let a = MascotRig.angles(pose: pose, time: t, level: 1, reaction: reaction, elapsed: elapsed,
+                                         reduceMotion: false)
+                #expect(abs(a.head) <= MascotRig.maxHead && abs(a.earL) <= MascotRig.maxEar)
+                #expect(abs(a.earR) <= MascotRig.maxEar && abs(a.tail) <= MascotRig.maxTail)
+            }
+            // The rig turns parts only; the whole Khoai never rotates (that bent the face, owner 2026-11-20).
+            #expect(MascotMotion.transform(pose: pose, time: t, reaction: .pet, elapsed: 0.2, reduceMotion: false,
+                                           rig: true).rotation == 0)
+        }
+    }
+
+    @Test func rigMovesLikeADog() throws {
+        let asking = Self.times.map { MascotRig.angles(pose: .asking, time: $0, reduceMotion: false).head }
+        #expect(asking.max()! > 5 && asking.min()! < -5)                  // head tilt both ways
+        let happy = Self.times.map { MascotRig.angles(pose: .happy, time: $0, reduceMotion: false).tail }
+        #expect(happy.max()! > 12 && happy.min()! < -12)                  // fast tail wag
+        let sorry = MascotRig.angles(pose: .sorry, time: 0, reduceMotion: false)
+        #expect(sorry.earL < 0 && sorry.earR > 0 && sorry.tail > 5)       // ears and tail droop
+        let listening = MascotRig.angles(pose: .listening, time: 0, level: 1, reduceMotion: false)
+        #expect(listening.earL > 4 && listening.earR < -4)                // ears perk up
+        for name in MascotStyle.rigLayers {
+            let image = try #require(UIImage(named: name), "missing \(name)")
+            #expect(image.size == UIImage(named: MascotStyle.rigLayers[0])!.size)   // one shared canvas
+        }
+    }
+
     @Test func tipsRotateThroughCatalogKeys() throws {
         var index: Int?
         var seen: [String] = []
@@ -91,7 +123,8 @@ struct MascotMotionTests {
         let keys = try StringScanTests.keys("EasyPhoneAI/Resources/Localizable.xcstrings")
         let mine = KhoaiLines.tips + [KhoaiLines.petReply, "settings.khoaiPlayground", "dev.khoai.title",
                                       "dev.khoai.hint", "dev.khoai.tap", "dev.khoai.pet", "dev.khoai.level",
-                                      "dev.khoai.forceStill", "dev.khoai.puppet"] + MascotPose.allCases.map { "dev.khoai.pose." + $0.rawValue }
+                                      "dev.khoai.forceStill", "dev.khoai.style"]
+            + MascotStyle.allCases.map { "dev.khoai.style." + $0.rawValue } + MascotPose.allCases.map { "dev.khoai.pose." + $0.rawValue }
         for key in mine { #expect(keys.contains(key), "missing \(key)") }
     }
 }

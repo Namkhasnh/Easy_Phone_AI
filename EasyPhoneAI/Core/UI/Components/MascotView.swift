@@ -34,12 +34,16 @@ enum MascotPose: String, CaseIterable, Sendable {
         }
     }
 
-    func clip(_ style: MascotStyle) -> MascotClip { style == .puppet ? puppetClip : clip }
+    func clip(_ style: MascotStyle) -> MascotClip { style == .frames ? clip : puppetClip }
 }
 
-/// D-327: `frames` = the owner's sprite rows (current screens); `puppet` = one face per pose + code motion.
+/// D-327: `frames` = the owner's sprite rows (current screens); `puppet` = one face per pose + code motion;
+/// `rig` = cut-out layers (body, head, two ears, tail) cut from the owner's high-res Khoai, each part turned by code.
 enum MascotStyle: String, Sendable, CaseIterable {
-    case frames, puppet
+    case frames, puppet, rig
+
+    /// Rig layers, back to front: tail, then the head group (head, ears), then the body over the neck.
+    static let rigLayers = ["mascot.rig.tail", "mascot.rig.head", "mascot.rig.earL", "mascot.rig.earR", "mascot.rig.body"]
 }
 
 struct MascotFrame: Hashable, Sendable {
@@ -98,8 +102,9 @@ struct MascotView: View {
         TimelineView(.animation(paused: reduceMotion)) { context in
             let now = context.date
             let elapsed = reactionStart.map { now.timeIntervalSince($0) } ?? -1
-            let m = MascotMotion.transform(pose: pose, time: now.timeIntervalSinceReferenceDate, level: level,
-                                           reaction: reaction?.kind, elapsed: elapsed, reduceMotion: reduceMotion)
+            let t = now.timeIntervalSinceReferenceDate
+            let m = MascotMotion.transform(pose: pose, time: t, level: level, reaction: reaction?.kind,
+                                           elapsed: elapsed, reduceMotion: reduceMotion, rig: style == .rig)
             ZStack(alignment: .bottom) {
                 // Depth without a backdrop (owner 2026-11-10): soft ground shadow under the paws + light drop shadow.
                 Ellipse()
@@ -108,10 +113,7 @@ struct MascotView: View {
                     .blur(radius: size * 0.04)
                     .scaleEffect(m.shadowScale)
                     .offset(y: size * 0.02)
-                Image(frame ?? pose.clip(style).stillFrame.name)
-                    .resizable()
-                    .interpolation(.high)
-                    .scaledToFit()
+                art(time: t, elapsed: elapsed)
                     .scaleEffect(x: m.scaleX, y: m.scaleY, anchor: .bottom)
                     .rotationEffect(.degrees(m.rotation), anchor: .bottom)
                     .offset(y: size * m.offsetY)
@@ -138,8 +140,36 @@ struct MascotView: View {
         .sensoryFeedback(.impact(weight: .light), trigger: reaction) { _, new in new?.kind == .pet }
     }
 
+    @ViewBuilder private func art(time t: Double, elapsed: Double) -> some View {
+        if style == .rig {
+            let a = MascotRig.angles(pose: pose, time: t, level: level, reaction: reaction?.kind, elapsed: elapsed,
+                                     reduceMotion: reduceMotion)
+            ZStack {
+                layer("mascot.rig.tail").rotationEffect(.degrees(a.tail), anchor: anchor(MascotRig.tailPivot))
+                ZStack {
+                    layer("mascot.rig.head")
+                    layer("mascot.rig.earL").rotationEffect(.degrees(a.earL), anchor: anchor(MascotRig.earLPivot))
+                    layer("mascot.rig.earR").rotationEffect(.degrees(a.earR), anchor: anchor(MascotRig.earRPivot))
+                }
+                .rotationEffect(.degrees(a.head), anchor: anchor(MascotRig.headPivot))
+                layer("mascot.rig.body")
+            }
+            .compositingGroup()
+        } else {
+            layer(frame ?? pose.clip(style).stillFrame.name)
+        }
+    }
+
+    /// Every rig layer shares one canvas, so the same fit keeps the parts lined up.
+    private func layer(_ name: String) -> some View {
+        Image(name).resizable().interpolation(.high).scaledToFit()
+    }
+
+    private func anchor(_ p: (x: Double, y: Double)) -> UnitPoint { UnitPoint(x: p.x, y: p.y) }
+
     /// Cancelled automatically when the view disappears or the pose changes.
     private func play() async {
+        guard style != .rig else { return }
         let clip = pose.clip(style)
         let (intro, loop) = clip.playlist(reduceMotion: reduceMotion)
         frame = clip.stillFrame.name

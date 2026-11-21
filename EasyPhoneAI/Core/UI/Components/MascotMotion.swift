@@ -47,8 +47,15 @@ enum MascotMotion {
     /// `reaction` + `elapsed` = a running one-shot touch reaction.
     static func transform(pose: MascotPose, time t: Double, level: Double = 0,
                           reaction: MascotReaction? = nil, elapsed: Double = 0,
-                          reduceMotion: Bool) -> MascotTransform {
+                          reduceMotion: Bool, rig: Bool = false) -> MascotTransform {
         guard !reduceMotion else { return .identity }
+        if rig {
+            // The rig turns the head / ears / tail itself, so the whole body only breathes, bobs and hops.
+            var m = transform(pose: pose, time: t, level: level, reaction: reaction == .pet ? nil : reaction,
+                              elapsed: elapsed, reduceMotion: false)
+            m.rotation = 0
+            return m
+        }
         var m = MascotTransform()
         // Every pose breathes: a little taller, a little narrower.
         let breath = breatheAmount * (0.5 - 0.5 * cos(2 * .pi * t / breathePeriod))
@@ -122,6 +129,97 @@ enum MascotMotion {
             let p = min(max((elapsed / d - delay) / (1 - delay), 0), 1)
             return (x: x, y: -0.2 - 0.35 * p, opacity: p == 0 ? 0 : 1 - p)
         }
+    }
+}
+
+/// Angles (degrees, + = clockwise) of the cut-out rig parts (D-327, owner 2026-11-21 "làm cách cắt ghép").
+/// Ears: + on the left ear / − on the right ear lifts it (perk), the opposite droops it. Tail: − lifts, + droops.
+struct MascotRigAngles: Sendable, Equatable {
+    var head: Double = 0
+    var earL: Double = 0
+    var earR: Double = 0
+    var tail: Double = 0
+
+    static let rest = MascotRigAngles()
+}
+
+/// Where each rig part turns, as unit points of the shared layer canvas (from `tools/khoai_rig/cut.py`).
+enum MascotRig {
+    static let headPivot = (x: 0.3582, y: 0.5485)
+    static let earLPivot = (x: 0.2687, y: 0.0633)
+    static let earRPivot = (x: 0.5174, y: 0.1350)
+    static let tailPivot = (x: 0.7711, y: 0.8523)
+    static let maxHead = 7.0, maxEar = 9.0, maxTail = 16.0
+
+    /// The rig angles at `time` for `pose` (same inputs as `MascotMotion.transform`). Reduce Motion → `rest`.
+    static func angles(pose: MascotPose, time t: Double, level: Double = 0,
+                       reaction: MascotReaction? = nil, elapsed: Double = 0,
+                       reduceMotion: Bool) -> MascotRigAngles {
+        guard !reduceMotion else { return .rest }
+        func wave(_ period: Double, _ phase: Double = 0) -> Double { sin(2 * .pi * t / period + phase) }
+        var a = MascotRigAngles()
+        // Alive at rest: slow head sway, ears drift, a lazy tail wag and a quick right-ear flick every 5 s.
+        a.head = 1.2 * wave(4.8)
+        a.earL = 1.5 * wave(3.1)
+        a.earR = -1.5 * wave(3.4, 1) - 5 * flick(t.truncatingRemainder(dividingBy: 5) - 3.6)
+        a.tail = 4 * wave(1.4)
+
+        switch pose {
+        case .greeting:
+            a.tail = 10 * wave(0.5)
+            a.head += 3
+        case .listening:
+            let l = MascotMotion.clamped(level)
+            a.earL += 4 + 2 * l
+            a.earR -= 4 + 2 * l
+            a.head += 2.5
+            a.tail = (4 + 6 * l) * wave(0.7)
+        case .thinking:
+            a.head += 4 * min(max(1.4 * wave(4.0), -1), 1)
+            a.tail = 2 * wave(2.2)
+        case .asking:
+            // The dog head tilt: tilt, hold, come back (clipped sine), the ear on the high side lifts.
+            let tilt = min(max(1.6 * wave(3.2), -1), 1)
+            a.head = 6 * tilt
+            a.earL += 3 * max(tilt, 0)
+            a.earR -= 3 * max(-tilt, 0)
+        case .happy:
+            a.tail = 14 * wave(0.36)
+            let hop = (t / 0.9).truncatingRemainder(dividingBy: 1)
+            a.earL += 5 * sin(2 * .pi * hop)
+            a.earR -= 5 * sin(2 * .pi * hop)
+        case .sorry:
+            a.head = -3 + 0.8 * wave(3.0)
+            a.earL = -5
+            a.earR = 5
+            a.tail = 9 + 1.5 * wave(2.0)
+        }
+
+        if let reaction, elapsed >= 0, elapsed < reaction.duration {
+            let p = elapsed / reaction.duration, fade = 1 - p
+            switch reaction {
+            case .tap:
+                a.earL += 7 * sin(.pi * p)
+                a.earR -= 7 * sin(.pi * p)
+                a.tail += 8 * sin(2 * .pi * elapsed / 0.3) * fade
+            case .pet:
+                a.head += 4 * sin(2 * .pi * elapsed / 0.4) * fade
+                a.earL -= 4 * sin(.pi * p)                     // ears fold back, eyes stay the same
+                a.earR += 4 * sin(.pi * p)
+                a.tail += 12 * sin(2 * .pi * elapsed / 0.28) * fade
+            }
+        }
+        a.head = min(max(a.head, -maxHead), maxHead)
+        a.earL = min(max(a.earL, -maxEar), maxEar)
+        a.earR = min(max(a.earR, -maxEar), maxEar)
+        a.tail = min(max(a.tail, -maxTail), maxTail)
+        return a
+    }
+
+    /// A 0.35 s up-and-back pulse starting at `s` = 0 (0 outside).
+    static func flick(_ s: Double) -> Double {
+        guard s > 0, s < 0.35 else { return 0 }
+        return sin(.pi * s / 0.35)
     }
 }
 
