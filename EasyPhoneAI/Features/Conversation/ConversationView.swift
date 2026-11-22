@@ -108,8 +108,8 @@ struct ConversationView: View {
             }
     }
 
-    /// D-327 S03 v2 (Figma "S03 Đang nghe · Khoai v2"): "Mình đang nghe…" bubble over Khoai clinging to a round
-    /// window (owner's clip, ring inside the video, paws reach over it). Reduce Motion → its still frame.
+    /// D-327 S03 v2 (Figma "S03 Đang nghe · Khoai v2"): "Mình đang nghe…" bubble over Khoai in a round window
+    /// (owner's clip: only the window's inside, clipped to a circle under a clean honey ring). Reduce Motion → still.
     private var listeningKhoai: some View {
         VStack(spacing: Tokens.Space.s) {
             Text("conv.listening.title")
@@ -126,6 +126,9 @@ struct ConversationView: View {
                     MascotVideoView(files: [MascotVideoClip.listeningWindow], still: MascotVideoClip.listeningWindowStill)
                 }
             }
+            .clipShape(Circle())                             // the clip is the window's inside; the ring is drawn here
+            .overlay { Circle().strokeBorder(Tokens.Colors.honey, lineWidth: 8) }
+            .shadow(color: .black.opacity(0.12), radius: 10, y: 4)
             .frame(width: 220, height: 220)                  // decorative, fixed-size slot (not text)
             .accessibilityHidden(true)
         }
@@ -166,7 +169,7 @@ struct ConversationView: View {
                 .foregroundStyle(Tokens.Colors.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        assistantBubble {
+        assistantBubble(live: true) {
             HStack(spacing: Tokens.Space.s) {
                 ProgressView().tint(Tokens.Colors.primary)
                 Text("conv.working")
@@ -183,7 +186,7 @@ struct ConversationView: View {
                 .foregroundStyle(Tokens.Colors.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        assistantBubble { Text(verbatim: followUp.question) }          // the ONE question, already localized
+        assistantBubble(live: true) { Text(verbatim: followUp.question) }   // the ONE question, already localized
         if !followUp.chips.isEmpty {
             // Each chip ≥ 56pt; tapping fills the field on device — no AI call, no unit (D-251).
             // One chip per row at AX sizes so a date never wraps into one word per line.
@@ -287,9 +290,16 @@ struct ConversationView: View {
         assistantBubble { Text(key) }
     }
 
-    private func assistantBubble<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
-        HStack(alignment: .top, spacing: Tokens.Space.s) {
-            if viewModel.showsMascot {
+    /// `live` (owner 2026-11-22: "phần nhận lệnh chưa có chuyển động"): the bubble Khoai is talking in right now
+    /// (working, the follow-up question) gets a bigger moving Khoai (thinking / asking clip); older bubbles keep one
+    /// still frame. Hidden at AX3+ like S02 so the text keeps the width.
+    private func assistantBubble<Content: View>(live: Bool = false, @ViewBuilder _ content: () -> Content) -> some View {
+        HStack(alignment: live ? .center : .top, spacing: Tokens.Space.s) {
+            if live && viewModel.showsMascot && typeSize < .accessibility3 {
+                MascotView(pose: viewModel.mascotPose, size: 96, style: .video)
+                    .frame(width: 96, height: 96)
+                    .accessibilityHidden(true)
+            } else if viewModel.showsMascot {
                 // Pose follows the mode (UI_SCREENS S03): listening / thinking / asking / sorry.
                 // D-327: one still smiling Khoai per bubble (a clip per bubble would be many players at once).
                 MascotView(pose: viewModel.mascotPose, size: Tokens.Size.stepBadge + 8, forceStill: true,
