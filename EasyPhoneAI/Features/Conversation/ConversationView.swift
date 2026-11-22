@@ -73,11 +73,15 @@ struct ConversationView: View {
     // MARK: - Mode 1: listening
 
     @ViewBuilder private var listening: some View {
-        assistantBubble("conv.listening.title")
-        HStack {
-            Spacer()
-            ListeningMic(isListening: true) { Task { await viewModel.stopListening() } }
-            Spacer()
+        if viewModel.showsMascot && typeSize < .accessibility3 {
+            listeningKhoai                                   // D-327 S03 v2; "Dừng" stays in the bottom bar (AC1)
+        } else {
+            assistantBubble("conv.listening.title")
+            HStack {
+                Spacer()
+                ListeningMic(isListening: true) { Task { await viewModel.stopListening() } }
+                Spacer()
+            }
         }
         if !viewModel.listeningText.isEmpty {
             userBubble {
@@ -101,6 +105,29 @@ struct ConversationView: View {
                     hintIndex = (hintIndex + 1) % ConversationViewModel.hintKeys.count
                 }
             }
+    }
+
+    /// D-327 S03 v2 (Figma "S03 Đang nghe · Khoai v2"): "Mình đang nghe…" bubble over Khoai's listening clip in a
+    /// soft circle with a honey ring.
+    private var listeningKhoai: some View {
+        VStack(spacing: Tokens.Space.s) {
+            Text("conv.listening.title")
+                .font(Tokens.Fonts.title)
+                .foregroundStyle(Tokens.Colors.onHoney)
+                .padding(.horizontal, Tokens.Space.l)
+                .padding(.vertical, Tokens.Space.s)
+                .background(Tokens.Colors.honey, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+                .accessibilityAddTraits(.isHeader)
+            ZStack {
+                Circle().fill(Tokens.Colors.secondaryFill)
+                Circle().strokeBorder(Tokens.Colors.honey, lineWidth: 6)
+                MascotView(pose: .listening, size: 150, style: .video)
+                    .frame(width: 150, height: 150)
+                    .accessibilityHidden(true)
+            }
+            .frame(width: 184, height: 184)                  // decorative, fixed-size slot (not text)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: - Mode 2: transcript ready (editable, never auto-sent)
@@ -262,7 +289,9 @@ struct ConversationView: View {
         HStack(alignment: .top, spacing: Tokens.Space.s) {
             if viewModel.showsMascot {
                 // Pose follows the mode (UI_SCREENS S03): listening / thinking / asking / sorry.
-                MascotView(pose: viewModel.mascotPose, size: Tokens.Size.stepBadge + 8)   // no backdrop (owner)
+                // D-327: one still smiling Khoai per bubble (a clip per bubble would be many players at once).
+                MascotView(pose: viewModel.mascotPose, size: Tokens.Size.stepBadge + 8, forceStill: true,
+                           style: .video)                    // no backdrop (owner)
                     .frame(width: Tokens.Size.stepBadge + 8, height: Tokens.Size.stepBadge + 8)
                     .accessibilityHidden(true)
             }

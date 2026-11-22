@@ -42,6 +42,26 @@ struct HomeTests {
         #expect(rows.first?.badgeState == .handedOff)
     }
 
+    /// D-327 S02 v2: tap → next tip + jump, "Đọc to" reads it, stroke → reply + hearts, leaving resets; never a task.
+    @Test func khoaiTipsReadAloudAndPet() async {
+        let tts = MockTTSService()
+        let vm = HomeViewModel(repository: repo, localData: local, tts: tts, now: { Self.now }, timeZone: Self.tz)
+        #expect(vm.khoaiLine == "home.greeting" && !vm.showsTip)
+        vm.readTip()
+        vm.nextTip()
+        #expect(vm.khoaiLine == "khoai.tip.1" && vm.showsTip && vm.khoaiReaction?.kind == .tap)
+        vm.nextTip()
+        #expect(vm.khoaiLine == "khoai.tip.2" && vm.khoaiReaction?.id == 2)
+        vm.readTip()
+        try? await Task.sleep(for: .milliseconds(50))
+        #expect(tts.spoken.count == 1)                                   // only a shown tip is read
+        vm.petKhoai()
+        #expect(vm.khoaiLine == "khoai.pet.reply" && !vm.showsTip && vm.khoaiReaction?.kind == .pet)
+        vm.onDisappear()
+        #expect(vm.khoaiLine == "home.greeting" && !vm.showsTip)
+        #expect(repo.drafts.isEmpty && repo.saveCount == 0)              // touches never create anything
+    }
+
     @Test func emptyUnfinishedAndFirstRunTip() {
         let vm = model()
         #expect(vm.unfinished.isEmpty)

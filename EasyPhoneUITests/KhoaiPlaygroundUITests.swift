@@ -34,6 +34,25 @@ final class KhoaiPlaygroundUITests: XCTestCase {
         attach(app, "4 asking")
     }
 
+    /// D-327 S02 v2: Khoai's bubble greets, a tap shows a tip with "Đọc to" / "Gợi ý khác"; the mic still opens S03.
+    func testHomeAndListeningKhoai() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTestScenario", "uiTest"]
+        app.launch()
+        XCTAssertTrue(app.descendants(matching: .any)["screen.S02"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Bạn cần mình giúp gì?"].waitForExistence(timeout: 3))
+        Thread.sleep(forTimeInterval: 1.5)
+        attach(app, "S02 greeting")
+        app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.33)).tap()   // on Khoai
+        XCTAssertTrue(app.buttons["Gợi ý khác"].waitForExistence(timeout: 3))
+        attach(app, "S02 tip")
+        app.buttons["Gợi ý khác"].tap()
+        XCTAssertTrue(app.staticTexts["Bạn thử nói: “Gọi cho mẹ”"].waitForExistence(timeout: 3))
+        app.buttons["Nói yêu cầu"].firstMatch.tap()
+        _ = app.descendants(matching: .any)["screen.S03"].firstMatch.waitForExistence(timeout: 5)
+        // The mock transcript ends listening at once (→ S04), so S03's listening Khoai is checked on the iPhone.
+    }
+
     private func attach(_ app: XCUIApplication, _ name: String) {
         let shot = XCTAttachment(screenshot: app.screenshot())
         shot.name = name

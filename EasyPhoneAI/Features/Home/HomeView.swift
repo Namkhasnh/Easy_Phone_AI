@@ -14,15 +14,16 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Tokens.Space.xl) {
-                if viewModel.showsMascot && typeSize < .accessibility3 {
-                    mascotSlot
+                if showsKhoai {
+                    khoaiBlock
+                } else {
+                    Text("home.greeting")
+                        .font(Tokens.Fonts.display)
+                        .foregroundStyle(Tokens.Colors.textPrimary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityAddTraits(.isHeader)
                 }
-                Text("home.greeting")
-                    .font(Tokens.Fonts.display)
-                    .foregroundStyle(Tokens.Colors.textPrimary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .accessibilityAddTraits(.isHeader)
                 // TODO(spec): offline banner needs a network monitor; no service for it yet (ARCHITECTURE §4).
                 if let quota = viewModel.quotaLowMessage(appState.entitlement) {
                     Banner(message: quota, style: .warning)
@@ -63,16 +64,59 @@ struct HomeView: View {
             }
         }
         .onAppear { viewModel.load() }
+        .onDisappear { viewModel.onDisappear() }
         .accessibilityIdentifier("screen.S02")
     }
 
     // MARK: - Parts
 
-    /// Khoai waves once, then idles (UI_SCREENS S02, P-41). Decorative, fixed-size slot (~96pt), no backdrop.
-    private var mascotSlot: some View {
-        MascotView(pose: .greeting, size: 104)
-            .frame(width: 104, height: 104)
-            .accessibilityHidden(true)
+    /// Khoai is hidden at AX3+ so the mic stays on screen; the greeting is then plain text (UI_SCREENS S02).
+    private var showsKhoai: Bool { viewModel.showsMascot && typeSize < .accessibility3 }
+
+    /// D-327 S02 v2 (Figma "S02 Home · Khoai v2"): a speech bubble, Khoai's video (hello once, then breathing),
+    /// tap → a tip with "Đọc to" / "Gợi ý khác", stroke → hearts + reply. Khoai itself is decorative for VoiceOver;
+    /// the bubble text is read as the screen header.
+    private var khoaiBlock: some View {
+        VStack(spacing: Tokens.Space.s) {
+            Text(LocalizedStringKey(viewModel.khoaiLine))
+                .font(viewModel.showsTip ? Tokens.Fonts.body : Tokens.Fonts.title)
+                .foregroundStyle(viewModel.showsTip ? Tokens.Colors.textPrimary : Tokens.Colors.onHoney)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, Tokens.Space.l)
+                .padding(.vertical, Tokens.Space.m)
+                .frame(maxWidth: .infinity)
+                .background(viewModel.showsTip ? Tokens.Colors.secondaryFill : Tokens.Colors.honey,
+                            in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityIdentifier("home.khoai.line")
+                .overlay(alignment: .bottom) {
+                    BubbleTail()                                  // points at Khoai (Figma S02 v2)
+                        .fill(viewModel.showsTip ? Tokens.Colors.secondaryFill : Tokens.Colors.honey)
+                        .frame(width: 18, height: 9)
+                        .offset(y: 9)
+                        .accessibilityHidden(true)
+                }
+                .animation(.easeInOut(duration: 0.2), value: viewModel.khoaiLine)
+            MascotView(pose: .greeting, size: 168, reaction: viewModel.khoaiReaction, style: .video)
+                .frame(width: 168, height: 168)
+                .contentShape(Rectangle())
+                .onTapGesture { viewModel.nextTip() }
+                .gesture(DragGesture(minimumDistance: 12).onEnded { _ in viewModel.petKhoai() })
+                .accessibilityHidden(true)
+            if viewModel.showsTip {
+                HStack(spacing: Tokens.Space.l) {
+                    TextLinkButton("common.readAloud") { viewModel.readTip() }
+                    TextLinkButton("home.khoai.nextTip") { viewModel.nextTip() }
+                }
+            } else {
+                Text("home.khoai.hint")
+                    .font(Tokens.Fonts.label)
+                    .foregroundStyle(Tokens.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .accessibilityHidden(true)                  // VoiceOver users never touch the mascot
+            }
+        }
     }
 
     /// Simple mode: icon + text; otherwise icon only, the text stays the VoiceOver label (UI_SCREENS S02).
@@ -200,6 +244,18 @@ private func homePreviewModel(simple: Bool = false, empty: Bool = false) -> Home
     let local = MockLocalDataRepository()
     local.settings().simpleMode = simple
     return HomeViewModel(repository: repo, localData: local)
+}
+
+/// The little triangle under Khoai's speech bubble.
+private struct BubbleTail: Shape {
+    func path(in rect: CGRect) -> Path {
+        Path { p in
+            p.move(to: CGPoint(x: rect.minX, y: rect.minY))
+            p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+            p.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
+            p.closeSubpath()
+        }
+    }
 }
 
 #Preview("Light") {

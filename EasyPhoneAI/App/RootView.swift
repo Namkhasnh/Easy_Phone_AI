@@ -121,7 +121,7 @@ struct RootView: View {
         case .signedOut:
             SignInView(viewModel: SignInViewModel(auth: env.auth))
         case .signedIn:
-            HomeView(viewModel: HomeViewModel(repository: env.drafts, localData: env.localData))
+            HomeView(viewModel: HomeViewModel(repository: env.drafts, localData: env.localData, tts: env.tts))
         }
     }
 

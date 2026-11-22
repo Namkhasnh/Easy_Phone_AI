@@ -7009,6 +7009,30 @@
         }
       }
     },
+    "home.khoai.hint" : {
+      "comment" : "S02 v2: caption under Khoai (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chạm vào Khoai để xem gợi ý"
+          }
+        }
+      }
+    },
+    "home.khoai.nextTip" : {
+      "comment" : "S02 v2: text button under a Khoai tip, shows the next tip (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gợi ý khác"
+          }
+        }
+      }
+    },
     "dev.khoai.style" : {
       "comment" : "Debug preview: which Khoai art style to show (D-327)",
       "extractionState" : "manual",
