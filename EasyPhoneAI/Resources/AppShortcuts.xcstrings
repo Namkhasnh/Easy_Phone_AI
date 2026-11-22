@@ -1,0 +1,88 @@
+{
+  "sourceLanguage" : "vi",
+  "strings" : {
+    "Ê ${applicationName}" : {
+      "localizations" : {
+        "vi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Ê ${applicationName}",
+              "Ê ${applicationName} ơi",
+              "${applicationName} ơi"
+            ]
+          }
+        }
+      }
+    },
+    "${applicationName}" : {
+      "localizations" : {
+        "vi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Mở ${applicationName}" : {
+      "localizations" : {
+        "vi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Mở ${applicationName}",
+              "Mở app ${applicationName}",
+              "Mở ứng dụng ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Nói với ${applicationName}" : {
+      "localizations" : {
+        "vi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Nói với ${applicationName}",
+              "Nói chuyện với ${applicationName}",
+              "Gọi ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Hỏi ${applicationName}" : {
+      "localizations" : {
+        "vi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Hỏi ${applicationName}",
+              "Hỏi ${applicationName} giúp tôi",
+              "Hỏi ${applicationName} một việc"
+            ]
+          }
+        }
+      }
+    },
+    "Nhờ ${applicationName}" : {
+      "localizations" : {
+        "vi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Nhờ ${applicationName}",
+              "Nhờ ${applicationName} giúp",
+              "${applicationName} giúp tôi"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
