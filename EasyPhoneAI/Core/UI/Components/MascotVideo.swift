@@ -37,6 +37,11 @@ enum MascotVideoClip {
 
     /// First frame of every clip (all start on the same picture); also the Reduce Motion still.
     static let still = "mascot.video.still"
+
+    /// S03 listening (owner 2026-11-22): Khoai clinging to a round honey window, ring drawn into the clip
+    /// (`tools/khoai_rig/window.py`), square; its Reduce Motion still.
+    static let listeningWindow = "khoai_nghe_cua_so"
+    static let listeningWindowStill = "mascot.window.still"
 }
 
 /// Plays `files` in order, each once, then loops the last one. Muted. Main actor only (read by `TimelineView`).
@@ -106,6 +111,7 @@ final class MascotVideoPlayer {
 /// One playlist drawn as an `Image` each display tick. Decorative (VoiceOver skips the mascot).
 struct MascotVideoView: View {
     let files: [String]
+    var still = MascotVideoClip.still
     @State private var player: MascotVideoPlayer?
 
     var body: some View {
@@ -113,7 +119,7 @@ struct MascotVideoView: View {
             if let frame = player?.frame() {
                 Image(decorative: frame, scale: 1).resizable().interpolation(.high).scaledToFit()
             } else {
-                Image(MascotVideoClip.still).resizable().interpolation(.high).scaledToFit()
+                Image(still).resizable().interpolation(.high).scaledToFit()
             }
         }
         .onAppear { player = MascotVideoPlayer(files: files) }

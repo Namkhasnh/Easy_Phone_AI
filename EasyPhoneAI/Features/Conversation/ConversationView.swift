@@ -9,6 +9,7 @@ struct ConversationView: View {
     @State private var hintIndex = 0
     @FocusState private var textFocused: Bool
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ScrollView {
@@ -107,8 +108,8 @@ struct ConversationView: View {
             }
     }
 
-    /// D-327 S03 v2 (Figma "S03 Đang nghe · Khoai v2"): "Mình đang nghe…" bubble over Khoai's listening clip in a
-    /// soft circle with a honey ring.
+    /// D-327 S03 v2 (Figma "S03 Đang nghe · Khoai v2"): "Mình đang nghe…" bubble over Khoai clinging to a round
+    /// window (owner's clip, ring inside the video, paws reach over it). Reduce Motion → its still frame.
     private var listeningKhoai: some View {
         VStack(spacing: Tokens.Space.s) {
             Text("conv.listening.title")
@@ -118,14 +119,15 @@ struct ConversationView: View {
                 .padding(.vertical, Tokens.Space.s)
                 .background(Tokens.Colors.honey, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
                 .accessibilityAddTraits(.isHeader)
-            ZStack {
-                Circle().fill(Tokens.Colors.secondaryFill)
-                Circle().strokeBorder(Tokens.Colors.honey, lineWidth: 6)
-                MascotView(pose: .listening, size: 150, style: .video)
-                    .frame(width: 150, height: 150)
-                    .accessibilityHidden(true)
+            Group {
+                if reduceMotion || MascotVideoClip.url(MascotVideoClip.listeningWindow) == nil {
+                    Image(MascotVideoClip.listeningWindowStill).resizable().interpolation(.high).scaledToFit()
+                } else {
+                    MascotVideoView(files: [MascotVideoClip.listeningWindow], still: MascotVideoClip.listeningWindowStill)
+                }
             }
-            .frame(width: 184, height: 184)                  // decorative, fixed-size slot (not text)
+            .frame(width: 220, height: 220)                  // decorative, fixed-size slot (not text)
+            .accessibilityHidden(true)
         }
         .frame(maxWidth: .infinity)
     }

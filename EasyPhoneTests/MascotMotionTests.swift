@@ -114,6 +114,8 @@ struct MascotMotionTests {
         _ = try #require(UIImage(named: MascotVideoClip.still))
         let all = ["tho", "chao", "dang_nghe", "dang_xu_ly", "hoi_them", "mung", "buon", "cham", "xoa_dau"]
         for name in all { #expect(MascotVideoClip.url("khoai_" + name) != nil, "missing \(name)") }
+        #expect(MascotVideoClip.url(MascotVideoClip.listeningWindow) != nil)         // S03 listening window clip
+        _ = try #require(UIImage(named: MascotVideoClip.listeningWindowStill))
     }
 
     @Test func videoPlaylistsPlayOnceThenLoop() {
