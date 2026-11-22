@@ -11,6 +11,7 @@ final class MockPurchaseService: PurchaseService {
     private struct State {
         var outcome: PurchaseOutcome = .verified(jws: "jws.mock")
         var entitlements: [String] = []
+        var latest: [String] = []
         var finished: [String] = []
         var purchases: [(id: String, token: UUID)] = []
     }
@@ -25,6 +26,7 @@ final class MockPurchaseService: PurchaseService {
 
     func setOutcome(_ outcome: PurchaseOutcome) { state.withLock { $0.outcome = outcome } }
     func setEntitlements(_ jws: [String]) { state.withLock { $0.entitlements = jws } }
+    func setLatest(_ jws: [String]) { state.withLock { $0.latest = jws } }
     var finished: [String] { state.withLock { $0.finished } }
     var purchaseCalls: [(id: String, token: UUID)] { state.withLock { $0.purchases } }
     /// Tests: a renewal / Ask to Buy approval arriving later.
@@ -37,6 +39,7 @@ final class MockPurchaseService: PurchaseService {
     }
 
     func currentEntitlementJWS() async -> [String] { state.withLock { $0.entitlements } }
+    func latestJWS() async -> [String] { state.withLock { $0.latest } }
     var transactionUpdates: AsyncStream<String> { updates.stream }
     func finish(jws: String) async { state.withLock { $0.finished.append(jws) } }
 }

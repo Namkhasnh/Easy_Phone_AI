@@ -28,4 +28,19 @@ struct EntryPointTests {
         let names = (info["INAlternativeAppNames"] as? [[String: Any]] ?? []).compactMap { $0["INAlternativeAppName"] as? String }
         #expect(names == ["Khoai"])                                              // D-288
     }
+
+    /// 1E.2 (D-012, D-288): Vietnamese Siri phrases ship in `AppShortcuts.xcstrings`; every way to say one keeps the
+    /// app name (Apple rule, also matches "Khoai"), and the D-288 calls "Ê Khoai" / "Khoai" are there.
+    @Test func vietnamesePhrasesShip() throws {
+        let path = try #require(Bundle.main.path(forResource: "AppShortcuts", ofType: "strings", inDirectory: nil,
+                                                 forLocalization: "vi"))
+        let table = try #require(NSDictionary(contentsOfFile: path) as? [String: String])
+        let phrases = Set(table.values)
+        #expect(phrases.count >= 12)
+        #expect(phrases.allSatisfy { $0.contains("${applicationName}") })
+        for p in ["Ê ${applicationName}", "${applicationName}", "${applicationName} ơi", "Mở ${applicationName}",
+                  "Nói với ${applicationName}", "Hỏi ${applicationName}"] {
+            #expect(phrases.contains(p), "missing \(p)")
+        }
+    }
 }

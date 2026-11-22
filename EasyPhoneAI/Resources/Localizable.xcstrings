@@ -697,90 +697,6 @@
         }
       }
     },
-    "confirm.deleteAccount.done": {
-      "comment": "UI_SCREENS S20 (1G.2, D-073)",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đã xóa tài khoản."
-          }
-        }
-      }
-    },
-    "confirm.deleteAccount.progress": {
-      "comment": "UI_SCREENS S20 (1G.2, D-073)",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đang xóa…"
-          }
-        }
-      }
-    },
-    "confirm.deleteAccount.no": {
-      "comment": "UI_SCREENS S20 (1G.2, D-073)",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Giữ tài khoản"
-          }
-        }
-      }
-    },
-    "confirm.deleteAccount.yes": {
-      "comment": "UI_SCREENS S20 (1G.2, D-073)",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xóa tài khoản"
-          }
-        }
-      }
-    },
-    "confirm.deleteAccount.subNote": {
-      "comment": "UI_SCREENS S20 (1G.2, D-073)",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xóa tài khoản không tự hủy gói Premium. Hãy hủy trong Cài đặt iPhone > tên của bạn > Đăng ký."
-          }
-        }
-      }
-    },
-    "confirm.deleteAccount.body": {
-      "comment": "UI_SCREENS S20 (1G.2, D-073)",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toàn bộ dữ liệu của bạn trên máy chủ và trên điện thoại này sẽ bị xóa. Việc này không hoàn tác được."
-          }
-        }
-      }
-    },
-    "confirm.deleteAccount.title": {
-      "comment": "UI_SCREENS S20 (1G.2, D-073)",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xóa tài khoản?"
-          }
-        }
-      }
-    },
     "confirm.clearHistory.body" : {
       "comment" : "UI_SCREENS S20",
       "extractionState" : "manual",
@@ -837,6 +753,90 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Xóa"
+          }
+        }
+      }
+    },
+    "confirm.deleteAccount.body" : {
+      "comment" : "UI_SCREENS S20 (1G.2, D-073)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toàn bộ dữ liệu của bạn trên máy chủ và trên điện thoại này sẽ bị xóa. Việc này không hoàn tác được."
+          }
+        }
+      }
+    },
+    "confirm.deleteAccount.done" : {
+      "comment" : "UI_SCREENS S20 (1G.2, D-073)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã xóa tài khoản."
+          }
+        }
+      }
+    },
+    "confirm.deleteAccount.no" : {
+      "comment" : "UI_SCREENS S20 (1G.2, D-073)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giữ tài khoản"
+          }
+        }
+      }
+    },
+    "confirm.deleteAccount.progress" : {
+      "comment" : "UI_SCREENS S20 (1G.2, D-073)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang xóa…"
+          }
+        }
+      }
+    },
+    "confirm.deleteAccount.subNote" : {
+      "comment" : "UI_SCREENS S20 (1G.2, D-073)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xóa tài khoản không tự hủy gói Premium. Hãy hủy trong Cài đặt iPhone > tên của bạn > Đăng ký."
+          }
+        }
+      }
+    },
+    "confirm.deleteAccount.title" : {
+      "comment" : "UI_SCREENS S20 (1G.2, D-073)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xóa tài khoản?"
+          }
+        }
+      }
+    },
+    "confirm.deleteAccount.yes" : {
+      "comment" : "UI_SCREENS S20 (1G.2, D-073)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xóa tài khoản"
           }
         }
       }
@@ -1189,6 +1189,150 @@
         }
       }
     },
+    "dev.khoai.forceStill" : {
+      "comment" : "Debug preview: Reduce Motion simulation (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giả lập tắt chuyển động"
+          }
+        }
+      }
+    },
+    "dev.khoai.hint" : {
+      "comment" : "Debug preview hint (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chạm vào Khoai, hoặc vuốt nhẹ để xoa đầu"
+          }
+        }
+      }
+    },
+    "dev.khoai.level" : {
+      "comment" : "Debug preview: voice level slider (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Độ to giọng nói (khi đang nghe)"
+          }
+        }
+      }
+    },
+    "dev.khoai.pet" : {
+      "comment" : "Debug preview: pet reaction (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xoa đầu"
+          }
+        }
+      }
+    },
+    "dev.khoai.pose.asking" : {
+      "comment" : "Debug preview pose (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hỏi thêm"
+          }
+        }
+      }
+    },
+    "dev.khoai.pose.greeting" : {
+      "comment" : "Debug preview pose (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chào"
+          }
+        }
+      }
+    },
+    "dev.khoai.pose.happy" : {
+      "comment" : "Debug preview pose (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mừng"
+          }
+        }
+      }
+    },
+    "dev.khoai.pose.listening" : {
+      "comment" : "Debug preview pose (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang nghe"
+          }
+        }
+      }
+    },
+    "dev.khoai.pose.sorry" : {
+      "comment" : "Debug preview pose (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buồn, xin lỗi"
+          }
+        }
+      }
+    },
+    "dev.khoai.pose.thinking" : {
+      "comment" : "Debug preview pose (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang xử lý"
+          }
+        }
+      }
+    },
+    "dev.khoai.tap" : {
+      "comment" : "Debug preview: tap reaction (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chạm"
+          }
+        }
+      }
+    },
+    "dev.khoai.title" : {
+      "comment" : "Debug preview screen title (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xem thử Khoai"
+          }
+        }
+      }
+    },
     "editor.clear" : {
       "comment" : "UI_SCREENS S05",
       "extractionState" : "manual",
@@ -1261,54 +1405,6 @@
         }
       }
     },
-    "error.unauthorized" : {
-      "comment" : "UI_SCREENS §8 (found missing by the 1G.9 string scan)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Phiên đăng nhập đã hết. Bạn đăng nhập lại nhé."
-          }
-        }
-      }
-    },
-    "error.rate_limited" : {
-      "comment" : "UI_SCREENS §8 (found missing by the 1G.9 string scan)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Giọng nói tạm thời chưa dùng được. Bạn gõ chữ nhé."
-          }
-        }
-      }
-    },
-    "error.llm_invalid_output" : {
-      "comment" : "UI_SCREENS §8 (found missing by the 1G.9 string scan)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mình chưa hiểu yêu cầu. Bạn thử lại nhé."
-          }
-        }
-      }
-    },
-    "error.client_outdated" : {
-      "comment" : "UI_SCREENS §8 (found missing by the 1G.9 string scan)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cần cập nhật ứng dụng."
-          }
-        }
-      }
-    },
     "error.approval.mismatch" : {
       "comment" : "UI_SCREENS §8",
       "extractionState" : "manual",
@@ -1341,6 +1437,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Không xác minh được giao dịch."
+          }
+        }
+      }
+    },
+    "error.client_outdated" : {
+      "comment" : "UI_SCREENS §8 (found missing by the 1G.9 string scan)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cần cập nhật ứng dụng."
           }
         }
       }
@@ -1425,6 +1533,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Có lỗi, bản nháp đã được lưu."
+          }
+        }
+      }
+    },
+    "error.llm_invalid_output" : {
+      "comment" : "UI_SCREENS §8 (found missing by the 1G.9 string scan)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mình chưa hiểu yêu cầu. Bạn thử lại nhé."
           }
         }
       }
@@ -1585,6 +1705,18 @@
         }
       }
     },
+    "error.rate_limited" : {
+      "comment" : "UI_SCREENS §8 (found missing by the 1G.9 string scan)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giọng nói tạm thời chưa dùng được. Bạn gõ chữ nhé."
+          }
+        }
+      }
+    },
     "error.speech.vi.unavailable" : {
       "comment" : "UI_SCREENS §8",
       "extractionState" : "manual",
@@ -1605,6 +1737,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dịch vụ AI tạm dừng. Các tính năng khác vẫn dùng được."
+          }
+        }
+      }
+    },
+    "error.unauthorized" : {
+      "comment" : "UI_SCREENS §8 (found missing by the 1G.9 string scan)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phiên đăng nhập đã hết. Bạn đăng nhập lại nhé."
           }
         }
       }
@@ -2449,6 +2593,18 @@
         }
       }
     },
+    "history.notSent" : {
+      "comment" : "1G.10 unanswered request row (S02 / S14)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa gửi được. Bấm để gửi lại."
+          }
+        }
+      }
+    },
     "history.time.today" : {
       "comment" : "UI_SCREENS S14; %@ = {HH:mm}",
       "extractionState" : "manual",
@@ -2677,14 +2833,26 @@
         }
       }
     },
-    "intent.ask.title" : {
+    "intent.ask.day" : {
       "comment" : "Hỏi Khoai panel (D-325)",
       "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hỏi Khoai"
+            "value" : "Lịch %@"
+          }
+        }
+      }
+    },
+    "intent.ask.day.empty" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ bạn chưa có lịch nào."
           }
         }
       }
@@ -2697,42 +2865,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Khoai hiện ngay trên màn hình đang mở, không cần vào app."
-          }
-        }
-      }
-    },
-    "intent.ask.request" : {
-      "comment" : "Hỏi Khoai panel (D-325)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yêu cầu"
-          }
-        }
-      }
-    },
-    "intent.ask.prompt" : {
-      "comment" : "Hỏi Khoai panel (D-325)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bạn cần Khoai làm gì?"
-          }
-        }
-      }
-    },
-    "intent.ask.opening" : {
-      "comment" : "Hỏi Khoai panel (D-325)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Khoai mở app để làm tiếp nhé."
           }
         }
       }
@@ -2761,38 +2893,14 @@
         }
       }
     },
-    "intent.ask.day" : {
+    "intent.ask.kind.call" : {
       "comment" : "Hỏi Khoai panel (D-325)",
       "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lịch %@"
-          }
-        }
-      }
-    },
-    "intent.ask.day.empty" : {
-      "comment" : "Hỏi Khoai panel (D-325)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ bạn chưa có lịch nào."
-          }
-        }
-      }
-    },
-    "intent.ask.kind.reminder" : {
-      "comment" : "Hỏi Khoai panel (D-325)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nhắc: %@"
+            "value" : "Gọi cho %@"
           }
         }
       }
@@ -2809,14 +2917,14 @@
         }
       }
     },
-    "intent.ask.kind.call" : {
+    "intent.ask.kind.other" : {
       "comment" : "Hỏi Khoai panel (D-325)",
       "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gọi cho %@"
+            "value" : "%@"
           }
         }
       }
@@ -2833,14 +2941,86 @@
         }
       }
     },
-    "intent.ask.kind.other" : {
+    "intent.ask.kind.reminder" : {
       "comment" : "Hỏi Khoai panel (D-325)",
       "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@"
+            "value" : "Nhắc: %@"
+          }
+        }
+      }
+    },
+    "intent.ask.opening" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoai mở app để làm tiếp nhé."
+          }
+        }
+      }
+    },
+    "intent.ask.prompt" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn cần Khoai làm gì?"
+          }
+        }
+      }
+    },
+    "intent.ask.request" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yêu cầu"
+          }
+        }
+      }
+    },
+    "intent.ask.title" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hỏi Khoai"
+          }
+        }
+      }
+    },
+    "intent.ask.undo" : {
+      "comment" : "Hỏi Khoai panel auto mode (D-326)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoàn tác"
+          }
+        }
+      }
+    },
+    "intent.ask.undone" : {
+      "comment" : "Hỏi Khoai panel auto mode (D-326)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã hoàn tác, Khoai xóa việc vừa tạo rồi."
           }
         }
       }
@@ -2853,6 +3033,150 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Khoai chưa hỗ trợ việc này."
+          }
+        }
+      }
+    },
+    "intent.ask.confirm" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoai thêm việc này nhé?"
+          }
+        }
+      }
+    },
+    "intent.ask.failed.hint" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Việc vẫn được lưu. Bạn mở EasyPhoneK để xem và làm tiếp nhé."
+          }
+        }
+      }
+    },
+    "intent.ask.label.call" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuộc gọi"
+          }
+        }
+      }
+    },
+    "intent.ask.label.event" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lịch hẹn"
+          }
+        }
+      }
+    },
+    "intent.ask.label.other" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Việc của bạn"
+          }
+        }
+      }
+    },
+    "intent.ask.label.place" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉ đường"
+          }
+        }
+      }
+    },
+    "intent.ask.label.reminder" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lời nhắc"
+          }
+        }
+      }
+    },
+    "intent.ask.status.event" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã thêm vào Lịch"
+          }
+        }
+      }
+    },
+    "intent.ask.status.reminder" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã thêm vào Lời nhắc"
+          }
+        }
+      }
+    },
+    "intent.ask.status.removed" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã xóa"
+          }
+        }
+      }
+    },
+    "intent.ask.undone.title" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã hoàn tác"
+          }
+        }
+      }
+    },
+    "intent.ask.unsupported.hint" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ở đây Khoai làm được: nhắc việc, lịch hẹn, gọi điện, chỉ đường và xem lịch."
           }
         }
       }
@@ -2877,6 +3201,78 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bắt đầu nghe"
+          }
+        }
+      }
+    },
+    "khoai.pet.reply" : {
+      "comment" : "Khoai reply when petted (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hihi, nhột quá!"
+          }
+        }
+      }
+    },
+    "khoai.tip.1" : {
+      "comment" : "Khoai tip on tap (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn thử nói: “Nhắc tôi 8 giờ sáng uống thuốc”"
+          }
+        }
+      }
+    },
+    "khoai.tip.2" : {
+      "comment" : "Khoai tip on tap (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn thử nói: “Gọi cho mẹ”"
+          }
+        }
+      }
+    },
+    "khoai.tip.3" : {
+      "comment" : "Khoai tip on tap (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn thử nói: “Mai 9 giờ khám răng”"
+          }
+        }
+      }
+    },
+    "khoai.tip.4" : {
+      "comment" : "Khoai tip on tap (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn thử nói: “Chỉ đường đến chợ Bến Thành”"
+          }
+        }
+      }
+    },
+    "khoai.tip.5" : {
+      "comment" : "Khoai tip on tap (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn thử nói: “Lịch hôm nay có gì?”"
           }
         }
       }
@@ -3829,12 +4225,6 @@
         }
       }
     },
-    "perm.%@.fallback" : {
-
-    },
-    "perm.%@.feature" : {
-
-    },
     "perm.allow" : {
       "comment" : "UI_SCREENS S18",
       "extractionState" : "manual",
@@ -4555,6 +4945,54 @@
         }
       }
     },
+    "quota.ok" : {
+      "comment" : "UI_SCREENS S17",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã hiểu"
+          }
+        }
+      }
+    },
+    "quota.premium.body" : {
+      "comment" : "UI_SCREENS S17",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lượt mới có lúc %@, %@."
+          }
+        }
+      }
+    },
+    "quota.premium.title" : {
+      "comment" : "UI_SCREENS S17",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn đã dùng hết lượt hôm nay"
+          }
+        }
+      }
+    },
+    "quota.stillWorks" : {
+      "comment" : "UI_SCREENS S17",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn vẫn xem lịch, gọi người đã lưu và xem lịch sử được."
+          }
+        }
+      }
+    },
     "reminders.add" : {
       "comment" : "UI_SCREENS S12",
       "extractionState" : "manual",
@@ -4927,54 +5365,6 @@
         }
       }
     },
-    "quota.premium.title": {
-      "comment": "UI_SCREENS S17",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bạn đã dùng hết lượt hôm nay"
-          }
-        }
-      }
-    },
-    "quota.premium.body": {
-      "comment": "UI_SCREENS S17",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lượt mới có lúc %@, %@."
-          }
-        }
-      }
-    },
-    "quota.stillWorks": {
-      "comment": "UI_SCREENS S17",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bạn vẫn xem lịch, gọi người đã lưu và xem lịch sử được."
-          }
-        }
-      }
-    },
-    "quota.ok": {
-      "comment": "UI_SCREENS S17",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đã hiểu"
-          }
-        }
-      }
-    },
     "review.autoConfirm.countdown" : {
       "comment" : "UI_SCREENS S04 (D-299)",
       "extractionState" : "manual",
@@ -5175,282 +5565,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Việc này cần bạn bấm nút trên màn hình."
-          }
-        }
-      }
-    },
-    "settings.quickOpen.other" : {
-      "comment" : "S15 Gọi Khoai nhanh (D-325)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Muốn dùng nút khác? Bạn có thể gán “Khoai nghe” cho nút Tác vụ (nếu iPhone có), hoặc thêm nút Khoai vào Trung tâm điều khiển và màn hình khóa."
-          }
-        }
-      }
-    },
-    "settings.quickOpen.backTap" : {
-      "comment" : "S15 Gọi Khoai nhanh (D-325)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1. Mở Cài đặt iPhone.\n2. Vào Trợ năng → Cảm ứng → Chạm vào mặt sau.\n3. Chọn Chạm hai lần, kéo xuống phần Phím tắt và chọn “Khoai nghe”."
-          }
-        }
-      }
-    },
-    "settings.quickOpen.step2" : {
-      "comment" : "S15 Gọi Khoai nhanh (D-325)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bước 2: Gõ lưng máy để gọi Khoai"
-          }
-        }
-      }
-    },
-    "settings.quickOpen.manual" : {
-      "comment" : "S15 Gọi Khoai nhanh (D-325)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1. Mở app Phím tắt, bấm dấu +.\n2. Thêm tác vụ “Đọc chính tả văn bản”, chọn Tiếng Việt, Dừng nghe: “Sau khi tạm dừng”.\n3. Thêm tác vụ “Hỏi Khoai”, bấm ô “Yêu cầu” và chọn “Văn bản đã đọc chính tả”.\n4. Đặt tên “Khoai nghe” rồi bấm Xong."
-          }
-        }
-      }
-    },
-    "settings.quickOpen.add.note" : {
-      "comment" : "S15 Gọi Khoai nhanh (D-325)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Phím tắt sẽ mở ra. Bạn bấm “Thêm phím tắt” rồi quay lại đây."
-          }
-        }
-      }
-    },
-    "settings.quickOpen.add" : {
-      "comment" : "S15 Gọi Khoai nhanh (D-325)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Thêm phím tắt"
-          }
-        }
-      }
-    },
-    "settings.quickOpen.step1" : {
-      "comment" : "S15 Gọi Khoai nhanh (D-325)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bước 1: Thêm phím tắt “Khoai nghe”"
-          }
-        }
-      }
-    },
-    "settings.quickOpen.intro" : {
-      "comment" : "S15 Gọi Khoai nhanh (D-325)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gõ 2 lần vào lưng iPhone là Khoai nghe ngay, trên bất kỳ màn hình nào, không cần mở app. Chỉ cần cài một lần, theo 2 bước dưới đây."
-          }
-        }
-      }
-    },
-    "settings.quickOpen.summary" : {
-      "comment" : "S15 Gọi Khoai nhanh (D-325)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gõ 2 lần vào lưng máy"
-          }
-        }
-      }
-    },
-    "settings.quickOpen" : {
-      "comment" : "S15 Gọi Khoai nhanh (D-325)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gọi Khoai nhanh"
-          }
-        }
-      }
-    },
-    "settings.latency.detail" : {
-      "comment" : "S15 Nâng cao — response timings (D-319)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AI %@ · máy chủ %@ · mạng %@"
-          }
-        }
-      }
-    },
-    "settings.latency.total" : {
-      "comment" : "S15 Nâng cao — response timings (D-319)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ giây"
-          }
-        }
-      }
-    },
-    "settings.latency.transcribe" : {
-      "comment" : "S15 Nâng cao — response timings (D-319)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chuyển giọng nói"
-          }
-        }
-      }
-    },
-    "settings.latency.mail" : {
-      "comment" : "S15 Nâng cao — response timings (D-319)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tóm tắt thư"
-          }
-        }
-      }
-    },
-    "settings.latency.parse" : {
-      "comment" : "S15 Nâng cao — response timings (D-319)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hiểu yêu cầu"
-          }
-        }
-      }
-    },
-    "settings.latency.empty" : {
-      "comment" : "S15 Nâng cao — response timings (D-319)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chưa có số đo. Bạn nói thử một yêu cầu nhé."
-          }
-        }
-      }
-    },
-    "settings.latency.note" : {
-      "comment" : "S15 Nâng cao — response timings (D-319)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Các lần dùng AI gần nhất. Chỉ lưu trên máy này cho đến khi tắt app. Chưa tính lúc chờ bạn ngừng nói."
-          }
-        }
-      }
-    },
-    "settings.latency" : {
-      "comment" : "S15 Nâng cao — response timings (D-319)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Thời gian phản hồi"
-          }
-        }
-      }
-    },
-    "settings.gmail.notConnected" : {
-      "comment" : "S15 regrouped (D-317)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chưa kết nối Gmail"
-          }
-        }
-      }
-    },
-    "settings.nicknames.count" : {
-      "comment" : "S15 regrouped (D-317)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ tên gọi thân mật"
-          }
-        }
-      }
-    },
-    "settings.quota.short" : {
-      "comment" : "S15 regrouped (D-317)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "còn %@/%@ lượt AI hôm nay"
-          }
-        }
-      }
-    },
-    "settings.quota.reset": {
-      "comment": "UI_SCREENS S15",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lượt mới có lúc %@"
-          }
-        }
-      }
-    },
-    "settings.quota": {
-      "comment": "UI_SCREENS S15 (AC7)",
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lượt AI còn lại hôm nay: %@/%@"
           }
         }
       }
@@ -5683,6 +5797,18 @@
         }
       }
     },
+    "settings.gmail.notConnected" : {
+      "comment" : "S15 regrouped (D-317)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa kết nối Gmail"
+          }
+        }
+      }
+    },
     "settings.gmail.note" : {
       "comment" : "UI_SCREENS S15 Gmail row (D-304, D-306)",
       "extractionState" : "manual",
@@ -5743,6 +5869,114 @@
         }
       }
     },
+    "settings.khoaiPlayground" : {
+      "comment" : "S15 Nâng cao, Debug only (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xem thử Khoai"
+          }
+        }
+      }
+    },
+    "settings.latency" : {
+      "comment" : "S15 Nâng cao — response timings (D-319)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thời gian phản hồi"
+          }
+        }
+      }
+    },
+    "settings.latency.detail" : {
+      "comment" : "S15 Nâng cao — response timings (D-319)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI %@ · máy chủ %@ · mạng %@"
+          }
+        }
+      }
+    },
+    "settings.latency.empty" : {
+      "comment" : "S15 Nâng cao — response timings (D-319)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa có số đo. Bạn nói thử một yêu cầu nhé."
+          }
+        }
+      }
+    },
+    "settings.latency.mail" : {
+      "comment" : "S15 Nâng cao — response timings (D-319)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tóm tắt thư"
+          }
+        }
+      }
+    },
+    "settings.latency.note" : {
+      "comment" : "S15 Nâng cao — response timings (D-319)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Các lần dùng AI gần nhất. Chỉ lưu trên máy này cho đến khi tắt app. Chưa tính lúc chờ bạn ngừng nói."
+          }
+        }
+      }
+    },
+    "settings.latency.parse" : {
+      "comment" : "S15 Nâng cao — response timings (D-319)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hiểu yêu cầu"
+          }
+        }
+      }
+    },
+    "settings.latency.total" : {
+      "comment" : "S15 Nâng cao — response timings (D-319)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ giây"
+          }
+        }
+      }
+    },
+    "settings.latency.transcribe" : {
+      "comment" : "S15 Nâng cao — response timings (D-319)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chuyển giọng nói"
+          }
+        }
+      }
+    },
     "settings.mapsApp" : {
       "comment" : "UI_SCREENS S15",
       "extractionState" : "manual",
@@ -5775,6 +6009,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tên gọi thân mật"
+          }
+        }
+      }
+    },
+    "settings.nicknames.count" : {
+      "comment" : "S15 regrouped (D-317)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ tên gọi thân mật"
           }
         }
       }
@@ -5871,6 +6117,162 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chính sách quyền riêng tư"
+          }
+        }
+      }
+    },
+    "settings.quickOpen" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gọi Khoai nhanh"
+          }
+        }
+      }
+    },
+    "settings.quickOpen.add" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm phím tắt"
+          }
+        }
+      }
+    },
+    "settings.quickOpen.add.note" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Phím tắt sẽ mở ra. Bạn bấm “Thêm phím tắt” rồi quay lại đây."
+          }
+        }
+      }
+    },
+    "settings.quickOpen.backTap" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Mở Cài đặt iPhone.\n2. Vào Trợ năng → Cảm ứng → Chạm vào mặt sau.\n3. Chọn Chạm hai lần, kéo xuống phần Phím tắt và chọn “Khoai nghe”."
+          }
+        }
+      }
+    },
+    "settings.quickOpen.intro" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gõ 2 lần vào lưng iPhone là Khoai nghe ngay, trên bất kỳ màn hình nào, không cần mở app. Chỉ cần cài một lần, theo 2 bước dưới đây."
+          }
+        }
+      }
+    },
+    "settings.quickOpen.manual" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Mở app Phím tắt, bấm dấu +.\n2. Thêm tác vụ “Đọc chính tả văn bản”, chọn Tiếng Việt, Dừng nghe: “Sau khi tạm dừng”.\n3. Thêm tác vụ “Hỏi Khoai”, bấm ô “Yêu cầu” và chọn “Văn bản đã đọc chính tả”.\n4. Đặt tên “Khoai nghe” rồi bấm Xong."
+          }
+        }
+      }
+    },
+    "settings.quickOpen.other" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muốn dùng nút khác? Bạn có thể gán “Khoai nghe” cho nút Tác vụ (nếu iPhone có), hoặc thêm nút Khoai vào Trung tâm điều khiển và màn hình khóa."
+          }
+        }
+      }
+    },
+    "settings.quickOpen.step1" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bước 1: Thêm phím tắt “Khoai nghe”"
+          }
+        }
+      }
+    },
+    "settings.quickOpen.step2" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bước 2: Gõ lưng máy để gọi Khoai"
+          }
+        }
+      }
+    },
+    "settings.quickOpen.summary" : {
+      "comment" : "S15 Gọi Khoai nhanh (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gõ 2 lần vào lưng máy"
+          }
+        }
+      }
+    },
+    "settings.quota" : {
+      "comment" : "UI_SCREENS S15 (AC7)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lượt AI còn lại hôm nay: %@/%@"
+          }
+        }
+      }
+    },
+    "settings.quota.reset" : {
+      "comment" : "UI_SCREENS S15",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lượt mới có lúc %@"
+          }
+        }
+      }
+    },
+    "settings.quota.short" : {
+      "comment" : "S15 regrouped (D-317)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "còn %@/%@ lượt AI hôm nay"
           }
         }
       }
@@ -5983,78 +6385,6 @@
         }
       }
     },
-    "settings.textSize.option.system" : {
-      "comment" : "S15 Hiển thị — app text size (D-318)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Theo iPhone"
-          }
-        }
-      }
-    },
-    "settings.textSize.option.medium" : {
-      "comment" : "S15 Hiển thị — app text size (D-318)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vừa"
-          }
-        }
-      }
-    },
-    "settings.textSize.option.large" : {
-      "comment" : "S15 Hiển thị — app text size (D-318)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lớn"
-          }
-        }
-      }
-    },
-    "settings.textSize.option.xLarge" : {
-      "comment" : "S15 Hiển thị — app text size (D-318)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rất lớn"
-          }
-        }
-      }
-    },
-    "settings.textSize.option.huge" : {
-      "comment" : "S15 Hiển thị — app text size (D-318)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cực lớn"
-          }
-        }
-      }
-    },
-    "settings.textSize.preview" : {
-      "comment" : "S15 Hiển thị — app text size (D-318)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Xin chào! Mình là Khoai. Chữ trong app sẽ to như thế này."
-          }
-        }
-      }
-    },
     "settings.textSize" : {
       "comment" : "UI_SCREENS S15",
       "extractionState" : "manual",
@@ -6075,6 +6405,78 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chỉ đổi cỡ chữ trong EasyPhoneK. “Theo iPhone” dùng cỡ chữ trong Cài đặt iPhone > Màn hình & Độ sáng > Cỡ chữ."
+          }
+        }
+      }
+    },
+    "settings.textSize.option.huge" : {
+      "comment" : "S15 Hiển thị — app text size (D-318)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cực lớn"
+          }
+        }
+      }
+    },
+    "settings.textSize.option.large" : {
+      "comment" : "S15 Hiển thị — app text size (D-318)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lớn"
+          }
+        }
+      }
+    },
+    "settings.textSize.option.medium" : {
+      "comment" : "S15 Hiển thị — app text size (D-318)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vừa"
+          }
+        }
+      }
+    },
+    "settings.textSize.option.system" : {
+      "comment" : "S15 Hiển thị — app text size (D-318)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Theo iPhone"
+          }
+        }
+      }
+    },
+    "settings.textSize.option.xLarge" : {
+      "comment" : "S15 Hiển thị — app text size (D-318)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rất lớn"
+          }
+        }
+      }
+    },
+    "settings.textSize.preview" : {
+      "comment" : "S15 Hiển thị — app text size (D-318)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xin chào! Mình là Khoai. Chữ trong app sẽ to như thế này."
           }
         }
       }
@@ -6115,6 +6517,42 @@
         }
       }
     },
+    "settings.voice" : {
+      "comment" : "UI_SCREENS S15",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giọng nói"
+          }
+        }
+      }
+    },
+    "settings.voice.choice" : {
+      "comment" : "S15 Giọng nói — voice + pitch (D-324)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giọng đọc"
+          }
+        }
+      }
+    },
+    "settings.voice.default" : {
+      "comment" : "S15 Giọng nói — voice + pitch (D-324)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mặc định của iPhone (Linh)"
+          }
+        }
+      }
+    },
     "settings.voice.download" : {
       "comment" : "S15 Giọng nói — voice + pitch (D-324)",
       "extractionState" : "manual",
@@ -6123,6 +6561,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Muốn giọng tự nhiên hơn? Vào Cài đặt iPhone > Trợ năng > Nội dung được đọc > Giọng nói > Tiếng Việt, tải giọng “Nâng cao” (miễn phí), rồi quay lại đây chọn."
+          }
+        }
+      }
+    },
+    "settings.voice.enabled" : {
+      "comment" : "UI_SCREENS S15",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đọc to câu trả lời"
+          }
+        }
+      }
+    },
+    "settings.voice.pitch" : {
+      "comment" : "S15 Giọng nói — voice + pitch (D-324)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cao độ giọng"
           }
         }
       }
@@ -6151,30 +6613,6 @@
         }
       }
     },
-    "settings.voice.pitch" : {
-      "comment" : "S15 Giọng nói — voice + pitch (D-324)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cao độ giọng"
-          }
-        }
-      }
-    },
-    "settings.voice.quality.premium" : {
-      "comment" : "S15 Giọng nói — voice + pitch (D-324)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ (cao cấp)"
-          }
-        }
-      }
-    },
     "settings.voice.quality.enhanced" : {
       "comment" : "S15 Giọng nói — voice + pitch (D-324)",
       "extractionState" : "manual",
@@ -6187,50 +6625,14 @@
         }
       }
     },
-    "settings.voice.default" : {
+    "settings.voice.quality.premium" : {
       "comment" : "S15 Giọng nói — voice + pitch (D-324)",
       "extractionState" : "manual",
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mặc định của iPhone (Linh)"
-          }
-        }
-      }
-    },
-    "settings.voice.choice" : {
-      "comment" : "S15 Giọng nói — voice + pitch (D-324)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Giọng đọc"
-          }
-        }
-      }
-    },
-    "settings.voice" : {
-      "comment" : "UI_SCREENS S15",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Giọng nói"
-          }
-        }
-      }
-    },
-    "settings.voice.enabled" : {
-      "comment" : "UI_SCREENS S15",
-      "extractionState" : "manual",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đọc to câu trả lời"
+            "value" : "%@ (cao cấp)"
           }
         }
       }
@@ -6759,6 +7161,90 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cần cập nhật ứng dụng"
+          }
+        }
+      }
+    },
+    "home.khoai.hint" : {
+      "comment" : "S02 v2: caption under Khoai (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chạm vào Khoai để xem gợi ý"
+          }
+        }
+      }
+    },
+    "home.khoai.nextTip" : {
+      "comment" : "S02 v2: text button under a Khoai tip, shows the next tip (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gợi ý khác"
+          }
+        }
+      }
+    },
+    "dev.khoai.style" : {
+      "comment" : "Debug preview: which Khoai art style to show (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kiểu Khoai"
+          }
+        }
+      }
+    },
+    "dev.khoai.style.frames" : {
+      "comment" : "Debug preview style: the owner's sprite rows (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ảnh cũ"
+          }
+        }
+      }
+    },
+    "dev.khoai.style.puppet" : {
+      "comment" : "Debug preview style: one face + code motion (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 mặt"
+          }
+        }
+      }
+    },
+    "dev.khoai.style.video" : {
+      "comment" : "Debug preview style: AI-made video clips per pose (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video"
+          }
+        }
+      }
+    },
+    "dev.khoai.style.rig" : {
+      "comment" : "Debug preview style: cut-out rig, head / ears / tail move (D-327)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cắt ghép"
           }
         }
       }

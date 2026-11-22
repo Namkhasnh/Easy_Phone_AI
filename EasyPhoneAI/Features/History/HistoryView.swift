@@ -15,7 +15,7 @@ struct HistoryView: View {
                     ForEach(viewModel.sections) { section in
                         Section {
                             ForEach(section.rows) { row in
-                                Button { router.push(.review(row.id)) } label: { DraftRowView(row: row) }
+                                Button { router.push(row.route) } label: { DraftRowView(row: row) }
                                     .buttonStyle(.plain)
                                     .listRowBackground(Tokens.Colors.surface)
                                     .swipeActions(edge: .trailing) {

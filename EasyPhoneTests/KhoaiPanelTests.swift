@@ -22,6 +22,21 @@ struct KhoaiPanelTests {
         #expect(summary.lines.first == "Nhắc: Uống thuốc")
         #expect(summary.lines.count == 2 && summary.lines[1].contains("20:00"))
         #expect(summary.spoken.hasPrefix("Nhắc: Uống thuốc, "))
+        #expect(summary.kind == .reminder && summary.title == "Uống thuốc")
+        #expect(summary.detail?.contains("20:00") == true)
+    }
+
+    /// Owner 2026-11-22: iOS draws the dialog as a header over the snippet → it shows the short line, Siri reads all.
+    @Test func panelHeaderIsShortAndNeverRepeatsTheCard() throws {
+        let (s, d) = try step("reminder", "create", [("title", "Ăn cơm"), ("dueDate", "2026-11-22T21:00:00+07:00")])
+        let summary = KhoaiSnippet.summary(of: s, timeZoneId: d.timeZoneId)
+        let reply = KhoaiPanel.Reply(full: "Xong rồi! \(summary.spoken)", shown: "Xong rồi!",
+                                     view: KhoaiSnippet(.done([summary])))
+        #expect(reply.shown == "Xong rồi!" && reply.full.contains("Ăn cơm"))
+        let failed = KhoaiPanel.failed("intent.ask.failed", hint: "intent.ask.failed.hint")
+        #expect(failed.shown == UserMessage(key: "intent.ask.failed").text)
+        guard case .failed(let hint) = failed.view.content else { Issue.record("not a failed card"); return }
+        #expect(hint != failed.shown)
     }
 
     @Test func callAndDirectionsSummaries() throws {
@@ -56,5 +71,30 @@ struct KhoaiPanelTests {
                     "intent.ask.unsupported"] {
             #expect(UserMessage(key: key).text != key, "missing \(key)")
         }
+    }
+
+    @Test func sharedShortcutLinkIsAnICloudShortcut() throws {
+        let url = try #require(KhoaiShortcut.iCloudURL)
+        #expect(url.scheme == "https" && url.host() == "www.icloud.com" && url.path().hasPrefix("/shortcuts/"))
+    }
+
+    /// D-326: "Làm luôn" on → a safe create runs at once in the panel; "Hoàn tác" deletes it through TaskEngine.
+    @Test func autoModeCreatesAtOnceAndUndoDeletes() async throws {
+        let env = AppEnvironment.mock(.uiTest)                                    // all permissions granted
+        env.localData.settings().autoConfirm = true
+        let panel = KhoaiPanel(env: env, state: AppState(), text: "nhắc tôi uống thuốc 30 phút nữa",
+                               zone: TimeZone(identifier: "Asia/Ho_Chi_Minh")!)
+        let draft = panel.newDraft()
+        let due = ISO8601DateFormatter().string(from: Date.now.addingTimeInterval(1800))
+        let reply = try await panel.finish(ConversationViewModel.localDraft("reminder", "create",
+                                                                             [("title", "Uống thuốc"), ("dueDate", due)]),
+                                           in: draft, intent: AskKhoaiIntent())
+        guard case .done(_, let undoId?) = reply.view.content else { Issue.record("not done: \(reply.dialog)"); return }
+        #expect(draft.steps.first?.state == .succeeded)
+        #expect(try await env.reminders.incomplete().contains { $0.title == "Uống thuốc" })
+
+        let undone = await panel.undo(draftId: try #require(UUID(uuidString: undoId)))
+        guard case .undone = undone.view.content else { Issue.record("not undone: \(undone.dialog)"); return }
+        #expect(try await env.reminders.incomplete().contains { $0.title == "Uống thuốc" } == false)
     }
 }

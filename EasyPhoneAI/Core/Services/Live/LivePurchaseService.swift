@@ -40,6 +40,14 @@ final class LivePurchaseService: PurchaseService {
         }
     }
 
+    func latestJWS() async -> [String] {
+        var all: [String] = []
+        for id in PremiumProducts.all {
+            if let verification = await Transaction.latest(for: id) { all.append(keep(verification)) }
+        }
+        return all
+    }
+
     func currentEntitlementJWS() async -> [String] {
         var all: [String] = []
         for await verification in Transaction.currentEntitlements { all.append(keep(verification)) }

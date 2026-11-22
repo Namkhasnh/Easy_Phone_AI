@@ -358,6 +358,9 @@ struct SettingsView: View {
             } label: { rowText("settings.mapsApp") }
             .onChange(of: settings.wrappedValue.preferredMapsApp) { viewModel.save() }
             .frame(minHeight: Tokens.Size.buttonMinHeight)
+            #if DEBUG
+            NavigationLink { KhoaiPlaygroundView() } label: { rowText("settings.khoaiPlayground") }   // D-327, Debug only
+            #endif
         }
     }
 

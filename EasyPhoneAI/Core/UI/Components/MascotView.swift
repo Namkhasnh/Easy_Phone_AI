@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// Guide mascot **Khoai** (UI_SCREENS §2, P-41, D-289). Owner-supplied sprite frames (192×208 px PNG, transparent),
-/// asset `mascot.<row>.<nn>` in `Assets.xcassets/Mascot`. Decorative only: VoiceOver skips it, no tap action, no text,
-/// never signals a result on its own (D-102, D-124). Reduce Motion → one still frame (UI_SCREENS §9).
+/// Guide mascot **Khoai** (UI_SCREENS §2, P-41, D-289, D-327). Owner-supplied sprite frames (192×208 px PNG,
+/// transparent), asset `mascot.<row>.<nn>` in `Assets.xcassets/Mascot`, plus a code motion layer (`MascotMotion`).
+/// VoiceOver skips it, it has no text of its own and never signals a result on its own (D-102, D-124); touches only
+/// play a reaction (D-327). Reduce Motion → one still frame, no motion (UI_SCREENS §9).
 enum MascotPose: String, CaseIterable, Sendable {
     case greeting, listening, thinking, asking, happy, sorry
 
@@ -17,6 +18,33 @@ enum MascotPose: String, CaseIterable, Sendable {
         case .sorry: MascotClip(intro: [], loop: MascotClip.failed)
         }
     }
+
+    /// Owner 2026-11-20 ("vẫn giật", "mặt không tự nhiên"): the frames are separate paintings (the face changes
+    /// every frame, the body drifts 2–9 px), so the puppet style keeps ONE face per pose and lets `MascotMotion`
+    /// move it at 60 fps. Only the greeting wave keeps its frames (code cannot draw a waving paw), played once.
+    var puppetClip: MascotClip {
+        func still(_ name: String) -> [MascotFrame] { [MascotFrame(name: name, duration: .seconds(1))] }
+        switch self {
+        case .greeting: return MascotClip(intro: MascotClip.waving, loop: still("mascot.idle.00"))
+        case .listening: return MascotClip(intro: [], loop: still("mascot.idle.00"))
+        case .thinking: return MascotClip(intro: [], loop: still("mascot.running.00"))
+        case .asking: return MascotClip(intro: [], loop: still("mascot.waiting.00"))
+        case .happy: return MascotClip(intro: [], loop: still("mascot.waving.01"))
+        case .sorry: return MascotClip(intro: [], loop: still("mascot.failed.03"))
+        }
+    }
+
+    func clip(_ style: MascotStyle) -> MascotClip { style == .frames ? clip : puppetClip }
+}
+
+/// D-327: `frames` = the owner's sprite rows (current screens); `puppet` = one face per pose + code motion;
+/// `rig` = cut-out layers (body, head, two ears, tail) cut from the owner's high-res Khoai, each part turned by code;
+/// `video` = AI-made clips per pose (`MascotVideoClip`), falling back to `rig` for a pose without a clip yet.
+enum MascotStyle: String, Sendable, CaseIterable {
+    case frames, puppet, rig, video
+
+    /// Rig layers, back to front: tail, then the head group (head, ears), then the body over the neck.
+    static let rigLayers = ["mascot.rig.tail", "mascot.rig.head", "mascot.rig.earL", "mascot.rig.earR", "mascot.rig.body"]
 }
 
 struct MascotFrame: Hashable, Sendable {
@@ -55,35 +83,124 @@ struct MascotClip: Hashable, Sendable {
 struct MascotView: View {
     let pose: MascotPose
     var size: CGFloat = 96
+    /// D-327: a one-shot touch reaction (tap → hop, pet → wiggle + hearts + light haptic).
+    var reaction: MascotReactionEvent?
+    /// D-327: voice loudness 0…1 while listening (bob).
+    var level: Double = 0
+    /// Debug preview only: behave as if Reduce Motion were on.
+    var forceStill = false
+    /// D-327: sprite rows (default, current screens) or one face + code motion.
+    var style: MascotStyle = .frames
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
     @State private var frame: String?
+    @State private var reactionStart: Date?
+    /// The touch whose clip plays (video style); cleared when the pose changes so it does not replay.
+    @State private var videoReaction: MascotReactionEvent?
 
-    private struct PlayKey: Hashable { let pose: MascotPose; let reduceMotion: Bool }
+    private var reduceMotion: Bool { systemReduceMotion || forceStill }
+    private struct PlayKey: Hashable { let pose: MascotPose; let reduceMotion: Bool; let style: MascotStyle }
 
     var body: some View {
-        Image(frame ?? pose.clip.stillFrame.name)
-            .resizable()
-            .interpolation(.high)
-            .scaledToFit()
-            // Depth without a backdrop (owner 2026-11-10): soft ground shadow under the paws + light drop shadow.
-            .background(alignment: .bottom) {
+        TimelineView(.animation(paused: reduceMotion)) { context in
+            let now = context.date
+            let elapsed = reactionStart.map { now.timeIntervalSince($0) } ?? -1
+            let t = now.timeIntervalSinceReferenceDate
+            // A clip moves Khoai by itself: no code motion on top of it.
+            let m = videoPlaylist != nil ? .identity
+                : MascotMotion.transform(pose: pose, time: t, level: level, reaction: reaction?.kind,
+                                         elapsed: elapsed, reduceMotion: reduceMotion, rig: style != .frames && style != .puppet)
+            ZStack(alignment: .bottom) {
+                // Depth without a backdrop (owner 2026-11-10): soft ground shadow under the paws + light drop shadow.
                 Ellipse()
                     .fill(.black.opacity(0.22))
                     .frame(width: size * 0.62, height: size * 0.12)
                     .blur(radius: size * 0.04)
+                    .scaleEffect(m.shadowScale)
                     .offset(y: size * 0.02)
+                art(time: t, elapsed: elapsed)
+                    .scaleEffect(x: m.scaleX, y: m.scaleY, anchor: .bottom)
+                    .rotationEffect(.degrees(m.rotation), anchor: .bottom)
+                    .offset(y: size * m.offsetY)
+                    .shadow(color: .black.opacity(0.18), radius: size * 0.05, x: 0, y: size * 0.04)
             }
-            .shadow(color: .black.opacity(0.18), radius: size * 0.05, x: 0, y: size * 0.04)
-            .frame(width: size, height: size)              // decorative, fixed-size slot (not text)
-            .accessibilityHidden(true)
-            .task(id: PlayKey(pose: pose, reduceMotion: reduceMotion)) { await play() }
+            .overlay {
+                if reaction?.kind == .pet, let hearts = MascotMotion.hearts(elapsed: elapsed, reduceMotion: reduceMotion) {
+                    ForEach(hearts.indices, id: \.self) { i in
+                        Image(systemName: "heart.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: size * 0.14, height: size * 0.14)   // decorative, sized to the mascot
+                            .foregroundStyle(Tokens.Colors.danger)
+                            .opacity(hearts[i].opacity)
+                            .offset(x: size * hearts[i].x, y: size * hearts[i].y)
+                    }
+                }
+            }
+        }
+        .frame(width: size, height: size)              // decorative, fixed-size slot (not text)
+        .accessibilityHidden(true)
+        .task(id: PlayKey(pose: pose, reduceMotion: reduceMotion, style: style)) { await play() }
+        .onChange(of: reaction) { _, event in
+            reactionStart = event == nil ? nil : .now
+            videoReaction = event
+        }
+        .onChange(of: pose) { videoReaction = nil }
+        .sensoryFeedback(.impact(weight: .light), trigger: reaction) { _, new in new?.kind == .pet }
     }
+
+    /// The clip to play now: video style, motion allowed, and the owner has made this pose's clip.
+    /// The clips to play now: video style, motion allowed, and clips are bundled. A new touch or pose = a new list.
+    private var videoPlaylist: VideoKey? {
+        guard style == .video, !reduceMotion else { return nil }
+        let files = MascotVideoClip.playlist(for: pose, reaction: videoReaction?.kind)
+        return files.isEmpty ? nil : VideoKey(files: files, touch: videoReaction?.id)
+    }
+
+    private struct VideoKey: Hashable { let files: [String]; let touch: Int? }
+
+    @ViewBuilder private func art(time t: Double, elapsed: Double) -> some View {
+        if let videoPlaylist {
+            ZStack {
+                MascotVideoView(files: videoPlaylist.files)
+                    .id(videoPlaylist)
+                    .transition(.opacity)                        // a short cross-fade when the pose changes mid-clip
+            }
+            .animation(.easeInOut(duration: 0.25), value: videoPlaylist)
+        } else if style == .video && reduceMotion && MascotVideoClip.name(for: pose) != nil {
+            layer(MascotVideoClip.still)
+        } else if style == .rig || style == .video {
+            let a = MascotRig.angles(pose: pose, time: t, level: level, reaction: reaction?.kind, elapsed: elapsed,
+                                     reduceMotion: reduceMotion)
+            ZStack {
+                layer("mascot.rig.tail").rotationEffect(.degrees(a.tail), anchor: anchor(MascotRig.tailPivot))
+                ZStack {
+                    layer("mascot.rig.head")
+                    layer("mascot.rig.earL").rotationEffect(.degrees(a.earL), anchor: anchor(MascotRig.earLPivot))
+                    layer("mascot.rig.earR").rotationEffect(.degrees(a.earR), anchor: anchor(MascotRig.earRPivot))
+                }
+                .rotationEffect(.degrees(a.head), anchor: anchor(MascotRig.headPivot))
+                layer("mascot.rig.body")
+            }
+            .compositingGroup()
+        } else {
+            layer(frame ?? pose.clip(style).stillFrame.name)
+        }
+    }
+
+    /// Every rig layer shares one canvas, so the same fit keeps the parts lined up.
+    private func layer(_ name: String) -> some View {
+        Image(name).resizable().interpolation(.high).scaledToFit()
+    }
+
+    private func anchor(_ p: (x: Double, y: Double)) -> UnitPoint { UnitPoint(x: p.x, y: p.y) }
 
     /// Cancelled automatically when the view disappears or the pose changes.
     private func play() async {
-        let (intro, loop) = pose.clip.playlist(reduceMotion: reduceMotion)
-        frame = pose.clip.stillFrame.name
+        guard style == .frames || style == .puppet else { return }
+        let clip = pose.clip(style)
+        let (intro, loop) = clip.playlist(reduceMotion: reduceMotion)
+        frame = clip.stillFrame.name
         for f in intro {
             frame = f.name
             guard (try? await Task.sleep(for: f.duration)) != nil else { return }

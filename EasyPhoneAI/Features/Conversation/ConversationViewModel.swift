@@ -549,6 +549,12 @@ import OSLog
     private func runLocal(_ intent: LocalIntent, draft: TaskDraft) async {
         Self.logger.info("local intent")                                  // D-059: no content
         switch intent {
+        case .checkMail, .calendarDay, .reminders:                        // a screen opens: answered (1G.10)
+            draft.markAnswered(nil)
+            repository.save(draft)
+        default: break
+        }
+        switch intent {
         case .checkMail(let codesOnly):
             mailCodesOnly = codesOnly
             opensMail = true
@@ -642,6 +648,10 @@ import OSLog
             await resolveThenAdvance(draft)
             return
         }
+        if parsed.unsupported != nil {                    // answered without steps: not an unsent request (1G.10)
+            draft.markAnswered(parsed.requestId)
+            repository.save(draft)
+        }
         if let u = parsed.unsupported, u.reason == "viewCalendar" {
             calendarDay = u.date ?? Self.dayString(now(), timeZoneId: draft.timeZoneId)
         } else if let u = parsed.unsupported, u.reason == "checkMail" {
@@ -657,6 +667,8 @@ import OSLog
             await resolveThenAdvance(draft)
         } else {
             // Every step dropped on device (unknown kind / pair, D-150): nothing to review → "Chưa hỗ trợ" (spec §11).
+            draft.markAnswered(parsed.requestId)
+            repository.save(draft)
             showUnsupported(.init(reason: "other", message: nil))
         }
     }

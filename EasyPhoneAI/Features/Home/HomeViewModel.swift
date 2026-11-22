@@ -35,13 +35,22 @@ import Observation
     private(set) var unfinished: [DraftRow] = []
     private(set) var hasAnyDraft = false
 
+    /// D-327 S02 v2: what Khoai's bubble says (catalog key) and the touch reaction it plays. Touches only show a
+    /// tip or a reply; they never start a task.
+    private(set) var khoaiLine = "home.greeting"
+    private(set) var khoaiReaction: MascotReactionEvent?
+    private var tipIndex: Int?
+    var showsTip: Bool { tipIndex != nil && khoaiLine.hasPrefix("khoai.tip.") }
+
     private let repository: any TaskRepository
+    private let tts: (any TTSService)?
     private let now: () -> Date
     private let rowBuilder: DraftRowBuilder
 
-    init(repository: any TaskRepository, localData: any LocalDataRepository,
+    init(repository: any TaskRepository, localData: any LocalDataRepository, tts: (any TTSService)? = nil,
          now: @escaping () -> Date = { .now }, timeZone: TimeZone = .current) {
         self.repository = repository
+        self.tts = tts
         self.now = now
         settings = localData.settings()
         rowBuilder = DraftRowBuilder(now: now, timeZone: timeZone)
@@ -53,6 +62,37 @@ import Observation
     var quickLinks: [QuickLink] { settings.simpleMode ? [.calendar] : QuickLink.allCases }
 
     var showsMascot: Bool { settings.petEnabled }
+
+    // MARK: - Khoai (D-327, S02 v2)
+
+    /// Tap Khoai or "Gợi ý khác" → the next tip + a little jump.
+    func nextTip() {
+        tts?.stop()
+        let next = KhoaiLines.tip(after: tipIndex)
+        tipIndex = next.index
+        khoaiLine = next.key
+        khoaiReaction = MascotReactionEvent(kind: .tap, id: (khoaiReaction?.id ?? 0) + 1)
+    }
+
+    /// Stroke Khoai → hearts + "Hihi, nhột quá!".
+    func petKhoai() {
+        khoaiLine = KhoaiLines.petReply
+        khoaiReaction = MascotReactionEvent(kind: .pet, id: (khoaiReaction?.id ?? 0) + 1)
+    }
+
+    /// "Đọc to" under a tip: reads the tip with the user's voice settings.
+    func readTip() {
+        guard showsTip, let tts else { return }
+        let text = UserMessage(key: khoaiLine).text
+        Task { [settings] in await tts.speak(text, rate: settings.speechRate) }
+    }
+
+    /// Leaving S02 stops the voice and goes back to the greeting next time.
+    func onDisappear() {
+        tts?.stop()
+        khoaiLine = "home.greeting"
+        tipIndex = nil
+    }
 
     // TODO(spec): AppSettings has no "first run" flag (P-36); the tip shows while the phone has no drafts at all (owner OK 2026-11-10, DOC-28).
     var showsFirstRunTip: Bool { !hasAnyDraft }

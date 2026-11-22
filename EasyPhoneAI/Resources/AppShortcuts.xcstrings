@@ -1,0 +1,92 @@
+{
+  "sourceLanguage" : "vi",
+  "strings" : {
+    "${applicationName}" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "vi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Ê ${applicationName}" : {
+      "localizations" : {
+        "vi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Ê ${applicationName}",
+              "Ê ${applicationName} ơi",
+              "${applicationName} ơi"
+            ]
+          }
+        }
+      }
+    },
+    "Hỏi ${applicationName}" : {
+      "localizations" : {
+        "vi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Hỏi ${applicationName}",
+              "Hỏi ${applicationName} giúp tôi",
+              "Hỏi ${applicationName} một việc"
+            ]
+          }
+        }
+      }
+    },
+    "Mở ${applicationName}" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "vi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Mở ${applicationName}",
+              "Mở app ${applicationName}",
+              "Mở ứng dụng ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Nhờ ${applicationName}" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "vi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Nhờ ${applicationName}",
+              "Nhờ ${applicationName} giúp",
+              "${applicationName} giúp tôi"
+            ]
+          }
+        }
+      }
+    },
+    "Nói với ${applicationName}" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "vi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Nói với ${applicationName}",
+              "Nói chuyện với ${applicationName}",
+              "Gọi ${applicationName}"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

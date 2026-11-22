@@ -38,6 +38,20 @@ extension TaskDraft {
     /// DATA_MODEL §8: the highest-priority group among the steps.
     var overallStatus: HistoryGroup { steps.map(\.state.historyGroup).min() ?? .needsYou }
 
+    /// 1G.10 (D-104): a request with text that never got an answer — no steps and no `serverRequestId` (offline,
+    /// app killed while sending, voice transcript never sent). An answer without steps (Chưa hỗ trợ, a screen opened)
+    /// sets `serverRequestId` (`markAnswered`), so it is not listed.
+    var isUnanswered: Bool {
+        steps.isEmpty && serverRequestId == nil && !isArchived
+            && !originalInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// Marks a request answered without steps; `requestId` from the backend, or `local` (on-device answer, D-313).
+    static let answeredLocally = "local"
+    func markAnswered(_ requestId: String?) {
+        if serverRequestId == nil { serverRequestId = requestId ?? Self.answeredLocally }
+    }
+
     /// "Việc chưa xong" (Home list, widget count, toasts, D-244).
     var isUnfinished: Bool { overallStatus == .needsYou || overallStatus == .waiting }
 

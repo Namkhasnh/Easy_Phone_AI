@@ -30,6 +30,18 @@ struct PurchaseTests {
         #expect(store.finished == ["jws.403"])                                      // never finished: redelivered
     }
 
+    /// Owner 2026-11-22: a refund in Transaction Manager never reached the backend → at launch the latest transaction
+    /// of each product is verified again and the last answered plan wins; nothing to send → no call.
+    @Test func launchReconcileSendsTheLatestTransactions() async {
+        let api = MockAPIClient(), store = MockPurchaseService()
+        #expect(await BillingSync.reconcile(api: api, purchases: store) == nil && api.verifyCalls.isEmpty)
+        store.setLatest(["jws.refunded", "jws.yearly"])
+        #expect(await BillingSync.reconcile(api: api, purchases: store) == .mock)
+        #expect(api.verifyCalls == ["jws.refunded", "jws.yearly"] && store.finished == ["jws.refunded", "jws.yearly"])
+        api.setVerify(.failure(.network(.offline)))
+        #expect(await BillingSync.reconcile(api: api, purchases: store) == nil)    // kept for the next launch
+    }
+
     // The real StoreKit check against `Config/EasyPhone.storekit` is done by running the app from Xcode (scheme →
     // StoreKit Configuration) once the paywall exists (1F.6): `SKTestSession` returned no product even for a minimal
     // file in this hosted test target (probe 2026-11-18), so it cannot be a unit test here.

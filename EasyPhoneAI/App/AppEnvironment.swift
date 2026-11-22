@@ -83,10 +83,15 @@ struct AppEnvironment: Sendable {
                               gmail: gmail, purchases: LivePurchaseService())
     }
 
-    static func mock(_ scenario: MockScenario = .default) -> AppEnvironment {
-        let drafts = MockTaskRepository()
+    /// `options` / `drafts`: 1G.10 resilience UI tests only (on-disk drafts, offline backend, denied permissions).
+    static func mock(_ scenario: MockScenario = .default, options: MockScenario.UITestOptions = .init(),
+                     drafts storedDrafts: (any TaskRepository)? = nil) -> AppEnvironment {
+        let drafts: any TaskRepository = storedDrafts ?? MockTaskRepository()
+        let denied: Set<Capability> = options.denied ? [.calendar, .reminders, .contacts] : []
         let permissions = scenario == .uiTest
-            ? MockPermissionManager(Dictionary(uniqueKeysWithValues: Capability.allCases.map { ($0, .granted) }))
+            ? MockPermissionManager(Dictionary(uniqueKeysWithValues: Capability.allCases.map {
+                ($0, denied.contains($0) ? PermissionStatus.denied : .granted)
+            }))
             : MockPermissionManager()
         let calendar = MockCalendarService()
         let reminders = MockRemindersService()
@@ -95,8 +100,9 @@ struct AppEnvironment: Sendable {
         let system = MockSystemService()
         let places = MockPlacesService()
         let auth = scenario == .uiTest ? MockAuthService(initial: .signedIn(userId: MockAuthService.userId)) : MockAuthService()
-        let api = scenario == .uiTest ? MockAPIClient(parseRouter: uiTestParse, extract: .success(uiTestExtract()))
-                                      : MockAPIClient()
+        let api = scenario != .uiTest ? MockAPIClient()
+            : options.offline ? MockAPIClient(parse: .failure(.network(.offline)))
+            : MockAPIClient(parseRouter: uiTestParse, extract: .success(uiTestExtract()))
         let gmail = MockGmailService(accounts: scenario == .uiTest ? [MockGmailService.sample] : [])
         return AppEnvironment(config: .mock, auth: auth, api: api, drafts: drafts,
                               localData: localData,
@@ -180,6 +186,18 @@ enum MockScenario: String, Sendable, Hashable {
     /// this never changes the wiring of a normal launch (D-208).
     static func fromLaunchArguments(_ defaults: UserDefaults = .standard) -> MockScenario? {
         defaults.string(forKey: "uiTestScenario").flatMap(MockScenario.init(rawValue:))
+    }
+
+    /// 1G.10 resilience UI tests: `-uiTestDisk YES` (drafts in an on-disk test store that survives a relaunch),
+    /// `-uiTestResetStore YES` (start it empty), `-uiTestOffline YES` (`/v1/parse` fails offline),
+    /// `-uiTestDenied YES` (calendar / reminders / contacts denied). Only read together with `-uiTestScenario`.
+    struct UITestOptions: Sendable, Hashable {
+        var disk = false, resetStore = false, offline = false, denied = false
+
+        static func fromLaunchArguments(_ defaults: UserDefaults = .standard) -> UITestOptions {
+            UITestOptions(disk: defaults.bool(forKey: "uiTestDisk"), resetStore: defaults.bool(forKey: "uiTestResetStore"),
+                          offline: defaults.bool(forKey: "uiTestOffline"), denied: defaults.bool(forKey: "uiTestDenied"))
+        }
     }
 }
 
