@@ -109,6 +109,8 @@ struct RootView: View {
             let code = (error as? AppError)?.code ?? "cancelled"
             Self.logger.info("me failed: \(code, privacy: .public)")
         }
+        // A refund / expiry / renewal StoreKit delivered while the app was closed or the verify failed (owner 2026-11-22).
+        if let me = await BillingSync.reconcile(api: env.api, purchases: env.purchases) { appState.apply(me: me) }
     }
 
     private static let logger = Logger(subsystem: "vn.namkhanh.easyphone", category: "root")

@@ -9,6 +9,9 @@ protocol PurchaseService: Sendable {
     func purchase(_ id: String, appAccountToken: UUID) async throws -> PurchaseOutcome
     /// "Khôi phục giao dịch": the signed transactions of every current entitlement.
     func currentEntitlementJWS() async -> [String]
+    /// The latest transaction of each Premium product, refunded / expired ones included (`Transaction.latest`).
+    /// Sent at launch so a refund or renewal the app missed (closed, offline, a failed verify) still reaches the backend.
+    func latestJWS() async -> [String]
     /// From `Transaction.updates`, observed from launch for the whole process (renewals, Ask to Buy, refunds).
     var transactionUpdates: AsyncStream<String> { get }
     /// After `200` / `403` from the backend (API_CONTRACT §8.1); never after a network error or `5xx`.

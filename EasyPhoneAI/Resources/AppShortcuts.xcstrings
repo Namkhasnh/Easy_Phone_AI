@@ -1,21 +1,8 @@
 {
   "sourceLanguage" : "vi",
   "strings" : {
-    "Ê ${applicationName}" : {
-      "localizations" : {
-        "vi" : {
-          "stringSet" : {
-            "state" : "translated",
-            "values" : [
-              "Ê ${applicationName}",
-              "Ê ${applicationName} ơi",
-              "${applicationName} ơi"
-            ]
-          }
-        }
-      }
-    },
     "${applicationName}" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringSet" : {
@@ -27,29 +14,15 @@
         }
       }
     },
-    "Mở ${applicationName}" : {
+    "Ê ${applicationName}" : {
       "localizations" : {
         "vi" : {
           "stringSet" : {
             "state" : "translated",
             "values" : [
-              "Mở ${applicationName}",
-              "Mở app ${applicationName}",
-              "Mở ứng dụng ${applicationName}"
-            ]
-          }
-        }
-      }
-    },
-    "Nói với ${applicationName}" : {
-      "localizations" : {
-        "vi" : {
-          "stringSet" : {
-            "state" : "translated",
-            "values" : [
-              "Nói với ${applicationName}",
-              "Nói chuyện với ${applicationName}",
-              "Gọi ${applicationName}"
+              "Ê ${applicationName}",
+              "Ê ${applicationName} ơi",
+              "${applicationName} ơi"
             ]
           }
         }
@@ -69,7 +42,23 @@
         }
       }
     },
+    "Mở ${applicationName}" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "vi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Mở ${applicationName}",
+              "Mở app ${applicationName}",
+              "Mở ứng dụng ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
     "Nhờ ${applicationName}" : {
+      "extractionState" : "stale",
       "localizations" : {
         "vi" : {
           "stringSet" : {
@@ -78,6 +67,21 @@
               "Nhờ ${applicationName}",
               "Nhờ ${applicationName} giúp",
               "${applicationName} giúp tôi"
+            ]
+          }
+        }
+      }
+    },
+    "Nói với ${applicationName}" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "vi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Nói với ${applicationName}",
+              "Nói chuyện với ${applicationName}",
+              "Gọi ${applicationName}"
             ]
           }
         }
