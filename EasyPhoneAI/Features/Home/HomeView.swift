@@ -206,7 +206,7 @@ struct HomeView: View {
                     .fixedSize(horizontal: false, vertical: true)
             } else {
                 ForEach(viewModel.unfinished) { row in
-                    Button { router.push(.review(row.id)) } label: { DraftRowView(row: row) }
+                    Button { router.push(row.route) } label: { DraftRowView(row: row) }
                         .buttonStyle(.plain)
                         .padding(.horizontal, Tokens.Space.l)
                         .background(Tokens.Colors.surface, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))

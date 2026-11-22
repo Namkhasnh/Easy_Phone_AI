@@ -8,7 +8,12 @@ struct DraftRow: Identifiable, Hashable {
     let time: String
     let badgeState: TaskState
     let badgeArgs: [String]
-    let stepsText: String?       // "{done}/{total} bước" for multi-step drafts
+    let stepsText: String?       // "{done}/{total} bước" for multi-step drafts, or `history.notSent`
+    /// 1G.10: a request that never got an answer (offline, app killed while sending, left before "Gửi") has no steps;
+    /// it opens S03 again (`Route.conversation(id)`), which sends a typed one at once.
+    var opensConversation = false
+
+    var route: Route { opensConversation ? .conversation(id) : .review(id) }
 }
 
 /// Builds `DraftRow`s. Shared by `HistoryViewModel` and `HomeViewModel` so both lists read the same.
@@ -23,9 +28,16 @@ struct DraftRowBuilder {
         calendar = cal
     }
 
-    /// `nil` for a draft with no steps (nothing to open yet).
+    /// A draft with no steps: a row only while its request is still unanswered (`isUnanswered`), else `nil`.
     func row(_ draft: TaskDraft) -> DraftRow? {
-        guard let current = draft.currentStep else { return nil }
+        guard let current = draft.currentStep else {
+            guard draft.isUnanswered else { return nil }
+            let text = draft.originalInput.trimmingCharacters(in: .whitespacesAndNewlines)
+            let short = text.count > 60 ? String(text.prefix(57)) + "…" : text
+            return DraftRow(id: draft.id, symbol: "text.bubble", summary: "“\(short)”", time: relativeTime(draft.updatedAt),
+                            badgeState: .draft, badgeArgs: [], stepsText: UserMessage(key: "history.notSent").text,
+                            opensConversation: true)
+        }
         // "StateBadge of the draft's group step": the first step (by order) whose group is the draft's group.
         let groupStep = draft.steps.sorted { $0.order < $1.order }
             .first { $0.state.historyGroup == draft.overallStatus } ?? current

@@ -73,4 +73,35 @@ struct HistoryTests {
     @Test func emptyHistory() {
         #expect(model().isEmpty)
     }
+
+    /// 1G.10 (D-104): a request that never got an answer (offline, killed while sending) is listed and reopens S03;
+    /// an answered one without steps ("Chưa hỗ trợ", a screen opened) and an empty one are not.
+    @Test func unansweredRequestIsListedAndOpensConversation() throws {
+        let unsent = TaskDraft(inputMode: .text, originalInput: "Nhắn anh Minh là chiều nay em đến muộn")
+        let answered = TaskDraft(inputMode: .text, originalInput: "Đặt xe đi sân bay")
+        answered.markAnswered("req_1")
+        let empty = TaskDraft(inputMode: .voice, originalInput: "  ")
+        for d in [unsent, answered, empty] { repo.save(d) }
+        let rows = DraftRowBuilder(now: { Self.now }, timeZone: Self.tz)
+        let row = try #require(rows.row(unsent))
+        #expect(row.opensConversation && row.route == .conversation(unsent.id))
+        #expect(row.summary.contains("Nhắn anh Minh") && row.stepsText == "Chưa gửi được. Bấm để gửi lại.")
+        #expect(rows.row(answered) == nil && rows.row(empty) == nil)
+        #expect(model().sections.flatMap(\.rows).map(\.id) == [unsent.id])
+    }
+
+    /// Requests saved before this change were never marked; the launch marks them once so they do not show up.
+    @Test func legacyRequestsAreMarkedOnce() async throws {
+        let old = TaskDraft(inputMode: .text, originalInput: "Đặt đồ ăn")
+        repo.save(old)
+        let defaults = try #require(UserDefaults(suiteName: "legacy-\(UUID())"))
+        let verifier = LaunchVerifier(repository: repo, engine: TaskEngine(repository: repo, executors: [:]),
+                                      defaults: defaults)
+        verifier.markLegacyRequestsOnce()
+        #expect(!old.isUnanswered)
+        let later = TaskDraft(inputMode: .text, originalInput: "Nhắn mẹ")
+        repo.save(later)
+        verifier.markLegacyRequestsOnce()
+        #expect(later.isUnanswered)                                   // only once
+    }
 }

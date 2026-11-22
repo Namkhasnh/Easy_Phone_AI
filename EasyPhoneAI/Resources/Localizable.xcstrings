@@ -2593,6 +2593,18 @@
         }
       }
     },
+    "history.notSent" : {
+      "comment" : "1G.10 unanswered request row (S02 / S14)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa gửi được. Bấm để gửi lại."
+          }
+        }
+      }
+    },
     "history.time.today" : {
       "comment" : "UI_SCREENS S14; %@ = {HH:mm}",
       "extractionState" : "manual",

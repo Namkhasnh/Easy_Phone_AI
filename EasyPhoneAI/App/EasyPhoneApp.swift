@@ -18,13 +18,18 @@ import SwiftUI
         ListenRequests.onRequest = { state.startListeningRequested = true }
         // XCUITest (ARCHITECTURE §13): `-uiTestScenario <name>` → mocks + in-memory store, never real device data.
         let scenario = MockScenario.fromLaunchArguments()
+        let options = MockScenario.UITestOptions.fromLaunchArguments()
         do {
-            modelContainer = try ModelContainerFactory.make(inMemory: scenario != nil)
+            modelContainer = scenario != nil && options.disk
+                ? try ModelContainerFactory.makeUITestStore(reset: options.resetStore)
+                : try ModelContainerFactory.make(inMemory: scenario != nil)
         } catch {
             // TODO(spec): store open failure (corrupt / migration) has no screen; drafts must never be lost (D-104).
             fatalError("SwiftData container failed: \(error)")
         }
-        let env = scenario.map { AppEnvironment.mock($0) } ?? AppEnvironment.live(container: modelContainer)
+        let stored: (any TaskRepository)? = options.disk ? LiveTaskRepository(container: modelContainer) : nil
+        let env = scenario.map { AppEnvironment.mock($0, options: options, drafts: stored) }
+            ?? AppEnvironment.live(container: modelContainer)
         self.env = env
         KhoaiPanel.env = env                                     // D-325: "Hỏi Khoai" runs in this process
         KhoaiPanel.appState = state

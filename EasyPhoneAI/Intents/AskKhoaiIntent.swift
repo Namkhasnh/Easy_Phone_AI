@@ -117,6 +117,8 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
             throw continueInApp(.conversation(draft.id), intent: intent)
         }
         if let u = parsed.unsupported {
+            draft.markAnswered(parsed.requestId)                       // not an unsent request in S02 (1G.10)
+            env.drafts.save(draft)
             switch u.reason {
             case "viewCalendar":
                 return try await showDay(u.date ?? ConversationViewModel.dayString(.now, timeZoneId: zone.identifier),
@@ -145,6 +147,8 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
     func finish(_ parsed: ParsedDraft, in draft: TaskDraft, intent: AskKhoaiIntent) async throws -> Reply {
         let defaults = DraftBuilder.Defaults(mapsApp: env.localData.settings().preferredMapsApp)
         guard env.engine.applyParsed(parsed, to: draft, defaults: defaults) else {
+            draft.markAnswered(parsed.requestId)
+            env.drafts.save(draft)
             return Self.failed("intent.ask.unsupported", hint: "intent.ask.unsupported.hint")
         }
         await env.engine.resolveDevice(in: draft)
