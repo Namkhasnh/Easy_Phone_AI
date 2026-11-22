@@ -22,6 +22,21 @@ struct KhoaiPanelTests {
         #expect(summary.lines.first == "Nhắc: Uống thuốc")
         #expect(summary.lines.count == 2 && summary.lines[1].contains("20:00"))
         #expect(summary.spoken.hasPrefix("Nhắc: Uống thuốc, "))
+        #expect(summary.kind == .reminder && summary.title == "Uống thuốc")
+        #expect(summary.detail?.contains("20:00") == true)
+    }
+
+    /// Owner 2026-11-22: iOS draws the dialog as a header over the snippet → it shows the short line, Siri reads all.
+    @Test func panelHeaderIsShortAndNeverRepeatsTheCard() throws {
+        let (s, d) = try step("reminder", "create", [("title", "Ăn cơm"), ("dueDate", "2026-11-22T21:00:00+07:00")])
+        let summary = KhoaiSnippet.summary(of: s, timeZoneId: d.timeZoneId)
+        let reply = KhoaiPanel.Reply(full: "Xong rồi! \(summary.spoken)", shown: "Xong rồi!",
+                                     view: KhoaiSnippet(.done([summary])))
+        #expect(reply.shown == "Xong rồi!" && reply.full.contains("Ăn cơm"))
+        let failed = KhoaiPanel.failed("intent.ask.failed", hint: "intent.ask.failed.hint")
+        #expect(failed.shown == UserMessage(key: "intent.ask.failed").text)
+        guard case .failed(let hint) = failed.view.content else { Issue.record("not a failed card"); return }
+        #expect(hint != failed.shown)
     }
 
     @Test func callAndDirectionsSummaries() throws {

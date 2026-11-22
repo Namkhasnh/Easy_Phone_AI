@@ -25,7 +25,7 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
         let panel = KhoaiPanel(env: env, state: state, text: text, zone: zone)
         KhoaiPanel.logger.info("ask khoai")                                // D-059: no content
         let reply = try await answer(panel, text: text, zone: zone)
-        return .result(dialog: IntentDialog(stringLiteral: reply.dialog), view: reply.view)
+        return .result(dialog: reply.dialog, view: reply.view)
     }
 
     @MainActor
@@ -70,8 +70,28 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
     let text: String
     let zone: TimeZone
 
-    /// What the panel says and shows at the end.
-    struct Reply { let dialog: String; let view: KhoaiSnippet }
+    /// What the panel says and shows at the end. `shown` = iOS's header line over the snippet (short, never repeated
+    /// in the view); `full` = what Siri reads aloud (with the item details, for voice-only use).
+    struct Reply {
+        let full: String
+        let shown: String
+        let view: KhoaiSnippet
+
+        init(full: String, shown: String, view: KhoaiSnippet) { self.full = full; self.shown = shown; self.view = view }
+        init(_ message: String, view: KhoaiSnippet) { self.init(full: message, shown: message, view: view) }
+
+        var dialog: IntentDialog { Self.dialog(full: full, shown: shown) }
+
+        static func dialog(full: String, shown: String) -> IntentDialog {
+            full == shown ? IntentDialog(stringLiteral: full)
+                : IntentDialog(full: LocalizedStringResource(stringLiteral: full),
+                               supporting: LocalizedStringResource(stringLiteral: shown))
+        }
+    }
+
+    static func failed(_ key: String, hint: String) -> Reply {
+        Reply(UserMessage(key: key).text, view: KhoaiSnippet(.failed(hint: UserMessage(key: hint).text)))
+    }
 
     /// The panel's draft: typed, so if it continues in the app S03 sends / resumes it like a typed request (D-104).
     func newDraft() -> TaskDraft {
@@ -104,8 +124,7 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
             case "checkMail":
                 throw continueInApp(.mail(codesOnly: LocalIntent.wantsCode(text)), intent: intent)
             default:
-                let message = UserMessage(key: "intent.ask.unsupported").text           // spec §11 "Chưa hỗ trợ"
-                return Reply(dialog: message, view: KhoaiSnippet(.failed(message)))
+                return Self.failed("intent.ask.unsupported", hint: "intent.ask.unsupported.hint")   // spec §11
             }
         }
         return try await finish(parsed, in: draft, intent: intent)
@@ -126,8 +145,7 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
     func finish(_ parsed: ParsedDraft, in draft: TaskDraft, intent: AskKhoaiIntent) async throws -> Reply {
         let defaults = DraftBuilder.Defaults(mapsApp: env.localData.settings().preferredMapsApp)
         guard env.engine.applyParsed(parsed, to: draft, defaults: defaults) else {
-            let message = UserMessage(key: "intent.ask.unsupported").text
-            return Reply(dialog: message, view: KhoaiSnippet(.failed(message)))
+            return Self.failed("intent.ask.unsupported", hint: "intent.ask.unsupported.hint")
         }
         await env.engine.resolveDevice(in: draft)
         let steps = draft.steps.sorted { $0.order < $1.order }
@@ -146,16 +164,15 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
             throw continueInApp(.conversation(draft.id), intent: intent)        // S03 resumes: follow-up / S04
         }
         let summaries = steps.map { KhoaiSnippet.summary(of: $0, timeZoneId: draft.timeZoneId) }
-        let merged = KhoaiSnippet.Summary(symbol: summaries.count == 1 ? summaries[0].symbol : "list.bullet",
-                                          lines: summaries.flatMap(\.lines),
-                                          spoken: summaries.map(\.spoken).joined(separator: ". "))
+        let spoken = summaries.map(\.spoken).joined(separator: ". ")
         // D-326 (owner 2026-11-20): "Làm luôn, không cần xác nhận" (D-299) in the panel = no confirmation for safe
         // creates; the done card has "Hoàn tác" instead of the in-app 3 s countdown.
         let auto = env.localData.settings().autoConfirm && steps.allSatisfy(Self.panelKind)
-        if auto { return await runAll(steps, draft: draft, merged: merged, undo: true) }
+        if auto { return await runAll(steps, draft: draft, summaries: summaries, undo: true) }
         do {
             try await intent.requestConfirmation(
-                result: .result(dialog: IntentDialog(stringLiteral: merged.spoken), view: KhoaiSnippet(.draft(merged))),
+                result: .result(dialog: Reply.dialog(full: spoken, shown: UserMessage(key: "intent.ask.confirm").text),
+                                view: KhoaiSnippet(.draft(summaries))),
                 confirmationActionName: .add, showPrompt: false)
         } catch {
             for step in steps { env.engine.cancel(stepId: step.id, in: draft) }   // "Hủy": nothing done
@@ -169,10 +186,10 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
                 appState.pendingRoute = .review(draft.id)
             }
         }
-        return await runAll(steps, draft: draft, merged: merged, undo: false)
+        return await runAll(steps, draft: draft, summaries: summaries, undo: false)
     }
 
-    private func runAll(_ steps: [TaskStep], draft: TaskDraft, merged: KhoaiSnippet.Summary, undo: Bool) async -> Reply {
+    private func runAll(_ steps: [TaskStep], draft: TaskDraft, summaries: [KhoaiSnippet.Summary], undo: Bool) async -> Reply {
         var allDone = true
         for step in steps {
             let result = await env.engine.confirm(stepId: step.id, in: draft)
@@ -180,18 +197,21 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
             allDone = false
             break
         }
-        let message = UserMessage(key: allDone ? "intent.ask.done" : "intent.ask.failed").text
-        let undoId = undo && allDone ? draft.id.uuidString : nil
-        return Reply(dialog: message, view: KhoaiSnippet(allDone ? .done(merged, undoDraftId: undoId) : .failed(message)))
+        guard allDone else { return Self.failed("intent.ask.failed", hint: "intent.ask.failed.hint") }
+        let message = UserMessage(key: "intent.ask.done").text
+        let spoken = summaries.map(\.spoken).joined(separator: ". ")
+        return Reply(full: "\(message) \(spoken)", shown: message,
+                     view: KhoaiSnippet(.done(summaries, undoDraftId: undo ? draft.id.uuidString : nil)))
     }
 
     /// D-326 "Hoàn tác": each item the draft created gets a delete step, confirmed by this tap (D-108: a tap, never
     /// voice). Through `TaskEngine` like S11 / S12 deletes, so history shows both.
     func undo(draftId: UUID) async -> Reply {
         guard let draft = env.drafts.draft(draftId) else {
-            let message = UserMessage(key: "intent.ask.failed").text
-            return Reply(dialog: message, view: KhoaiSnippet(.failed(message)))
+            return Self.failed("intent.ask.failed", hint: "intent.ask.failed.hint")
         }
+        let removed = draft.steps.sorted { $0.order < $1.order }.filter { $0.state == .succeeded }
+            .map { KhoaiSnippet.summary(of: $0, timeZoneId: draft.timeZoneId) }
         var ok = true
         for step in draft.steps where step.state == .succeeded {
             var undoDraft: TaskDraft?
@@ -207,8 +227,9 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
                 continue
             }
         }
-        let message = UserMessage(key: ok ? "intent.ask.undone" : "intent.ask.failed").text
-        return Reply(dialog: message, view: KhoaiSnippet(ok ? .undone(message) : .failed(message)))
+        guard ok else { return Self.failed("intent.ask.failed", hint: "intent.ask.failed.hint") }
+        return Reply(full: UserMessage(key: "intent.ask.undone").text, shown: UserMessage(key: "intent.ask.undone.title").text,
+                     view: KhoaiSnippet(.undone(removed)))
     }
 
     /// "Xem lịch ngày mai": the day's events in the panel (read only). No permission yet → S11 in the app.
@@ -218,11 +239,14 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
             throw continueInApp(.calendarDay(day), intent: intent)
         }
         let rows = events.sorted { $0.start < $1.start }.prefix(6).map { e in
-            e.isAllDay ? e.title : "\(e.start.formatted(Date.FormatStyle(date: .omitted, time: .shortened, timeZone: zone))) \(e.title)"
+            KhoaiSnippet.Row(time: e.isAllDay ? nil
+                                : e.start.formatted(Date.FormatStyle(date: .omitted, time: .shortened, timeZone: zone)),
+                             title: e.title)
         }
         let title = UserMessage(key: events.isEmpty ? "intent.ask.day.empty" : "intent.ask.day",
                                 args: [Self.dayLabel(range.start, zone)]).text
-        return Reply(dialog: title, view: KhoaiSnippet(.list(title: title, rows: Array(rows))))
+        let spoken = rows.map { [$0.time, $0.title].compactMap { $0 }.joined(separator: " ") }.joined(separator: ". ")
+        return Reply(full: spoken.isEmpty ? title : "\(title). \(spoken)", shown: title, view: KhoaiSnippet(.list(Array(rows))))
     }
 
     func continueInApp(_ route: Route, intent: AskKhoaiIntent) -> Error {
@@ -250,93 +274,185 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
 
 import OSLog
 
-/// The panel content (a static SwiftUI snapshot drawn by iOS; no animation). Khoai + one card.
+/// The panel content under iOS's own header (the dialog's `supporting` text) and above the system buttons
+/// (owner 2026-11-22: real panel = header + divider + this view + "Done" / "Thêm"). A static snapshot (no animation):
+/// a still Khoai cut from the video clips + one card per item. The header already says the short message, so the
+/// view never repeats it.
 struct KhoaiSnippet: View {
+    enum Kind: Sendable, Hashable { case reminder, event, call, place, other }
+
     struct Summary: Sendable, Hashable {
+        var kind: Kind
         var symbol: String
+        var title: String
+        var detail: String?
+        /// "Nhắc: Uống thuốc" + detail: what Siri reads aloud.
         var lines: [String]
-        var spoken: String
+        var spoken: String { lines.joined(separator: ", ") }
     }
 
+    struct Row: Sendable, Hashable { var time: String?; var title: String }
+
     enum Content {
-        case draft(Summary), done(Summary, undoDraftId: String? = nil), failed(String), undone(String)
-        case list(title: String, rows: [String])
+        case draft([Summary]), done([Summary], undoDraftId: String? = nil), undone([Summary])
+        case failed(hint: String)
+        case list([Row])
     }
 
     let content: Content
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     init(_ content: Content) { self.content = content }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(pose)
-                .resizable()
-                .interpolation(.none)
-                .scaledToFit()
-                .frame(width: 56, height: 56)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 6) {
-                switch content {
-                case .draft(let s), .done(let s, _):
-                    Label {
-                        VStack(alignment: .leading, spacing: 2) {
-                            ForEach(s.lines, id: \.self) { Text(verbatim: $0) }
-                        }
-                    } icon: { Image(systemName: isDone ? "checkmark.circle.fill" : s.symbol) }
-                    .font(.headline)
-                    if case .done(_, let undoId?) = content {
-                        undoButton(undoId)
+        VStack(alignment: .leading, spacing: Tokens.Space.m) {
+            HStack(alignment: .center, spacing: Tokens.Space.m) {
+                if typeSize < .accessibility1 {
+                    Image(pose)
+                        .resizable()
+                        .interpolation(.high)
+                        .scaledToFit()
+                        .frame(width: 76, height: 76)
+                        .accessibilityHidden(true)
+                }
+                VStack(alignment: .leading, spacing: Tokens.Space.s) { cards }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            if case .done(_, let undoId?) = content { undoButton(undoId) }
+        }
+        .padding(.horizontal, Tokens.Space.l)
+        .padding(.vertical, Tokens.Space.m)
+    }
+
+    @ViewBuilder private var cards: some View {
+        switch content {
+        case .draft(let items): ForEach(items, id: \.self) { card($0, status: nil) }
+        case .done(let items, _): ForEach(items, id: \.self) { card($0, status: .done) }
+        case .undone(let items): ForEach(items, id: \.self) { card($0, status: .removed) }
+        case .failed(let hint):
+            Text(verbatim: hint)
+                .font(.body)
+                .fixedSize(horizontal: false, vertical: true)
+        case .list(let rows):
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(Array(rows.enumerated()), id: \.offset) { i, row in
+                    if i > 0 { Divider() }
+                    HStack(alignment: .firstTextBaseline, spacing: Tokens.Space.m) {
+                        Text(verbatim: row.time ?? "•")
+                            .font(.callout.weight(.semibold).monospacedDigit())
+                            .foregroundStyle(Color.red)
+                            .frame(minWidth: 48, alignment: .leading)
+                        Text(verbatim: row.title).font(.body.weight(.medium))
                     }
-                case .undone(let message):
-                    Label { Text(verbatim: message) } icon: { Image(systemName: "arrow.uturn.backward.circle") }
-                case .failed(let message):
-                    Label { Text(verbatim: message) } icon: { Image(systemName: "exclamationmark.circle") }
-                case .list(let title, let rows):
-                    Text(verbatim: title).font(.headline)
-                    ForEach(rows, id: \.self) { Text(verbatim: $0).font(.body) }
+                    .padding(.vertical, Tokens.Space.s)
+                }
+            }
+            .padding(.horizontal, Tokens.Space.m)
+            .background(Tokens.Colors.surface.opacity(0.85), in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+        }
+    }
+
+    private enum Status { case done, removed }
+
+    private func card(_ s: Summary, status: Status?) -> some View {
+        HStack(alignment: .top, spacing: Tokens.Space.m) {
+            Image(systemName: s.symbol)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(.white)
+                .frame(width: 40, height: 40)
+                .background(Self.tint(s.kind), in: RoundedRectangle(cornerRadius: 10))
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(Self.label(s.kind))
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Text(verbatim: s.title)
+                    .font(.title3.weight(.bold))
+                    .strikethrough(status == .removed)
+                    .foregroundStyle(status == .removed ? .secondary : .primary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if let detail = s.detail {
+                    Label { Text(verbatim: detail) } icon: { Image(systemName: "clock") }
+                        .font(.callout)
+                        .foregroundStyle(status == .removed ? .secondary : .primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                if let status {
+                    Label { Text(status == .done ? Self.doneLabel(s.kind) : "intent.ask.status.removed") }
+                        icon: { Image(systemName: status == .done ? "checkmark.circle.fill" : "trash") }
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(status == .done ? Tokens.Colors.success : .secondary)
+                        .padding(.top, 2)
                 }
             }
             Spacer(minLength: 0)
         }
-        .padding()
+        .padding(Tokens.Space.m)
+        .background(Tokens.Colors.surface.opacity(0.85), in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+        .accessibilityElement(children: .combine)
     }
-
-    private var isDone: Bool { if case .done = content { true } else { false } }
 
     /// D-326: interactive snippet buttons exist from iOS 26; earlier the item stays (S11 / S12 can delete it).
     @ViewBuilder private func undoButton(_ draftId: String) -> some View {
         if #available(iOS 26.0, *) {
             Button(intent: UndoKhoaiIntent(draftId: draftId)) {
                 Label { Text("intent.ask.undo") } icon: { Image(systemName: "arrow.uturn.backward") }
+                    .font(.body.weight(.semibold))
+                    .frame(maxWidth: .infinity, minHeight: 44)
             }
             .buttonStyle(.bordered)
-            .padding(.top, 4)
+            .tint(Tokens.Colors.primary)
         }
     }
 
     private var pose: String {
         switch content {
-        case .done: "mascot.jumping.00"
-        case .failed: "mascot.failed.00"
-        default: "mascot.waving.00"
+        case .done: "mascot.panel.happy"
+        case .failed: "mascot.panel.sorry"
+        case .draft: "mascot.panel.ask"
+        case .undone, .list: "mascot.panel.calm"
         }
     }
 
-    /// "Nhắc: Uống thuốc" + "20:00 Thứ Năm 20/11" (field formatting as S04).
+    static func tint(_ kind: Kind) -> Color {
+        switch kind {
+        case .reminder: .orange
+        case .event: .red
+        case .call: .green
+        case .place: .blue
+        case .other: Tokens.Colors.primary
+        }
+    }
+
+    static func label(_ kind: Kind) -> LocalizedStringKey {
+        switch kind {
+        case .reminder: "intent.ask.label.reminder"
+        case .event: "intent.ask.label.event"
+        case .call: "intent.ask.label.call"
+        case .place: "intent.ask.label.place"
+        case .other: "intent.ask.label.other"
+        }
+    }
+
+    static func doneLabel(_ kind: Kind) -> LocalizedStringKey {
+        kind == .event ? "intent.ask.status.event" : "intent.ask.status.reminder"
+    }
+
+    /// Title "Uống thuốc", detail "Thứ Năm, 20/11 lúc 20:00" (field formatting as S04); spoken "Nhắc: Uống thuốc, …".
     @MainActor static func summary(of step: TaskStep, timeZoneId: String) -> Summary {
         func value(_ id: String) -> String? {
             step.field(id).flatMap { FieldFormatter.display($0, timeZoneId: timeZoneId) }
         }
-        let (symbol, key, main, detail): (String, String, String?, String?) = switch step.kind {
-        case .reminder: ("bell.fill", "intent.ask.kind.reminder", value("title"), value("dueDate"))
-        case .calendarEvent: ("calendar", "intent.ask.kind.event", value("title"), value("startDate"))
-        case .call: ("phone.fill", "intent.ask.kind.call", value("recipientName"), nil)
-        case .place: ("map.fill", "intent.ask.kind.place", value("name") ?? value("query"), nil)
-        default: ("sparkles", "intent.ask.kind.other", nil, nil)
+        let (kind, symbol, key, main, detail): (Kind, String, String, String?, String?) = switch step.kind {
+        case .reminder: (.reminder, "bell.fill", "intent.ask.kind.reminder", value("title"), value("dueDate"))
+        case .calendarEvent: (.event, "calendar", "intent.ask.kind.event", value("title"), value("startDate"))
+        case .call: (.call, "phone.fill", "intent.ask.kind.call", value("recipientName"), nil)
+        case .place: (.place, "map.fill", "intent.ask.kind.place", value("name") ?? value("query"), nil)
+        default: (.other, "sparkles", "intent.ask.kind.other", nil, nil)
         }
         let first = UserMessage(key: key, args: [main ?? ""]).text
-        let lines = [first] + (detail.map { [$0] } ?? [])
-        return Summary(symbol: symbol, lines: lines, spoken: lines.joined(separator: ", "))
+        return Summary(kind: kind, symbol: symbol, title: main ?? first, detail: detail,
+                       lines: [first] + (detail.map { [$0] } ?? []))
     }
 }
 
@@ -360,10 +476,10 @@ struct UndoKhoaiIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView {
         guard let env = KhoaiPanel.env, let state = KhoaiPanel.appState, let id = UUID(uuidString: draftId) else {
-            let message = UserMessage(key: "intent.ask.failed").text
-            return .result(dialog: IntentDialog(stringLiteral: message), view: KhoaiSnippet(.failed(message)))
+            let reply = KhoaiPanel.failed("intent.ask.failed", hint: "intent.ask.failed.hint")
+            return .result(dialog: reply.dialog, view: reply.view)
         }
         let reply = await KhoaiPanel(env: env, state: state, text: "", zone: .current).undo(draftId: id)
-        return .result(dialog: IntentDialog(stringLiteral: reply.dialog), view: reply.view)
+        return .result(dialog: reply.dialog, view: reply.view)
     }
 }

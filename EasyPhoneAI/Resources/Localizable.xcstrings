@@ -3025,6 +3025,150 @@
         }
       }
     },
+    "intent.ask.confirm" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoai thêm việc này nhé?"
+          }
+        }
+      }
+    },
+    "intent.ask.failed.hint" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Việc vẫn được lưu. Bạn mở EasyPhoneK để xem và làm tiếp nhé."
+          }
+        }
+      }
+    },
+    "intent.ask.label.call" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuộc gọi"
+          }
+        }
+      }
+    },
+    "intent.ask.label.event" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lịch hẹn"
+          }
+        }
+      }
+    },
+    "intent.ask.label.other" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Việc của bạn"
+          }
+        }
+      }
+    },
+    "intent.ask.label.place" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉ đường"
+          }
+        }
+      }
+    },
+    "intent.ask.label.reminder" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lời nhắc"
+          }
+        }
+      }
+    },
+    "intent.ask.status.event" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã thêm vào Lịch"
+          }
+        }
+      }
+    },
+    "intent.ask.status.reminder" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã thêm vào Lời nhắc"
+          }
+        }
+      }
+    },
+    "intent.ask.status.removed" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã xóa"
+          }
+        }
+      }
+    },
+    "intent.ask.undone.title" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã hoàn tác"
+          }
+        }
+      }
+    },
+    "intent.ask.unsupported.hint" : {
+      "comment" : "Hỏi Khoai panel (D-325)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ở đây Khoai làm được: nhắc việc, lịch hẹn, gọi điện, chỉ đường và xem lịch."
+          }
+        }
+      }
+    },
     "intent.listen.desc" : {
       "comment" : "UI_SCREENS §7 (1E.1)",
       "extractionState" : "manual",
