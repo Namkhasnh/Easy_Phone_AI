@@ -111,11 +111,17 @@ struct MascotMotionTests {
     }
 
     @Test func videoClipsAreBundledWithAStill() throws {
-        #expect(MascotVideoClip.name(for: .asking) == "khoai_hoi_them")     // first clip from the owner (2026-11-22)
         _ = try #require(UIImage(named: MascotVideoClip.still))
-        for pose in MascotPose.allCases {
-            if let file = MascotVideoClip.name(for: pose) { #expect(MascotVideoClip.url(file) != nil) }
-        }
+        let all = ["tho", "chao", "dang_nghe", "dang_xu_ly", "hoi_them", "mung", "buon", "cham", "xoa_dau"]
+        for name in all { #expect(MascotVideoClip.url("khoai_" + name) != nil, "missing \(name)") }
+    }
+
+    @Test func videoPlaylistsPlayOnceThenLoop() {
+        #expect(MascotVideoClip.playlist(for: .greeting) == ["khoai_chao", "khoai_tho"])      // hello once, then breathe
+        #expect(MascotVideoClip.playlist(for: .asking) == ["khoai_hoi_them"])
+        #expect(MascotVideoClip.playlist(for: .listening, reaction: .tap) == ["khoai_cham", "khoai_dang_nghe"])
+        #expect(MascotVideoClip.playlist(for: .happy, reaction: .pet) == ["khoai_xoa_dau", "khoai_mung"])
+        for pose in MascotPose.allCases { #expect(MascotVideoClip.name(for: pose) != nil) }
     }
 
     @Test func tipsRotateThroughCatalogKeys() throws {

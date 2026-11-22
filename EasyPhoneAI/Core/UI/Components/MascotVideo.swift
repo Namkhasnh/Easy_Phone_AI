@@ -2,23 +2,36 @@ import AVFoundation
 import CoreImage
 import SwiftUI
 
-/// D-327 (owner 2026-11-22): Khoai clips made with an AI image-to-video tool from the owner's Khoai picture (start =
-/// end frame, so every clip loops and joins the others on the same pose), background removed on the Mac
-/// (`tools/khoai_rig/matte.swift`, `clean.py`), stored as HEVC-with-alpha `.mov` in `Resources/KhoaiVideo`.
+/// D-327 (owner 2026-11-22): Khoai clips made with an AI image-to-video tool from the owner's smiling Khoai picture
+/// (start = end frame, so every clip loops and joins the others on the same pose), background removed on the Mac
+/// (`tools/khoai_rig/make_clip.sh`), stored as HEVC-with-alpha `.mov` in `Resources/KhoaiVideo`.
 /// Played in pure SwiftUI (D-014): an `AVPlayerItemVideoOutput` hands one frame per display tick to an `Image`.
 enum MascotVideoClip {
-    /// The clip file for a pose, `nil` while the owner has not made it yet (the view falls back to the rig).
-    static func name(for pose: MascotPose) -> String? {
-        let file = switch pose {
-        case .greeting: "khoai_chao"
+    static let idle = "khoai_tho"
+
+    /// What plays for a pose: clips played once, then the last one loops. Missing files are skipped;
+    /// an empty list = no clip at all (the view falls back to the rig).
+    static func playlist(for pose: MascotPose, reaction: MascotReaction? = nil) -> [String] {
+        let loop = switch pose {
+        case .greeting: idle
         case .listening: "khoai_dang_nghe"
         case .thinking: "khoai_dang_xu_ly"
         case .asking: "khoai_hoi_them"
         case .happy: "khoai_mung"
         case .sorry: "khoai_buon"
         }
-        return url(file) == nil ? nil : file
+        var list: [String] = []
+        switch reaction {
+        case .tap: list.append("khoai_cham")
+        case .pet: list.append("khoai_xoa_dau")
+        case nil: if pose == .greeting { list.append("khoai_chao") }   // wave hello once, then breathe
+        }
+        list.append(url(loop) == nil ? idle : loop)
+        return list.filter { url($0) != nil }
     }
+
+    /// The loop clip for a pose, `nil` if none is bundled.
+    static func name(for pose: MascotPose) -> String? { playlist(for: pose).last }
 
     static func url(_ file: String) -> URL? { Bundle.main.url(forResource: file, withExtension: "mov") }
 
@@ -26,36 +39,54 @@ enum MascotVideoClip {
     static let still = "mascot.video.still"
 }
 
-/// One looping, muted clip. Main actor only: created and read by the view's `TimelineView`.
+/// Plays `files` in order, each once, then loops the last one. Muted. Main actor only (read by `TimelineView`).
 @MainActor
 final class MascotVideoPlayer {
     private let player = AVPlayer()
     private let output = AVPlayerItemVideoOutput(pixelBufferAttributes: [
         kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
     ])
+    private let files: [String]
+    private var index = 0
     private var image: CGImage?
     private var endObserver: NSObjectProtocol?
     private static let context = CIContext()
 
-    init(file: String) {
+    init(files: [String]) {
+        self.files = files
         player.isMuted = true
         player.preventsDisplaySleepDuringVideoPlayback = false
         player.actionAtItemEnd = .none
-        guard let url = MascotVideoClip.url(file) else { return }
-        let item = AVPlayerItem(url: url)
-        item.add(output)
-        player.replaceCurrentItem(with: item)
-        // Every clip ends on its first frame, so jumping back to the start is seamless.
         endObserver = NotificationCenter.default.addObserver(forName: AVPlayerItem.didPlayToEndTimeNotification,
-                                                             object: item, queue: .main) { [player] _ in
-            player.seek(to: .zero)
-            player.play()
+                                                             object: nil, queue: .main) { [weak self] note in
+            let item = note.object as? AVPlayerItem
+            MainActor.assumeIsolated { self?.itemEnded(item) }
         }
-        player.play()
+        load(0)
     }
 
     isolated deinit {
         if let endObserver { NotificationCenter.default.removeObserver(endObserver) }
+    }
+
+    private func load(_ i: Int) {
+        guard files.indices.contains(i), let url = MascotVideoClip.url(files[i]) else { return }
+        index = i
+        player.currentItem?.remove(output)
+        let item = AVPlayerItem(url: url)
+        item.add(output)
+        player.replaceCurrentItem(with: item)
+        player.play()
+    }
+
+    private func itemEnded(_ item: AVPlayerItem?) {
+        guard let item, item === player.currentItem else { return }
+        if index < files.count - 1 {
+            load(index + 1)                              // every clip ends on the first frame: a seamless join
+        } else {
+            player.seek(to: .zero)
+            player.play()
+        }
     }
 
     func stop() { player.pause() }
@@ -72,9 +103,9 @@ final class MascotVideoPlayer {
     }
 }
 
-/// The clip for one pose, drawn as an `Image` each display tick. Decorative (VoiceOver skips the mascot).
+/// One playlist drawn as an `Image` each display tick. Decorative (VoiceOver skips the mascot).
 struct MascotVideoView: View {
-    let file: String
+    let files: [String]
     @State private var player: MascotVideoPlayer?
 
     var body: some View {
@@ -85,7 +116,7 @@ struct MascotVideoView: View {
                 Image(MascotVideoClip.still).resizable().interpolation(.high).scaledToFit()
             }
         }
-        .onAppear { player = MascotVideoPlayer(file: file) }
+        .onAppear { player = MascotVideoPlayer(files: files) }
         .onDisappear { player?.stop(); player = nil }
     }
 }

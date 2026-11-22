@@ -95,6 +95,8 @@ struct MascotView: View {
     @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
     @State private var frame: String?
     @State private var reactionStart: Date?
+    /// The touch whose clip plays (video style); cleared when the pose changes so it does not replay.
+    @State private var videoReaction: MascotReactionEvent?
 
     private var reduceMotion: Bool { systemReduceMotion || forceStill }
     private struct PlayKey: Hashable { let pose: MascotPose; let reduceMotion: Bool; let style: MascotStyle }
@@ -105,7 +107,7 @@ struct MascotView: View {
             let elapsed = reactionStart.map { now.timeIntervalSince($0) } ?? -1
             let t = now.timeIntervalSinceReferenceDate
             // A clip moves Khoai by itself: no code motion on top of it.
-            let m = videoFile != nil ? .identity
+            let m = videoPlaylist != nil ? .identity
                 : MascotMotion.transform(pose: pose, time: t, level: level, reaction: reaction?.kind,
                                          elapsed: elapsed, reduceMotion: reduceMotion, rig: style != .frames && style != .puppet)
             ZStack(alignment: .bottom) {
@@ -139,18 +141,32 @@ struct MascotView: View {
         .frame(width: size, height: size)              // decorative, fixed-size slot (not text)
         .accessibilityHidden(true)
         .task(id: PlayKey(pose: pose, reduceMotion: reduceMotion, style: style)) { await play() }
-        .onChange(of: reaction) { _, event in reactionStart = event == nil ? nil : .now }
+        .onChange(of: reaction) { _, event in
+            reactionStart = event == nil ? nil : .now
+            videoReaction = event
+        }
+        .onChange(of: pose) { videoReaction = nil }
         .sensoryFeedback(.impact(weight: .light), trigger: reaction) { _, new in new?.kind == .pet }
     }
 
     /// The clip to play now: video style, motion allowed, and the owner has made this pose's clip.
-    private var videoFile: String? {
-        style == .video && !reduceMotion ? MascotVideoClip.name(for: pose) : nil
+    /// The clips to play now: video style, motion allowed, and clips are bundled. A new touch or pose = a new list.
+    private var videoPlaylist: VideoKey? {
+        guard style == .video, !reduceMotion else { return nil }
+        let files = MascotVideoClip.playlist(for: pose, reaction: videoReaction?.kind)
+        return files.isEmpty ? nil : VideoKey(files: files, touch: videoReaction?.id)
     }
 
+    private struct VideoKey: Hashable { let files: [String]; let touch: Int? }
+
     @ViewBuilder private func art(time t: Double, elapsed: Double) -> some View {
-        if let videoFile {
-            MascotVideoView(file: videoFile).id(videoFile)
+        if let videoPlaylist {
+            ZStack {
+                MascotVideoView(files: videoPlaylist.files)
+                    .id(videoPlaylist)
+                    .transition(.opacity)                        // a short cross-fade when the pose changes mid-clip
+            }
+            .animation(.easeInOut(duration: 0.25), value: videoPlaylist)
         } else if style == .video && reduceMotion && MascotVideoClip.name(for: pose) != nil {
             layer(MascotVideoClip.still)
         } else if style == .rig || style == .video {
