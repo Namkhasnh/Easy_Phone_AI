@@ -47,6 +47,10 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
         case .directions(let label)?:
             return try await panel.finish(ConversationViewModel.localDraft("place", "open", [("query", label)]),
                                           in: panel.newDraft(), intent: self)
+        case .lunar(let question)?:                                         // 4L.2: answered on the phone
+            let text = question.answer(now: .now)
+            return KhoaiPanel.Reply(full: text, shown: UserMessage(key: "intent.ask.lunar").text,
+                                    view: KhoaiSnippet(.list([KhoaiSnippet.Row(time: nil, title: text)])))
         case .calendarDay(let day)?:
             return try await panel.showDay(day, intent: self)
         case .reminders?:

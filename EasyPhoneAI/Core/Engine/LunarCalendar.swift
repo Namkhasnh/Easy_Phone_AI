@@ -107,8 +107,7 @@ enum LunarCalendar {
     }
 
     /// Can Chi of a lunar year: stem index 0…9 (Giáp…Quý), branch index 0…11 (Tý…Hợi).
-    /// Names are UI text and come from `Localizable.xcstrings` (keys `lunar.stem.<n>` / `lunar.branch.<n>`).
-    // TODO(spec): Can Chi string keys are not in UI_SCREENS yet (added with the 4L screen items).
+    /// Names are UI text and come from `Localizable.xcstrings` (keys `lunar.stem.<n>` / `lunar.branch.<n>`, UI_SCREENS S03).
     static func canChi(ofLunarYear year: Int) -> (stem: Int, branch: Int) {
         (((year + 6) % 10 + 10) % 10, ((year + 8) % 12 + 12) % 12)
     }

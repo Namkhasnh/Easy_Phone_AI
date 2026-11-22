@@ -13,6 +13,9 @@ import OSLog
         case working
         case unsupported(Unsupported)
         case followUp(FollowUp)
+        /// Mode 6 (4L.2): Khoai's answer to a question the phone answers by itself (lunar calendar). Text = catalog
+        /// sentence with values, never LLM text (D-220).
+        case answer(String)
     }
 
     /// Mode 4: the ONE question (spec §6.2 AC3). `question` is already chosen by the D-281 rule (1B.14):
@@ -191,6 +194,7 @@ import OSLog
         case _ where noticeKey != nil: return .sorry
         case .working: return .thinking
         case .followUp: return .asking
+        case .answer: return .happy
         case .listening, .transcript: return .listening
         }
     }
@@ -549,7 +553,7 @@ import OSLog
     private func runLocal(_ intent: LocalIntent, draft: TaskDraft) async {
         Self.logger.info("local intent")                                  // D-059: no content
         switch intent {
-        case .checkMail, .calendarDay, .reminders:                        // a screen opens: answered (1G.10)
+        case .checkMail, .calendarDay, .reminders, .lunar:                // a screen / an answer: answered (1G.10)
             draft.markAnswered(nil)
             repository.save(draft)
         default: break
@@ -562,6 +566,8 @@ import OSLog
             calendarDay = day
         case .reminders:
             opensReminders = true
+        case .lunar(let question):
+            showAnswer(question.answer(now: now()), spoken: draft.inputMode == .voice)
         case .call(let name):
             await handle(Self.localDraft("call", "open", [("recipientName", name), ("callType", "phone")]),
                          isAnswer: false, draft: draft, returnMode: .transcript)
@@ -580,6 +586,32 @@ import OSLog
             }
             await handle(parsed, isAnswer: false, draft: draft, returnMode: .transcript)
         }
+    }
+
+    /// Mode 6: shows the answer; read aloud at once for a spoken question when "Đọc to" is on (like the follow-up).
+    func showAnswer(_ answer: String, spoken: Bool) {
+        noticeKey = nil
+        mode = .answer(answer)
+        guard spoken, settings.voiceEnabled else { return }
+        Task { @MainActor [tts, settings] in await tts.speak(answer, rate: settings.speechRate) }
+    }
+
+    /// "Đọc to" on the answer bubble.
+    func readAnswer() async {
+        guard case .answer(let answer) = mode else { return }
+        if isReading { stopReading(); return }
+        isReading = true
+        await tts.speak(answer, rate: settings.speechRate)
+        isReading = false
+    }
+
+    /// "Hỏi tiếp": a new question in the same screen (the answered draft stays in history).
+    func askMore() async {
+        stopReading()
+        tts.stop()
+        text = ""
+        mode = .transcript
+        await speakAgain()
     }
 
     static func localDraft(_ kind: String, _ operation: String, _ fields: [(String, String)],

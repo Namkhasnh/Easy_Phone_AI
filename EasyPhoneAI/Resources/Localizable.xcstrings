@@ -7248,6 +7248,438 @@
           }
         }
       }
+    },
+    "lunar.answer.today" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hôm nay là %@ tháng %@ năm %@ (âm lịch)."
+          }
+        }
+      }
+    },
+    "lunar.answer.day" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ tháng %@ âm lịch là %@."
+          }
+        }
+      }
+    },
+    "lunar.answer.tet" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Còn %@ ngày nữa là Tết %@ (%@)."
+          }
+        }
+      }
+    },
+    "lunar.answer.tetToday" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hôm nay là mùng 1 Tết %@. Chúc mừng năm mới!"
+          }
+        }
+      }
+    },
+    "lunar.day.mung" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mùng %@"
+          }
+        }
+      }
+    },
+    "lunar.day.ram" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rằm"
+          }
+        }
+      }
+    },
+    "lunar.day.first" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mùng 1"
+          }
+        }
+      }
+    },
+    "lunar.month.first" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giêng"
+          }
+        }
+      }
+    },
+    "lunar.month.last" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chạp"
+          }
+        }
+      }
+    },
+    "lunar.month.leap" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ nhuận"
+          }
+        }
+      }
+    },
+    "lunar.year" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): Can Chi = stem + branch",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ %@"
+          }
+        }
+      }
+    },
+    "lunar.solarDate" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): weekday, d/M/yyyy",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, %@"
+          }
+        }
+      }
+    },
+    "lunar.stem.0" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): heavenly stem",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giáp"
+          }
+        }
+      }
+    },
+    "lunar.stem.1" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): heavenly stem",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ất"
+          }
+        }
+      }
+    },
+    "lunar.stem.2" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): heavenly stem",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bính"
+          }
+        }
+      }
+    },
+    "lunar.stem.3" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): heavenly stem",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đinh"
+          }
+        }
+      }
+    },
+    "lunar.stem.4" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): heavenly stem",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mậu"
+          }
+        }
+      }
+    },
+    "lunar.stem.5" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): heavenly stem",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kỷ"
+          }
+        }
+      }
+    },
+    "lunar.stem.6" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): heavenly stem",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canh"
+          }
+        }
+      }
+    },
+    "lunar.stem.7" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): heavenly stem",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tân"
+          }
+        }
+      }
+    },
+    "lunar.stem.8" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): heavenly stem",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhâm"
+          }
+        }
+      }
+    },
+    "lunar.stem.9" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): heavenly stem",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quý"
+          }
+        }
+      }
+    },
+    "lunar.branch.0" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): earthly branch",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tý"
+          }
+        }
+      }
+    },
+    "lunar.branch.1" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): earthly branch",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sửu"
+          }
+        }
+      }
+    },
+    "lunar.branch.2" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): earthly branch",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dần"
+          }
+        }
+      }
+    },
+    "lunar.branch.3" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): earthly branch",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mão"
+          }
+        }
+      }
+    },
+    "lunar.branch.4" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): earthly branch",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thìn"
+          }
+        }
+      }
+    },
+    "lunar.branch.5" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): earthly branch",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tỵ"
+          }
+        }
+      }
+    },
+    "lunar.branch.6" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): earthly branch",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngọ"
+          }
+        }
+      }
+    },
+    "lunar.branch.7" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): earthly branch",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mùi"
+          }
+        }
+      }
+    },
+    "lunar.branch.8" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): earthly branch",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thân"
+          }
+        }
+      }
+    },
+    "lunar.branch.9" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): earthly branch",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dậu"
+          }
+        }
+      }
+    },
+    "lunar.branch.10" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): earthly branch",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tuất"
+          }
+        }
+      }
+    },
+    "lunar.branch.11" : {
+      "comment" : "UI_SCREENS S03 mode 6, lunar answer (4L.2, D-330): earthly branch",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hợi"
+          }
+        }
+      }
+    },
+    "conv.answer.askMore" : {
+      "comment" : "UI_SCREENS S03 mode 6 secondary (4L.2)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hỏi tiếp"
+          }
+        }
+      }
+    },
+    "intent.ask.lunar" : {
+      "comment" : "Hỏi Khoai panel header for a lunar answer (4L.2)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Âm lịch"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

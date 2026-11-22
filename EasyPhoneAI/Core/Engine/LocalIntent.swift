@@ -16,10 +16,13 @@ enum LocalIntent: Equatable, Sendable {
     case reminders
     /// D-320: a reminder / event with a clear time (`LocalSchedule`).
     case schedule(LocalSchedule.Result)
+    /// 4L.2 (D-330): a lunar-calendar question, answered in S03 mode 6 / the Hỏi Khoai panel.
+    case lunar(LunarQuestion)
 
     /// The first rule that matches, or nil (→ `/v1/parse`).
     static func match(_ text: String, now: Date = .now, timeZone: TimeZone = .current) -> LocalIntent? {
         if isCheckMail(text) { return .checkMail(codesOnly: wantsCode(text)) }
+        if let lunar = LunarQuestion.match(Words(text)) { return .lunar(lunar) }
         if let schedule = LocalSchedule.match(text, now: now, timeZone: timeZone) { return .schedule(schedule) }
         let words = Words(text)
         guard !words.folded.isEmpty, words.folded.count <= 9 else { return nil }
