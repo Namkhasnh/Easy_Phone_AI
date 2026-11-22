@@ -5,8 +5,7 @@ import Foundation
 /// picker, with no setup by the user. The app ships Vietnamese only (development language `vi`), so these phrases are
 /// Vietnamese Siri phrases (iOS 18.4+, D-012). `.applicationName` also matches the alternative name "Khoai"
 /// (`INAlternativeAppNames`, Config/Info.plist). More ways to say each phrase: `Resources/AppShortcuts.xcstrings`.
-// TODO(decision): D-012 English fallback phrases need an `en` localization, which would also switch system UI inside
-// the app to English on English-language iPhones (owner asked 2026-11-22).
+// D-328 (owner 2026-11-22): no English phrases — an `en` localization would turn system UI in the app English.
 struct EasyPhoneShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(intent: StartListeningIntent(),
