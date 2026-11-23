@@ -18,6 +18,8 @@ final class MockAPIClient: APIClientProtocol {
     private let ocrLog = Mutex<[(jpeg: Data, key: IdempotencyKey)]>([])
     private let extractResult: Result<ExtractResponse, AppError>
     private let extractLog = Mutex<[(request: ExtractRequest, key: IdempotencyKey)]>([])
+    private let guideResult: Result<GuideResponse, AppError>
+    private let guideLog = Mutex<[(request: GuideRequest, key: IdempotencyKey)]>([])
     private let quota = Broadcast<Quota>()
     private let blocking = Broadcast<BlockingScreen>()
 
@@ -27,8 +29,10 @@ final class MockAPIClient: APIClientProtocol {
          transcribe: Result<TranscribeResponse, AppError> = .success(.mock),
          parseRouter: (@Sendable (ParseRequest) -> ParsedDraft?)? = nil,
          ocr: Result<OCRResponse, AppError> = .success(.mock),
-         extract: Result<ExtractResponse, AppError> = .success(.mock)) {
+         extract: Result<ExtractResponse, AppError> = .success(.mock),
+         guide: Result<GuideResponse, AppError> = .success(.mock)) {
         self.parseRouter = parseRouter
+        guideResult = guide
         ocrResult = ocr
         extractResult = extract
         meResult = me
@@ -138,6 +142,14 @@ final class MockAPIClient: APIClientProtocol {
     func extract(_ request: ExtractRequest, idempotencyKey: IdempotencyKey) async throws -> ExtractResponse {
         extractLog.withLock { $0.append((request, idempotencyKey)) }
         return try extractResult.get()
+    }
+
+    /// Every `guide` call so far (4H tests check the masked question and the key).
+    var guideCalls: [(request: GuideRequest, key: IdempotencyKey)] { guideLog.withLock { $0 } }
+
+    func guide(_ request: GuideRequest, idempotencyKey: IdempotencyKey) async throws -> GuideResponse {
+        guideLog.withLock { $0.append((request, idempotencyKey)) }
+        return try guideResult.get()
     }
 }
 

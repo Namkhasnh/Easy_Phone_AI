@@ -18,6 +18,9 @@ protocol APIClientProtocol: Sendable {
     /// `POST /v1/extract` (API_CONTRACT §7.2, 1 unit): photo text → fields with UTF-16 spans. Own key (≠ the `/v1/ocr`
     /// one, D-245). Never called with empty text (spec §6.3 AC5).
     func extract(_ request: ExtractRequest, idempotencyKey: IdempotencyKey) async throws -> ExtractResponse
+    /// `POST /v1/guide` (API_CONTRACT §7.5, 1 unit, D-337): a phone-use question → step-by-step guide. Own key per
+    /// user action (D-245).
+    func guide(_ request: GuideRequest, idempotencyKey: IdempotencyKey) async throws -> GuideResponse
     /// `POST /v1/gmail/accounts` (API_GMAIL §3.1, 0 units): one-time Google code + PKCE verifier → account.
     func gmailConnect(_ request: GmailConnectRequest) async throws -> GmailAccountResponse
     /// `GET /v1/gmail/accounts` (§3.2).

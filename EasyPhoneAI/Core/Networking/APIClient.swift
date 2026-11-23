@@ -92,6 +92,17 @@ actor APIClient: APIClientProtocol {
                                        body: body, idempotencyKey: idempotencyKey))
     }
 
+    func guide(_ request: GuideRequest, idempotencyKey: IdempotencyKey) async throws -> GuideResponse {
+        let body: Data
+        do {
+            body = try JSONEncoder().encode(request)
+        } catch {
+            throw AppError.decoding(requestId: nil)
+        }
+        return try await send(Endpoint(method: "POST", path: "/v1/guide", authorized: true,
+                                       body: body, idempotencyKey: idempotencyKey))
+    }
+
     func ocr(jpeg: Data, meta: MediaMeta, idempotencyKey: IdempotencyKey) async throws -> OCRResponse {
         var form = MultipartBody()
         let metaJSON: Data

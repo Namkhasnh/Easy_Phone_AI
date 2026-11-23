@@ -21,6 +21,7 @@ from app.schemas.gmail import (
     GmailSummaryRequest,
     GmailSummaryResponse,
 )
+from app.schemas.guide import GuideRequest, GuideResponse
 from app.schemas.health import HealthResponse
 from app.schemas.me import MeResponse
 from app.schemas.media import OCRResponse, TranscribeResponse
@@ -42,6 +43,7 @@ RESPONSE_MODELS: dict[str, type[BaseModel]] = {
     "gmailaccounts": GmailAccountsResponse,  # §3.2
     "gmailsummary": GmailSummaryResponse,  # §4
     "gmaildraft": GmailDraftResponse,  # §5
+    "guide": GuideResponse,  # §7.5 (D-337)
 }
 REQUEST_MODELS: dict[str, type[BaseModel]] = {
     "parse": ParseRequest,
@@ -50,6 +52,7 @@ REQUEST_MODELS: dict[str, type[BaseModel]] = {
     "gmailsummary": GmailSummaryRequest,
     "gmaildraft": GmailDraftRequest,
     "billing": BillingVerifyRequest,  # §8.1
+    "guide": GuideRequest,
 }
 
 # 🔒 keys never leave the device (D-056, API_CONTRACT §11).
