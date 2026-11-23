@@ -1,0 +1,179 @@
+{ "schemaVersion": 1, "version": 1, "guides": [
+  { "id": "zalo.sendPhoto", "title": "Gửi ảnh qua Zalo", "verified": false, "isMoneyRelated": false,
+    "match": [["gui anh", "zalo"], ["gui hinh", "zalo"], ["tam anh", "zalo"], ["buc anh", "zalo"], ["hinh anh", "zalo"]],
+    "exclude": ["tien", "chuyen khoan", "otp"],
+    "steps": [
+      { "text": "Mở app Zalo trên màn hình chính.", "hint": null },
+      { "text": "Chạm vào cuộc trò chuyện với người bạn muốn gửi.", "hint": "Không thấy tên thì chạm ô Tìm kiếm ở trên cùng và gõ tên." },
+      { "text": "Chạm biểu tượng hình ảnh ở cạnh ô nhập tin nhắn.", "hint": null },
+      { "text": "Chạm vào ảnh muốn gửi. Có thể chọn nhiều ảnh.", "hint": null },
+      { "text": "Chạm nút Gửi.", "hint": "Ảnh hiện trong cuộc trò chuyện là đã gửi." }
+    ] },
+  { "id": "zalo.videoCall", "title": "Gọi video qua Zalo", "verified": false, "isMoneyRelated": false,
+    "match": [["goi video", "zalo"], ["video call", "zalo"], ["goi", "thay mat", "zalo"]],
+    "exclude": ["tien"],
+    "steps": [
+      { "text": "Mở app Zalo trên màn hình chính.", "hint": null },
+      { "text": "Chạm vào cuộc trò chuyện với người bạn muốn gọi.", "hint": "Không thấy tên thì chạm ô Tìm kiếm ở trên cùng và gõ tên." },
+      { "text": "Chạm biểu tượng máy quay ở góc trên bên phải.", "hint": null },
+      { "text": "Chờ người kia nghe máy. Giữ điện thoại trước mặt để họ thấy bạn.", "hint": null },
+      { "text": "Nói xong, chạm nút màu đỏ để kết thúc.", "hint": null }
+    ] },
+  { "id": "zalo.voiceCall", "title": "Gọi điện qua Zalo", "verified": false, "isMoneyRelated": false,
+    "match": [["goi dien", "zalo"], ["goi", "qua zalo"], ["goi", "bang zalo"]],
+    "exclude": ["tien", "chuyen khoan", "otp", "video", "thay mat"],
+    "steps": [
+      { "text": "Mở app Zalo trên màn hình chính.", "hint": null },
+      { "text": "Chạm vào cuộc trò chuyện với người bạn muốn gọi.", "hint": null },
+      { "text": "Chạm biểu tượng điện thoại ở góc trên bên phải.", "hint": null },
+      { "text": "Nói xong, chạm nút màu đỏ để kết thúc.", "hint": null }
+    ] },
+  { "id": "zalo.message", "title": "Nhắn tin Zalo", "verified": false, "isMoneyRelated": false,
+    "match": [["nhan tin", "zalo"], ["gui tin", "zalo"], ["nhan", "tin nhan", "zalo"]],
+    "exclude": ["tien", "chuyen khoan", "gui anh", "hinh", "otp"],
+    "steps": [
+      { "text": "Mở app Zalo trên màn hình chính.", "hint": null },
+      { "text": "Chạm vào cuộc trò chuyện với người bạn muốn nhắn.", "hint": "Không thấy tên thì chạm ô Tìm kiếm ở trên cùng và gõ tên." },
+      { "text": "Chạm vào ô nhập tin nhắn ở dưới cùng rồi gõ chữ.", "hint": "Không muốn gõ thì chạm biểu tượng micrô trên bàn phím và nói." },
+      { "text": "Chạm nút Gửi bên phải ô tin nhắn.", "hint": null }
+    ] },
+  { "id": "iphone.textSize", "title": "Tăng cỡ chữ trên iPhone", "verified": false, "isMoneyRelated": false,
+    "match": [["co chu"], ["chu", "to hon"], ["chu", "lon hon"], ["chu", "nho qua"], ["phong chu"], ["chu to"], ["chu lon"]],
+    "exclude": ["dam"],
+    "steps": [
+      { "text": "Mở app Cài đặt (hình bánh răng).", "hint": null },
+      { "text": "Chạm Màn hình & Độ sáng.", "hint": null },
+      { "text": "Chạm Cỡ chữ.", "hint": null },
+      { "text": "Kéo thanh trượt sang phải để chữ to hơn.", "hint": "Muốn to hơn nữa: vào Cài đặt, Trợ năng, Màn hình & Cỡ chữ, Chữ lớn hơn." }
+    ] },
+  { "id": "iphone.boldText", "title": "Làm chữ đậm hơn", "verified": false, "isMoneyRelated": false,
+    "match": [["chu", "dam"], ["chu in dam"], ["chu", "ro hon"]],
+    "exclude": [],
+    "steps": [
+      { "text": "Mở app Cài đặt (hình bánh răng).", "hint": null },
+      { "text": "Chạm Màn hình & Độ sáng.", "hint": null },
+      { "text": "Bật công tắc Chữ in đậm (chuyển sang màu xanh).", "hint": null }
+    ] },
+  { "id": "iphone.wifi", "title": "Kết nối Wi-Fi", "verified": false, "isMoneyRelated": false,
+    "match": [["wifi"], ["wi fi"], ["mang", "nha"], ["bat mang"]],
+    "exclude": ["tien", "di dong", "4g", "5g"],
+    "steps": [
+      { "text": "Mở app Cài đặt (hình bánh răng).", "hint": null },
+      { "text": "Chạm Wi-Fi rồi bật công tắc Wi-Fi.", "hint": null },
+      { "text": "Chạm vào tên mạng Wi-Fi của nhà bạn.", "hint": "Tên mạng thường ghi ở mặt dưới cục phát Wi-Fi." },
+      { "text": "Gõ mật khẩu Wi-Fi rồi chạm Kết nối.", "hint": "Có dấu tích xanh cạnh tên mạng là đã kết nối." }
+    ] },
+  { "id": "iphone.screenshot", "title": "Chụp màn hình", "verified": false, "isMoneyRelated": false,
+    "match": [["chup man hinh"], ["chup lai man hinh"], ["luu man hinh"]],
+    "exclude": [],
+    "steps": [
+      { "text": "Mở màn hình bạn muốn chụp.", "hint": null },
+      { "text": "Bấm cùng lúc nút ở cạnh phải và nút tăng âm lượng ở cạnh trái, rồi thả ra ngay.", "hint": "iPhone có nút tròn ở dưới màn hình: bấm cùng lúc nút tròn đó và nút cạnh phải." },
+      { "text": "Ảnh nhỏ hiện ở góc dưới bên trái là đã chụp xong.", "hint": "Ảnh chụp màn hình nằm trong app Ảnh." }
+    ] },
+  { "id": "iphone.flashlight", "title": "Bật đèn pin", "verified": false, "isMoneyRelated": false,
+    "match": [["den pin"], ["bat den", "dien thoai"], ["soi den"]],
+    "exclude": [],
+    "steps": [
+      { "text": "Vuốt từ góc trên bên phải màn hình xuống để mở Trung tâm điều khiển.", "hint": "Ở màn hình khoá cũng có nút đèn pin ở góc dưới bên trái: chạm và giữ." },
+      { "text": "Chạm biểu tượng đèn pin. Chạm lần nữa để tắt.", "hint": null }
+    ] },
+  { "id": "iphone.volume", "title": "Chỉnh to tiếng chuông và âm lượng", "verified": false, "isMoneyRelated": false,
+    "match": [["am luong"], ["chuong", "nho"], ["chuong", "to"], ["tieng", "nho qua"], ["khong nghe", "chuong"], ["to tieng"]],
+    "exclude": ["tien"],
+    "steps": [
+      { "text": "Bấm nút trên ở cạnh trái điện thoại để to hơn, nút dưới để nhỏ hơn.", "hint": "Thanh âm lượng hiện ở mép màn hình khi bấm." },
+      { "text": "Muốn chỉnh riêng tiếng chuông: mở app Cài đặt, chạm Âm thanh & Cảm ứng.", "hint": null },
+      { "text": "Kéo thanh Chuông và cảnh báo sang phải để chuông to hơn.", "hint": null }
+    ] },
+  { "id": "iphone.deletePhoto", "title": "Xoá ảnh", "verified": false, "isMoneyRelated": false,
+    "match": [["xoa anh"], ["xoa hinh"], ["xoa", "tam anh"], ["bo anh"]],
+    "exclude": ["zalo", "facebook"],
+    "steps": [
+      { "text": "Mở app Ảnh (hình bông hoa nhiều màu).", "hint": null },
+      { "text": "Chạm vào ảnh muốn xoá.", "hint": null },
+      { "text": "Chạm biểu tượng thùng rác, rồi chạm Xoá ảnh.", "hint": "Xoá nhầm thì ảnh vẫn còn trong mục Đã xoá gần đây khoảng 30 ngày." }
+    ] },
+  { "id": "iphone.lowPower", "title": "Tiết kiệm pin", "verified": false, "isMoneyRelated": false,
+    "match": [["tiet kiem pin"], ["het pin", "nhanh"], ["pin", "yeu"], ["nguon dien thap"], ["pin", "tut"]],
+    "exclude": [],
+    "steps": [
+      { "text": "Mở app Cài đặt (hình bánh răng).", "hint": null },
+      { "text": "Chạm Pin.", "hint": null },
+      { "text": "Bật công tắc Chế độ nguồn điện thấp.", "hint": "Biểu tượng pin chuyển màu vàng là đã bật. Sạc đầy, máy tự tắt chế độ này." }
+    ] },
+  { "id": "iphone.update", "title": "Cập nhật iPhone", "verified": false, "isMoneyRelated": false,
+    "match": [["cap nhat", "iphone"], ["cap nhat", "dien thoai"], ["cap nhat phan mem"], ["len doi", "ios"], ["cap nhat ios"]],
+    "exclude": ["zalo", "app", "ung dung"],
+    "steps": [
+      { "text": "Cắm sạc và kết nối Wi-Fi trước.", "hint": "Cập nhật có thể mất 30 phút, máy sẽ tự khởi động lại." },
+      { "text": "Mở app Cài đặt (hình bánh răng), chạm Cài đặt chung.", "hint": null },
+      { "text": "Chạm Cập nhật phần mềm.", "hint": null },
+      { "text": "Nếu có bản mới, chạm Cập nhật ngay và làm theo chữ trên màn hình.", "hint": "Máy hỏi mật mã thì nhập mật mã mở máy của bạn." }
+    ] },
+  { "id": "iphone.storage", "title": "Xem bộ nhớ còn trống", "verified": false, "isMoneyRelated": false,
+    "match": [["dung luong"], ["bo nho", "day"], ["het bo nho"], ["bo nho", "con"], ["day bo nho"]],
+    "exclude": [],
+    "steps": [
+      { "text": "Mở app Cài đặt (hình bánh răng), chạm Cài đặt chung.", "hint": null },
+      { "text": "Chạm Dung lượng iPhone.", "hint": "Chờ vài giây để máy tính xong." },
+      { "text": "Thanh màu ở trên cho biết đã dùng bao nhiêu. Bên dưới là các app chiếm nhiều chỗ nhất.", "hint": "Ảnh và video thường chiếm nhiều chỗ nhất." }
+    ] },
+  { "id": "iphone.bluetooth", "title": "Kết nối tai nghe Bluetooth", "verified": false, "isMoneyRelated": false,
+    "match": [["bluetooth"], ["tai nghe", "ket noi"], ["tai nghe", "khong day"], ["loa", "ket noi"]],
+    "exclude": [],
+    "steps": [
+      { "text": "Bật tai nghe hoặc loa và để ở gần điện thoại.", "hint": "Mỗi loại tai nghe bật chế độ kết nối một khác, xem giấy đi kèm." },
+      { "text": "Mở app Cài đặt (hình bánh răng), chạm Bluetooth rồi bật công tắc.", "hint": null },
+      { "text": "Chờ tên tai nghe hiện ở mục Thiết bị khác rồi chạm vào tên đó.", "hint": "Hiện chữ Đã kết nối là xong." }
+    ] },
+  { "id": "phone.saveContact", "title": "Lưu số điện thoại vào Danh bạ", "verified": false, "isMoneyRelated": false,
+    "match": [["luu so"], ["luu", "danh ba"], ["them", "danh ba"], ["luu", "so dien thoai"]],
+    "exclude": [],
+    "steps": [
+      { "text": "Mở app Điện thoại (hình ống nghe màu xanh lá).", "hint": null },
+      { "text": "Chạm Bàn phím ở dưới cùng rồi gõ số điện thoại.", "hint": null },
+      { "text": "Chạm Thêm số ở trên dãy số, rồi chạm Tạo liên hệ mới.", "hint": null },
+      { "text": "Gõ tên người đó rồi chạm Xong.", "hint": "Đặt tên dễ nhớ như \"Con Minh\" để sau này tìm nhanh." }
+    ] },
+  { "id": "phone.callContact", "title": "Gọi điện cho người trong Danh bạ", "verified": false, "isMoneyRelated": false,
+    "match": [["goi dien", "danh ba"], ["cach goi dien"], ["goi dien thoai", "the nao"], ["goi", "nguoi", "danh ba"]],
+    "exclude": ["zalo", "video"],
+    "steps": [
+      { "text": "Mở app Điện thoại (hình ống nghe màu xanh lá).", "hint": null },
+      { "text": "Chạm Danh bạ ở dưới cùng.", "hint": null },
+      { "text": "Chạm vào tên người muốn gọi.", "hint": "Danh sách dài thì gõ tên vào ô Tìm kiếm ở trên." },
+      { "text": "Chạm nút gọi (hình ống nghe).", "hint": "Nói xong, chạm nút màu đỏ để kết thúc." }
+    ] },
+  { "id": "camera.scanQR", "title": "Quét mã QR bằng Camera", "verified": false, "isMoneyRelated": true,
+    "match": [["quet ma"], ["quet qr"], ["ma qr"], ["quet", "qr"]],
+    "exclude": ["nguoi la", "goi dien", "trung thuong", "nhan qua", "tin nhan", "cong an", "gap", "otp"],
+    "steps": [
+      { "text": "Mở app Camera.", "hint": null },
+      { "text": "Hướng camera vào mã QR, giữ yên vài giây.", "hint": null },
+      { "text": "Khi khung chữ màu vàng hiện ra, đọc kỹ địa chỉ trong khung trước khi chạm vào.", "hint": "Mã dán ở nơi lạ hoặc người lạ gửi thì đừng chạm." },
+      { "text": "Nếu mã dùng để trả tiền, hãy quét bằng app ngân hàng và kiểm tra tên người nhận trước khi xác nhận.", "hint": null }
+    ] },
+  { "id": "bank.transfer", "title": "Chuyển tiền qua app ngân hàng", "verified": false, "isMoneyRelated": true,
+    "match": [["chuyen tien"], ["chuyen khoan"]],
+    "exclude": ["nguoi la", "goi dien", "goi cho", "cuoc goi", "nhan vien", "cong an", "tai nan", "trung thuong",
+                "tam giu", "gap", "otp", "ma xac", "bao toi", "bao chuyen", "nhan tin", "zalo", "facebook", "dau tu"],
+    "steps": [
+      { "text": "Nếu ai đó nhờ hoặc giục bạn chuyển, hãy gọi thẳng cho người nhà bằng số đã lưu trong Danh bạ trước.", "hint": "Đừng gọi lại số vừa gọi hoặc nhắn cho bạn." },
+      { "text": "Mở app ngân hàng của bạn trên màn hình chính.", "hint": null },
+      { "text": "Chạm vào nút Chuyển tiền (tên có thể khác).", "hint": "Thường nằm ở hàng nút đầu tiên." },
+      { "text": "Nhập số tài khoản người nhận và kiểm tra tên hiện ra.", "hint": "Tên hiện ra khác người bạn định chuyển thì dừng lại." },
+      { "text": "Nhập số tiền, đọc lại một lần rồi chạm Tiếp tục.", "hint": null },
+      { "text": "Nhập mã OTP ngân hàng gửi về điện thoại của bạn vào app.", "hint": "Chỉ nhập vào app, không đọc cho ai." }
+    ] },
+  { "id": "shop.shopeeOrder", "title": "Mua hàng trên Shopee", "verified": false, "isMoneyRelated": true,
+    "match": [["mua", "shopee"], ["dat hang", "shopee"]],
+    "exclude": ["nguoi la", "goi dien", "trung thuong", "nhan vien", "chuyen khoan", "chuyen tien", "otp", "hoan tien"],
+    "steps": [
+      { "text": "Mở app Shopee, chạm ô tìm kiếm ở trên cùng và gõ tên món muốn mua.", "hint": null },
+      { "text": "Chạm vào sản phẩm, xem giá, đánh giá sao và số lượng đã bán.", "hint": "Giá rẻ bất thường so với nơi khác là dấu hiệu cần cẩn thận." },
+      { "text": "Chạm Mua ngay, chọn màu hoặc cỡ nếu có, rồi chạm Mua ngay lần nữa.", "hint": null },
+      { "text": "Kiểm tra địa chỉ nhận hàng và số tiền.", "hint": null },
+      { "text": "Chọn cách trả tiền Thanh toán khi nhận hàng, rồi chạm Đặt hàng.", "hint": "Không chuyển khoản riêng cho người bán qua tin nhắn." }
+    ] }
+] }
