@@ -18,7 +18,7 @@ struct TaskEnumsTests {
                  "userMarkedDone", "userCancelled", "retry"])
         #expect(FieldType.allCases.map(\.rawValue) ==
                 ["text", "longText", "dateTime", "date", "durationMinutes", "bool", "phone",
-                 "contactRef", "placeRef", "address", "coordinate", "enumChoice"])
+                 "contactRef", "placeRef", "address", "coordinate", "enumChoice", "lunarDate"])
     }
 
     @Test func finalAndClosedStates() {

@@ -7680,6 +7680,138 @@
           }
         }
       }
+    },
+    "field.calendarEvent.lunarDate" : {
+      "comment" : "UI_SCREENS §10 field labels / §10.3 options (4L.3, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngày âm lịch"
+          }
+        }
+      }
+    },
+    "field.calendarEvent.lunarRecurrence" : {
+      "comment" : "UI_SCREENS §10 field labels / §10.3 options (4L.3, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lặp theo âm lịch"
+          }
+        }
+      }
+    },
+    "field.reminder.lunarDate" : {
+      "comment" : "UI_SCREENS §10 field labels / §10.3 options (4L.3, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngày âm lịch"
+          }
+        }
+      }
+    },
+    "field.reminder.lunarRecurrence" : {
+      "comment" : "UI_SCREENS §10 field labels / §10.3 options (4L.3, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lặp theo âm lịch"
+          }
+        }
+      }
+    },
+    "option.lunarRecurrence.none" : {
+      "comment" : "UI_SCREENS §10 field labels / §10.3 options (4L.3, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không lặp"
+          }
+        }
+      }
+    },
+    "option.lunarRecurrence.yearly" : {
+      "comment" : "UI_SCREENS §10 field labels / §10.3 options (4L.3, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hằng năm"
+          }
+        }
+      }
+    },
+    "option.lunarRecurrence.monthly" : {
+      "comment" : "UI_SCREENS §10 field labels / §10.3 options (4L.3, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hằng tháng"
+          }
+        }
+      }
+    },
+    "lunar.field.date" : {
+      "comment" : "UI_SCREENS §10 field labels / §10.3 options (4L.3, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@/%@ âm lịch"
+          }
+        }
+      }
+    },
+    "lunar.field.leapDate" : {
+      "comment" : "UI_SCREENS §10 field labels / §10.3 options (4L.3, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@/%@ nhuận âm lịch"
+          }
+        }
+      }
+    },
+    "lunar.field.monthly" : {
+      "comment" : "UI_SCREENS §10 field labels / §10.3 options (4L.3, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngày %@ hằng tháng (âm lịch)"
+          }
+        }
+      }
+    },
+    "lunar.field.time" : {
+      "comment" : "UI_SCREENS §10 field labels / §10.3 options (4L.3, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ lúc %@"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

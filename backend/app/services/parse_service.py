@@ -113,6 +113,25 @@ def _parse_dt(value: str) -> datetime | None:
         return None
 
 
+LUNAR_RE = re.compile(r"(?:(\d{4})-)?(\d{2})-(\d{2})(L)?(?:T(\d{2}):(\d{2}))?")
+
+
+def _lunar_ok(value: str) -> bool:
+    """D-332 `lunarDate` = `[YYYY-]MM-DD[L][THH:mm]`; month 00 = every month (no year, no leap). Same as Swift
+    `LunarFieldValue`. The solar date is computed by the app, never by the LLM."""
+    m = LUNAR_RE.fullmatch(value)
+    if not m:
+        return False
+    year, month, day, leap, hour, minute = m.groups()
+    if not (0 <= int(month) <= 12 and 1 <= int(day) <= 30):
+        return False
+    if int(month) == 0 and (leap or year):
+        return False
+    if year and not 1800 <= int(year) <= 2199:
+        return False
+    return hour is None or (int(hour) <= 23 and int(minute) <= 59)
+
+
 def _encoded(value: str, field: dict[str, Any], kind: str = "") -> bool:
     """DATA_MODEL §1.6, same rules as Swift `Validator.isEncoded` (AI_PROMPTS §9.1 for dates)."""
     t = field["type"]
@@ -132,6 +151,8 @@ def _encoded(value: str, field: dict[str, Any], kind: str = "") -> bool:
         return True
     if t == "durationMinutes":
         return value.isascii() and value.isdigit()
+    if t == "lunarDate":
+        return _lunar_ok(value)
     if t == "bool":
         return value in ("true", "false")
     if t == "address":

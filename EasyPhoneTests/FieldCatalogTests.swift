@@ -51,7 +51,8 @@ struct FieldCatalogTests {
         #expect(c.rule(.sms, .open)?.fields == ["recipientName", "body", "channel"])  // D-247: 🔒 ids only when channel = sms
         #expect(c.rule(.call, .open)?.conditional.first?.fields == ["contactId"])    // D-253
         #expect(c.rule(.call, .create) == nil)                                        // invalid pair
-        #expect(c.fields(.reminder, .create).map(\.id) == ["title", "dueDate", "notes"])
+        #expect(c.fields(.reminder, .create).map(\.id) == ["title", "dueDate", "notes", "lunarDate", "lunarRecurrence"])   // D-332 (create only)
+        #expect(c.fields(.reminder, .update).map(\.id) == ["title", "dueDate", "notes"])
         #expect(c.fields(.place, .open).map(\.id) == ["query", "name", "address", "coordinate", "mapsApp"])
     }
 

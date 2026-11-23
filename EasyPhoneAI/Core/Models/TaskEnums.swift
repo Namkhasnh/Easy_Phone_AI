@@ -62,4 +62,6 @@ enum TaskEvent: String, Codable, Sendable, Hashable, CaseIterable {
 enum FieldType: String, Codable, Sendable, Hashable, CaseIterable {
     case text, longText, dateTime, date, durationMinutes, bool, phone,
          contactRef, placeRef, address, coordinate, enumChoice
+    /// 4L.3 (D-332): `[YYYY-]MM-DD[L][THH:mm]` lunar date; month `00` = every month; `L` = leap month.
+    case lunarDate
 }

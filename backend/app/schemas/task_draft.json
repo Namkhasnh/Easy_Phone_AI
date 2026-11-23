@@ -56,7 +56,9 @@
                         "allDay",
                         "location",
                         "notes",
-                        "alertMinutesBefore"
+                        "alertMinutesBefore",
+                        "lunarDate",
+                        "lunarRecurrence"
                       ]
                     },
                     "value": {
@@ -153,7 +155,9 @@
                         "title",
                         "dueDate",
                         "notes",
-                        "snoozeOption"
+                        "snoozeOption",
+                        "lunarDate",
+                        "lunarRecurrence"
                       ]
                     },
                     "value": {

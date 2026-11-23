@@ -118,6 +118,9 @@ import Observation
             if spec.id == "calendarId" { return nil }
             if step.kind == .ocr, spec.id == "nextAction" { return nil }   // own radio card (S09 step 3)
             if step.kind == .emailReply, spec.appBuilt { return nil }      // account / thread ids: not for the user
+            // D-332: lunar rows only for a request said in the lunar calendar (empty → not shown, never asked).
+            if spec.id == "lunarDate" || spec.id == "lunarRecurrence",
+               step.field("lunarDate")?.value?.isEmpty ?? true { return nil }
             // TODO(spec): S04 says `coordinate` → small map; the filled coordinate row is hidden (name + address show it).
             if spec.id == "coordinate", let f = step.field("coordinate"), f.value != nil, f.ambiguity == nil { return nil }
             return step.field(spec.id) ?? Field(id: spec.id, type: spec.type, deviceOnly: spec.deviceOnly)

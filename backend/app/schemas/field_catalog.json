@@ -51,6 +51,29 @@
           "type": "text",
           "deviceOnly": true,
           "appBuilt": false
+        },
+        {
+          "id": "lunarDate",
+          "type": "lunarDate",
+          "deviceOnly": false,
+          "appBuilt": false,
+          "operations": [
+            "create"
+          ]
+        },
+        {
+          "id": "lunarRecurrence",
+          "type": "enumChoice",
+          "deviceOnly": false,
+          "appBuilt": false,
+          "options": [
+            "none",
+            "yearly",
+            "monthly"
+          ],
+          "operations": [
+            "create"
+          ]
         }
       ],
       "required": [
@@ -122,6 +145,29 @@
           "appBuilt": true,
           "operations": [
             "complete"
+          ]
+        },
+        {
+          "id": "lunarDate",
+          "type": "lunarDate",
+          "deviceOnly": false,
+          "appBuilt": false,
+          "operations": [
+            "create"
+          ]
+        },
+        {
+          "id": "lunarRecurrence",
+          "type": "enumChoice",
+          "deviceOnly": false,
+          "appBuilt": false,
+          "options": [
+            "none",
+            "yearly",
+            "monthly"
+          ],
+          "operations": [
+            "create"
           ]
         }
       ],

@@ -90,6 +90,9 @@ struct FieldEditorView: View {
             .frame(minHeight: Tokens.Size.buttonMinHeight)
         case .enumChoice, .durationMinutes:
             choiceList
+        case .lunarDate:
+            // TODO(spec): 4L.4 gives the lunar day / month picker; until then the encoded value is edited as text.
+            textControl(axis: .horizontal)
         case .contactRef, .placeRef, .coordinate:
             // Never edited here: S06 picker (1C.9) / S13 places (1C.13) set these. Review does not open S05 for them.
             EmptyView()

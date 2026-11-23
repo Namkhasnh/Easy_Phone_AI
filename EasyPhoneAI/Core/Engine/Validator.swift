@@ -151,6 +151,8 @@ enum Validator {
             return parseDate(value) != nil
         case .durationMinutes:
             return value.allSatisfy(\.isASCIIDigit) && Int(value) != nil
+        case .lunarDate:
+            return LunarFieldValue(value) != nil                         // D-332
         case .bool:
             return value == "true" || value == "false"
         case .phone:
