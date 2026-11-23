@@ -41,12 +41,6 @@
             "value": "06-01L",
             "confidence": 0.9,
             "sourceQuote": "Ngày 1 tháng 6 nhuận âm lịch"
-          },
-          {
-            "id": "lunarRecurrence",
-            "value": "none",
-            "confidence": 0.9,
-            "sourceQuote": null
           }
         ],
         "dateCandidates": []

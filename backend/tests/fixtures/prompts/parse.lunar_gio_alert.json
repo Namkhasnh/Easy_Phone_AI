@@ -3,7 +3,7 @@
   "source": "4L.3 lunar (D-332), parse.v7",
   "request": {
     "schemaVersion": 1,
-    "text": "Giỗ bà 20 tháng 7 âm, nhắc trước 1 ngày",
+    "text": "Thêm vào lịch giỗ bà 20 tháng 7 âm, nhắc trước 1 ngày",
     "inputMode": "text",
     "now": "2026-11-08T18:07:00+07:00",
     "timezone": "Asia/Ho_Chi_Minh",
@@ -28,7 +28,7 @@
             "id": "title",
             "value": "Giỗ bà",
             "confidence": 0.9,
-            "sourceQuote": "Giỗ bà"
+            "sourceQuote": "giỗ bà"
           },
           {
             "id": "startDate",
@@ -58,7 +58,7 @@
             "id": "lunarRecurrence",
             "value": "yearly",
             "confidence": 0.9,
-            "sourceQuote": "Giỗ"
+            "sourceQuote": "giỗ"
           }
         ],
         "dateCandidates": []

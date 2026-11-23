@@ -1,0 +1,73 @@
+{
+ "model": "gpt-6-luna",
+ "promptVersion": 7,
+ "date": "2026-11-23",
+ "results": [
+  {
+   "case": "date_lunar",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3162,
+   "tokens_in": 3482,
+   "tokens_out": 215,
+   "cost_usd": 0.000456
+  },
+  {
+   "case": "lunar_gio_alert",
+   "group": "§8.4 other",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 4015,
+   "tokens_in": 3490,
+   "tokens_out": 342,
+   "cost_usd": 0.00052
+  },
+  {
+   "case": "lunar_gio_yearly",
+   "group": "§8.4 other",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3335,
+   "tokens_in": 3484,
+   "tokens_out": 282,
+   "cost_usd": 0.000489
+  },
+  {
+   "case": "lunar_leap",
+   "group": "§8.4 other",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3784,
+   "tokens_in": 3485,
+   "tokens_out": 315,
+   "cost_usd": 0.000506
+  },
+  {
+   "case": "lunar_monthly_two",
+   "group": "§8.4 other",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 4037,
+   "tokens_in": 3492,
+   "tokens_out": 399,
+   "cost_usd": 0.000549
+  },
+  {
+   "case": "lunar_ram_next_month",
+   "group": "§8.4 other",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3358,
+   "tokens_in": 3480,
+   "tokens_out": 241,
+   "cost_usd": 0.000468
+  }
+ ]
+}

@@ -41,12 +41,6 @@
             "value": "N1-15",
             "confidence": 0.9,
             "sourceQuote": "Rằm tháng sau"
-          },
-          {
-            "id": "lunarRecurrence",
-            "value": "none",
-            "confidence": 0.9,
-            "sourceQuote": null
           }
         ],
         "dateCandidates": []

@@ -1,0 +1,997 @@
+{
+ "model": "gpt-6-luna",
+ "promptVersion": 6,
+ "date": "2026-11-23",
+ "results": [
+  {
+   "case": "E1",
+   "group": "examples E1–E8",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3879,
+   "tokens_in": 3448,
+   "tokens_out": 176,
+   "cost_usd": 0.000433
+  },
+  {
+   "case": "E2",
+   "group": "examples E1–E8",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2773,
+   "tokens_in": 3438,
+   "tokens_out": 103,
+   "cost_usd": 0.000395
+  },
+  {
+   "case": "E3",
+   "group": "examples E1–E8",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3099,
+   "tokens_in": 3432,
+   "tokens_out": 82,
+   "cost_usd": 0.000384
+  },
+  {
+   "case": "E4",
+   "group": "examples E1–E8",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2134,
+   "tokens_in": 3440,
+   "tokens_out": 110,
+   "cost_usd": 0.000399
+  },
+  {
+   "case": "E5",
+   "group": "examples E1–E8",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2320,
+   "tokens_in": 3449,
+   "tokens_out": 187,
+   "cost_usd": 0.000438
+  },
+  {
+   "case": "E6",
+   "group": "examples E1–E8",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2840,
+   "tokens_in": 3436,
+   "tokens_out": 97,
+   "cost_usd": 0.000392
+  },
+  {
+   "case": "E7",
+   "group": "examples E1–E8",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 4245,
+   "tokens_in": 3436,
+   "tokens_out": 307,
+   "cost_usd": 0.000497
+  },
+  {
+   "case": "E8",
+   "group": "examples E1–E8",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2049,
+   "tokens_in": 3438,
+   "tokens_out": 83,
+   "cost_usd": 0.000385
+  },
+  {
+   "case": "booking",
+   "group": "§8.4 other",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1476,
+   "tokens_in": 3433,
+   "tokens_out": 39,
+   "cost_usd": 0.000363
+  },
+  {
+   "case": "bulk_delete",
+   "group": "§8.4 other",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1641,
+   "tokens_in": 3434,
+   "tokens_out": 46,
+   "cost_usd": 0.000366
+  },
+  {
+   "case": "confirm_alone",
+   "group": "§8.4 other",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1421,
+   "tokens_in": 3430,
+   "tokens_out": 39,
+   "cost_usd": 0.000362
+  },
+  {
+   "case": "date_bare_hour_future",
+   "group": "§8.1 dates",
+   "passed": false,
+   "fails": [
+    "step0.dueDate: mismatch"
+   ],
+   "error": null,
+   "latency_ms": 1832,
+   "tokens_in": 3436,
+   "tokens_out": 100,
+   "cost_usd": 0.000394
+  },
+  {
+   "case": "date_day_month_order",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3263,
+   "tokens_in": 3443,
+   "tokens_out": 246,
+   "cost_usd": 0.000467
+  },
+  {
+   "case": "date_friday_today",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2155,
+   "tokens_in": 3440,
+   "tokens_out": 190,
+   "cost_usd": 0.000439
+  },
+  {
+   "case": "date_lunar",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3901,
+   "tokens_in": 3440,
+   "tokens_out": 323,
+   "cost_usd": 0.000506
+  },
+  {
+   "case": "date_midnight",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1783,
+   "tokens_in": 3442,
+   "tokens_out": 107,
+   "cost_usd": 0.000398
+  },
+  {
+   "case": "date_next_week",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3150,
+   "tokens_in": 3433,
+   "tokens_out": 214,
+   "cost_usd": 0.00045
+  },
+  {
+   "case": "date_numeric_past",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3160,
+   "tokens_in": 3441,
+   "tokens_out": 263,
+   "cost_usd": 0.000476
+  },
+  {
+   "case": "date_sunday_future",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3860,
+   "tokens_in": 3440,
+   "tokens_out": 302,
+   "cost_usd": 0.000495
+  },
+  {
+   "case": "date_sunday_passed",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3523,
+   "tokens_in": 3440,
+   "tokens_out": 211,
+   "cost_usd": 0.00045
+  },
+  {
+   "case": "date_this_friday_past",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2983,
+   "tokens_in": 3442,
+   "tokens_out": 245,
+   "cost_usd": 0.000467
+  },
+  {
+   "case": "date_weekend",
+   "group": "§8.1 dates",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3857,
+   "tokens_in": 3434,
+   "tokens_out": 326,
+   "cost_usd": 0.000506
+  },
+  {
+   "case": "emergency_call",
+   "group": "§8.4 other",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1756,
+   "tokens_in": 3432,
+   "tokens_out": 80,
+   "cost_usd": 0.000383
+  },
+  {
+   "case": "inject_current_draft",
+   "group": "§8.3 injection",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1924,
+   "tokens_in": 3543,
+   "tokens_out": 124,
+   "cost_usd": 0.000416
+  },
+  {
+   "case": "long_dictation",
+   "group": "§8.4 other",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 5458,
+   "tokens_in": 3470,
+   "tokens_out": 640,
+   "cost_usd": 0.000667
+  },
+  {
+   "case": "lunar_gio_alert",
+   "group": "§8.4 other",
+   "passed": false,
+   "fails": [
+    "step0.allDay: missing",
+    "step0.lunarDate: missing",
+    "step0.lunarRecurrence: missing"
+   ],
+   "error": null,
+   "latency_ms": 3797,
+   "tokens_in": 3444,
+   "tokens_out": 366,
+   "cost_usd": 0.000527
+  },
+  {
+   "case": "lunar_gio_yearly",
+   "group": "§8.4 other",
+   "passed": false,
+   "fails": [
+    "step0.allDay: missing",
+    "step0.lunarDate: missing",
+    "step0.lunarRecurrence: missing"
+   ],
+   "error": null,
+   "latency_ms": 3173,
+   "tokens_in": 3442,
+   "tokens_out": 253,
+   "cost_usd": 0.000471
+  },
+  {
+   "case": "lunar_leap",
+   "group": "§8.4 other",
+   "passed": false,
+   "fails": [
+    "step0.lunarDate: missing",
+    "step0.lunarRecurrence: missing"
+   ],
+   "error": null,
+   "latency_ms": 2770,
+   "tokens_in": 3443,
+   "tokens_out": 217,
+   "cost_usd": 0.000453
+  },
+  {
+   "case": "lunar_monthly_two",
+   "group": "§8.4 other",
+   "passed": false,
+   "fails": [
+    "unexpected unsupported"
+   ],
+   "error": null,
+   "latency_ms": 2336,
+   "tokens_in": 3450,
+   "tokens_out": 123,
+   "cost_usd": 0.000406
+  },
+  {
+   "case": "lunar_no_month",
+   "group": "§8.4 other",
+   "passed": false,
+   "fails": [
+    "step0.lunarDate: missing",
+    "step0.lunarRecurrence: missing"
+   ],
+   "error": null,
+   "latency_ms": 3192,
+   "tokens_in": 3440,
+   "tokens_out": 251,
+   "cost_usd": 0.00047
+  },
+  {
+   "case": "lunar_ram_next_month",
+   "group": "§8.4 other",
+   "passed": false,
+   "fails": [
+    "step0.lunarDate: missing",
+    "step0.lunarRecurrence: missing"
+   ],
+   "error": null,
+   "latency_ms": 5067,
+   "tokens_in": 3438,
+   "tokens_out": 300,
+   "cost_usd": 0.000494
+  },
+  {
+   "case": "mixed_language",
+   "group": "§8.4 other",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2089,
+   "tokens_in": 3437,
+   "tokens_out": 103,
+   "cost_usd": 0.000395
+  },
+  {
+   "case": "name_nickname",
+   "group": "§8.2 names",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1713,
+   "tokens_in": 3433,
+   "tokens_out": 80,
+   "cost_usd": 0.000383
+  },
+  {
+   "case": "name_phone_number",
+   "group": "§8.2 names",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1915,
+   "tokens_in": 3438,
+   "tokens_out": 90,
+   "cost_usd": 0.000389
+  },
+  {
+   "case": "name_plain",
+   "group": "§8.2 names",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2224,
+   "tokens_in": 3435,
+   "tokens_out": 104,
+   "cost_usd": 0.000396
+  },
+  {
+   "case": "name_two_recipients",
+   "group": "§8.2 names",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2172,
+   "tokens_in": 3438,
+   "tokens_out": 186,
+   "cost_usd": 0.000437
+  },
+  {
+   "case": "name_unclear",
+   "group": "§8.2 names",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1751,
+   "tokens_in": 3435,
+   "tokens_out": 85,
+   "cost_usd": 0.000386
+  },
+  {
+   "case": "x_cal_alert",
+   "group": "extra: calendar",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2207,
+   "tokens_in": 3450,
+   "tokens_out": 162,
+   "cost_usd": 0.000426
+  },
+  {
+   "case": "x_cal_allday",
+   "group": "extra: calendar",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2916,
+   "tokens_in": 3441,
+   "tokens_out": 207,
+   "cost_usd": 0.000448
+  },
+  {
+   "case": "x_cal_delete",
+   "group": "extra: calendar",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3377,
+   "tokens_in": 3441,
+   "tokens_out": 264,
+   "cost_usd": 0.000476
+  },
+  {
+   "case": "x_cal_dinner",
+   "group": "extra: calendar",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2754,
+   "tokens_in": 3441,
+   "tokens_out": 229,
+   "cost_usd": 0.000459
+  },
+  {
+   "case": "x_cal_kem",
+   "group": "extra: calendar",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2715,
+   "tokens_in": 3443,
+   "tokens_out": 198,
+   "cost_usd": 0.000443
+  },
+  {
+   "case": "x_cal_location",
+   "group": "extra: calendar",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2410,
+   "tokens_in": 3448,
+   "tokens_out": 145,
+   "cost_usd": 0.000417
+  },
+  {
+   "case": "x_cal_next_week",
+   "group": "extra: calendar",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2526,
+   "tokens_in": 3444,
+   "tokens_out": 184,
+   "cost_usd": 0.000436
+  },
+  {
+   "case": "x_cal_no_time",
+   "group": "extra: calendar",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2592,
+   "tokens_in": 3435,
+   "tokens_out": 200,
+   "cost_usd": 0.000444
+  },
+  {
+   "case": "x_cal_noon",
+   "group": "extra: calendar",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2015,
+   "tokens_in": 3440,
+   "tokens_out": 112,
+   "cost_usd": 0.0004
+  },
+  {
+   "case": "x_cal_numeric",
+   "group": "extra: calendar",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3039,
+   "tokens_in": 3444,
+   "tokens_out": 229,
+   "cost_usd": 0.000459
+  },
+  {
+   "case": "x_cal_ruoi",
+   "group": "extra: calendar",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2687,
+   "tokens_in": 3444,
+   "tokens_out": 183,
+   "cost_usd": 0.000436
+  },
+  {
+   "case": "x_cal_update",
+   "group": "extra: calendar",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2052,
+   "tokens_in": 3440,
+   "tokens_out": 192,
+   "cost_usd": 0.00044
+  },
+  {
+   "case": "x_call_dotted_number",
+   "group": "extra: calls",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1811,
+   "tokens_in": 3438,
+   "tokens_out": 90,
+   "cost_usd": 0.000389
+  },
+  {
+   "case": "x_call_kin",
+   "group": "extra: calls",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1766,
+   "tokens_in": 3434,
+   "tokens_out": 86,
+   "cost_usd": 0.000386
+  },
+  {
+   "case": "x_call_neighbor",
+   "group": "extra: calls",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1481,
+   "tokens_in": 3436,
+   "tokens_out": 91,
+   "cost_usd": 0.000389
+  },
+  {
+   "case": "x_call_police",
+   "group": "extra: calls",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1662,
+   "tokens_in": 3435,
+   "tokens_out": 81,
+   "cost_usd": 0.000384
+  },
+  {
+   "case": "x_call_voice",
+   "group": "extra: calls",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3513,
+   "tokens_in": 3434,
+   "tokens_out": 224,
+   "cost_usd": 0.000455
+  },
+  {
+   "case": "x_follow_day",
+   "group": "extra: follow-up answers",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2750,
+   "tokens_in": 3524,
+   "tokens_out": 166,
+   "cost_usd": 0.000435
+  },
+  {
+   "case": "x_follow_time",
+   "group": "extra: follow-up answers",
+   "passed": false,
+   "fails": [
+    "step0.dueDate: missing"
+   ],
+   "error": null,
+   "latency_ms": 1646,
+   "tokens_in": 3518,
+   "tokens_out": 87,
+   "cost_usd": 0.000395
+  },
+  {
+   "case": "x_multi_cal_call",
+   "group": "extra: several steps",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2971,
+   "tokens_in": 3442,
+   "tokens_out": 290,
+   "cost_usd": 0.000489
+  },
+  {
+   "case": "x_multi_rem_sms",
+   "group": "extra: several steps",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2847,
+   "tokens_in": 3449,
+   "tokens_out": 186,
+   "cost_usd": 0.000438
+  },
+  {
+   "case": "x_multi_two_reminders",
+   "group": "extra: several steps",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 3066,
+   "tokens_in": 3448,
+   "tokens_out": 246,
+   "cost_usd": 0.000468
+  },
+  {
+   "case": "x_place_directions",
+   "group": "extra: places",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1947,
+   "tokens_in": 3437,
+   "tokens_out": 112,
+   "cost_usd": 0.0004
+  },
+  {
+   "case": "x_place_google",
+   "group": "extra: places",
+   "passed": false,
+   "fails": [
+    "step0.mapsApp: missing"
+   ],
+   "error": null,
+   "latency_ms": 2059,
+   "tokens_in": 3437,
+   "tokens_out": 136,
+   "cost_usd": 0.000412
+  },
+  {
+   "case": "x_place_save_custom",
+   "group": "extra: places",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 5093,
+   "tokens_in": 3446,
+   "tokens_out": 502,
+   "cost_usd": 0.000596
+  },
+  {
+   "case": "x_rem_bare_hour_tomorrow",
+   "group": "extra: reminders",
+   "passed": false,
+   "fails": [
+    "step0.dueDate: missing"
+   ],
+   "error": null,
+   "latency_ms": 3150,
+   "tokens_in": 3437,
+   "tokens_out": 236,
+   "cost_usd": 0.000462
+  },
+  {
+   "case": "x_rem_complete",
+   "group": "extra: reminders",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1951,
+   "tokens_in": 3439,
+   "tokens_out": 64,
+   "cost_usd": 0.000376
+  },
+  {
+   "case": "x_rem_delete",
+   "group": "extra: reminders",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2184,
+   "tokens_in": 3436,
+   "tokens_out": 99,
+   "cost_usd": 0.000393
+  },
+  {
+   "case": "x_rem_full_date",
+   "group": "extra: reminders",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2685,
+   "tokens_in": 3451,
+   "tokens_out": 199,
+   "cost_usd": 0.000445
+  },
+  {
+   "case": "x_rem_hours_later",
+   "group": "extra: reminders",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2014,
+   "tokens_in": 3440,
+   "tokens_out": 107,
+   "cost_usd": 0.000398
+  },
+  {
+   "case": "x_rem_minutes",
+   "group": "extra: reminders",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2089,
+   "tokens_in": 3439,
+   "tokens_out": 107,
+   "cost_usd": 0.000397
+  },
+  {
+   "case": "x_rem_morning_no_hour",
+   "group": "extra: reminders",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1734,
+   "tokens_in": 3439,
+   "tokens_out": 101,
+   "cost_usd": 0.000394
+  },
+  {
+   "case": "x_rem_mot",
+   "group": "extra: reminders",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1874,
+   "tokens_in": 3444,
+   "tokens_out": 117,
+   "cost_usd": 0.000403
+  },
+  {
+   "case": "x_rem_snooze",
+   "group": "extra: reminders",
+   "passed": false,
+   "fails": [
+    "step0.title: missing",
+    "step0.snoozeOption: missing"
+   ],
+   "error": null,
+   "latency_ms": 1954,
+   "tokens_in": 3439,
+   "tokens_out": 128,
+   "cost_usd": 0.000408
+  },
+  {
+   "case": "x_rem_tonight",
+   "group": "extra: reminders",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1854,
+   "tokens_in": 3438,
+   "tokens_out": 102,
+   "cost_usd": 0.000395
+  },
+  {
+   "case": "x_rem_update",
+   "group": "extra: reminders",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1788,
+   "tokens_in": 3442,
+   "tokens_out": 104,
+   "cost_usd": 0.000396
+  },
+  {
+   "case": "x_scope_chitchat",
+   "group": "extra: out of scope",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1400,
+   "tokens_in": 3436,
+   "tokens_out": 43,
+   "cost_usd": 0.000365
+  },
+  {
+   "case": "x_scope_email",
+   "group": "extra: out of scope",
+   "passed": false,
+   "fails": [
+    "unsupported: steps returned",
+    "unsupported: missing or message"
+   ],
+   "error": null,
+   "latency_ms": 2317,
+   "tokens_in": 3438,
+   "tokens_out": 132,
+   "cost_usd": 0.00041
+  },
+  {
+   "case": "x_scope_food",
+   "group": "extra: out of scope",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1437,
+   "tokens_in": 3438,
+   "tokens_out": 43,
+   "cost_usd": 0.000365
+  },
+  {
+   "case": "x_scope_invite",
+   "group": "extra: out of scope",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1603,
+   "tokens_in": 3441,
+   "tokens_out": 75,
+   "cost_usd": 0.000382
+  },
+  {
+   "case": "x_scope_payment",
+   "group": "extra: out of scope",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1670,
+   "tokens_in": 3439,
+   "tokens_out": 40,
+   "cost_usd": 0.000364
+  },
+  {
+   "case": "x_scope_weekly",
+   "group": "extra: out of scope",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1660,
+   "tokens_in": 3441,
+   "tokens_out": 49,
+   "cost_usd": 0.000369
+  },
+  {
+   "case": "x_sms_boss",
+   "group": "extra: messages",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1701,
+   "tokens_in": 3441,
+   "tokens_out": 116,
+   "cost_usd": 0.000402
+  },
+  {
+   "case": "x_sms_daughter",
+   "group": "extra: messages",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1896,
+   "tokens_in": 3443,
+   "tokens_out": 116,
+   "cost_usd": 0.000402
+  },
+  {
+   "case": "x_sms_number",
+   "group": "extra: messages",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1925,
+   "tokens_in": 3444,
+   "tokens_out": 116,
+   "cost_usd": 0.000402
+  },
+  {
+   "case": "x_sms_three",
+   "group": "extra: messages",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2656,
+   "tokens_in": 3445,
+   "tokens_out": 262,
+   "cost_usd": 0.000476
+  },
+  {
+   "case": "x_sms_voice",
+   "group": "extra: messages",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1753,
+   "tokens_in": 3442,
+   "tokens_out": 112,
+   "cost_usd": 0.0004
+  },
+  {
+   "case": "x_sms_zalo",
+   "group": "extra: messages",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 2446,
+   "tokens_in": 3444,
+   "tokens_out": 166,
+   "cost_usd": 0.000427
+  },
+  {
+   "case": "x_voice_fillers",
+   "group": "extra: speech style",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1911,
+   "tokens_in": 3447,
+   "tokens_out": 107,
+   "cost_usd": 0.000398
+  },
+  {
+   "case": "x_voice_no_diacritics",
+   "group": "extra: speech style",
+   "passed": true,
+   "fails": [],
+   "error": null,
+   "latency_ms": 1831,
+   "tokens_in": 3440,
+   "tokens_out": 105,
+   "cost_usd": 0.000396
+  }
+ ]
+}

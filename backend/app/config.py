@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     MODEL_VISION: str = "gpt-6-luna"  # D-052
     MODEL_TRANSCRIBE: str = "gpt-4o-mini-transcribe"  # D-052
     MODEL_SUMMARIZE: str = "gpt-6-luna"  # Phase 2 only (D-052)
-    PROMPT_VERSION_PARSE: int = 6  # v2: viewCalendar (D-294); v3: callType FaceTime (D-300); v4: checkMail (D-304); v5: emailReply drafts (D-304, D-307); v6: "xem mã" → checkMail (D-311)
+    PROMPT_VERSION_PARSE: int = 7  # v7: LUNAR DATES → lunarDate / lunarRecurrence (D-332, live eval 2026-11-23); v2: viewCalendar (D-294); v3: callType FaceTime (D-300); v4: checkMail (D-304); v5: emailReply drafts (D-304, D-307); v6: "xem mã" → checkMail (D-311)
     PROMPT_VERSION_EXTRACT: int = 1
     PROMPT_VERSION_REPAIR: int = 1
     PROMPT_VERSION_OCR: int = 1  # 1D.4 `/v1/ocr`
