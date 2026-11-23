@@ -149,7 +149,7 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
     /// A parsed draft (local or AI) → device resolution and S04 rules → one system confirmation for all steps →
     /// run. Anything the panel cannot show or decide continues in S03 / S04 with this same draft (nothing re-parsed).
     func finish(_ parsed: ParsedDraft, in draft: TaskDraft, intent: AskKhoaiIntent) async throws -> Reply {
-        let defaults = DraftBuilder.Defaults(mapsApp: env.localData.settings().preferredMapsApp)
+        let defaults = DraftBuilder.Defaults(mapsApp: env.localData.settings().preferredMapsApp, timeZoneId: draft.timeZoneId)
         guard env.engine.applyParsed(parsed, to: draft, defaults: defaults) else {
             draft.markAnswered(parsed.requestId)
             env.drafts.save(draft)

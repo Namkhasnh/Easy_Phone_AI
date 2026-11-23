@@ -14,6 +14,10 @@ enum DraftBuilder {
         var mapsApp: String = "googleMaps"    // D-298
         /// `ambiguity.date` = "Bạn muốn chọn ngày nào?" (UI_SCREENS §10). Injected so the builder stays pure.
         var dateQuestion: String = String(localized: "ambiguity.date")
+        /// 4L.4: hour of a lunar reminder said without an hour ("rằm nhắc tôi đi chùa").
+        // TODO(spec): D-331 says "that morning"; 08:00 like the snooze morning default (AppSettings), not a setting yet.
+        var lunarMorningHour: Int = 8
+        var timeZoneId: String = "Asia/Ho_Chi_Minh"
     }
 
     // MARK: - Build from a device event (S11 "Sửa" / "Xóa")
@@ -92,8 +96,45 @@ enum DraftBuilder {
             field(spec, kind: kind, operation: operation, parsed: parsed, defaults: defaults)
         }
         let step = TaskStep(order: order, kind: kind, operation: operation, state: .draft,
-                            fields: fields, stateChangedAt: now)
+                            fields: applyingLunar(fields, kind: kind, now: now, defaults: defaults),
+                            stateChangedAt: now)
         return Validator.applyRequired(step, catalog: catalog)
+    }
+
+    /// 4L.4 (D-331, D-332): a valid `lunarDate` fills `startDate` / `dueDate` with the first solar date, computed here
+    /// (`source = .device("lunar")`, the LLM never gives it). Yearly in a leap month → a date ambiguity (D-106).
+    /// A calendarEvent with no hour is all-day. Nothing changes when `lunarDate` is empty or invalid.
+    static func applyingLunar(_ fields: [Field], kind: TaskKind, now: Date, defaults: Defaults) -> [Field] {
+        let dateId = kind == .calendarEvent ? "startDate" : kind == .reminder ? "dueDate" : nil
+        guard let dateId, let raw = fields.first(where: { $0.id == "lunarDate" })?.value,
+              let lunar = LunarFieldValue(raw), let index = fields.firstIndex(where: { $0.id == dateId })
+        else { return fields }
+        let recurrence = fields.first(where: { $0.id == "lunarRecurrence" })?.value
+            .flatMap(LunarResolver.Recurrence.init(rawValue:)) ?? (lunar.isEveryMonth ? .monthly : .none)
+        let tz = TimeZone(identifier: defaults.timeZoneId) ?? LunarCalendar.vietnamTimeZone
+        let allDay = kind == .calendarEvent && lunar.hour == nil
+        let hour = kind == .calendarEvent ? 0 : defaults.lunarMorningHour
+        func value(_ o: LunarResolver.Occurrence) -> String? {
+            LunarResolver.dateTime(o, hour: lunar.hour, minute: lunar.minute, defaultHour: hour, timeZone: tz)
+        }
+        var result = fields
+        result[index].source = .device(origin: "lunar")
+        result[index].confidence = nil
+        switch LunarResolver.resolve(lunar, recurrence: recurrence, now: now) {
+        case .date(let o):
+            result[index].value = value(o)
+        case .choose(let options):
+            result[index].value = nil
+            result[index].ambiguity = Ambiguity(kind: .date, question: defaults.dateQuestion, candidates: options.compactMap { o in
+                value(o).map { Candidate(id: $0, title: FieldFormatter.lunarDate(LunarFieldValue(month: o.lunar.month, day: o.lunar.day,
+                                                                                                  isLeap: o.lunar.isLeap)),
+                                         subtitle: LunarQuestion.solarName(o.solar), imageRef: nil) }
+            })
+        case .none:
+            result[index].value = nil                        // asked as a missing date (follow-up / S05)
+        }
+        if allDay, let a = result.firstIndex(where: { $0.id == "allDay" }) { result[a].value = "true" }
+        return result
     }
 
     private static func field(_ spec: FieldSpec, kind: TaskKind, operation: TaskOperation, parsed: ParsedStep,

@@ -667,7 +667,7 @@ import OSLog
     }
 
     private func handle(_ parsed: ParsedDraft, isAnswer: Bool, draft: TaskDraft, returnMode: Mode) async {
-        let defaults = DraftBuilder.Defaults(mapsApp: settings.preferredMapsApp)
+        let defaults = DraftBuilder.Defaults(mapsApp: settings.preferredMapsApp, timeZoneId: draft.timeZoneId)
         if isAnswer {
             guard parsed.unsupported == nil else {
                 // TODO(spec): an `unsupported` reply to a follow-up answer is not specified; the same question is
