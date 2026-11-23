@@ -73,14 +73,26 @@ import os
     }
 
     private func update(_ step: TaskStep) async throws -> ExecutionOutcome {
-        guard let target = step.targetRef, let input = Self.input(from: step) else { return .failed(code: "eventkit.saveFailed") }
-        let id = try await reminders.save(input, stepTag: StepTag.make(step.id), existing: target)
+        guard let target = step.targetRef, let input = Self.input(from: step),
+              let current = try await reminders.find(identifier: target) else { return .failed(code: "eventkit.saveFailed") }
+        // 4L.5 (D-331): the other open reminders of a lunar series keep their own due date and take the rest.
+        // The original tag is kept so the create step and the series still find them (D-105).
+        let id = try await reminders.save(input, stepTag: current.stepTag ?? StepTag.make(step.id), existing: target)
+        for member in try await reminders.series(of: current) where member.id != target {
+            var each = input
+            each.dueDate = member.dueDate ?? input.dueDate
+            _ = try await reminders.save(each, stepTag: member.stepTag ?? StepTag.make(step.id), existing: member.id)
+        }
         return try await verify(id) { $0.title == input.title && $0.dueDate == input.dueDate }
     }
 
     private func delete(_ step: TaskStep) async throws -> ExecutionOutcome {
         guard let target = step.targetRef else { return .failed(code: "eventkit.saveFailed") }
-        if try await reminders.find(identifier: target) != nil {             // already gone → no second call
+        if let current = try await reminders.find(identifier: target) {      // already gone → no second call
+            // 4L.5 (D-331): the open reminders of the lunar series go too; the target last (a retry finds the rest).
+            for member in try await reminders.series(of: current) where member.id != target {
+                try await reminders.delete(identifier: member.id)
+            }
             try await reminders.delete(identifier: target)
         }
         guard try await reminders.find(identifier: target) == nil else { return .failed(code: "eventkit.saveFailed") }

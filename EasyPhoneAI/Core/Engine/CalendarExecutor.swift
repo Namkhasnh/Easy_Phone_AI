@@ -75,11 +75,27 @@ import os
     private func update(_ step: TaskStep, canRead: Bool) async throws -> ExecutionOutcome {
         // Write-only access cannot read the event to change (D-185 explains; Settings to fix).
         guard canRead else { return .failed(code: ServiceError.permissionDenied(.calendar).code) }
-        guard let target = step.targetRef, let input = Self.input(from: step) else {
+        guard let target = step.targetRef, var input = Self.input(from: step),
+              let current = try await calendar.find(identifier: target) else {
             return .failed(code: "eventkit.saveFailed")
         }
-        // Saving the same values twice is harmless, so an update needs no lookup before writing.
-        let id = try await calendar.save(input, stepTag: StepTag.make(step.id), existing: target)
+        // 4L.5 (D-331): a lunar series changes as a whole. The target takes every field; the others keep their own
+        // date and take the rest (title, place, notes, alarm, calendar).
+        // TODO(spec): D-331 does not say what a date change means for the other years; only the target moves.
+        let members = try await calendar.series(of: current)
+        if members.count > 1, input.isAllDay, input.alertMinutesBefore == LunarSeries.allDayAlerts[0] {
+            input.extraAlertMinutesBefore = Array(LunarSeries.allDayAlerts.dropFirst())   // keep both giỗ alarms
+        }
+        // Saving the same values twice is harmless, so an update needs no lookup before writing. The original tag is
+        // kept, so the create step and the series still find the event (D-105).
+        let id = try await calendar.save(input, stepTag: current.stepTag ?? StepTag.make(step.id), existing: target)
+        for member in members where member.id != target {
+            var each = input
+            each.start = member.start
+            each.end = member.end
+            each.isAllDay = member.isAllDay
+            _ = try await calendar.save(each, stepTag: member.stepTag ?? StepTag.make(step.id), existing: member.id)
+        }
         return try await verify(id, input, canRead: true)
     }
 
@@ -87,7 +103,12 @@ import os
         guard canRead else { return .failed(code: ServiceError.permissionDenied(.calendar).code) }
         guard let target = step.targetRef else { return .failed(code: "eventkit.saveFailed") }
         // 5. Already gone (e.g. retry after the delete went through) → done, no second call.
-        if try await calendar.find(identifier: target) != nil {
+        if let current = try await calendar.find(identifier: target) {
+            // 4L.5 (D-331): the whole lunar series goes (the tap on Review covers it, D-108). The target is removed
+            // last, so a retry after a failure still finds the rest through it.
+            for member in try await calendar.series(of: current) where member.id != target {
+                try await calendar.delete(identifier: member.id)
+            }
             try await calendar.delete(identifier: target)
         }
         // 6. Re-read: the identifier must no longer be found (DATA_MODEL §3.5).

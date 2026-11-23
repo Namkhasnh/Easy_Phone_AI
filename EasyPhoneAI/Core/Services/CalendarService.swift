@@ -48,6 +48,12 @@ enum StepTag {
         guard let url, url.scheme == scheme else { return nil }
         return url.absoluteString
     }
+
+    /// `easyphone:<stepId>` of a tag: drops a lunar series suffix (`easyphone:<stepId>:<suffix>`, 4L.5).
+    static func base(_ tag: String) -> String {
+        let parts = tag.split(separator: ":", maxSplits: 2, omittingEmptySubsequences: false)
+        return parts.count == 3 ? "\(parts[0]):\(parts[1])" : tag
+    }
 }
 
 /// EventKit calendar (ARCHITECTURE §4.2). Reads need full access → else `ServiceError.permissionDenied(.calendar)`;
@@ -66,6 +72,20 @@ protocol CalendarService: Sendable {
     /// Creates (`existing == nil`) or updates; returns the `eventIdentifier`.
     func save(_ event: EventInput, stepTag: String, existing: String?) async throws -> String
     func delete(identifier: String) async throws
+}
+
+extension CalendarService {
+    /// 4L.5 (D-331): every event of the lunar series `event` belongs to (same `easyphone:<stepId>` base tag), by
+    /// start; just `[event]` when it has no tag or is not part of a series.
+    func series(of event: EventSummary) async throws -> [EventSummary] {
+        guard let tag = event.stepTag else { return [event] }
+        let base = StepTag.base(tag)
+        var found = [event.id: event]
+        for window in CalendarSearch.seriesWindows(around: event.start) {
+            for e in try await events(in: window) where e.stepTag.map(StepTag.base) == base { found[e.id] = e }
+        }
+        return found.values.sorted { $0.start < $1.start }
+    }
 }
 
 extension EventSummary {
@@ -95,6 +115,16 @@ enum CalendarSearch {
 
     static func around(_ date: Date) -> DateInterval {
         DateInterval(start: date - 2 * 86_400, end: date + 2 * 86_400)
+    }
+
+    /// 4L.5: three 4-year windows (the EventKit cap) covering 6 years before and after `date`, so every item of a
+    /// 5-year lunar series is found from any one of them.
+    static func seriesWindows(around date: Date) -> [DateInterval] {
+        let half: TimeInterval = 2 * 365 * 86_400
+        return (-1...1).map { i in
+            let center = date + TimeInterval(i) * 2 * half
+            return DateInterval(start: center - half, end: center + half)
+        }
     }
 
     static func tagWindow(now: Date) -> DateInterval {
