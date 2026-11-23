@@ -29,7 +29,7 @@ import os
         }
         do {
             switch step.operation {
-            case .create: return try await create(step)
+            case .create: return try await create(step, timeZoneId: draft.timeZoneId)
             case .update: return try await update(step)
             case .delete: return try await delete(step)
             case .complete: return try await complete(step)
@@ -46,16 +46,30 @@ import os
 
     // MARK: - Operations
 
-    private func create(_ step: TaskStep) async throws -> ExecutionOutcome {
+    private func create(_ step: TaskStep, timeZoneId: String) async throws -> ExecutionOutcome {
         guard let input = Self.input(from: step) else { return .failed(code: "eventkit.saveFailed") }
         let tag = StepTag.make(step.id)
         // 5. Idempotency (D-105): stored evidence, then the `easyphone:<stepId>` tag.
         if let id = Self.reminderId(step.resultEvidence), try await reminders.find(identifier: id) != nil {
             return .verified(evidence: Self.evidence(id))
         }
-        if let found = try await reminders.find(stepTag: tag) { return .verified(evidence: Self.evidence(found.id)) }
-        let id = try await reminders.save(input, stepTag: tag, existing: nil)
-        return try await verify(id) { $0.title == input.title && $0.dueDate == input.dueDate }
+        let outcome: ExecutionOutcome
+        if let found = try await reminders.find(stepTag: tag) {
+            outcome = .verified(evidence: Self.evidence(found.id))
+        } else {
+            let id = try await reminders.save(input, stepTag: tag, existing: nil)
+            outcome = try await verify(id) { $0.title == input.title && $0.dueDate == input.dueDate }
+        }
+        guard case .verified = outcome else { return outcome }
+        // 4L.5 (D-331): the rest of a lunar yearly / monthly series, one reminder each (looked up first, D-105).
+        for item in LunarSeries.following(step, timeZoneId: timeZoneId) {
+            let itemTag = LunarSeries.tag(step.id, item.suffix)
+            if try await reminders.find(stepTag: itemTag) != nil { continue }
+            var next = input
+            next.dueDate = item.start
+            _ = try await reminders.save(next, stepTag: itemTag, existing: nil)
+        }
+        return outcome
     }
 
     private func update(_ step: TaskStep) async throws -> ExecutionOutcome {

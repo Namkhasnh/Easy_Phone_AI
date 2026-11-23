@@ -20,7 +20,10 @@ import os
         let canRead = access == .granted
         do {
             switch step.operation {
-            case .create: return try await create(step, canRead: canRead)
+            case .create:
+                let outcome = try await create(step, canRead: canRead)
+                guard case .verified = outcome else { return outcome }
+                return try await createSeries(step, draft: draft, canRead: canRead) ?? outcome
             case .update: return try await update(step, canRead: canRead)
             case .delete: return try await delete(step, canRead: canRead)
             default: return .failed(code: "unsupported")
@@ -49,6 +52,24 @@ import os
         }
         let id = try await calendar.save(input, stepTag: tag, existing: nil)
         return try await verify(id, input, canRead: canRead)
+    }
+
+    /// 4L.5 (D-331): the rest of a lunar yearly / monthly series, one event each, tag `easyphone:<stepId>:<suffix>`.
+    /// Each is looked up near its date first, so a retry never duplicates (D-105). Any failure → `failed` (the retry
+    /// then skips what exists); nil = nothing more to write. Write-only access cannot look up → writes once.
+    private func createSeries(_ step: TaskStep, draft: TaskDraft, canRead: Bool) async throws -> ExecutionOutcome? {
+        let items = LunarSeries.following(step, timeZoneId: draft.timeZoneId)
+        guard !items.isEmpty, let base = Self.input(from: step) else { return nil }
+        for item in items {
+            let tag = LunarSeries.tag(step.id, item.suffix)
+            if canRead, try await calendar.find(stepTag: tag, around: item.start) != nil { continue }
+            var input = base
+            input.start = item.start
+            input.end = item.start + base.end.timeIntervalSince(base.start)
+            _ = try await calendar.save(input, stepTag: tag, existing: nil)
+        }
+        logger.info("lunar series \(items.count + 1, privacy: .public) events")
+        return nil
     }
 
     private func update(_ step: TaskStep, canRead: Bool) async throws -> ExecutionOutcome {
@@ -134,10 +155,16 @@ import os
             return nil
         }
         let end = value("endDate").flatMap(Validator.parseDateTime) ?? start + 60 * 60
-        return EventInput(title: title, start: start, end: end, isAllDay: value("allDay") == "true",
-                          location: value("location"), notes: value("notes"),
-                          alertMinutesBefore: value("alertMinutesBefore").flatMap { Int($0) },
-                          calendarId: value("calendarId"))
+        var input = EventInput(title: title, start: start, end: end, isAllDay: value("allDay") == "true",
+                               location: value("location"), notes: value("notes"),
+                               alertMinutesBefore: value("alertMinutesBefore").flatMap { Int($0) },
+                               calendarId: value("calendarId"))
+        if step.operation == .create, input.isAllDay, value("lunarDate").flatMap(LunarFieldValue.init) != nil {
+            // D-331: a lunar all-day event (giỗ…) reminds 08:00 the day before and 07:00 that day.
+            input.alertMinutesBefore = LunarSeries.allDayAlerts[0]
+            input.extraAlertMinutesBefore = Array(LunarSeries.allDayAlerts.dropFirst())
+        }
+        return input
     }
 
     static func matches(_ saved: EventSummary, _ input: EventInput) -> Bool {

@@ -31,6 +31,10 @@ actor LiveCalendarService: CalendarService {
         try readableStore().event(withIdentifier: identifier).map(Self.summary)
     }
 
+    func find(stepTag: String, around date: Date) async throws -> EventSummary? {
+        try await events(in: CalendarSearch.around(date)).first { $0.stepTag == stepTag }
+    }
+
     func find(stepTag: String) async throws -> EventSummary? {
         try await events(in: CalendarSearch.tagWindow(now: now())).first { $0.stepTag == stepTag }
     }
@@ -132,7 +136,8 @@ actor LiveCalendarService: CalendarService {
         event.location = input.location
         event.notes = input.notes
         event.url = URL(string: stepTag)                          // D-225
-        event.alarms = input.alertMinutesBefore.map { [EKAlarm(relativeOffset: TimeInterval(-$0 * 60))] }
+        let minutes = (input.alertMinutesBefore.map { [$0] } ?? []) + input.extraAlertMinutesBefore
+        event.alarms = minutes.isEmpty ? nil : minutes.map { EKAlarm(relativeOffset: TimeInterval(-$0 * 60)) }
     }
 }
 

@@ -31,6 +31,8 @@ struct EventInput: Sendable, Hashable {
     var location: String?
     var notes: String?
     var alertMinutesBefore: Int?
+    /// 4L.5 (D-331): more alarms after the first (lunar all-day: the day before + that morning).
+    var extraAlertMinutesBefore: [Int] = []
     /// nil = the default calendar for new events.
     var calendarId: String?
 }
@@ -56,6 +58,9 @@ protocol CalendarService: Sendable {
     func conflicts(start: Date, end: Date) async throws -> [EventSummary]
     func find(identifier: String) async throws -> EventSummary?
     func find(stepTag: String) async throws -> EventSummary?
+    /// 4L.5: the tagged item near `date` (± 2 days). A 5-year lunar series lies beyond `tagWindow` (EventKit queries
+    /// span at most 4 years), so each occurrence is looked up where it should be.
+    func find(stepTag: String, around date: Date) async throws -> EventSummary?
     /// Candidates for `targetRef` (update / delete); closest to `near` first.
     func search(title: String?, near: Date?) async throws -> [EventSummary]
     /// Creates (`existing == nil`) or updates; returns the `eventIdentifier`.
@@ -86,6 +91,10 @@ enum CalendarSearch {
         let day: TimeInterval = 86_400
         if let near { return DateInterval(start: near - 30 * day, end: near + 30 * day) }
         return DateInterval(start: now - day, end: now + 365 * day)
+    }
+
+    static func around(_ date: Date) -> DateInterval {
+        DateInterval(start: date - 2 * 86_400, end: date + 2 * 86_400)
     }
 
     static func tagWindow(now: Date) -> DateInterval {
