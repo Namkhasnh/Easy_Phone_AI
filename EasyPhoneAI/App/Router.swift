@@ -19,6 +19,8 @@ enum Route: Hashable, Sendable {
     case mail(codesOnly: Bool)
     /// S21 "Trả lời" (2.6b): S03 listening for the reply content; the step gets the thread + address from `context`.
     case mailReply(MailReplyContext)
+    /// S22 "Ngày giỗ & lễ" (4L.6, D-331).
+    case lunarDays
 }
 
 /// Owns the single `NavigationStack(path:)`. Reopen at the exact step = `.review(draftId)` (spec §6.10 AC2).

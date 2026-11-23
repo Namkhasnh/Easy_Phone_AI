@@ -178,6 +178,9 @@ struct RootView: View {
             RemindersView(viewModel: RemindersViewModel(reminders: env.reminders, permissions: env.permissions,
                                                         repository: env.drafts, engine: env.engine,
                                                         snoozeMorningHour: env.localData.settings().snoozeMorningHour))
+        case .lunarDays:
+            LunarDaysView(viewModel: LunarDaysViewModel(repository: env.drafts, calendar: env.calendar,
+                                                        reminders: env.reminders, permissions: env.permissions))
         case .places:
             PlacesView(viewModel: PlacesViewModel(places: env.places, localData: env.localData, engine: env.engine))
         case .ocr:

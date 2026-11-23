@@ -92,8 +92,8 @@ struct HomeTests {
 
     @Test func simpleModeKeepsOnlyCalendarLink() {
         let vm = model()
-        #expect(vm.quickLinks == [.calendar, .reminders, .places])
-        #expect(vm.quickLinks.map(\.route) == [.calendarToday, .reminders, .places])
+        #expect(vm.quickLinks == [.calendar, .reminders, .lunarDays, .places])
+        #expect(vm.quickLinks.map(\.route) == [.calendarToday, .reminders, .lunarDays, .places])
         local.settings().simpleMode = true
         #expect(vm.quickLinks == [.calendar])                              // P-40
     }

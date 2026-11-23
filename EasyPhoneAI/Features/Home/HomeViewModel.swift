@@ -5,13 +5,14 @@ import Observation
 @Observable @MainActor final class HomeViewModel {
     /// Quick-link tiles (UI_SCREENS S02). Simple mode keeps only "Lịch hôm nay" (P-40).
     enum QuickLink: String, CaseIterable, Identifiable, Sendable {
-        case calendar, reminders, places
+        case calendar, reminders, lunarDays, places
         var id: String { rawValue }
         var titleKey: String { "home.link.\(rawValue)" }
         var route: Route {
             switch self {
             case .calendar: .calendarToday
             case .reminders: .reminders
+            case .lunarDays: .lunarDays
             case .places: .places
             }
         }
@@ -20,6 +21,7 @@ import Observation
             switch self {
             case .calendar: "calendar"
             case .reminders: "checklist"
+            case .lunarDays: "moon.stars"
             case .places: "mappin.and.ellipse"
             }
         }

@@ -7908,6 +7908,198 @@
           }
         }
       }
+    },
+    "home.link.lunarDays" : {
+      "comment" : "UI_SCREENS_P4 S22 Ngày giỗ & lễ (4L.6, D-331)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngày giỗ & lễ"
+          }
+        }
+      }
+    },
+    "lunarDays.title" : {
+      "comment" : "UI_SCREENS_P4 S22 Ngày giỗ & lễ (4L.6, D-331)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngày giỗ & lễ"
+          }
+        }
+      }
+    },
+    "lunarDays.saved.title" : {
+      "comment" : "UI_SCREENS_P4 S22 Ngày giỗ & lễ (4L.6, D-331)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngày đã lưu"
+          }
+        }
+      }
+    },
+    "lunarDays.saved.empty" : {
+      "comment" : "UI_SCREENS_P4 S22 Ngày giỗ & lễ (4L.6, D-331)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa có ngày giỗ nào. Bạn nói với Khoai, ví dụ: “Giỗ ông ngày 10 tháng 3 âm lịch”."
+          }
+        }
+      }
+    },
+    "lunarDays.holidays.title" : {
+      "comment" : "UI_SCREENS_P4 S22 Ngày giỗ & lễ (4L.6, D-331)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngày lễ âm lịch"
+          }
+        }
+      }
+    },
+    "lunarDays.next" : {
+      "comment" : "UI_SCREENS_P4 S22 Ngày giỗ & lễ (4L.6, D-331)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · còn %2$@ ngày"
+          }
+        }
+      }
+    },
+    "lunarDays.next.today" : {
+      "comment" : "UI_SCREENS_P4 S22 Ngày giỗ & lễ (4L.6, D-331)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · hôm nay"
+          }
+        }
+      }
+    },
+    "lunarDays.add" : {
+      "comment" : "UI_SCREENS_P4 S22 Ngày giỗ & lễ (4L.6, D-331)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm ngày giỗ"
+          }
+        }
+      }
+    },
+    "lunarDays.holiday.tet" : {
+      "comment" : "UI_SCREENS_P4 S22 Ngày giỗ & lễ (4L.6, D-331)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tết Nguyên Đán"
+          }
+        }
+      }
+    },
+    "lunarDays.holiday.ramGieng" : {
+      "comment" : "UI_SCREENS_P4 S22 Ngày giỗ & lễ (4L.6, D-331)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rằm tháng Giêng"
+          }
+        }
+      }
+    },
+    "lunarDays.holiday.gioTo" : {
+      "comment" : "UI_SCREENS_P4 S22 Ngày giỗ & lễ (4L.6, D-331)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giỗ Tổ Hùng Vương"
+          }
+        }
+      }
+    },
+    "lunarDays.holiday.phatDan" : {
+      "comment" : "UI_SCREENS_P4 S22 Ngày giỗ & lễ (4L.6, D-331)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lễ Phật Đản"
+          }
+        }
+      }
+    },
+    "lunarDays.holiday.doanNgo" : {
+      "comment" : "UI_SCREENS_P4 S22 Ngày giỗ & lễ (4L.6, D-331)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tết Đoan Ngọ"
+          }
+        }
+      }
+    },
+    "lunarDays.holiday.vuLan" : {
+      "comment" : "UI_SCREENS_P4 S22 Ngày giỗ & lễ (4L.6, D-331)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lễ Vu Lan"
+          }
+        }
+      }
+    },
+    "lunarDays.holiday.trungThu" : {
+      "comment" : "UI_SCREENS_P4 S22 Ngày giỗ & lễ (4L.6, D-331)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tết Trung thu"
+          }
+        }
+      }
+    },
+    "lunarDays.holiday.ongTao" : {
+      "comment" : "UI_SCREENS_P4 S22 Ngày giỗ & lễ (4L.6, D-331)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ông Công ông Táo"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
