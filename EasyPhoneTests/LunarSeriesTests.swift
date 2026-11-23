@@ -142,4 +142,50 @@ struct LunarSeriesTests {
         guard case .verified = await executor.execute(s, draft: sd) else { Issue.record("not verified"); return }
         #expect(reminders.all.map(\.id) == [items[0].id])
     }
+
+    // MARK: - Extend on launch (4L.6, D-331)
+
+    /// 10/3 âm 2031 = the 5th giỗ; from then only it (and nothing after) is ahead → the next 5 years are due.
+    static let in2030 = ISO8601DateFormatter().date(from: "2030-06-01T10:00:00+07:00")!
+
+    @Test func noExtensionWhileTwoAreAhead() {
+        let d = draft(.calendarEvent, [("title", "Giỗ ông"), ("lunarDate", "03-10"), ("lunarRecurrence", "yearly")])
+        #expect(LunarSeries.extensionPlan(d.steps[0], timeZoneId: "Asia/Ho_Chi_Minh", now: Self.now) == nil)
+        let plan = LunarSeries.extensionPlan(d.steps[0], timeZoneId: "Asia/Ho_Chi_Minh", now: Self.in2030)
+        #expect(plan?.items.map(\.suffix) == ["2032", "2033", "2034", "2035", "2036"])
+        #expect(plan?.ends.map(\.suffix) == ["2031"])
+    }
+
+    @Test func launchAddsTheNextFiveYearsOnce() async throws {
+        let calendar = MockCalendarService()
+        let executor = CalendarExecutor(calendar: calendar, permissions: MockPermissionManager())
+        let d = draft(.calendarEvent, [("title", "Giỗ ông"), ("lunarDate", "03-10"), ("lunarRecurrence", "yearly")])
+        _ = await executor.execute(d.steps[0], draft: d)
+        #expect(await executor.extendSeries(d.steps[0], draft: d, now: Self.now) == 0)
+        #expect(await executor.extendSeries(d.steps[0], draft: d, now: Self.in2030) == 5)
+        #expect(await executor.extendSeries(d.steps[0], draft: d, now: Self.in2030) == 0)        // idempotent
+        let years = calendar.all.map { LunarCalendar.lunar(from: Self.day($0.start)).year }
+        #expect(years == Array(2027...2036))
+    }
+
+    @Test func deletedSeriesIsNotRecreated() async throws {
+        let calendar = MockCalendarService()
+        let executor = CalendarExecutor(calendar: calendar, permissions: MockPermissionManager())
+        let d = draft(.calendarEvent, [("title", "Giỗ ông"), ("lunarDate", "03-10"), ("lunarRecurrence", "yearly")])
+        _ = await executor.execute(d.steps[0], draft: d)
+        for e in calendar.all { try await calendar.delete(identifier: e.id) }                  // deleted in Lịch
+        #expect(await executor.extendSeries(d.steps[0], draft: d, now: Self.in2030) == 0)
+        #expect(calendar.all.isEmpty)
+    }
+
+    @Test func monthlyReminderExtendsWithTwelveMore() async throws {
+        let reminders = MockRemindersService()
+        let executor = RemindersExecutor(reminders: reminders, permissions: MockPermissionManager(),
+                                         now: { Self.now }, morningHour: { 7 })
+        let d = draft(.reminder, [("title", "Thắp hương"), ("lunarDate", "00-01T06:00"), ("lunarRecurrence", "monthly")])
+        _ = await executor.execute(d.steps[0], draft: d)
+        let later = try #require(reminders.all.last?.dueDate) - 10 * 86_400                    // only the last one ahead
+        #expect(await executor.extendSeries(d.steps[0], draft: d, now: later) == 12)
+        #expect(reminders.all.count == 24)
+    }
 }

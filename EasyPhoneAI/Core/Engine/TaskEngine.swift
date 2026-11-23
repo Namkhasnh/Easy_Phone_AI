@@ -461,6 +461,17 @@ import os
         return true
     }
 
+    /// 4L.6 (D-331): on launch, every succeeded lunar series that runs short gets its next block. Writes items only,
+    /// never a step state. Returns how many were written.
+    func extendLunarSeries() async -> Int {
+        var written = 0
+        for (draftId, step) in repository.steps(in: [.succeeded]) where LunarSeries.recurrence(of: step) != nil {
+            guard let draft = repository.draft(draftId), let executor = executors[step.kind] else { continue }
+            written += await executor.extendSeries(step, draft: draft, now: now())
+        }
+        return written
+    }
+
     // MARK: - Linked steps (DATA_MODEL §3.3, D-120)
 
     /// Copies the current value of each source field into every field linked to it (`.linked(stepId:fieldId:)`,

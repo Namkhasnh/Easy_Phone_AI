@@ -59,7 +59,16 @@ import os
     /// then skips what exists); nil = nothing more to write. Write-only access cannot look up → writes once.
     private func createSeries(_ step: TaskStep, draft: TaskDraft, canRead: Bool) async throws -> ExecutionOutcome? {
         let items = LunarSeries.following(step, timeZoneId: draft.timeZoneId)
-        guard !items.isEmpty, let base = Self.input(from: step) else { return nil }
+        guard !items.isEmpty else { return nil }
+        let written = try await write(items, of: step, canRead: canRead)
+        logger.info("lunar series \(written + 1, privacy: .public) events")
+        return nil
+    }
+
+    /// Writes the series items not found near their date. Returns how many were written.
+    private func write(_ items: [LunarSeries.Item], of step: TaskStep, canRead: Bool) async throws -> Int {
+        guard let base = Self.input(from: step) else { return 0 }
+        var written = 0
         for item in items {
             let tag = LunarSeries.tag(step.id, item.suffix)
             if canRead, try await calendar.find(stepTag: tag, around: item.start) != nil { continue }
@@ -67,9 +76,31 @@ import os
             input.start = item.start
             input.end = item.start + base.end.timeIntervalSince(base.start)
             _ = try await calendar.save(input, stepTag: tag, existing: nil)
+            written += 1
         }
-        logger.info("lunar series \(items.count + 1, privacy: .public) events")
-        return nil
+        return written
+    }
+
+    /// 4L.6 (D-331): the next block of a lunar series, after the newest block end still in the calendar. None left
+    /// (the user deleted the series, here or in Lịch) → nothing. Needs full access (lookups first, D-105).
+    func extendSeries(_ step: TaskStep, draft: TaskDraft, now: Date) async -> Int {
+        guard permissions.status(.calendar) == .granted,
+              let plan = LunarSeries.extensionPlan(step, timeZoneId: draft.timeZoneId, now: now) else { return 0 }
+        do {
+            // Already extended (the newest item exists) → no more lookups.
+            if let last = plan.items.last,
+               try await calendar.find(stepTag: LunarSeries.tag(step.id, last.suffix), around: last.start) != nil {
+                return 0
+            }
+            for end in plan.ends {
+                guard try await calendar.find(stepTag: LunarSeries.tag(step.id, end.suffix), around: end.start) != nil
+                else { continue }
+                return try await write(Array(plan.items.drop { $0.start <= end.start }), of: step, canRead: true)
+            }
+        } catch {
+            logger.info("lunar series extension failed")
+        }
+        return 0
     }
 
     private func update(_ step: TaskStep, canRead: Bool) async throws -> ExecutionOutcome {

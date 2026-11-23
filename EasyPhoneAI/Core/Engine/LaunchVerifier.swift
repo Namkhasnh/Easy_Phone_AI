@@ -47,5 +47,7 @@ import OSLog
             if await engine.verifyOnLaunch(stepId: step.id, in: draft) { verified += 1 }
         }
         logger.info("launch verification: \(unknown.count, privacy: .public) unknown, \(verified, privacy: .public) verified")
+        let extended = await engine.extendLunarSeries()
+        logger.info("lunar series extended: \(extended, privacy: .public)")
     }
 }

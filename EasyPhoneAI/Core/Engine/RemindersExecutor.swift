@@ -62,14 +62,42 @@ import os
         }
         guard case .verified = outcome else { return outcome }
         // 4L.5 (D-331): the rest of a lunar yearly / monthly series, one reminder each (looked up first, D-105).
-        for item in LunarSeries.following(step, timeZoneId: timeZoneId) {
+        _ = try await write(LunarSeries.following(step, timeZoneId: timeZoneId), input: input, of: step)
+        return outcome
+    }
+
+    /// Writes the series items not found by tag. Returns how many were written.
+    private func write(_ items: [LunarSeries.Item], input: ReminderInput, of step: TaskStep) async throws -> Int {
+        var written = 0
+        for item in items {
             let itemTag = LunarSeries.tag(step.id, item.suffix)
             if try await reminders.find(stepTag: itemTag) != nil { continue }
             var next = input
             next.dueDate = item.start
             _ = try await reminders.save(next, stepTag: itemTag, existing: nil)
+            written += 1
         }
-        return outcome
+        return written
+    }
+
+    /// 4L.6 (D-331): the next 12 months of a lunar series, after the newest block end still in Reminders (done ones
+    /// count). None left (deleted) → nothing.
+    func extendSeries(_ step: TaskStep, draft: TaskDraft, now: Date) async -> Int {
+        guard permissions.status(.reminders) == .granted, let input = Self.input(from: step),
+              let plan = LunarSeries.extensionPlan(step, timeZoneId: draft.timeZoneId, now: now) else { return 0 }
+        do {
+            // Already extended (the newest item exists) → no more lookups.
+            if let last = plan.items.last, try await reminders.find(stepTag: LunarSeries.tag(step.id, last.suffix)) != nil {
+                return 0
+            }
+            for end in plan.ends {
+                guard try await reminders.find(stepTag: LunarSeries.tag(step.id, end.suffix)) != nil else { continue }
+                return try await write(Array(plan.items.drop { $0.start <= end.start }), input: input, of: step)
+            }
+        } catch {
+            logger.info("lunar series extension failed")
+        }
+        return 0
     }
 
     private func update(_ step: TaskStep) async throws -> ExecutionOutcome {
