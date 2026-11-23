@@ -420,6 +420,9 @@ import os
         step.fields[f].source = .user
         step.fields[f].confidence = nil
         step.fields[f].ambiguity = nil
+        // 4L.4 (D-332): the lunar row and the solar date stay in step.
+        step.fields = DraftBuilder.lunarSynced(after: fieldId, fields: step.fields, kind: step.kind, now: now(),
+                                               defaults: DraftBuilder.Defaults(timeZoneId: draft.timeZoneId))
 
         if step.state == .succeeded { Self.turnIntoUpdate(&step) }  // D-290
         if step.state != .draft {

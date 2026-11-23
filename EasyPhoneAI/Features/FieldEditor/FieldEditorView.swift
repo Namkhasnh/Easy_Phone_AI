@@ -91,11 +91,38 @@ struct FieldEditorView: View {
         case .enumChoice, .durationMinutes:
             choiceList
         case .lunarDate:
-            // TODO(spec): 4L.4 gives the lunar day / month picker; until then the encoded value is edited as text.
-            textControl(axis: .horizontal)
+            lunarControl                                              // 4L.4 (D-332)
         case .contactRef, .placeRef, .coordinate:
             // Never edited here: S06 picker (1C.9) / S13 places (1C.13) set these. Review does not open S05 for them.
             EmptyView()
+        }
+    }
+
+    /// 4L.4: lunar day + month (Giêng … Chạp, or "Hằng tháng") + "Tháng nhuận". Wheels stay usable at AX5 (no fixed sizes).
+    // TODO(spec): UI_SCREENS S05 has no lunar editor layout; simplest pickers + toggle.
+    private var lunarControl: some View {
+        VStack(alignment: .leading, spacing: Tokens.Space.m) {
+            Picker(selection: $viewModel.lunarDay) {
+                ForEach(1...30, id: \.self) { Text(verbatim: String($0)).tag($0) }
+            } label: { Text("lunar.editor.day") }
+                .pickerStyle(.menu)
+                .font(Tokens.Fonts.fieldValue)
+                .frame(minHeight: Tokens.Size.buttonMinHeight)
+            Picker(selection: $viewModel.lunarMonth) {
+                ForEach(viewModel.lunarMonths, id: \.self) { Text(verbatim: viewModel.lunarMonthLabel($0)).tag($0) }
+            } label: { Text("lunar.editor.month") }
+                .pickerStyle(.menu)
+                .font(Tokens.Fonts.fieldValue)
+                .frame(minHeight: Tokens.Size.buttonMinHeight)
+            if viewModel.lunarMonth != 0 {
+                Toggle(isOn: $viewModel.lunarLeap) {
+                    Text("lunar.editor.leap")
+                        .font(Tokens.Fonts.fieldValue)
+                        .foregroundStyle(Tokens.Colors.textPrimary)
+                }
+                .tint(Tokens.Colors.primary)
+                .frame(minHeight: Tokens.Size.buttonMinHeight)
+            }
         }
     }
 
@@ -182,6 +209,10 @@ private func editorPreview(_ field: Field, kind: TaskKind, op: TaskOperation = .
 #Preview("Date-time, dark") {
     editorPreview(Field(id: "dueDate", type: .dateTime, value: "2099-11-09T08:00:00+07:00"), kind: .reminder)
         .preferredColorScheme(.dark)
+}
+
+#Preview("Lunar date (4L.4)") {
+    editorPreview(Field(id: "lunarDate", type: .lunarDate, value: "03-10"), kind: .calendarEvent)
 }
 
 #Preview("Alert choices") {

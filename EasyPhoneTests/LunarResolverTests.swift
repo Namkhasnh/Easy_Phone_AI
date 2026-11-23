@@ -88,4 +88,47 @@ struct LunarResolverTests {
             ("title", "Uống thuốc"), ("dueDate", "2026-11-23T20:00:00+07:00")]), order: 0, now: Self.now))
         #expect(step.field("dueDate")?.value == "2026-11-23T20:00:00+07:00" && step.field("dueDate")?.source == .ai)
     }
+
+    // MARK: - Edits keep both rows in step (4L.4)
+
+    @MainActor @Test func editingTheLunarDateRecomputesTheSolarDate() throws {
+        let repo = MockTaskRepository()
+        let engine = TaskEngine(repository: repo, now: { Self.now })
+        let draft = TaskDraft(inputMode: .text, originalInput: "Giỗ ông 10/3 âm", timeZoneId: "Asia/Ho_Chi_Minh")
+        let parsed = ParsedDraft(schemaVersion: 1, requestId: nil, steps: [Self.parsed("calendarEvent", [
+            ("title", "Giỗ ông"), ("lunarDate", "03-10"), ("lunarRecurrence", "yearly")])],
+                                 followUpQuestion: nil, unsupported: nil)
+        engine.applyParsed(parsed, to: draft)
+        let id = draft.steps[0].id
+        #expect(engine.edit(fieldId: "lunarDate", value: "07-20", stepId: id, in: draft))
+        let expected = try #require(LunarCalendar.solar(from: LunarDate(day: 20, month: 7, year: 2027)))
+        let start = try #require(draft.steps[0].field("startDate")?.value)
+        #expect(start.hasPrefix(String(format: "%04d-%02d-%02d", expected.year, expected.month, expected.day)))
+    }
+
+    @MainActor @Test func editingTheSolarDateRewritesTheLunarDate() throws {
+        let repo = MockTaskRepository()
+        let engine = TaskEngine(repository: repo, now: { Self.now })
+        let draft = TaskDraft(inputMode: .text, originalInput: "Rằm hằng tháng thắp hương 6 giờ", timeZoneId: "Asia/Ho_Chi_Minh")
+        let parsed = ParsedDraft(schemaVersion: 1, requestId: nil, steps: [Self.parsed("reminder", [
+            ("title", "Thắp hương"), ("lunarDate", "00-15T06:00"), ("lunarRecurrence", "monthly")])],
+                                 followUpQuestion: nil, unsupported: nil)
+        engine.applyParsed(parsed, to: draft)
+        // 9/12/2026 = mùng 1 tháng 11 → still every month, now day 1 at 07:00.
+        #expect(engine.edit(fieldId: "dueDate", value: "2026-12-09T07:00:00+07:00", stepId: draft.steps[0].id, in: draft))
+        #expect(draft.steps[0].field("lunarDate")?.value == "00-01T07:00")
+        #expect(draft.steps[0].field("lunarRecurrence")?.value == "monthly")
+    }
+
+    @MainActor @Test func editorOpensARelativeMonthOnItsResolvedMonth() {
+        let field = Field(id: "lunarDate", type: .lunarDate, value: "N1-15T06:00")
+        let step = TaskStep(order: 0, kind: .reminder, operation: .create, fields: [field])
+        let vm = FieldEditorViewModel(field: field, step: step, timeZoneId: "Asia/Ho_Chi_Minh", now: { Self.now }, onSave: { _ in })
+        #expect(vm.lunarMonth == 11 && vm.lunarDay == 15 && !vm.lunarLeap)
+        #expect(vm.encodedValue == "11-15T06:00")                         // the hour said is kept
+        vm.lunarMonth = 0
+        vm.lunarLeap = true
+        #expect(vm.encodedValue == "00-15T06:00")                         // every month: never leap
+        #expect(vm.lunarMonthLabel(1) == "Tháng Giêng" && vm.lunarMonthLabel(0) == "Hằng tháng")
+    }
 }

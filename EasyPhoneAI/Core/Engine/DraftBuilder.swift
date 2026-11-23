@@ -137,6 +137,37 @@ enum DraftBuilder {
         return result
     }
 
+    /// 4L.4: keeps the lunar and solar rows in step after a user edit (S05). Editing `lunarDate` / `lunarRecurrence`
+    /// re-computes the solar date; editing the solar date of a lunar step re-writes `lunarDate` from the new day
+    /// (recurrence kept: "every month" stays month 00). Other edits and non-lunar steps change nothing.
+    static func lunarSynced(after fieldId: String, fields: [Field], kind: TaskKind, now: Date,
+                            defaults: Defaults) -> [Field] {
+        let dateId = kind == .calendarEvent ? "startDate" : kind == .reminder ? "dueDate" : nil
+        guard let dateId, let li = fields.firstIndex(where: { $0.id == "lunarDate" }),
+              let old = fields[li].value.flatMap(LunarFieldValue.init) else { return fields }
+        if fieldId == "lunarDate" || fieldId == "lunarRecurrence" {
+            return applyingLunar(fields, kind: kind, now: now, defaults: defaults)
+        }
+        guard fieldId == dateId, let raw = fields.first(where: { $0.id == dateId })?.value,
+              let date = Validator.parseDateTime(raw) else { return fields }
+        let tz = TimeZone(identifier: defaults.timeZoneId) ?? LunarCalendar.vietnamTimeZone
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = tz
+        let c = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+        guard let y = c.year, let m = c.month, let d = c.day else { return fields }
+        let lunar = LunarCalendar.lunar(from: SolarDay(day: d, month: m, year: y))
+        let allDay = fields.first(where: { $0.id == "allDay" })?.value == "true"
+        let timed = kind == .reminder || !allDay
+        let new = LunarFieldValue(year: old.year.map { _ in lunar.year },
+                                  month: old.isEveryMonth ? 0 : lunar.month, day: lunar.day,
+                                  isLeap: old.isEveryMonth ? false : lunar.isLeap,
+                                  hour: timed ? c.hour : nil, minute: timed ? c.minute : nil)
+        var result = fields
+        result[li].value = new.encoded
+        result[li].source = .device(origin: "lunar")
+        return result
+    }
+
     private static func field(_ spec: FieldSpec, kind: TaskKind, operation: TaskOperation, parsed: ParsedStep,
                               defaults: Defaults) -> Field {
         var field = Field(id: spec.id, type: spec.type, source: .ai, deviceOnly: spec.deviceOnly)

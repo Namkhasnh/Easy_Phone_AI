@@ -12,6 +12,14 @@ import Observation
     var text: String
     /// Date-like value (dateTime, date), in `timeZone`.
     var date: Date
+    /// 4L.4 `lunarDate` editor: day 1…30, month 0 (every month) or 1…12, leap only with a month number.
+    var lunarDay = 1
+    var lunarMonth = 1
+    var lunarLeap = false
+    /// Kept from the value as said (year, hour) — not edited here.
+    private var lunarYear: Int?
+    private var lunarHour: Int?
+    private var lunarMinute: Int?
 
     private let step: TaskStep
     private let now: () -> Date
@@ -37,9 +45,39 @@ import Observation
         default:
             date = now()
         }
+        if field.type == .lunarDate { loadLunar(field.value) }
     }
 
     var titleKey: String { field.labelKey(kind: kind) }
+
+    /// A relative month (N0 / N1 / NX) opens on the month it resolves to today; nothing → today's lunar date.
+    private func loadLunar(_ raw: String?) {
+        let today = LunarCalendar.lunar(from: now())
+        guard let v = raw.flatMap(LunarFieldValue.init) else {
+            lunarDay = today.day; lunarMonth = today.month
+            return
+        }
+        lunarDay = v.day; lunarYear = v.year; lunarHour = v.hour; lunarMinute = v.minute
+        switch v.monthToken {
+        case .number(let m):
+            lunarMonth = m; lunarLeap = v.isLeap
+        default:
+            if case .date(let o) = LunarResolver.resolve(v, recurrence: .none, now: now()) {
+                lunarMonth = o.lunar.month; lunarLeap = o.lunar.isLeap; lunarDay = o.lunar.day
+            } else {
+                lunarMonth = today.month
+            }
+        }
+    }
+
+    /// Month rows: "Hằng tháng" (0) + Giêng … Chạp.
+    var lunarMonths: [Int] { Array(0...12) }
+
+    func lunarMonthLabel(_ month: Int) -> String {
+        month == 0 ? UserMessage(key: "lunar.editor.everyMonth").text
+            : UserMessage(key: "lunar.editor.monthName",
+                          args: [LunarQuestion.monthName(LunarDate(day: 1, month: month, year: 2000))]).text
+    }
 
     /// Choices for `enumChoice` / `durationMinutes` (catalog options; alert list P-35 keeps a non-listed AI value).
     var options: [String] {
@@ -70,6 +108,10 @@ import Observation
         case .phone:
             let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
             return trimmed.isEmpty ? nil : (Validator.normalizePhone(trimmed) ?? trimmed)
+        case .lunarDate:
+            let everyMonth = lunarMonth == 0
+            return LunarFieldValue(year: everyMonth ? nil : lunarYear, month: lunarMonth, day: lunarDay,
+                                   isLeap: !everyMonth && lunarLeap, hour: lunarHour, minute: lunarMinute).encoded
         default:
             return text.isEmpty ? nil : text
         }

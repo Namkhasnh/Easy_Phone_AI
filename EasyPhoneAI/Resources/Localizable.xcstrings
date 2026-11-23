@@ -7848,6 +7848,66 @@
           }
         }
       }
+    },
+    "lunar.editor.day" : {
+      "comment" : "UI_SCREENS S05 lunar editor (4L.4, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngày âm"
+          }
+        }
+      }
+    },
+    "lunar.editor.month" : {
+      "comment" : "UI_SCREENS S05 lunar editor (4L.4, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tháng âm"
+          }
+        }
+      }
+    },
+    "lunar.editor.everyMonth" : {
+      "comment" : "UI_SCREENS S05 lunar editor (4L.4, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hằng tháng"
+          }
+        }
+      }
+    },
+    "lunar.editor.monthName" : {
+      "comment" : "UI_SCREENS S05 lunar editor (4L.4, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tháng %@"
+          }
+        }
+      }
+    },
+    "lunar.editor.leap" : {
+      "comment" : "UI_SCREENS S05 lunar editor (4L.4, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tháng nhuận"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
