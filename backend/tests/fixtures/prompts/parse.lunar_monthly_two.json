@@ -1,0 +1,89 @@
+{
+  "case": "lunar_monthly_two",
+  "source": "4L.3 lunar (D-332), parse.v7",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Mùng 1 và rằm hằng tháng nhắc tôi thắp hương lúc 6 giờ sáng",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Thắp hương",
+            "confidence": 0.9,
+            "sourceQuote": "thắp hương"
+          },
+          {
+            "id": "dueDate",
+            "value": null,
+            "confidence": null,
+            "sourceQuote": null
+          },
+          {
+            "id": "lunarDate",
+            "value": "00-01T06:00",
+            "confidence": 0.95,
+            "sourceQuote": "Mùng 1"
+          },
+          {
+            "id": "lunarRecurrence",
+            "value": "monthly",
+            "confidence": 0.95,
+            "sourceQuote": "hằng tháng"
+          }
+        ],
+        "dateCandidates": []
+      },
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Thắp hương",
+            "confidence": 0.9,
+            "sourceQuote": "thắp hương"
+          },
+          {
+            "id": "dueDate",
+            "value": null,
+            "confidence": null,
+            "sourceQuote": null
+          },
+          {
+            "id": "lunarDate",
+            "value": "00-15T06:00",
+            "confidence": 0.95,
+            "sourceQuote": "rằm"
+          },
+          {
+            "id": "lunarRecurrence",
+            "value": "monthly",
+            "confidence": 0.95,
+            "sourceQuote": "hằng tháng"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

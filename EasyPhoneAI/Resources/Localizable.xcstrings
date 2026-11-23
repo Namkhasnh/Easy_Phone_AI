@@ -7812,6 +7812,42 @@
           }
         }
       }
+    },
+    "lunar.field.thisMonth" : {
+      "comment" : "UI_SCREENS §10.3 lunar values N0 / N1 / NX (4L.3, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngày %@ tháng này (âm lịch)"
+          }
+        }
+      }
+    },
+    "lunar.field.nextMonth" : {
+      "comment" : "UI_SCREENS §10.3 lunar values N0 / N1 / NX (4L.3, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngày %@ tháng sau (âm lịch)"
+          }
+        }
+      }
+    },
+    "lunar.field.next" : {
+      "comment" : "UI_SCREENS §10.3 lunar values N0 / N1 / NX (4L.3, D-332)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngày %@ âm lịch sắp tới"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

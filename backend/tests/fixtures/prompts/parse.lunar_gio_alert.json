@@ -1,0 +1,70 @@
+{
+  "case": "lunar_gio_alert",
+  "source": "4L.3 lunar (D-332), parse.v7",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Giỗ bà 20 tháng 7 âm, nhắc trước 1 ngày",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "calendarEvent",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Giỗ bà",
+            "confidence": 0.9,
+            "sourceQuote": "Giỗ bà"
+          },
+          {
+            "id": "startDate",
+            "value": null,
+            "confidence": null,
+            "sourceQuote": null
+          },
+          {
+            "id": "allDay",
+            "value": "true",
+            "confidence": 0.8,
+            "sourceQuote": null
+          },
+          {
+            "id": "alertMinutesBefore",
+            "value": "1440",
+            "confidence": 0.9,
+            "sourceQuote": "nhắc trước 1 ngày"
+          },
+          {
+            "id": "lunarDate",
+            "value": "07-20",
+            "confidence": 0.95,
+            "sourceQuote": "20 tháng 7 âm"
+          },
+          {
+            "id": "lunarRecurrence",
+            "value": "yearly",
+            "confidence": 0.9,
+            "sourceQuote": "Giỗ"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

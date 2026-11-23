@@ -37,6 +37,14 @@ enum FieldFormatter {
         let base: String
         if v.isEveryMonth {
             base = UserMessage(key: "lunar.field.monthly", args: [String(v.day)]).text
+        } else if v.monthToken != .number(v.month) {
+            // N0 / N1 / NX: "Rằm tháng này (âm lịch)"… until 4L.4 resolves the month on device.
+            let key = switch v.monthToken {
+            case .thisMonth: "lunar.field.thisMonth"
+            case .nextMonth: "lunar.field.nextMonth"
+            default: "lunar.field.next"
+            }
+            base = UserMessage(key: key, args: [String(v.day)]).text
         } else {
             let month = v.year.map { "\(v.month)/\($0)" } ?? String(v.month)
             base = UserMessage(key: v.isLeap ? "lunar.field.leapDate" : "lunar.field.date",
