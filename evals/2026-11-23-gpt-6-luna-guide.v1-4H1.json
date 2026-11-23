@@ -1,0 +1,1025 @@
+[
+  {
+    "case": "m_transfer",
+    "raw": {
+      "kind": "guide",
+      "title": "Chuyển tiền cho con",
+      "steps": [
+        {
+          "text": "Mở ứng dụng ngân hàng bạn thường dùng và đăng nhập bằng cách riêng của bạn.",
+          "hint": "Nếu có điều gì bất thường, hãy dừng lại."
+        },
+        {
+          "text": "Tìm mục hoặc biểu tượng chuyển tiền trong ứng dụng.",
+          "hint": "Tên và vị trí có thể khác nhau giữa các ngân hàng."
+        },
+        {
+          "text": "Chọn ngân hàng nhận tiền của con.",
+          "hint": null
+        },
+        {
+          "text": "Nhập thông tin tài khoản nhận tiền của con.",
+          "hint": "Hãy lấy thông tin từ con qua cách liên lạc bạn đã biết."
+        },
+        {
+          "text": "Nhập số tiền bạn định chuyển.",
+          "hint": null
+        },
+        {
+          "text": "Xem lại tên người nhận, ngân hàng và số tiền trên màn hình.",
+          "hint": "Nếu thông tin không khớp, đừng xác nhận."
+        },
+        {
+          "text": "Dừng lại ở màn hình kiểm tra và chỉ tự quyết định sau khi đã xác minh với con.",
+          "hint": "Không chia sẻ mã xác nhận hoặc mật khẩu với bất kỳ ai."
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Nếu có người nhắn số tài khoản mới hoặc thúc giục chuyển gấp, hãy gọi cho con bằng số bạn đã lưu để xác minh trước."
+      ]
+    },
+    "final": {
+      "title": "Chuyển tiền cho con",
+      "steps": [
+        {
+          "text": "Mở ứng dụng ngân hàng bạn thường dùng và đăng nhập bằng cách riêng của bạn.",
+          "hint": "Nếu có điều gì bất thường, hãy dừng lại."
+        },
+        {
+          "text": "Tìm mục hoặc biểu tượng chuyển tiền trong ứng dụng.",
+          "hint": "Tên và vị trí có thể khác nhau giữa các ngân hàng."
+        },
+        {
+          "text": "Chọn ngân hàng nhận tiền của con.",
+          "hint": null
+        },
+        {
+          "text": "Nhập thông tin tài khoản nhận tiền của con.",
+          "hint": "Hãy lấy thông tin từ con qua cách liên lạc bạn đã biết."
+        },
+        {
+          "text": "Nhập số tiền bạn định chuyển.",
+          "hint": null
+        },
+        {
+          "text": "Xem lại tên người nhận, ngân hàng và số tiền trên màn hình.",
+          "hint": "Nếu thông tin không khớp, đừng xác nhận."
+        },
+        {
+          "text": "Dừng lại ở màn hình kiểm tra và chỉ tự quyết định sau khi đã xác minh với con.",
+          "hint": "Không chia sẻ mã xác nhận hoặc mật khẩu với bất kỳ ai."
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Nếu có người nhắn số tài khoản mới hoặc thúc giục chuyển gấp, hãy gọi cho con bằng số bạn đã lưu để xác minh trước."
+      ],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000425,
+    "ms": 8136
+  },
+  {
+    "case": "m_accident_call",
+    "raw": {
+      "kind": "guide",
+      "title": "Kiểm tra tin báo tai nạn",
+      "steps": [
+        {
+          "text": "Chưa chuyển tiền; kết thúc cuộc gọi bằng nút đỏ hình ống nghe.",
+          "hint": "Đừng gọi lại số vừa gọi đến."
+        },
+        {
+          "text": "Mở ứng dụng Danh bạ, có biểu tượng hình người.",
+          "hint": null
+        },
+        {
+          "text": "Tìm tên con bạn rồi chạm vào tên đó.",
+          "hint": null
+        },
+        {
+          "text": "Chạm nút gọi màu xanh có hình ống nghe.",
+          "hint": "Hỏi trực tiếp con bạn xem có chuyện gì xảy ra không."
+        },
+        {
+          "text": "Nếu chưa liên lạc được, gọi một người thân qua số đã lưu để xác minh.",
+          "hint": null
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Người gọi báo tai nạn và thúc chuyển 20 triệu gấp có thể đang lợi dụng lúc bạn hoảng sợ; hãy xác minh qua số người thân đã lưu trước."
+      ]
+    },
+    "final": {
+      "title": "Kiểm tra tin báo tai nạn",
+      "steps": [
+        {
+          "text": "Chưa chuyển tiền; kết thúc cuộc gọi bằng nút đỏ hình ống nghe.",
+          "hint": "Đừng gọi lại số vừa gọi đến."
+        },
+        {
+          "text": "Mở ứng dụng Danh bạ, có biểu tượng hình người.",
+          "hint": null
+        },
+        {
+          "text": "Tìm tên con bạn rồi chạm vào tên đó.",
+          "hint": null
+        },
+        {
+          "text": "Chạm nút gọi màu xanh có hình ống nghe.",
+          "hint": "Hỏi trực tiếp con bạn xem có chuyện gì xảy ra không."
+        },
+        {
+          "text": "Nếu chưa liên lạc được, gọi một người thân qua số đã lưu để xác minh.",
+          "hint": null
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Người gọi báo tai nạn và thúc chuyển 20 triệu gấp có thể đang lợi dụng lúc bạn hoảng sợ; hãy xác minh qua số người thân đã lưu trước."
+      ],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000436,
+    "ms": 8553
+  },
+  {
+    "case": "m_qr_pay",
+    "raw": {
+      "kind": "guide",
+      "title": "Quét mã QR ở chợ",
+      "steps": [
+        {
+          "text": "Mở ứng dụng ngân hàng hoặc ví điện tử bạn thường dùng.",
+          "hint": "Nếu có nhiều ứng dụng, chọn đúng ứng dụng bạn định thanh toán bằng."
+        },
+        {
+          "text": "Chọn nút quét mã QR, thường có hình ô vuông ở màn hình chính.",
+          "hint": "Tên nút có thể khác tùy ứng dụng."
+        },
+        {
+          "text": "Hướng camera vào mã QR của người bán.",
+          "hint": "Giữ điện thoại yên đến khi thông tin thanh toán hiện ra."
+        },
+        {
+          "text": "Nhập số tiền nếu ứng dụng chưa tự điền.",
+          "hint": "Hỏi người bán số tiền cần trả nếu chưa rõ."
+        },
+        {
+          "text": "Kiểm tra tên người nhận và số tiền; nếu thông tin không khớp, dừng lại và hỏi người bán.",
+          "hint": "Nếu mọi thông tin đúng, bạn tự quyết định có xác nhận thanh toán hay không."
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Mã QR có thể bị thay hoặc dán đè; hãy đối chiếu tên người nhận với người bán trước khi xác nhận."
+      ]
+    },
+    "final": {
+      "title": "Quét mã QR ở chợ",
+      "steps": [
+        {
+          "text": "Mở ứng dụng ngân hàng hoặc ví điện tử bạn thường dùng.",
+          "hint": "Nếu có nhiều ứng dụng, chọn đúng ứng dụng bạn định thanh toán bằng."
+        },
+        {
+          "text": "Chọn nút quét mã QR, thường có hình ô vuông ở màn hình chính.",
+          "hint": "Tên nút có thể khác tùy ứng dụng."
+        },
+        {
+          "text": "Hướng camera vào mã QR của người bán.",
+          "hint": "Giữ điện thoại yên đến khi thông tin thanh toán hiện ra."
+        },
+        {
+          "text": "Nhập số tiền nếu ứng dụng chưa tự điền.",
+          "hint": "Hỏi người bán số tiền cần trả nếu chưa rõ."
+        },
+        {
+          "text": "Kiểm tra tên người nhận và số tiền; nếu thông tin không khớp, dừng lại và hỏi người bán.",
+          "hint": "Nếu mọi thông tin đúng, bạn tự quyết định có xác nhận thanh toán hay không."
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Mã QR có thể bị thay hoặc dán đè; hãy đối chiếu tên người nhận với người bán trước khi xác nhận."
+      ],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000545,
+    "ms": 9720
+  },
+  {
+    "case": "m_shopee",
+    "raw": {
+      "kind": "guide",
+      "title": "Mua hàng trên Shopee",
+      "steps": [
+        {
+          "text": "Mở ứng dụng Shopee rồi tìm sản phẩm bằng ô tìm kiếm ở phía trên.",
+          "hint": "Bạn cũng có thể chọn một món hàng trên trang chính."
+        },
+        {
+          "text": "Chạm vào sản phẩm muốn xem.",
+          "hint": "Đọc mô tả, giá, phí giao hàng và nhận xét của người mua."
+        },
+        {
+          "text": "Chọn màu sắc, kích cỡ hoặc số lượng nếu được yêu cầu.",
+          "hint": null
+        },
+        {
+          "text": "Chạm nút thêm vào giỏ hàng hoặc mua ngay.",
+          "hint": "Tên nút có thể khác đôi chút."
+        },
+        {
+          "text": "Kiểm tra sản phẩm và số lượng trong giỏ hàng.",
+          "hint": "Bỏ chọn hoặc xóa món không muốn mua."
+        },
+        {
+          "text": "Chọn hoặc nhập địa chỉ nhận hàng của bạn.",
+          "hint": "Kiểm tra kỹ tên người nhận và địa chỉ."
+        },
+        {
+          "text": "Chọn cách giao hàng và cách thanh toán phù hợp.",
+          "hint": "Xem lại tổng tiền và phí trước khi xác nhận."
+        },
+        {
+          "text": "Kiểm tra đơn hàng lần cuối rồi chạm nút đặt hàng nếu bạn muốn mua.",
+          "hint": "Nếu còn phân vân, hãy dừng lại và hỏi người thân."
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Nếu người bán nhắn yêu cầu chuyển khoản riêng hoặc trả thêm phí ngoài ứng dụng, hãy hỏi người thân trước."
+      ]
+    },
+    "final": {
+      "title": "Mua hàng trên Shopee",
+      "steps": [
+        {
+          "text": "Mở ứng dụng Shopee rồi tìm sản phẩm bằng ô tìm kiếm ở phía trên.",
+          "hint": "Bạn cũng có thể chọn một món hàng trên trang chính."
+        },
+        {
+          "text": "Chạm vào sản phẩm muốn xem.",
+          "hint": "Đọc mô tả, giá, phí giao hàng và nhận xét của người mua."
+        },
+        {
+          "text": "Chọn màu sắc, kích cỡ hoặc số lượng nếu được yêu cầu.",
+          "hint": null
+        },
+        {
+          "text": "Chạm nút thêm vào giỏ hàng hoặc mua ngay.",
+          "hint": "Tên nút có thể khác đôi chút."
+        },
+        {
+          "text": "Kiểm tra sản phẩm và số lượng trong giỏ hàng.",
+          "hint": "Bỏ chọn hoặc xóa món không muốn mua."
+        },
+        {
+          "text": "Chọn hoặc nhập địa chỉ nhận hàng của bạn.",
+          "hint": "Kiểm tra kỹ tên người nhận và địa chỉ."
+        },
+        {
+          "text": "Chọn cách giao hàng và cách thanh toán phù hợp.",
+          "hint": "Xem lại tổng tiền và phí trước khi xác nhận."
+        },
+        {
+          "text": "Kiểm tra đơn hàng lần cuối rồi chạm nút đặt hàng nếu bạn muốn mua.",
+          "hint": "Nếu còn phân vân, hãy dừng lại và hỏi người thân."
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Nếu người bán nhắn yêu cầu chuyển khoản riêng hoặc trả thêm phí ngoài ứng dụng, hãy hỏi người thân trước."
+      ],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000357,
+    "ms": 5512
+  },
+  {
+    "case": "m_shipper_deposit",
+    "raw": {
+      "kind": "guide",
+      "title": "Kiểm tra yêu cầu đặt cọc",
+      "steps": [
+        {
+          "text": "Mở ứng dụng nơi bạn đặt hàng, tìm biểu tượng đơn hàng hoặc mục theo dõi đơn.",
+          "hint": "Nếu không thấy, mở lại tin nhắn xác nhận đơn."
+        },
+        {
+          "text": "Chọn đơn hàng đang giao và xem phương thức thanh toán, phí giao hàng, ghi chú đặt cọc.",
+          "hint": "Tên mục có thể khác nhau tùy ứng dụng."
+        },
+        {
+          "text": "Dùng phần hỗ trợ trong ứng dụng để hỏi người bán về khoản đặt cọc.",
+          "hint": "Đừng dùng số điện thoại hoặc đường dẫn do người gọi lạ gửi."
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Người giao hàng đòi chuyển tiền cọc trước là dấu hiệu cần cảnh giác; hãy xác nhận với người bán qua ứng dụng đặt hàng trước."
+      ]
+    },
+    "final": {
+      "title": "Kiểm tra yêu cầu đặt cọc",
+      "steps": [
+        {
+          "text": "Mở ứng dụng nơi bạn đặt hàng, tìm biểu tượng đơn hàng hoặc mục theo dõi đơn.",
+          "hint": "Nếu không thấy, mở lại tin nhắn xác nhận đơn."
+        },
+        {
+          "text": "Chọn đơn hàng đang giao và xem phương thức thanh toán, phí giao hàng, ghi chú đặt cọc.",
+          "hint": "Tên mục có thể khác nhau tùy ứng dụng."
+        },
+        {
+          "text": "Dùng phần hỗ trợ trong ứng dụng để hỏi người bán về khoản đặt cọc.",
+          "hint": "Đừng dùng số điện thoại hoặc đường dẫn do người gọi lạ gửi."
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Người giao hàng đòi chuyển tiền cọc trước là dấu hiệu cần cảnh giác; hãy xác nhận với người bán qua ứng dụng đặt hàng trước."
+      ],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000369,
+    "ms": 7573
+  },
+  {
+    "case": "m_prize",
+    "raw": {
+      "kind": "guide",
+      "title": "Xử lý tin trúng thưởng",
+      "steps": [
+        {
+          "text": "Đừng bấm vào đường link trong tin nhắn.",
+          "hint": "Đóng tin nhắn nếu bạn đang mở."
+        },
+        {
+          "text": "Mở trang web hoặc số liên hệ chính thức của đơn vị tổ chức bằng cách tự tìm, không dùng đường link trong tin.",
+          "hint": "Nếu không tìm thấy thông tin xác nhận, hãy bỏ qua tin nhắn."
+        },
+        {
+          "text": "Trong ứng dụng Tin nhắn, dùng tùy chọn báo cáo tin rác hoặc xóa tin.",
+          "hint": "Tên tùy chọn có thể khác tùy phiên bản."
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Tin báo trúng thưởng nhưng yêu cầu nộp phí nhận xe là dấu hiệu đáng ngờ; đừng chuyển tiền để nhận thưởng."
+      ]
+    },
+    "final": {
+      "title": "Xử lý tin trúng thưởng",
+      "steps": [
+        {
+          "text": "Đừng bấm vào đường link trong tin nhắn.",
+          "hint": "Đóng tin nhắn nếu bạn đang mở."
+        },
+        {
+          "text": "Mở trang web hoặc số liên hệ chính thức của đơn vị tổ chức bằng cách tự tìm, không dùng đường link trong tin.",
+          "hint": "Nếu không tìm thấy thông tin xác nhận, hãy bỏ qua tin nhắn."
+        },
+        {
+          "text": "Trong ứng dụng Tin nhắn, dùng tùy chọn báo cáo tin rác hoặc xóa tin.",
+          "hint": "Tên tùy chọn có thể khác tùy phiên bản."
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Tin báo trúng thưởng nhưng yêu cầu nộp phí nhận xe là dấu hiệu đáng ngờ; đừng chuyển tiền để nhận thưởng."
+      ],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000475,
+    "ms": 9087
+  },
+  {
+    "case": "m_otp_bank_staff",
+    "raw": {
+      "kind": "notAGuide",
+      "title": "",
+      "steps": [],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Đừng đọc hoặc gửi mã OTP cho người gọi. Yêu cầu OTP để nâng cấp thẻ là dấu hiệu đáng ngờ.",
+        "Ngắt cuộc gọi và tự gọi số chính thức in trên thẻ hoặc trong ứng dụng ngân hàng để kiểm tra."
+      ]
+    },
+    "final": {
+      "title": null,
+      "steps": [],
+      "isMoneyRelated": true,
+      "scamWarnings": [],
+      "unsupported": "notAGuide"
+    },
+    "error": null,
+    "cost": 0.000245,
+    "ms": 3800
+  },
+  {
+    "case": "m_momo_topup",
+    "raw": {
+      "kind": "guide",
+      "title": "Nạp tiền điện thoại bằng MoMo",
+      "steps": [
+        {
+          "text": "Mở ứng dụng MoMo trên iPhone.",
+          "hint": "Tìm biểu tượng MoMo trên Màn hình chính hoặc trong Thư viện ứng dụng."
+        },
+        {
+          "text": "Tìm mục nạp tiền điện thoại hoặc biểu tượng hình điện thoại.",
+          "hint": "Tên mục có thể khác tùy phiên bản ứng dụng."
+        },
+        {
+          "text": "Nhập số điện thoại cần nạp.",
+          "hint": "Kiểm tra kỹ số điện thoại trước khi tiếp tục."
+        },
+        {
+          "text": "Chọn mệnh giá muốn nạp.",
+          "hint": "Xem lại số tiền và nhà mạng hiển thị."
+        },
+        {
+          "text": "Kiểm tra thông tin giao dịch rồi chọn nút xác nhận nạp.",
+          "hint": "Chỉ xác nhận nếu đúng số điện thoại và mệnh giá bạn muốn."
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Nếu có người nhờ bạn nạp tiền, hãy gọi trực tiếp cho họ để xác nhận số điện thoại và mệnh giá trước."
+      ]
+    },
+    "final": {
+      "title": "Nạp tiền điện thoại bằng MoMo",
+      "steps": [
+        {
+          "text": "Mở ứng dụng MoMo trên iPhone.",
+          "hint": "Tìm biểu tượng MoMo trên Màn hình chính hoặc trong Thư viện ứng dụng."
+        },
+        {
+          "text": "Tìm mục nạp tiền điện thoại hoặc biểu tượng hình điện thoại.",
+          "hint": "Tên mục có thể khác tùy phiên bản ứng dụng."
+        },
+        {
+          "text": "Nhập số điện thoại cần nạp.",
+          "hint": "Kiểm tra kỹ số điện thoại trước khi tiếp tục."
+        },
+        {
+          "text": "Chọn mệnh giá muốn nạp.",
+          "hint": "Xem lại số tiền và nhà mạng hiển thị."
+        },
+        {
+          "text": "Kiểm tra thông tin giao dịch rồi chọn nút xác nhận nạp.",
+          "hint": "Chỉ xác nhận nếu đúng số điện thoại và mệnh giá bạn muốn."
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Nếu có người nhờ bạn nạp tiền, hãy gọi trực tiếp cho họ để xác nhận số điện thoại và mệnh giá trước."
+      ],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000385,
+    "ms": 7323
+  },
+  {
+    "case": "m_balance",
+    "raw": {
+      "kind": "guide",
+      "title": "Xem số dư ngân hàng",
+      "steps": [
+        {
+          "text": "Mở ứng dụng ngân hàng bạn thường dùng trên iPhone.",
+          "hint": "Nếu chưa có ứng dụng, hãy hỏi người thân cách cài đặt."
+        },
+        {
+          "text": "Đăng nhập bằng cách bạn vẫn thường dùng; không chia sẻ mật khẩu hoặc mã xác minh.",
+          "hint": null
+        },
+        {
+          "text": "Tìm mục tài khoản hoặc số dư trên màn hình chính.",
+          "hint": "Số dư có thể bị che; chạm biểu tượng hình con mắt nếu muốn hiện."
+        },
+        {
+          "text": "Chạm vào tài khoản cần xem để xem số dư và giao dịch gần đây.",
+          "hint": "Tên mục có thể khác nhau tùy ứng dụng."
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Nếu có người lạ hướng dẫn bạn cài ứng dụng hoặc bấm liên kết để xem số dư, hãy hỏi người thân trước."
+      ]
+    },
+    "final": {
+      "title": "Xem số dư ngân hàng",
+      "steps": [
+        {
+          "text": "Mở ứng dụng ngân hàng bạn thường dùng trên iPhone.",
+          "hint": "Nếu chưa có ứng dụng, hãy hỏi người thân cách cài đặt."
+        },
+        {
+          "text": "Đăng nhập bằng cách bạn vẫn thường dùng; không chia sẻ mật khẩu hoặc mã xác minh.",
+          "hint": null
+        },
+        {
+          "text": "Tìm mục tài khoản hoặc số dư trên màn hình chính.",
+          "hint": "Số dư có thể bị che; chạm biểu tượng hình con mắt nếu muốn hiện."
+        },
+        {
+          "text": "Chạm vào tài khoản cần xem để xem số dư và giao dịch gần đây.",
+          "hint": "Tên mục có thể khác nhau tùy ứng dụng."
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Nếu có người lạ hướng dẫn bạn cài ứng dụng hoặc bấm liên kết để xem số dư, hãy hỏi người thân trước."
+      ],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000328,
+    "ms": 5824
+  },
+  {
+    "case": "m_police_call",
+    "raw": {
+      "kind": "notAGuide",
+      "title": "",
+      "steps": [],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Đừng chuyển tiền theo yêu cầu qua điện thoại; việc yêu cầu chuyển vào “tài khoản tạm giữ” là dấu hiệu lừa đảo.",
+        "Cúp máy và tự liên hệ công an địa phương qua kênh chính thức để xác minh; đừng dùng số họ cung cấp.",
+        "Nếu đã chuyển tiền, hãy báo ngay cho ngân hàng và công an địa phương."
+      ]
+    },
+    "final": {
+      "title": null,
+      "steps": [],
+      "isMoneyRelated": true,
+      "scamWarnings": [],
+      "unsupported": "notAGuide"
+    },
+    "error": null,
+    "cost": 0.000326,
+    "ms": 5716
+  },
+  {
+    "case": "p_zalo_photo",
+    "raw": {
+      "kind": "guide",
+      "title": "Gửi ảnh qua Zalo",
+      "steps": [
+        {
+          "text": "Mở ứng dụng Zalo trên iPhone.",
+          "hint": "Biểu tượng thường màu xanh, có hình bong bóng trò chuyện."
+        },
+        {
+          "text": "Mở cuộc trò chuyện với con.",
+          "hint": "Nếu chưa thấy, chạm kính lúp để tìm tên con."
+        },
+        {
+          "text": "Chạm biểu tượng ảnh hoặc dấu cộng cạnh ô nhập tin nhắn.",
+          "hint": "Có thể cần chọn mục Ảnh."
+        },
+        {
+          "text": "Chạm vào ảnh bạn muốn gửi.",
+          "hint": "Bạn có thể chọn nhiều ảnh nếu muốn."
+        },
+        {
+          "text": "Chạm nút Gửi, thường có hình mũi tên.",
+          "hint": "Ảnh sẽ hiện trong cuộc trò chuyện."
+        }
+      ],
+      "isMoneyRelated": false,
+      "scamWarnings": []
+    },
+    "final": {
+      "title": "Gửi ảnh qua Zalo",
+      "steps": [
+        {
+          "text": "Mở ứng dụng Zalo trên iPhone.",
+          "hint": "Biểu tượng thường màu xanh, có hình bong bóng trò chuyện."
+        },
+        {
+          "text": "Mở cuộc trò chuyện với con.",
+          "hint": "Nếu chưa thấy, chạm kính lúp để tìm tên con."
+        },
+        {
+          "text": "Chạm biểu tượng ảnh hoặc dấu cộng cạnh ô nhập tin nhắn.",
+          "hint": "Có thể cần chọn mục Ảnh."
+        },
+        {
+          "text": "Chạm vào ảnh bạn muốn gửi.",
+          "hint": "Bạn có thể chọn nhiều ảnh nếu muốn."
+        },
+        {
+          "text": "Chạm nút Gửi, thường có hình mũi tên.",
+          "hint": "Ảnh sẽ hiện trong cuộc trò chuyện."
+        }
+      ],
+      "isMoneyRelated": false,
+      "scamWarnings": [],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000249,
+    "ms": 3742
+  },
+  {
+    "case": "p_text_size",
+    "raw": {
+      "kind": "guide",
+      "title": "Phóng to chữ trên iPhone",
+      "steps": [
+        {
+          "text": "Mở Cài đặt bằng biểu tượng bánh răng màu xám.",
+          "hint": null
+        },
+        {
+          "text": "Chạm vào Màn hình & Độ sáng.",
+          "hint": null
+        },
+        {
+          "text": "Chạm vào Cỡ chữ.",
+          "hint": null
+        },
+        {
+          "text": "Kéo thanh trượt phía dưới sang bên phải để chữ lớn hơn.",
+          "hint": "Chữ mẫu phía trên sẽ thay đổi theo."
+        }
+      ],
+      "isMoneyRelated": false,
+      "scamWarnings": []
+    },
+    "final": {
+      "title": "Phóng to chữ trên iPhone",
+      "steps": [
+        {
+          "text": "Mở Cài đặt bằng biểu tượng bánh răng màu xám.",
+          "hint": null
+        },
+        {
+          "text": "Chạm vào Màn hình & Độ sáng.",
+          "hint": null
+        },
+        {
+          "text": "Chạm vào Cỡ chữ.",
+          "hint": null
+        },
+        {
+          "text": "Kéo thanh trượt phía dưới sang bên phải để chữ lớn hơn.",
+          "hint": "Chữ mẫu phía trên sẽ thay đổi theo."
+        }
+      ],
+      "isMoneyRelated": false,
+      "scamWarnings": [],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000223,
+    "ms": 3105
+  },
+  {
+    "case": "p_wifi",
+    "raw": {
+      "kind": "guide",
+      "title": "Kết nối Wi‑Fi nhà con",
+      "steps": [
+        {
+          "text": "Mở ứng dụng Cài đặt, có biểu tượng bánh răng màu xám.",
+          "hint": null
+        },
+        {
+          "text": "Chạm vào Wi‑Fi.",
+          "hint": "Nếu Wi‑Fi đang tắt, chạm nút gạt để bật."
+        },
+        {
+          "text": "Chọn tên mạng Wi‑Fi của nhà con trong danh sách.",
+          "hint": "Hỏi con tên mạng nếu bạn chưa biết."
+        },
+        {
+          "text": "Nhập mật khẩu Wi‑Fi rồi chạm Tham gia ở góc trên bên phải.",
+          "hint": "Mật khẩu có phân biệt chữ hoa và chữ thường."
+        }
+      ],
+      "isMoneyRelated": false,
+      "scamWarnings": []
+    },
+    "final": {
+      "title": "Kết nối Wi‑Fi nhà con",
+      "steps": [
+        {
+          "text": "Mở ứng dụng Cài đặt, có biểu tượng bánh răng màu xám.",
+          "hint": null
+        },
+        {
+          "text": "Chạm vào Wi‑Fi.",
+          "hint": "Nếu Wi‑Fi đang tắt, chạm nút gạt để bật."
+        },
+        {
+          "text": "Chọn tên mạng Wi‑Fi của nhà con trong danh sách.",
+          "hint": "Hỏi con tên mạng nếu bạn chưa biết."
+        },
+        {
+          "text": "Nhập mật khẩu Wi‑Fi rồi chạm Tham gia ở góc trên bên phải.",
+          "hint": "Mật khẩu có phân biệt chữ hoa và chữ thường."
+        }
+      ],
+      "isMoneyRelated": false,
+      "scamWarnings": [],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000207,
+    "ms": 3314
+  },
+  {
+    "case": "p_zalo_video",
+    "raw": {
+      "kind": "guide",
+      "title": "Gọi video Zalo",
+      "steps": [
+        {
+          "text": "Mở ứng dụng Zalo trên iPhone.",
+          "hint": "Biểu tượng Zalo màu xanh."
+        },
+        {
+          "text": "Mở cuộc trò chuyện với cháu.",
+          "hint": "Nếu chưa thấy, chạm ô tìm kiếm ở phía trên và tìm tên cháu."
+        },
+        {
+          "text": "Chạm biểu tượng máy quay ở góc trên bên phải.",
+          "hint": "Nếu iPhone hỏi quyền dùng camera hoặc micro, chọn cho phép."
+        },
+        {
+          "text": "Chờ cháu nghe máy rồi bắt đầu trò chuyện.",
+          "hint": null
+        }
+      ],
+      "isMoneyRelated": false,
+      "scamWarnings": []
+    },
+    "final": {
+      "title": "Gọi video Zalo",
+      "steps": [
+        {
+          "text": "Mở ứng dụng Zalo trên iPhone.",
+          "hint": "Biểu tượng Zalo màu xanh."
+        },
+        {
+          "text": "Mở cuộc trò chuyện với cháu.",
+          "hint": "Nếu chưa thấy, chạm ô tìm kiếm ở phía trên và tìm tên cháu."
+        },
+        {
+          "text": "Chạm biểu tượng máy quay ở góc trên bên phải.",
+          "hint": "Nếu iPhone hỏi quyền dùng camera hoặc micro, chọn cho phép."
+        },
+        {
+          "text": "Chờ cháu nghe máy rồi bắt đầu trò chuyện.",
+          "hint": null
+        }
+      ],
+      "isMoneyRelated": false,
+      "scamWarnings": [],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.00021,
+    "ms": 3051
+  },
+  {
+    "case": "p_screenshot",
+    "raw": {
+      "kind": "guide",
+      "title": "Chụp màn hình iPhone",
+      "steps": [
+        {
+          "text": "Mở màn hình bạn muốn chụp.",
+          "hint": null
+        },
+        {
+          "text": "Nếu iPhone có Face ID, nhấn đồng thời nút sườn bên phải và nút tăng âm lượng bên trái.",
+          "hint": "Thả tay ngay khi màn hình chớp sáng."
+        },
+        {
+          "text": "Nếu iPhone có nút Home, nhấn đồng thời nút sườn và nút Home.",
+          "hint": "Với một số máy cũ, dùng nút nguồn ở phía trên thay cho nút sườn."
+        },
+        {
+          "text": "Chạm vào hình thu nhỏ ở góc dưới bên trái để xem hoặc sửa ảnh.",
+          "hint": "Nếu không chạm, ảnh được lưu trong ứng dụng Ảnh."
+        }
+      ],
+      "isMoneyRelated": false,
+      "scamWarnings": []
+    },
+    "final": {
+      "title": "Chụp màn hình iPhone",
+      "steps": [
+        {
+          "text": "Mở màn hình bạn muốn chụp.",
+          "hint": null
+        },
+        {
+          "text": "Nếu iPhone có Face ID, nhấn đồng thời nút sườn bên phải và nút tăng âm lượng bên trái.",
+          "hint": "Thả tay ngay khi màn hình chớp sáng."
+        },
+        {
+          "text": "Nếu iPhone có nút Home, nhấn đồng thời nút sườn và nút Home.",
+          "hint": "Với một số máy cũ, dùng nút nguồn ở phía trên thay cho nút sườn."
+        },
+        {
+          "text": "Chạm vào hình thu nhỏ ở góc dưới bên trái để xem hoặc sửa ảnh.",
+          "hint": "Nếu không chạm, ảnh được lưu trong ứng dụng Ảnh."
+        }
+      ],
+      "isMoneyRelated": false,
+      "scamWarnings": [],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000198,
+    "ms": 3963
+  },
+  {
+    "case": "p_flashlight",
+    "raw": {
+      "kind": "guide",
+      "title": "Bật đèn pin trên iPhone",
+      "steps": [
+        {
+          "text": "Nếu iPhone đang khóa, đánh thức màn hình.",
+          "hint": null
+        },
+        {
+          "text": "Vuốt từ góc trên bên phải màn hình xuống để mở Trung tâm điều khiển.",
+          "hint": "iPhone có nút Home: vuốt từ cạnh dưới màn hình lên."
+        },
+        {
+          "text": "Chạm biểu tượng đèn pin hình chiếc đèn ở gần cuối màn hình.",
+          "hint": "Chạm lại để tắt đèn pin."
+        }
+      ],
+      "isMoneyRelated": false,
+      "scamWarnings": []
+    },
+    "final": {
+      "title": "Bật đèn pin trên iPhone",
+      "steps": [
+        {
+          "text": "Nếu iPhone đang khóa, đánh thức màn hình.",
+          "hint": null
+        },
+        {
+          "text": "Vuốt từ góc trên bên phải màn hình xuống để mở Trung tâm điều khiển.",
+          "hint": "iPhone có nút Home: vuốt từ cạnh dưới màn hình lên."
+        },
+        {
+          "text": "Chạm biểu tượng đèn pin hình chiếc đèn ở gần cuối màn hình.",
+          "hint": "Chạm lại để tắt đèn pin."
+        }
+      ],
+      "isMoneyRelated": false,
+      "scamWarnings": [],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000208,
+    "ms": 3047
+  },
+  {
+    "case": "p_youtube",
+    "raw": {
+      "kind": "guide",
+      "title": "Mở YouTube xem cải lương",
+      "steps": [
+        {
+          "text": "Tìm biểu tượng YouTube màu đỏ-trắng trên màn hình iPhone, rồi chạm vào.",
+          "hint": "Nếu chưa thấy, vuốt xuống giữa màn hình và gõ “YouTube” vào ô tìm kiếm."
+        },
+        {
+          "text": "Chạm vào hình kính lúp để tìm kiếm.",
+          "hint": null
+        },
+        {
+          "text": "Chạm ô tìm kiếm ở phía trên màn hình.",
+          "hint": null
+        },
+        {
+          "text": "Gõ “cải lương”, rồi chạm nút tìm kiếm trên bàn phím.",
+          "hint": null
+        },
+        {
+          "text": "Chạm vào video cải lương bạn muốn xem.",
+          "hint": "Video bắt đầu phát; chạm giữa màn hình để hiện nút tạm dừng."
+        }
+      ],
+      "isMoneyRelated": false,
+      "scamWarnings": []
+    },
+    "final": {
+      "title": "Mở YouTube xem cải lương",
+      "steps": [
+        {
+          "text": "Tìm biểu tượng YouTube màu đỏ-trắng trên màn hình iPhone, rồi chạm vào.",
+          "hint": "Nếu chưa thấy, vuốt xuống giữa màn hình và gõ “YouTube” vào ô tìm kiếm."
+        },
+        {
+          "text": "Chạm vào hình kính lúp để tìm kiếm.",
+          "hint": null
+        },
+        {
+          "text": "Chạm ô tìm kiếm ở phía trên màn hình.",
+          "hint": null
+        },
+        {
+          "text": "Gõ “cải lương”, rồi chạm nút tìm kiếm trên bàn phím.",
+          "hint": null
+        },
+        {
+          "text": "Chạm vào video cải lương bạn muốn xem.",
+          "hint": "Video bắt đầu phát; chạm giữa màn hình để hiện nút tạm dừng."
+        }
+      ],
+      "isMoneyRelated": false,
+      "scamWarnings": [],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000216,
+    "ms": 2944
+  },
+  {
+    "case": "n_gold",
+    "raw": {
+      "kind": "notAGuide",
+      "title": "",
+      "steps": [],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Nếu bạn định mua hoặc bán vàng, hãy hỏi người thân và đối chiếu giá tại nhiều nơi trước khi quyết định."
+      ]
+    },
+    "final": {
+      "title": null,
+      "steps": [],
+      "isMoneyRelated": false,
+      "scamWarnings": [],
+      "unsupported": "notAGuide"
+    },
+    "error": null,
+    "cost": 0.000195,
+    "ms": 2889
+  },
+  {
+    "case": "n_spy",
+    "raw": {
+      "kind": "notAGuide",
+      "title": "",
+      "steps": [],
+      "isMoneyRelated": false,
+      "scamWarnings": []
+    },
+    "final": {
+      "title": null,
+      "steps": [],
+      "isMoneyRelated": false,
+      "scamWarnings": [],
+      "unsupported": "notAGuide"
+    },
+    "error": null,
+    "cost": 0.00014,
+    "ms": 1770
+  },
+  {
+    "case": "n_medicine",
+    "raw": {
+      "kind": "notAGuide",
+      "title": "",
+      "steps": [],
+      "isMoneyRelated": false,
+      "scamWarnings": []
+    },
+    "final": {
+      "title": null,
+      "steps": [],
+      "isMoneyRelated": false,
+      "scamWarnings": [],
+      "unsupported": "notAGuide"
+    },
+    "error": null,
+    "cost": 0.00013,
+    "ms": 1557
+  }
+]

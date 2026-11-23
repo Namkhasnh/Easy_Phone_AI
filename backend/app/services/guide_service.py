@@ -46,7 +46,7 @@ _MONEY_RE = re.compile(r"\b(" + "|".join(re.escape(w) for w in MONEY_WORDS) + r"
 VERDICT_RE = re.compile(r"an toan|khong phai (la )?lua dao|khong lua dao|dang tin|yen tam|chac chan (la )?that")
 # D-340: never tell the user to hand a secret to anyone (a step "nhập mã OTP vào app" is fine).
 GIVE_SECRET_RE = re.compile(
-    r"(doc|gui|cho|cung cap|bao|dua|nhan tin|noi)\b[^.]{0,30}\b(otp|ma xac (nhan|thuc)|mat khau|ma pin|so the|cvv)"
+    r"(doc|gui|cho|cung cap|bao(?! ve| mat)|dua|nhan tin|noi)\b[^.]{0,30}\b(otp|ma xac (nhan|thuc)|mat khau|ma pin|so the|cvv)"
 )
 
 # D-340 (backend side): digit runs that look like an OTP (4 – 8), an account (9 – 16) or a card (13 – 19, spaces
@@ -119,7 +119,7 @@ def _clean(text: str | None, limit: int) -> str | None:
     return t if len(t) <= limit else t[: limit - 1].rstrip() + "…"
 
 
-_NEGATION_RE = re.compile(r"\b(khong|dung|chang|tuyet doi khong|khong bao gio|dung bao gio)\s+$")
+_NEGATION_RE = re.compile(r"\b(khong|dung|chang|tu choi|khong nen|khong duoc|tuyet doi khong|khong bao gio|dung bao gio)\s+$")
 
 
 def _allowed(text: str) -> bool:

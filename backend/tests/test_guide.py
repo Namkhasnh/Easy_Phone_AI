@@ -120,6 +120,11 @@ def test_verdicts_and_secret_handover_are_dropped():
     assert out["scamWarnings"] == ["Hãy gọi cho con trước."]
 
 
+@pytest.mark.parametrize("text", ["Từ chối cung cấp mã OTP", "Không nên đọc mã OTP cho ai", "Đừng gửi mật khẩu cho người lạ", "Bảo vệ mã OTP"])
+def test_negated_handover_is_a_warning(text):
+    assert g._allowed(text)
+
+
 def test_money_flag_from_keywords_and_limits():
     raw = {"kind": "guide", "title": "Mua hàng", "isMoneyRelated": False,
            "steps": [{"text": f"Bước {i}", "hint": None} for i in range(20)],

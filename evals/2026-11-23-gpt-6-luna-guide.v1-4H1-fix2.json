@@ -1,0 +1,62 @@
+[
+  {
+    "case": "m_prize",
+    "raw": {
+      "kind": "guide",
+      "title": "Tránh link nhận thưởng",
+      "steps": [
+        {
+          "text": "Đừng bấm vào đường link hoặc nộp phí nhận thưởng.",
+          "hint": "Tin nhắn báo trúng thưởng nhưng đòi đóng phí là dấu hiệu cần cảnh giác."
+        },
+        {
+          "text": "Nếu trang web đã mở, hãy đóng tab Safari bằng nút hai ô vuông rồi chạm dấu X trên tab.",
+          "hint": "Nếu không thấy nút này, vuốt lên để thoát Safari."
+        },
+        {
+          "text": "Quay lại Tin nhắn và xóa tin nhắn đó.",
+          "hint": "Nhấn giữ tin nhắn rồi chọn xóa."
+        },
+        {
+          "text": "Nếu đã nhập thông tin vào trang, hãy gọi người thân để cùng kiểm tra bước tiếp theo.",
+          "hint": null
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Phí để nhận xe trúng thưởng là dấu hiệu đáng ngờ; đừng chuyển tiền theo tin nhắn.",
+        "Muốn kiểm tra, hãy tự tìm kênh liên hệ chính thức của đơn vị được nêu, không dùng đường link trong tin nhắn."
+      ]
+    },
+    "final": {
+      "title": "Tránh link nhận thưởng",
+      "steps": [
+        {
+          "text": "Đừng bấm vào đường link hoặc nộp phí nhận thưởng.",
+          "hint": "Tin nhắn báo trúng thưởng nhưng đòi đóng phí là dấu hiệu cần cảnh giác."
+        },
+        {
+          "text": "Nếu trang web đã mở, hãy đóng tab Safari bằng nút hai ô vuông rồi chạm dấu X trên tab.",
+          "hint": "Nếu không thấy nút này, vuốt lên để thoát Safari."
+        },
+        {
+          "text": "Quay lại Tin nhắn và xóa tin nhắn đó.",
+          "hint": "Nhấn giữ tin nhắn rồi chọn xóa."
+        },
+        {
+          "text": "Nếu đã nhập thông tin vào trang, hãy gọi người thân để cùng kiểm tra bước tiếp theo.",
+          "hint": null
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Phí để nhận xe trúng thưởng là dấu hiệu đáng ngờ; đừng chuyển tiền theo tin nhắn.",
+        "Muốn kiểm tra, hãy tự tìm kênh liên hệ chính thức của đơn vị được nêu, không dùng đường link trong tin nhắn."
+      ],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000441,
+    "ms": 8813
+  }
+]
