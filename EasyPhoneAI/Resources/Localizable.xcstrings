@@ -8280,6 +8280,94 @@
           }
         }
       }
+    },
+    "guide.panel.next" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Làm xong bước này thì gọi Khoai và nói “tiếp”."
+          }
+        }
+      }
+    },
+    "guide.panel.last" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đây là bước cuối."
+          }
+        }
+      }
+    },
+    "guide.panel.finished" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xong hướng dẫn rồi!"
+          }
+        }
+      }
+    },
+    "guide.panel.finished.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn đã làm hết các bước. Cần gì cứ gọi Khoai nhé."
+          }
+        }
+      }
+    },
+    "guide.panel.stopped" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoai dừng hướng dẫn."
+          }
+        }
+      }
+    },
+    "guide.panel.none" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa có hướng dẫn nào đang mở"
+          }
+        }
+      }
+    },
+    "guide.panel.start.hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hỏi Khoai “làm sao …” để bắt đầu một hướng dẫn mới."
+          }
+        }
+      }
+    },
+    "intent.guideStep.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bước hướng dẫn"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

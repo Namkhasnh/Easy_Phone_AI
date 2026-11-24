@@ -2,8 +2,8 @@ import Foundation
 
 /// A step-by-step guide shown by "Khoai hướng dẫn" (D-337), from the curated set or from `POST /v1/guide` (D-338).
 /// Nothing runs on the phone: the user follows the steps.
-struct Guide: Sendable, Hashable {
-    enum Source: Sendable, Hashable {
+struct Guide: Codable, Sendable, Hashable {
+    enum Source: Codable, Sendable, Hashable {
         /// `Resources/Guides.json` entry id (checked on the owner's iPhone, D-338).
         case curated(id: String)
         /// AI-written generic guide; the UI adds "Các app có thể khác nhau…" (D-338).

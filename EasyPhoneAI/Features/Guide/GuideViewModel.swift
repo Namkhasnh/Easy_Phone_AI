@@ -33,6 +33,8 @@ import Observation
     private let speech: (any SpeechService)?
     private let voice: Voice
     private let repository: (any TaskRepository)?
+    /// 4H.5: the step is shared with the Hỏi Khoai panel and the Live Activity.
+    private let sessions: GuideSessions?
     private let timeZoneId: String
     /// Spoken request + hands-free on: read each step and listen for "tiếp".
     private let spoken: Bool
@@ -42,8 +44,10 @@ import Observation
 
     init(question: String, spoken: Bool = false, library: GuideLibrary = .bundled, api: any APIClientProtocol,
          tts: any TTSService = MockTTSService(), speech: (any SpeechService)? = nil, voice: Voice = Voice(),
-         repository: (any TaskRepository)? = nil, timeZoneId: String = TimeZone.current.identifier) {
+         repository: (any TaskRepository)? = nil, timeZoneId: String = TimeZone.current.identifier,
+         sessions: GuideSessions? = nil) {
         self.repository = repository
+        self.sessions = sessions
         self.timeZoneId = timeZoneId
         self.question = question
         self.spoken = spoken
@@ -67,9 +71,7 @@ import Observation
     var isLast: Bool { guide.map { index >= $0.steps.count - 1 } ?? true }
 
     /// "Bước 2/5".
-    var stepLabel: String {
-        UserMessage(key: "guide.step", args: [String(index + 1), String(guide?.steps.count ?? 0)]).text
-    }
+    var stepLabel: String { Guide.stepLabel(index, of: guide?.steps.count ?? 0) }
 
     /// D-339: money = the AI / curated flag **or** the on-device keyword check.
     var isMoneyRelated: Bool { (guide?.isMoneyRelated ?? false) || GuideSafety.isMoneyRelated(question) }
@@ -87,13 +89,18 @@ import Observation
     func load() async {
         phase = .loading
         index = 0
-        if let entry = library.match(question) {
-            phase = .guide(entry.guide)                                    // D-338: no AI, no unit
+        if let open = sessions?.current(for: question) {                  // 4H.5: from the panel, no second unit
+            phase = .guide(open.guide)
+            index = open.index
         } else {
-            let request = GuideRequest(question: GuideSafety.masked(question), locale: "vi-VN")   // D-340
             do {
-                let response = try await api.guide(request, idempotencyKey: key)
-                phase = response.guide.map(Phase.guide) ?? .unsupported
+                // D-338 curated first (no unit), else /v1/guide with the question masked (D-340)
+                guard let guide = try await GuideLoader.load(question, library: library, api: api, key: key) else {
+                    phase = .unsupported
+                    return
+                }
+                phase = .guide(guide)
+                sessions?.start(guide, question: question)
             } catch is CancellationError {
                 return
             } catch {
@@ -111,18 +118,30 @@ import Observation
     func next() {
         guard let g = guide, index < g.steps.count - 1 else { return }
         index += 1
+        sessions?.move(to: index)
     }
 
     func previous() {
         guard index > 0 else { return }
         index -= 1
+        sessions?.move(to: index)
+    }
+
+    /// Back from another app (4H.5): "tiếp" said to the panel moved the step; S23 shows the same one.
+    func resume() {
+        guard guide != nil, let open = sessions?.current(for: question), open.index != index else { return }
+        stopHandsFree()
+        index = open.index
+    }
+
+    /// "Xong" or leaving S23: the guide is closed (panel "tiếp" and the Live Activity end too).
+    func leave() {
+        stopHandsFree()
+        sessions?.end()
     }
 
     /// What one step reads aloud: "Bước 2/5. <text>. <hint>".
-    var spokenStep: String {
-        guard let step else { return "" }
-        return [stepLabel, step.text, step.hint].compactMap { $0 }.joined(separator: ". ")
-    }
+    var spokenStep: String { guide?.spoken(index) ?? "" }
 
     /// The warnings read aloud before step 1 of a money guide (fixed first, then "Khoai nhận thấy").
     var spokenWarnings: String {

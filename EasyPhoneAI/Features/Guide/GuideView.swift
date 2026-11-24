@@ -5,13 +5,15 @@ import SwiftUI
 struct GuideView: View {
     @State var viewModel: GuideViewModel
     @Environment(Router.self) private var router
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         content
             .background(Tokens.Colors.bg)
             .navigationBarTitleDisplayMode(.inline)
             .task { await viewModel.load() }
-            .onDisappear { viewModel.stopHandsFree() }
+            .onDisappear { viewModel.leave() }
+            .onChange(of: scenePhase) { _, phase in if phase == .active { viewModel.resume() } }
             .sheet(item: $viewModel.quotaBlock) { QuotaBlockSheet(block: $0) }
             .accessibilityIdentifier("screen.S23")
     }
@@ -138,7 +140,7 @@ struct GuideView: View {
     private var buttons: some View {
         VStack(spacing: Tokens.Space.m) {
             if viewModel.isLast {
-                PrimaryButton("common.done") { viewModel.stopHandsFree(); router.path.removeLast() }
+                PrimaryButton("common.done") { viewModel.leave(); router.path.removeLast() }
             } else {
                 PrimaryButton("guide.next") { viewModel.tapNext() }
             }

@@ -188,7 +188,7 @@ struct RootView: View {
                                                 voice: .init(enabled: settings.voiceEnabled,
                                                              handsFree: settings.handsFree,
                                                              rate: settings.speechRate),
-                                                repository: env.drafts))
+                                                repository: env.drafts, sessions: env.guideSessions))
         case .places:
             PlacesView(viewModel: PlacesViewModel(places: env.places, localData: env.localData, engine: env.engine))
         case .ocr:
