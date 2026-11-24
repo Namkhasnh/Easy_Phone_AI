@@ -8256,6 +8256,30 @@
           }
         }
       }
+    },
+    "guide.callFamily" : {
+      "comment" : "UI_SCREENS_P4 S23 Khoai hướng dẫn (4H.4, D-339)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gọi cho con trước khi chuyển"
+          }
+        }
+      }
+    },
+    "guide.callFamily.request" : {
+      "comment" : "UI_SCREENS_P4 S23 Khoai hướng dẫn (4H.4, D-339)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gọi cho con"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

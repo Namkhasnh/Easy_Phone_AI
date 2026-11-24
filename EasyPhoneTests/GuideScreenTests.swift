@@ -133,3 +133,32 @@ struct GuideScreenTests {
         #expect(GuideVoiceCommand.classify(text) == expected)
     }
 }
+
+/// 4H.4 (D-339): "Gọi cho con trước khi chuyển" = a normal call request, confirmed by tap in S04.
+@MainActor
+@Suite("Gọi cho con (4H.4)")
+struct GuideCallFamilyTests {
+    @Test func buttonMakesACallRequestForCon() async throws {
+        let repo = MockTaskRepository()
+        let vm = GuideViewModel(question: "Hướng dẫn chuyển tiền qua app ngân hàng", api: MockAPIClient(),
+                                repository: repo, timeZoneId: "Asia/Ho_Chi_Minh")
+        await vm.load()
+        #expect(vm.isMoneyRelated)
+        let id = try #require(vm.callFamilyDraft())
+        let draft = try #require(repo.draft(id))
+        #expect(draft.originalInput == "Gọi cho con" && draft.steps.isEmpty)      // nothing runs before S04
+        #expect(LocalIntent.match(draft.originalInput) == .call(name: "con"))     // on device, no unit
+    }
+
+    /// D-339 hard rules on every curated money guide.
+    @Test func curatedMoneyGuidesNeverGiveAVerdict() {
+        for g in GuideLibrary.bundled.guides where g.isMoneyRelated {
+            for s in g.steps {
+                let t = GuideLibrary.fold(s.text + " " + (s.hint ?? ""))
+                for bad in ["an toan", "yen tam", "dang tin", "khong phai lua dao"] {
+                    #expect(!t.contains(bad), "\(g.id): \(bad)")
+                }
+            }
+        }
+    }
+}

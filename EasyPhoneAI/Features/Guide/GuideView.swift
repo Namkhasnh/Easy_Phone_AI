@@ -53,7 +53,10 @@ struct GuideView: View {
                     .font(Tokens.Fonts.display)
                     .foregroundStyle(Tokens.Colors.textPrimary)
                     .accessibilityAddTraits(.isHeader)
-                if viewModel.isMoneyRelated { warnings(guide) }
+                if viewModel.isMoneyRelated {
+                    warnings(guide)
+                    callFamily
+                }
                 if viewModel.isAIWritten {
                     Label("guide.ai.note", systemImage: "info.circle")
                         .font(Tokens.Fonts.body)
@@ -101,6 +104,13 @@ struct GuideView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Tokens.Colors.warningBg, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
         .accessibilityElement(children: .combine)
+    }
+
+    /// 4H.4 (D-339): under the warnings, before the steps.
+    private var callFamily: some View {
+        SecondaryButton("guide.callFamily", systemImage: "phone.fill") {
+            if let id = viewModel.callFamilyDraft() { router.push(.conversation(id)) }
+        }
     }
 
     @ViewBuilder private var stepCard: some View {

@@ -32,6 +32,8 @@ import Observation
     private let tts: any TTSService
     private let speech: (any SpeechService)?
     private let voice: Voice
+    private let repository: (any TaskRepository)?
+    private let timeZoneId: String
     /// Spoken request + hands-free on: read each step and listen for "tiếp".
     private let spoken: Bool
     /// One key per question: "Thử lại" never charges twice (D-245).
@@ -39,7 +41,10 @@ import Observation
     private var handsFreeTask: Task<Void, Never>?
 
     init(question: String, spoken: Bool = false, library: GuideLibrary = .bundled, api: any APIClientProtocol,
-         tts: any TTSService = MockTTSService(), speech: (any SpeechService)? = nil, voice: Voice = Voice()) {
+         tts: any TTSService = MockTTSService(), speech: (any SpeechService)? = nil, voice: Voice = Voice(),
+         repository: (any TaskRepository)? = nil, timeZoneId: String = TimeZone.current.identifier) {
+        self.repository = repository
+        self.timeZoneId = timeZoneId
         self.question = question
         self.spoken = spoken
         self.library = library
@@ -167,6 +172,20 @@ import Observation
                 }
             }
         }
+    }
+
+    // MARK: - "Gọi cho con trước khi chuyển" (4H.4, D-339)
+
+    /// A new request "Gọi cho con" → S03 (sent at once): `call.open` with the name resolved on the phone (nickname /
+    /// Danh bạ, picker if several, D-106) → S04 → the user taps "Xác nhận" (D-100); iOS asks again before dialling.
+    /// Returns the draft to open, nil without a repository (previews).
+    func callFamilyDraft() -> UUID? {
+        guard let repository else { return nil }
+        stopHandsFree()
+        let draft = TaskDraft(inputMode: .text, originalInput: UserMessage(key: "guide.callFamily.request").text,
+                              timeZoneId: timeZoneId)
+        repository.save(draft)
+        return draft.id
     }
 
     /// Tests wait for the hands-free turn.
