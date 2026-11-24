@@ -21,6 +21,8 @@ enum Route: Hashable, Sendable {
     case mailReply(MailReplyContext)
     /// S22 "Ngày giỗ & lễ" (4L.6, D-331).
     case lunarDays
+    /// S23 "Khoai hướng dẫn" (4H.3, D-337) from a "làm sao …" question; `spoken` = hands-free "tiếp" (D-312).
+    case guide(question: String, spoken: Bool)
 }
 
 /// Owns the single `NavigationStack(path:)`. Reopen at the exact step = `.review(draftId)` (spec §6.10 AC2).

@@ -103,7 +103,7 @@ def test_secrets_are_masked_before_the_llm(monkeypatch):
 
 
 @pytest.mark.parametrize("text", [
-    "Mã OTP là 4829", "thẻ 4111-1111-1111-1111", "stk 012345678901", "mật khẩu: abc!23", "pass la hoa123"])
+    "Mã OTP là 4829", "mã 482913 đọc cho ai", "thẻ 4111-1111-1111-1111", "stk 012345678901", "mật khẩu: abc!23", "pass la hoa123"])
 def test_mask(text):
     assert g.MASK in g.mask_secrets(text)
 

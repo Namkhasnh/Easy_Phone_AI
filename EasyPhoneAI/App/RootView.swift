@@ -181,6 +181,13 @@ struct RootView: View {
         case .lunarDays:
             LunarDaysView(viewModel: LunarDaysViewModel(repository: env.drafts, calendar: env.calendar,
                                                         reminders: env.reminders, permissions: env.permissions))
+        case .guide(let question, let spoken):
+            let settings = env.localData.settings()
+            GuideView(viewModel: GuideViewModel(question: question, spoken: spoken, api: env.api, tts: env.tts,
+                                                speech: env.speech,
+                                                voice: .init(enabled: settings.voiceEnabled,
+                                                             handsFree: settings.handsFree,
+                                                             rate: settings.speechRate)))
         case .places:
             PlacesView(viewModel: PlacesViewModel(places: env.places, localData: env.localData, engine: env.engine))
         case .ocr:

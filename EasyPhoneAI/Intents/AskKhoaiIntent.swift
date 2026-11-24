@@ -57,6 +57,8 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
             throw panel.continueInApp(.reminders, intent: self)
         case .checkMail(let codesOnly)?:
             throw panel.continueInApp(.mail(codesOnly: codesOnly), intent: self)
+        case .guide(let question)?:                                         // 4H.3: S23 in the app (panel guide = 4H.5)
+            throw panel.continueInApp(.guide(question: question, spoken: false), intent: self)
         case nil:
             return try await panel.askAI(intent: self)                       // step 2 (D-325)
         }

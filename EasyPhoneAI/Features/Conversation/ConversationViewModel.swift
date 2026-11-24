@@ -91,6 +91,8 @@ import OSLog
     private(set) var opensReminders = false
     /// 1F.7: a 402 opens S16 (free) or S17 (premium) on top of S03; the request text is kept (D-104).
     var quotaBlock: QuotaBlock?
+    /// 4H.3: a "làm sao …" question → S23 Khoai hướng dẫn.
+    private(set) var guideRequest: GuideRequestRoute?
     /// S21 "Trả lời" (2.6b): this conversation writes a reply to that message.
     let reply: MailReplyContext?
     /// S18 before the mic starts: microphone, then speech (D-185). The recording waits for the answer.
@@ -553,7 +555,7 @@ import OSLog
     private func runLocal(_ intent: LocalIntent, draft: TaskDraft) async {
         Self.logger.info("local intent")                                  // D-059: no content
         switch intent {
-        case .checkMail, .calendarDay, .reminders, .lunar:                // a screen / an answer: answered (1G.10)
+        case .checkMail, .calendarDay, .reminders, .lunar, .guide:        // a screen / an answer: answered (1G.10)
             draft.markAnswered(nil)
             repository.save(draft)
         default: break
@@ -568,6 +570,8 @@ import OSLog
             opensReminders = true
         case .lunar(let question):
             showAnswer(question.answer(now: now()), spoken: draft.inputMode == .voice)
+        case .guide(let question):                                        // 4H.3: S23
+            guideRequest = GuideRequestRoute(question: question, spoken: draft.inputMode == .voice)
         case .call(let name):
             await handle(Self.localDraft("call", "open", [("recipientName", name), ("callType", "phone")]),
                          isAnswer: false, draft: draft, returnMode: .transcript)
@@ -823,4 +827,10 @@ import OSLog
     }
 
     private static let logger = Logger(subsystem: "vn.namkhanh.easyphone", category: "conversation")
+}
+
+/// S03 → S23 (4H.3).
+struct GuideRequestRoute: Equatable, Sendable {
+    let question: String
+    let spoken: Bool
 }

@@ -8100,6 +8100,162 @@
           }
         }
       }
+    },
+    "guide.loading" : {
+      "comment" : "UI_SCREENS_P4 S23 Khoai hướng dẫn (4H.3, D-337, D-339)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoai đang soạn hướng dẫn…"
+          }
+        }
+      }
+    },
+    "guide.step" : {
+      "comment" : "UI_SCREENS_P4 S23 Khoai hướng dẫn (4H.3, D-337, D-339)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bước %1$@/%2$@"
+          }
+        }
+      }
+    },
+    "guide.next" : {
+      "comment" : "UI_SCREENS_P4 S23 Khoai hướng dẫn (4H.3, D-337, D-339)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bước tiếp"
+          }
+        }
+      }
+    },
+    "guide.repeat" : {
+      "comment" : "UI_SCREENS_P4 S23 Khoai hướng dẫn (4H.3, D-337, D-339)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nói lại"
+          }
+        }
+      }
+    },
+    "guide.previous" : {
+      "comment" : "UI_SCREENS_P4 S23 Khoai hướng dẫn (4H.3, D-337, D-339)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bước trước"
+          }
+        }
+      }
+    },
+    "guide.listening" : {
+      "comment" : "UI_SCREENS_P4 S23 Khoai hướng dẫn (4H.3, D-337, D-339)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang nghe… Bạn nói “tiếp” để sang bước sau."
+          }
+        }
+      }
+    },
+    "guide.ai.note" : {
+      "comment" : "UI_SCREENS_P4 S23 Khoai hướng dẫn (4H.3, D-337, D-339)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Các app có thể khác nhau, bạn xem đúng chữ trên màn hình."
+          }
+        }
+      }
+    },
+    "guide.unsupported.body" : {
+      "comment" : "UI_SCREENS_P4 S23 Khoai hướng dẫn (4H.3, D-337, D-339)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoai chỉ hướng dẫn cách dùng điện thoại và các app."
+          }
+        }
+      }
+    },
+    "guide.warning.title" : {
+      "comment" : "UI_SCREENS_P4 S23 Khoai hướng dẫn (4H.3, D-337, D-339)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cẩn thận lừa đảo"
+          }
+        }
+      }
+    },
+    "guide.warning.otp" : {
+      "comment" : "UI_SCREENS_P4 S23 Khoai hướng dẫn (4H.3, D-337, D-339)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không đọc hay gửi mã OTP cho bất kỳ ai, kể cả người xưng là ngân hàng."
+          }
+        }
+      }
+    },
+    "guide.warning.authority" : {
+      "comment" : "UI_SCREENS_P4 S23 Khoai hướng dẫn (4H.3, D-337, D-339)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Công an, ngân hàng và nhà mạng không bao giờ bảo bạn chuyển tiền qua điện thoại."
+          }
+        }
+      }
+    },
+    "guide.warning.rush" : {
+      "comment" : "UI_SCREENS_P4 S23 Khoai hướng dẫn (4H.3, D-337, D-339)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Người lạ hối thúc bạn chuyển tiền gấp là dấu hiệu lừa đảo."
+          }
+        }
+      }
+    },
+    "guide.warning.ai" : {
+      "comment" : "UI_SCREENS_P4 S23 Khoai hướng dẫn (4H.3, D-337, D-339)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khoai nhận thấy"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

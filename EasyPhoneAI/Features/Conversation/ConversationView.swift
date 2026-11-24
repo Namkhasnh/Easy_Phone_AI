@@ -52,6 +52,9 @@ struct ConversationView: View {
         .onChange(of: viewModel.opensReminders) { _, opens in
             if opens { router.replaceLast(with: .reminders) }           // D-313: S12
         }
+        .onChange(of: viewModel.guideRequest) { _, request in
+            if let request { router.replaceLast(with: .guide(question: request.question, spoken: request.spoken)) }
+        }
         .onChange(of: viewModel.opensMail) { _, opens in
             if opens { router.replaceLast(with: .mail(codesOnly: viewModel.mailCodesOnly)) }   // D-304: S21
         }

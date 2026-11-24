@@ -51,7 +51,7 @@ GIVE_SECRET_RE = re.compile(
 
 # D-340 (backend side): digit runs that look like an OTP (4 – 8), an account (9 – 16) or a card (13 – 19, spaces
 # or dashes allowed), and "mật khẩu / pass … <word>".
-_AMOUNT_AFTER = r"(?!\d|[ ]?(?:đ|đồng|dong|k\b|nghìn|ngàn|triệu|tr\b|vnd|vnđ))"  # an amount is not a secret
+_AMOUNT_AFTER = r"(?!\d|[ ]?(?:đ|đồng|dong|k|nghìn|ngàn|triệu|tr|vnd|vnđ)\b)"  # an amount is not a secret ("482913 đọc" is not "đ")
 _DIGITS_RE = re.compile(r"(?<!\d)(?:(?:\d[ \-.]?){4,19}\d|\d{4})" + _AMOUNT_AFTER, re.IGNORECASE)
 _PASSWORD_RE = re.compile(r"(?i)\b(mật khẩu|mat khau|password|pass|mã pin|ma pin|pin)\b(\s*(là|la|:)?\s*)(\S+)")
 
