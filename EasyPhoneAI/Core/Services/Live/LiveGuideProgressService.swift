@@ -7,6 +7,9 @@ import OSLog
 @MainActor final class LiveGuideProgressService: GuideProgressService {
     private nonisolated static let logger = Logger(subsystem: "vn.namkhanh.easyphone", category: "guide")
 
+    /// `nonisolated` so `AppEnvironment.mock(.uiTest)` can build it off the main actor (UI tests see the real activity).
+    nonisolated init() {}
+
     func show(_ progress: GuideProgress) {
         let state = GuideActivityAttributes.ContentState(label: progress.label, text: progress.text, step: progress.step,
                                                          total: progress.total)

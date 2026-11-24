@@ -127,7 +127,9 @@ struct AppEnvironment: Sendable {
                               images: MockImageStore(), photoLibrary: MockPhotoLibraryService(),
                               ocr: MockOCRService(), gmail: gmail, purchases: MockPurchaseService(),
                               guideSessions: GuideSessions(suiteName: "mock.guide.\(UUID().uuidString)",
-                                                           progress: MockGuideProgressService()))
+                                                           // UI tests check the real Lock Screen activity (4H.5)
+                                                           progress: scenario == .uiTest ? LiveGuideProgressService()
+                                                               : MockGuideProgressService()))
     }
 
     /// `MockScenario.uiTest` `/v1/extract` (flow 1, 1D.11): `ExtractResponse.mock` with the date moved to tomorrow
