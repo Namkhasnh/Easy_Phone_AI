@@ -45,6 +45,10 @@ final class MockCalendarService: CalendarService {
         }
     }
 
+    func find(stepTag: String, around date: Date) async throws -> EventSummary? {
+        try await events(in: CalendarSearch.around(date)).first { $0.stepTag == stepTag }
+    }
+
     func find(stepTag: String) async throws -> EventSummary? {
         try await events(in: CalendarSearch.tagWindow(now: .now)).first { $0.stepTag == stepTag }
     }

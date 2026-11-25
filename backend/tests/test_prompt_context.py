@@ -47,8 +47,10 @@ def test_weekdays_are_consistent_over_a_year():
 def test_catalog_lines_hide_locked_and_app_built_fields():
     lines = catalog_lines([*KINDS, "ocr"])  # "ocr" paused in ENABLED_KINDS (D-302); still checked here
     text = "\n".join(lines)
-    assert "calendarEvent.create: title*, startDate*, endDate, allDay, location, notes, alertMinutesBefore" in lines
-    assert "reminder.create: title*, dueDate*, notes" in lines
+    assert ("calendarEvent.create: title*, startDate*, endDate, allDay, location, notes, alertMinutesBefore, "
+            "lunarDate, lunarRecurrence") in lines  # D-332: lunar fields on create only
+    assert "reminder.create: title*, dueDate*, notes, lunarDate, lunarRecurrence" in lines
+    assert "calendarEvent.update: title*, startDate*, endDate, allDay, location, notes, alertMinutesBefore" in lines
     assert "reminder.snooze: title, dueDate, notes, snoozeOption*" in lines
     assert "reminder.complete: title, dueDate, notes" in lines  # `completed` is appBuilt
     assert "call.open: recipientName*, callType" in lines  # D-300

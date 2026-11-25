@@ -54,6 +54,8 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>INAlternativeAppNames</key>
 	<array>
 		<dict>

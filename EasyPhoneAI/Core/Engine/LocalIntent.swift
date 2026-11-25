@@ -16,11 +16,29 @@ enum LocalIntent: Equatable, Sendable {
     case reminders
     /// D-320: a reminder / event with a clear time (`LocalSchedule`).
     case schedule(LocalSchedule.Result)
+    /// 4L.2 (D-330): a lunar-calendar question, answered in S03 mode 6 / the Hỏi Khoai panel.
+    case lunar(LunarQuestion)
+    /// 4H.3 (D-337): "làm sao …" → S23 Khoai hướng dẫn (curated guide on device first, else `/v1/guide`).
+    case guide(question: String)
 
     /// The first rule that matches, or nil (→ `/v1/parse`).
     static func match(_ text: String, now: Date = .now, timeZone: TimeZone = .current) -> LocalIntent? {
-        if isCheckMail(text) { return .checkMail(codesOnly: wantsCode(text)) }
+        let guide = GuideSafety.isGuideQuestion(text)
+        // "nhân viên ngân hàng xin mã OTP, xem ở đâu…" is a guide (with scam warnings, D-339), never the code list.
+        if isCheckMail(text), !(guide && GuideSafety.isMoneyRelated(text)) { return .checkMail(codesOnly: wantsCode(text)) }
+        if let lunar = LunarQuestion.match(Words(text)) { return .lunar(lunar) }
+        let short = shortIntent(text, now: now, timeZone: timeZone)
+        // "lịch ngày mai thế nào" opens the day; "gọi Zalo làm sao" is a guide, not a call to "Zalo làm sao".
+        switch short {
+        case .calendarDay, .reminders: break
+        default: if guide { return .guide(question: text) }
+        }
         if let schedule = LocalSchedule.match(text, now: now, timeZone: timeZone) { return .schedule(schedule) }
+        return short
+    }
+
+    /// Call / calendar day / directions / reminders: short phrases only (≤ 9 words).
+    private static func shortIntent(_ text: String, now: Date, timeZone: TimeZone) -> LocalIntent? {
         let words = Words(text)
         guard !words.folded.isEmpty, words.folded.count <= 9 else { return nil }
         if let name = callName(words) { return .call(name: name) }

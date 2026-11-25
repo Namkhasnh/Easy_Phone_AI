@@ -20,12 +20,38 @@ enum FieldFormatter {
             return option(fieldId: field.id, value: value, args: args) ?? value
         case .bool:
             return UserMessage(key: value == "true" ? "common.yes" : "common.no").text
+        case .lunarDate:
+            guard let lunar = LunarFieldValue(value) else { return value }
+            return lunarDate(lunar)
         case .contactRef, .placeRef:
             // 🔒 opaque identifiers are never shown; their human row comes from the device services (1C).
             return nil
         case .text, .longText, .phone, .address, .coordinate:
             return value
         }
+    }
+
+    /// D-332: "10/3 âm lịch", "1/6 nhuận âm lịch", "10/3/2027 âm lịch", "Ngày 1 hằng tháng (âm lịch)", + " lúc 06:00".
+    /// The solar date beside it is added by the DraftBuilder row (4L.4), not here.
+    static func lunarDate(_ v: LunarFieldValue) -> String {
+        let base: String
+        if v.isEveryMonth {
+            base = UserMessage(key: "lunar.field.monthly", args: [String(v.day)]).text
+        } else if v.monthToken != .number(v.month) {
+            // N0 / N1 / NX: "Rằm tháng này (âm lịch)"… until 4L.4 resolves the month on device.
+            let key = switch v.monthToken {
+            case .thisMonth: "lunar.field.thisMonth"
+            case .nextMonth: "lunar.field.nextMonth"
+            default: "lunar.field.next"
+            }
+            base = UserMessage(key: key, args: [String(v.day)]).text
+        } else {
+            let month = v.year.map { "\(v.month)/\($0)" } ?? String(v.month)
+            base = UserMessage(key: v.isLeap ? "lunar.field.leapDate" : "lunar.field.date",
+                               args: [String(v.day), month]).text
+        }
+        guard let h = v.hour, let m = v.minute else { return base }
+        return UserMessage(key: "lunar.field.time", args: [base, String(format: "%02d:%02d", h, m)]).text
     }
 
     /// `common.dateTimeFormat` = "{weekday}, {dd/MM} lúc {HH:mm}" (24 h), e.g. "Thứ Hai, 09/11 lúc 14:00".

@@ -1,0 +1,52 @@
+{
+  "case": "lunar_leap",
+  "source": "4L.3 lunar (D-332), parse.v7",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Ngày 1 tháng 6 nhuận âm lịch nhắc tôi cúng",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "reminder",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Cúng",
+            "confidence": 0.85,
+            "sourceQuote": null
+          },
+          {
+            "id": "dueDate",
+            "value": null,
+            "confidence": null,
+            "sourceQuote": null
+          },
+          {
+            "id": "lunarDate",
+            "value": "06-01L",
+            "confidence": 0.9,
+            "sourceQuote": "Ngày 1 tháng 6 nhuận âm lịch"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

@@ -7,7 +7,9 @@ import SwiftUI
 /// Done in the panel: reminders and events (EventKit, verified, D-124), a day of the calendar (read only).
 /// Confirmed in the panel, finished in the app: call / directions (the app must be in front to open Phone / Maps).
 /// Everything else (AI requests, SMS, a choice between contacts, mail…) continues in the app with the same words.
-struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
+/// 4H.5: "làm sao …" is answered in the panel one step at a time; "tiếp" said to the panel later gives the next step
+/// (`GuideSessions`), so the user stays in Zalo / Cài đặt. `LiveActivityIntent`: may start "Bước 1/5" from the background.
+struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent, LiveActivityIntent {
     static let title: LocalizedStringResource = "intent.ask.title"
     static let description = IntentDescription("intent.ask.desc")
     static let openAppWhenRun = false
@@ -30,6 +32,7 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
 
     @MainActor
     private func answer(_ panel: KhoaiPanel, text: String, zone: TimeZone) async throws -> KhoaiPanel.Reply {
+        if let outcome = panel.env.guideSessions.handle(text) { return KhoaiPanel.guideReply(outcome) }   // 4H.5
         switch LocalIntent.match(text, now: .now, timeZone: zone) {
         case .schedule(let s)?:
             let parsed = s.kind == .reminder
@@ -47,12 +50,18 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
         case .directions(let label)?:
             return try await panel.finish(ConversationViewModel.localDraft("place", "open", [("query", label)]),
                                           in: panel.newDraft(), intent: self)
+        case .lunar(let question)?:                                         // 4L.2: answered on the phone
+            let text = question.answer(now: .now)
+            return KhoaiPanel.Reply(full: text, shown: UserMessage(key: "intent.ask.lunar").text,
+                                    view: KhoaiSnippet(.list([KhoaiSnippet.Row(time: nil, title: text)])))
         case .calendarDay(let day)?:
             return try await panel.showDay(day, intent: self)
         case .reminders?:
             throw panel.continueInApp(.reminders, intent: self)
         case .checkMail(let codesOnly)?:
             throw panel.continueInApp(.mail(codesOnly: codesOnly), intent: self)
+        case .guide(let question)?:                                         // 4H.5: step 1 in the panel
+            return try await panel.guide(question, intent: self)
         case nil:
             return try await panel.askAI(intent: self)                       // step 2 (D-325)
         }
@@ -145,7 +154,7 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
     /// A parsed draft (local or AI) → device resolution and S04 rules → one system confirmation for all steps →
     /// run. Anything the panel cannot show or decide continues in S03 / S04 with this same draft (nothing re-parsed).
     func finish(_ parsed: ParsedDraft, in draft: TaskDraft, intent: AskKhoaiIntent) async throws -> Reply {
-        let defaults = DraftBuilder.Defaults(mapsApp: env.localData.settings().preferredMapsApp)
+        let defaults = DraftBuilder.Defaults(mapsApp: env.localData.settings().preferredMapsApp, timeZoneId: draft.timeZoneId)
         guard env.engine.applyParsed(parsed, to: draft, defaults: defaults) else {
             draft.markAnswered(parsed.requestId)
             env.drafts.save(draft)
@@ -253,6 +262,52 @@ struct AskKhoaiIntent: AppIntent, ForegroundContinuableIntent {
         return Reply(full: spoken.isEmpty ? title : "\(title). \(spoken)", shown: title, view: KhoaiSnippet(.list(Array(rows))))
     }
 
+    // MARK: - Guide (4H.5, D-337 – D-340)
+
+    /// "làm sao gửi ảnh Zalo" → step 1 in the panel; later "tiếp" → step 2 (`GuideSessions.handle`). Money guides
+    /// continue in S23 (all warnings + "Gọi cho con", D-339) with the same loaded guide, so no second unit.
+    /// Offline / quota / sign-in errors → S23, which shows the proper screen.
+    func guide(_ question: String, intent: AskKhoaiIntent) async throws -> Reply {
+        let loaded: Guide?
+        do {
+            loaded = try await GuideLoader.load(question, library: .bundled, api: env.api, key: IdempotencyKey())
+        } catch {
+            Self.logger.info("ask khoai guide failed: \((error as? AppError)?.code ?? "unknown", privacy: .public)")
+            throw continueInApp(.guide(question: question, spoken: false), intent: intent)
+        }
+        guard let loaded else { return Self.failed("common.unsupported", hint: "guide.unsupported.body") }
+        let session = env.guideSessions.start(loaded, question: question)
+        // TODO(spec): D-339 lists the money warnings and "Gọi cho con" but not the panel; money → S23 is Claude's choice.
+        if loaded.isMoneyRelated || GuideSafety.isMoneyRelated(question) {
+            throw continueInApp(.guide(question: question, spoken: false), intent: intent)
+        }
+        return Self.guideReply(.step(session), first: true)
+    }
+
+    /// One step: header "Bước 2/5", the step in big text, how to get the next one. Siri reads the whole step.
+    static func guideReply(_ outcome: GuideSessions.Outcome, first: Bool = false) -> Reply {
+        func line(_ text: String) -> KhoaiSnippet { KhoaiSnippet(.list([KhoaiSnippet.Row(time: nil, title: text)])) }
+        switch outcome {
+        case .step(let s):
+            let footer = UserMessage(key: s.isLast ? "guide.panel.last" : "guide.panel.next").text
+            let warning = s.guide.isMoneyRelated ? UserMessage(key: "guide.warning.otp").text : nil   // D-339
+            let full = ([first && !s.guide.title.isEmpty ? s.guide.title : nil, warning, s.spoken, footer])
+                .compactMap { $0 }.joined(separator: ". ")
+            let card = KhoaiSnippet.GuideCard(title: s.guide.title, label: s.label, text: s.step.text, hint: s.step.hint,
+                                              warning: warning, footer: footer, canGoBack: s.index > 0,
+                                              canGoOn: !s.isLast)
+            return Reply(full: full, shown: s.label, view: KhoaiSnippet(.guide(card)))
+        case .finished:
+            let text = UserMessage(key: "guide.panel.finished").text
+            return Reply(text, view: line(UserMessage(key: "guide.panel.finished.body").text))
+        case .stopped:
+            let text = UserMessage(key: "guide.panel.stopped").text
+            return Reply(text, view: line(UserMessage(key: "guide.panel.start.hint").text))
+        case .noGuide:
+            return failed("guide.panel.none", hint: "guide.panel.start.hint")
+        }
+    }
+
     func continueInApp(_ route: Route, intent: AskKhoaiIntent) -> Error {
         let appState = state
         return intent.needsToContinueInForegroundError(IntentDialog("intent.ask.opening")) {
@@ -297,10 +352,24 @@ struct KhoaiSnippet: View {
 
     struct Row: Sendable, Hashable { var time: String?; var title: String }
 
+    /// 4H.5: one guide step in the panel.
+    struct GuideCard: Sendable, Hashable {
+        var title: String
+        var label: String
+        var text: String
+        var hint: String?
+        /// Money guide (D-339): "Không đọc mã OTP cho ai".
+        var warning: String?
+        var footer: String
+        var canGoBack: Bool
+        var canGoOn: Bool
+    }
+
     enum Content {
         case draft([Summary]), done([Summary], undoDraftId: String? = nil), undone([Summary])
         case failed(hint: String)
         case list([Row])
+        case guide(GuideCard)
     }
 
     let content: Content
@@ -323,6 +392,7 @@ struct KhoaiSnippet: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             if case .done(_, let undoId?) = content { undoButton(undoId) }
+            if case .guide(let card) = content { guideButtons(card) }
         }
         .padding(.horizontal, Tokens.Space.l)
         .padding(.vertical, Tokens.Space.m)
@@ -337,6 +407,8 @@ struct KhoaiSnippet: View {
             Text(verbatim: hint)
                 .font(.body)
                 .fixedSize(horizontal: false, vertical: true)
+        case .guide(let card):
+            guideCard(card)
         case .list(let rows):
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(rows.enumerated()), id: \.offset) { i, row in
@@ -409,12 +481,64 @@ struct KhoaiSnippet: View {
         }
     }
 
+    private func guideCard(_ card: GuideCard) -> some View {
+        VStack(alignment: .leading, spacing: Tokens.Space.s) {
+            if !card.title.isEmpty {
+                Text(verbatim: card.title)
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+            if let warning = card.warning {
+                Label { Text(verbatim: warning) } icon: { Image(systemName: "exclamationmark.shield.fill") }
+                    .font(.callout.weight(.semibold))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Text(verbatim: card.text)
+                .font(.title3.weight(.bold))
+                .fixedSize(horizontal: false, vertical: true)
+            if let hint = card.hint {
+                Label { Text(verbatim: hint) } icon: { Image(systemName: "lightbulb") }
+                    .font(.callout)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Text(verbatim: card.footer)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(Tokens.Space.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Tokens.Colors.surface.opacity(0.85), in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+        .accessibilityElement(children: .combine)
+    }
+
+    /// 4H.5: "Bước trước" / "Bước tiếp" in the panel (interactive snippets, iOS 26); earlier: say "tiếp" to Khoai.
+    @ViewBuilder private func guideButtons(_ card: GuideCard) -> some View {
+        if #available(iOS 26.0, *) {
+            HStack(spacing: Tokens.Space.m) {
+                if card.canGoBack {
+                    Button(intent: GuideStepIntent(move: .previous)) {
+                        Text("guide.previous").font(.body.weight(.semibold)).frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                    .buttonStyle(.bordered)
+                }
+                if card.canGoOn {
+                    Button(intent: GuideStepIntent(move: .next)) {
+                        Text("guide.next").font(.body.weight(.semibold)).frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+            }
+            .tint(Tokens.Colors.primary)
+        }
+    }
+
     private var pose: String {
         switch content {
         case .done: "mascot.panel.happy"
         case .failed: "mascot.panel.sorry"
         case .draft: "mascot.panel.ask"
-        case .undone, .list: "mascot.panel.calm"
+        case .undone, .list, .guide: "mascot.panel.calm"
         }
     }
 
@@ -484,6 +608,33 @@ struct UndoKhoaiIntent: AppIntent {
             return .result(dialog: reply.dialog, view: reply.view)
         }
         let reply = await KhoaiPanel(env: env, state: state, text: "", zone: .current).undo(draftId: id)
+        return .result(dialog: reply.dialog, view: reply.view)
+    }
+}
+
+/// 4H.5: "Bước tiếp" / "Bước trước" on the panel's guide card. Not shown in Shortcuts (only the card uses it).
+struct GuideStepIntent: AppIntent, LiveActivityIntent {
+    enum Move: String, AppEnum {
+        case next, previous
+        static let typeDisplayRepresentation: TypeDisplayRepresentation = "intent.guideStep.title"
+        static let caseDisplayRepresentations: [Move: DisplayRepresentation] = [
+            .next: "guide.next", .previous: "guide.previous",
+        ]
+    }
+
+    static let title: LocalizedStringResource = "intent.guideStep.title"
+    static let openAppWhenRun = false
+    static let isDiscoverable = false
+
+    @Parameter(title: "intent.guideStep.title") var move: Move
+
+    init() {}
+    init(move: Move) { self.move = move }
+
+    @MainActor
+    func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView {
+        let outcome = KhoaiPanel.env?.guideSessions.handle(move == .next ? "tiếp" : "quay lại") ?? .noGuide
+        let reply = KhoaiPanel.guideReply(outcome)
         return .result(dialog: reply.dialog, view: reply.view)
     }
 }

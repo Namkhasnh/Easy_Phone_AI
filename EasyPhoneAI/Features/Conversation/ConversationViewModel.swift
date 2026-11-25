@@ -13,6 +13,9 @@ import OSLog
         case working
         case unsupported(Unsupported)
         case followUp(FollowUp)
+        /// Mode 6 (4L.2): Khoai's answer to a question the phone answers by itself (lunar calendar). Text = catalog
+        /// sentence with values, never LLM text (D-220).
+        case answer(String)
     }
 
     /// Mode 4: the ONE question (spec §6.2 AC3). `question` is already chosen by the D-281 rule (1B.14):
@@ -88,6 +91,8 @@ import OSLog
     private(set) var opensReminders = false
     /// 1F.7: a 402 opens S16 (free) or S17 (premium) on top of S03; the request text is kept (D-104).
     var quotaBlock: QuotaBlock?
+    /// 4H.3: a "làm sao …" question → S23 Khoai hướng dẫn.
+    private(set) var guideRequest: GuideRequestRoute?
     /// S21 "Trả lời" (2.6b): this conversation writes a reply to that message.
     let reply: MailReplyContext?
     /// S18 before the mic starts: microphone, then speech (D-185). The recording waits for the answer.
@@ -191,6 +196,7 @@ import OSLog
         case _ where noticeKey != nil: return .sorry
         case .working: return .thinking
         case .followUp: return .asking
+        case .answer: return .happy
         case .listening, .transcript: return .listening
         }
     }
@@ -549,7 +555,7 @@ import OSLog
     private func runLocal(_ intent: LocalIntent, draft: TaskDraft) async {
         Self.logger.info("local intent")                                  // D-059: no content
         switch intent {
-        case .checkMail, .calendarDay, .reminders:                        // a screen opens: answered (1G.10)
+        case .checkMail, .calendarDay, .reminders, .lunar, .guide:        // a screen / an answer: answered (1G.10)
             draft.markAnswered(nil)
             repository.save(draft)
         default: break
@@ -562,6 +568,10 @@ import OSLog
             calendarDay = day
         case .reminders:
             opensReminders = true
+        case .lunar(let question):
+            showAnswer(question.answer(now: now()), spoken: draft.inputMode == .voice)
+        case .guide(let question):                                        // 4H.3: S23
+            guideRequest = GuideRequestRoute(question: question, spoken: draft.inputMode == .voice)
         case .call(let name):
             await handle(Self.localDraft("call", "open", [("recipientName", name), ("callType", "phone")]),
                          isAnswer: false, draft: draft, returnMode: .transcript)
@@ -580,6 +590,32 @@ import OSLog
             }
             await handle(parsed, isAnswer: false, draft: draft, returnMode: .transcript)
         }
+    }
+
+    /// Mode 6: shows the answer; read aloud at once for a spoken question when "Đọc to" is on (like the follow-up).
+    func showAnswer(_ answer: String, spoken: Bool) {
+        noticeKey = nil
+        mode = .answer(answer)
+        guard spoken, settings.voiceEnabled else { return }
+        Task { @MainActor [tts, settings] in await tts.speak(answer, rate: settings.speechRate) }
+    }
+
+    /// "Đọc to" on the answer bubble.
+    func readAnswer() async {
+        guard case .answer(let answer) = mode else { return }
+        if isReading { stopReading(); return }
+        isReading = true
+        await tts.speak(answer, rate: settings.speechRate)
+        isReading = false
+    }
+
+    /// "Hỏi tiếp": a new question in the same screen (the answered draft stays in history).
+    func askMore() async {
+        stopReading()
+        tts.stop()
+        text = ""
+        mode = .transcript
+        await speakAgain()
     }
 
     static func localDraft(_ kind: String, _ operation: String, _ fields: [(String, String)],
@@ -635,7 +671,7 @@ import OSLog
     }
 
     private func handle(_ parsed: ParsedDraft, isAnswer: Bool, draft: TaskDraft, returnMode: Mode) async {
-        let defaults = DraftBuilder.Defaults(mapsApp: settings.preferredMapsApp)
+        let defaults = DraftBuilder.Defaults(mapsApp: settings.preferredMapsApp, timeZoneId: draft.timeZoneId)
         if isAnswer {
             guard parsed.unsupported == nil else {
                 // TODO(spec): an `unsupported` reply to a follow-up answer is not specified; the same question is
@@ -791,4 +827,10 @@ import OSLog
     }
 
     private static let logger = Logger(subsystem: "vn.namkhanh.easyphone", category: "conversation")
+}
+
+/// S03 → S23 (4H.3).
+struct GuideRequestRoute: Equatable, Sendable {
+    let question: String
+    let spoken: Bool
 }

@@ -29,7 +29,7 @@ import os
         }
         do {
             switch step.operation {
-            case .create: return try await create(step)
+            case .create: return try await create(step, timeZoneId: draft.timeZoneId)
             case .update: return try await update(step)
             case .delete: return try await delete(step)
             case .complete: return try await complete(step)
@@ -46,27 +46,81 @@ import os
 
     // MARK: - Operations
 
-    private func create(_ step: TaskStep) async throws -> ExecutionOutcome {
+    private func create(_ step: TaskStep, timeZoneId: String) async throws -> ExecutionOutcome {
         guard let input = Self.input(from: step) else { return .failed(code: "eventkit.saveFailed") }
         let tag = StepTag.make(step.id)
         // 5. Idempotency (D-105): stored evidence, then the `easyphone:<stepId>` tag.
         if let id = Self.reminderId(step.resultEvidence), try await reminders.find(identifier: id) != nil {
             return .verified(evidence: Self.evidence(id))
         }
-        if let found = try await reminders.find(stepTag: tag) { return .verified(evidence: Self.evidence(found.id)) }
-        let id = try await reminders.save(input, stepTag: tag, existing: nil)
-        return try await verify(id) { $0.title == input.title && $0.dueDate == input.dueDate }
+        let outcome: ExecutionOutcome
+        if let found = try await reminders.find(stepTag: tag) {
+            outcome = .verified(evidence: Self.evidence(found.id))
+        } else {
+            let id = try await reminders.save(input, stepTag: tag, existing: nil)
+            outcome = try await verify(id) { $0.title == input.title && $0.dueDate == input.dueDate }
+        }
+        guard case .verified = outcome else { return outcome }
+        // 4L.5 (D-331): the rest of a lunar yearly / monthly series, one reminder each (looked up first, D-105).
+        _ = try await write(LunarSeries.following(step, timeZoneId: timeZoneId), input: input, of: step)
+        return outcome
+    }
+
+    /// Writes the series items not found by tag. Returns how many were written.
+    private func write(_ items: [LunarSeries.Item], input: ReminderInput, of step: TaskStep) async throws -> Int {
+        var written = 0
+        for item in items {
+            let itemTag = LunarSeries.tag(step.id, item.suffix)
+            if try await reminders.find(stepTag: itemTag) != nil { continue }
+            var next = input
+            next.dueDate = item.start
+            _ = try await reminders.save(next, stepTag: itemTag, existing: nil)
+            written += 1
+        }
+        return written
+    }
+
+    /// 4L.6 (D-331): the next 12 months of a lunar series, after the newest block end still in Reminders (done ones
+    /// count). None left (deleted) → nothing.
+    func extendSeries(_ step: TaskStep, draft: TaskDraft, now: Date) async -> Int {
+        guard permissions.status(.reminders) == .granted, let input = Self.input(from: step),
+              let plan = LunarSeries.extensionPlan(step, timeZoneId: draft.timeZoneId, now: now) else { return 0 }
+        do {
+            // Already extended (the newest item exists) → no more lookups.
+            if let last = plan.items.last, try await reminders.find(stepTag: LunarSeries.tag(step.id, last.suffix)) != nil {
+                return 0
+            }
+            for end in plan.ends {
+                guard try await reminders.find(stepTag: LunarSeries.tag(step.id, end.suffix)) != nil else { continue }
+                return try await write(Array(plan.items.drop { $0.start <= end.start }), input: input, of: step)
+            }
+        } catch {
+            logger.info("lunar series extension failed")
+        }
+        return 0
     }
 
     private func update(_ step: TaskStep) async throws -> ExecutionOutcome {
-        guard let target = step.targetRef, let input = Self.input(from: step) else { return .failed(code: "eventkit.saveFailed") }
-        let id = try await reminders.save(input, stepTag: StepTag.make(step.id), existing: target)
+        guard let target = step.targetRef, let input = Self.input(from: step),
+              let current = try await reminders.find(identifier: target) else { return .failed(code: "eventkit.saveFailed") }
+        // 4L.5 (D-331): the other open reminders of a lunar series keep their own due date and take the rest.
+        // The original tag is kept so the create step and the series still find them (D-105).
+        let id = try await reminders.save(input, stepTag: current.stepTag ?? StepTag.make(step.id), existing: target)
+        for member in try await reminders.series(of: current) where member.id != target {
+            var each = input
+            each.dueDate = member.dueDate ?? input.dueDate
+            _ = try await reminders.save(each, stepTag: member.stepTag ?? StepTag.make(step.id), existing: member.id)
+        }
         return try await verify(id) { $0.title == input.title && $0.dueDate == input.dueDate }
     }
 
     private func delete(_ step: TaskStep) async throws -> ExecutionOutcome {
         guard let target = step.targetRef else { return .failed(code: "eventkit.saveFailed") }
-        if try await reminders.find(identifier: target) != nil {             // already gone → no second call
+        if let current = try await reminders.find(identifier: target) {      // already gone → no second call
+            // 4L.5 (D-331): the open reminders of the lunar series go too; the target last (a retry finds the rest).
+            for member in try await reminders.series(of: current) where member.id != target {
+                try await reminders.delete(identifier: member.id)
+            }
             try await reminders.delete(identifier: target)
         }
         guard try await reminders.find(identifier: target) == nil else { return .failed(code: "eventkit.saveFailed") }

@@ -21,11 +21,15 @@ enum ExecutionOutcome: Sendable, Hashable {
     /// Launch verification (D-125, DATA_MODEL §3.5): evidence that this `unknown` step's action did happen, or nil
     /// (stays `unknown`). Read-only: never creates, edits or deletes anything.
     func evidenceOnLaunch(_ step: TaskStep) async -> String?
+    /// 4L.6 (D-331): on launch, writes the next block of a succeeded lunar series when it runs short. Returns how many
+    /// items were written. Never touches anything else.
+    func extendSeries(_ step: TaskStep, draft: TaskDraft, now: Date) async -> Int
 }
 
 extension StepExecutor {
     /// Default: not verifiable (call, SMS, directions, hand-offs — D-102: never evidence).
     func evidenceOnLaunch(_ step: TaskStep) async -> String? { nil }
+    func extendSeries(_ step: TaskStep, draft: TaskDraft, now: Date) async -> Int { 0 }
 }
 
 /// `MessageComposeResult` mapped by the composer bridge (1C.11); no MessageUI import here (D-015).

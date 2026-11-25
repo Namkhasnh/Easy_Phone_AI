@@ -22,7 +22,8 @@ struct QuotaBlockTests {
 
     @Test func a402DuringParseOpensTheSheetAndKeepsTheText() async {
         let repo = MockTaskRepository()
-        let draft = TaskDraft(inputMode: .text, originalInput: "Nhắc tôi uống thuốc lúc 8 giờ", timeZoneId: "Asia/Ho_Chi_Minh")
+        // A weekday always goes to /v1/parse: "lúc 8 giờ" was understood on the phone before 08:00 (D-320), so no 402.
+        let draft = TaskDraft(inputMode: .text, originalInput: "Thứ hai tuần sau nhắc tôi uống thuốc", timeZoneId: "Asia/Ho_Chi_Minh")
         repo.save(draft)
         let api = MockAPIClient(parse: .failure(Self.error(.free)))
         let vm = ConversationViewModel(draftId: draft.id, repository: repo, speech: MockSpeechService(), api: api,
@@ -30,7 +31,7 @@ struct QuotaBlockTests {
                                        engine: TaskEngine(repository: repo))
         await vm.onAppear()
         #expect(vm.quotaBlock == .paywall(Self.quota))
-        #expect(vm.text == "Nhắc tôi uống thuốc lúc 8 giờ")                        // nothing lost (D-104)
+        #expect(vm.text == "Thứ hai tuần sau nhắc tôi uống thuốc")                        // nothing lost (D-104)
     }
 
     @Test func entitlementKeepsTheLimitForTheSettingsRow() {

@@ -104,6 +104,9 @@ extension FieldCatalog {
             FieldSpec(id: "notes", type: .longText),
             FieldSpec(id: "alertMinutesBefore", type: .durationMinutes),
             FieldSpec(id: "calendarId", type: .text, deviceOnly: true),
+            FieldSpec(id: "lunarDate", type: .lunarDate, operations: [.create]),             // D-332, 4L.3
+            FieldSpec(id: "lunarRecurrence", type: .enumChoice, options: ["none", "yearly", "monthly"],
+                      operations: [.create]),
         ], required: [
             RequiredRule(operation: .create, fields: ["title", "startDate"]),
             RequiredRule(operation: .update, requiresTargetRef: true, fields: ["title", "startDate"]),
@@ -116,6 +119,9 @@ extension FieldCatalog {
             FieldSpec(id: "snoozeOption", type: .enumChoice,
                       options: ["min15", "hour1", "tomorrowMorning"], operations: [.snooze]),
             FieldSpec(id: "completed", type: .bool, appBuilt: true, operations: [.complete]),
+            FieldSpec(id: "lunarDate", type: .lunarDate, operations: [.create]),             // D-332, 4L.3
+            FieldSpec(id: "lunarRecurrence", type: .enumChoice, options: ["none", "yearly", "monthly"],
+                      operations: [.create]),
         ], required: [
             RequiredRule(operation: .create, fields: ["title", "dueDate"]),
             RequiredRule(operation: .update, requiresTargetRef: true, fields: ["title", "dueDate"]),

@@ -1,6 +1,6 @@
 {
   "case": "date_lunar",
-  "source": "AI_PROMPTS §8.1 row 9",
+  "source": "AI_PROMPTS §8.1 row 9; v7: NX-05 (4L.3, D-332)",
   "request": {
     "schemaVersion": 1,
     "text": "Nhắc tôi mùng 5 âm lịch đi chùa",
@@ -34,16 +34,25 @@
             "id": "dueDate",
             "value": null,
             "confidence": null,
+            "sourceQuote": null
+          },
+          {
+            "id": "lunarDate",
+            "value": "NX-05",
+            "confidence": 0.9,
             "sourceQuote": "mùng 5 âm lịch"
+          },
+          {
+            "id": "lunarRecurrence",
+            "value": "none",
+            "confidence": 0.9,
+            "sourceQuote": null
           }
         ],
         "dateCandidates": []
       }
     ],
-    "followUpQuestion": "Ngày đó là ngày dương lịch nào?",
+    "followUpQuestion": null,
     "unsupported": null
-  },
-  "liveMatch": {
-    "followUpQuestion": "present"
   }
 }

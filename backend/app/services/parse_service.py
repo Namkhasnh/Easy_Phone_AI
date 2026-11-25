@@ -113,6 +113,29 @@ def _parse_dt(value: str) -> datetime | None:
         return None
 
 
+LUNAR_RE = re.compile(r"(?:(\d{4})-)?(\d{2}|N0|N1|NX)-(\d{2})(L)?(?:T(\d{2}):(\d{2}))?")
+
+
+def _lunar_ok(value: str) -> bool:
+    """D-332 `lunarDate` = `[YYYY-]MM-DD[L][THH:mm]`; month 00 = every month, N0 / N1 / NX = this / next lunar month /
+    next occurrence (resolved on the phone); year and L only with 01–12. Same as Swift `LunarFieldValue`. The solar
+    date is computed by the app, never by the LLM."""
+    m = LUNAR_RE.fullmatch(value)
+    if not m:
+        return False
+    year, month, day, leap, hour, minute = m.groups()
+    if not 1 <= int(day) <= 30:
+        return False
+    numeric = month.isdigit()
+    if numeric and not 0 <= int(month) <= 12:
+        return False
+    if (leap or year) and (not numeric or int(month) == 0):
+        return False
+    if year and not 1800 <= int(year) <= 2199:
+        return False
+    return hour is None or (int(hour) <= 23 and int(minute) <= 59)
+
+
 def _encoded(value: str, field: dict[str, Any], kind: str = "") -> bool:
     """DATA_MODEL §1.6, same rules as Swift `Validator.isEncoded` (AI_PROMPTS §9.1 for dates)."""
     t = field["type"]
@@ -132,6 +155,8 @@ def _encoded(value: str, field: dict[str, Any], kind: str = "") -> bool:
         return True
     if t == "durationMinutes":
         return value.isascii() and value.isdigit()
+    if t == "lunarDate":
+        return _lunar_ok(value)
     if t == "bool":
         return value in ("true", "false")
     if t == "address":
@@ -217,8 +242,14 @@ def _clean_step(step: dict, kinds: dict[str, dict], enabled: list[str], req: Par
         seen.add(spec["id"])
         fields.append(_clean_field(f, spec, kind_name, req.text))
     date_ids = {f["id"] for f in kind["fields"] if f["type"] in ("dateTime", "date") and not f["deviceOnly"]}
-    return {"kind": kind_name, "operation": op, "fields": fields,
-            "dateCandidates": _clean_candidates(step, date_ids, tz, today)}
+    candidates = _clean_candidates(step, date_ids, tz, today)
+    if any(f["id"] == "lunarDate" and f["value"] for f in fields):
+        # D-332: with a lunar date the phone computes the solar one; a solar date / candidate from the LLM is dropped.
+        for f in fields:
+            if f["id"] in date_ids:
+                f["value"], f["confidence"] = None, None
+        candidates = []
+    return {"kind": kind_name, "operation": op, "fields": fields, "dateCandidates": candidates}
 
 
 def _unsupported(reason: str, message: str | None = None, day: str | None = None) -> dict:

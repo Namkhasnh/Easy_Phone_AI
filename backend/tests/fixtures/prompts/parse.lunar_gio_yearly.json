@@ -1,0 +1,64 @@
+{
+  "case": "lunar_gio_yearly",
+  "source": "4L.3 lunar (D-332), parse.v7",
+  "request": {
+    "schemaVersion": 1,
+    "text": "Đặt lịch giỗ ông ngày 10 tháng 3 âm lịch",
+    "inputMode": "text",
+    "now": "2026-11-08T18:07:00+07:00",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "locale": "vi-VN",
+    "savedPlaceLabels": [
+      "home",
+      "work"
+    ],
+    "context": {
+      "draftId": null,
+      "answeringFieldId": null,
+      "currentDraft": null
+    }
+  },
+  "expected": {
+    "steps": [
+      {
+        "kind": "calendarEvent",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "title",
+            "value": "Giỗ ông",
+            "confidence": 0.9,
+            "sourceQuote": "giỗ ông"
+          },
+          {
+            "id": "startDate",
+            "value": null,
+            "confidence": null,
+            "sourceQuote": null
+          },
+          {
+            "id": "allDay",
+            "value": "true",
+            "confidence": 0.8,
+            "sourceQuote": null
+          },
+          {
+            "id": "lunarDate",
+            "value": "03-10",
+            "confidence": 0.95,
+            "sourceQuote": "ngày 10 tháng 3 âm lịch"
+          },
+          {
+            "id": "lunarRecurrence",
+            "value": "yearly",
+            "confidence": 0.9,
+            "sourceQuote": "giỗ"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
+    "followUpQuestion": null,
+    "unsupported": null
+  }
+}

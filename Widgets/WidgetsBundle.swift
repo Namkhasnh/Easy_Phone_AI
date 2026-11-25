@@ -8,6 +8,7 @@ struct WidgetsBundle: WidgetBundle {
     var body: some Widget {
         ListenWidget()
         ListenControl()
+        GuideLiveActivity()
     }
 }
 

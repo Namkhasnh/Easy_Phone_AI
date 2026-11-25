@@ -178,6 +178,17 @@ struct RootView: View {
             RemindersView(viewModel: RemindersViewModel(reminders: env.reminders, permissions: env.permissions,
                                                         repository: env.drafts, engine: env.engine,
                                                         snoozeMorningHour: env.localData.settings().snoozeMorningHour))
+        case .lunarDays:
+            LunarDaysView(viewModel: LunarDaysViewModel(repository: env.drafts, calendar: env.calendar,
+                                                        reminders: env.reminders, permissions: env.permissions))
+        case .guide(let question, let spoken):
+            let settings = env.localData.settings()
+            GuideView(viewModel: GuideViewModel(question: question, spoken: spoken, api: env.api, tts: env.tts,
+                                                speech: env.speech,
+                                                voice: .init(enabled: settings.voiceEnabled,
+                                                             handsFree: settings.handsFree,
+                                                             rate: settings.speechRate),
+                                                repository: env.drafts, sessions: env.guideSessions))
         case .places:
             PlacesView(viewModel: PlacesViewModel(places: env.places, localData: env.localData, engine: env.engine))
         case .ocr:

@@ -171,7 +171,7 @@ struct ConversationParseTests {
         #expect(call.request.text == "8 giờ sáng mai" && call.request.inputMode == .text)
         #expect(call.request.context.draftId == draft.id)
         #expect(call.request.context.answeringFieldId == "dueDate")
-        #expect(call.request.context.currentDraft?.steps.first?.fields.map(\.id) == ["title", "dueDate", "notes"])
+        #expect(call.request.context.currentDraft?.steps.first?.fields.map(\.id) == ["title", "dueDate", "notes", "lunarDate", "lunarRecurrence"])
         #expect(call.request.context.currentDraft?.requestId == "req_01JC8Z5A01")
 
         #expect(draft.steps.first?.id == stepId)                             // merged, not rebuilt

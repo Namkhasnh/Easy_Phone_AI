@@ -420,6 +420,9 @@ import os
         step.fields[f].source = .user
         step.fields[f].confidence = nil
         step.fields[f].ambiguity = nil
+        // 4L.4 (D-332): the lunar row and the solar date stay in step.
+        step.fields = DraftBuilder.lunarSynced(after: fieldId, fields: step.fields, kind: step.kind, now: now(),
+                                               defaults: DraftBuilder.Defaults(timeZoneId: draft.timeZoneId))
 
         if step.state == .succeeded { Self.turnIntoUpdate(&step) }  // D-290
         if step.state != .draft {
@@ -456,6 +459,17 @@ import os
         draft.steps[index] = updated
         save(draft)
         return true
+    }
+
+    /// 4L.6 (D-331): on launch, every succeeded lunar series that runs short gets its next block. Writes items only,
+    /// never a step state. Returns how many were written.
+    func extendLunarSeries() async -> Int {
+        var written = 0
+        for (draftId, step) in repository.steps(in: [.succeeded]) where LunarSeries.recurrence(of: step) != nil {
+            guard let draft = repository.draft(draftId), let executor = executors[step.kind] else { continue }
+            written += await executor.extendSeries(step, draft: draft, now: now())
+        }
+        return written
     }
 
     // MARK: - Linked steps (DATA_MODEL §3.3, D-120)

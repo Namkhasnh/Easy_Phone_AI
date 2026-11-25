@@ -44,6 +44,8 @@ struct AppEnvironment: Sendable {
     let gmail: any GmailService
     /// StoreKit 2 (Phase 1F, ARCHITECTURE §6.5).
     let purchases: any PurchaseService
+    /// The guide being followed + its Live Activity "Bước 3/7" (4H.5, D-337).
+    let guideSessions: GuideSessions
 
     @MainActor static func live(container: ModelContainer) -> AppEnvironment {
         let config = AppConfig.fromMainBundle()
@@ -80,7 +82,8 @@ struct AppEnvironment: Sendable {
                               system: system, places: places,
                               images: LiveImageStore(), photoLibrary: LivePhotoLibraryService(),
                               ocr: RoutingOCRService(device: VisionOCRService(), remote: APIRemoteOCR(api: api)),
-                              gmail: gmail, purchases: LivePurchaseService())
+                              gmail: gmail, purchases: LivePurchaseService(),
+                              guideSessions: GuideSessions(suiteName: nil, progress: LiveGuideProgressService()))
     }
 
     /// `options` / `drafts`: 1G.10 resilience UI tests only (on-disk drafts, offline backend, denied permissions).
@@ -122,7 +125,11 @@ struct AppEnvironment: Sendable {
                               permissions: permissions, calendar: calendar, reminders: reminders, contacts: contacts,
                               system: system, places: places,
                               images: MockImageStore(), photoLibrary: MockPhotoLibraryService(),
-                              ocr: MockOCRService(), gmail: gmail, purchases: MockPurchaseService())
+                              ocr: MockOCRService(), gmail: gmail, purchases: MockPurchaseService(),
+                              guideSessions: GuideSessions(suiteName: "mock.guide.\(UUID().uuidString)",
+                                                           // UI tests check the real Lock Screen activity (4H.5)
+                                                           progress: scenario == .uiTest ? LiveGuideProgressService()
+                                                               : MockGuideProgressService()))
     }
 
     /// `MockScenario.uiTest` `/v1/extract` (flow 1, 1D.11): `ExtractResponse.mock` with the date moved to tomorrow

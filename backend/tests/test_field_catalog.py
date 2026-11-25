@@ -19,7 +19,7 @@ ALLOWED_OPERATIONS = {
 }
 FIELD_TYPES = {
     "text", "longText", "dateTime", "date", "durationMinutes", "bool", "phone",
-    "contactRef", "placeRef", "address", "coordinate", "enumChoice",
+    "contactRef", "placeRef", "address", "coordinate", "enumChoice", "lunarDate",
 }
 FIELD_KEYS = {"id", "type", "deviceOnly", "appBuilt"}
 OPTIONAL_FIELD_KEYS = {"options", "operations"}

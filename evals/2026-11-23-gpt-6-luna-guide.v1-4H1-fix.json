@@ -1,0 +1,286 @@
+[
+  {
+    "case": "m_accident_call",
+    "raw": {
+      "kind": "guide",
+      "title": "Kiểm tra cuộc gọi báo tai nạn",
+      "steps": [
+        {
+          "text": "Đừng chuyển tiền hoặc làm theo hướng dẫn của người gọi.",
+          "hint": "Dừng lại dù họ nói cần gấp."
+        },
+        {
+          "text": "Kết thúc cuộc gọi bằng nút đỏ hình điện thoại.",
+          "hint": "Không gọi lại số họ vừa dùng."
+        },
+        {
+          "text": "Mở Danh bạ và gọi cho con bằng số bạn đã lưu.",
+          "hint": "Nếu con không nghe máy, gọi người thân đang ở gần con."
+        },
+        {
+          "text": "Nhờ một người thân kiểm tra trực tiếp với bệnh viện hoặc nơi con đang ở.",
+          "hint": "Chỉ xác minh qua thông tin liên hệ bạn tự tìm được."
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Kẻ gian có thể giả tiếng khóc hoặc thúc ép chuyển tiền khi báo người thân gặp nạn."
+      ]
+    },
+    "final": {
+      "title": "Kiểm tra cuộc gọi báo tai nạn",
+      "steps": [
+        {
+          "text": "Đừng chuyển tiền hoặc làm theo hướng dẫn của người gọi.",
+          "hint": "Dừng lại dù họ nói cần gấp."
+        },
+        {
+          "text": "Kết thúc cuộc gọi bằng nút đỏ hình điện thoại.",
+          "hint": "Không gọi lại số họ vừa dùng."
+        },
+        {
+          "text": "Mở Danh bạ và gọi cho con bằng số bạn đã lưu.",
+          "hint": "Nếu con không nghe máy, gọi người thân đang ở gần con."
+        },
+        {
+          "text": "Nhờ một người thân kiểm tra trực tiếp với bệnh viện hoặc nơi con đang ở.",
+          "hint": "Chỉ xác minh qua thông tin liên hệ bạn tự tìm được."
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Kẻ gian có thể giả tiếng khóc hoặc thúc ép chuyển tiền khi báo người thân gặp nạn."
+      ],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000279,
+    "ms": 6335
+  },
+  {
+    "case": "m_prize",
+    "raw": null,
+    "final": null,
+    "error": "upstream_error",
+    "cost": 0.0,
+    "ms": 12007
+  },
+  {
+    "case": "m_otp_bank_staff",
+    "raw": {
+      "kind": "guide",
+      "title": "Từ chối cung cấp mã OTP",
+      "steps": [
+        {
+          "text": "Không đọc hoặc gửi mã OTP cho người gọi.",
+          "hint": "Mã OTP có thể dùng để xác nhận đăng nhập hoặc giao dịch."
+        },
+        {
+          "text": "Chạm nút màu đỏ để kết thúc cuộc gọi.",
+          "hint": "Đừng gọi lại số vừa gọi đến."
+        },
+        {
+          "text": "Tự gọi ngân hàng bằng số in ở mặt sau thẻ để hỏi về việc nâng cấp thẻ.",
+          "hint": "Nếu không có thẻ, nhờ người thân tìm số liên hệ chính thức cùng bạn."
+        },
+        {
+          "text": "Nếu đã đưa mã, gọi ngân hàng ngay để yêu cầu khóa thẻ hoặc tài khoản và kiểm tra giao dịch.",
+          "hint": null
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Lấy lý do nâng cấp thẻ để xin OTP có thể nhằm chiếm quyền truy cập hoặc xác nhận giao dịch."
+      ]
+    },
+    "final": {
+      "title": null,
+      "steps": [
+        {
+          "text": "Không đọc hoặc gửi mã OTP cho người gọi.",
+          "hint": "Mã OTP có thể dùng để xác nhận đăng nhập hoặc giao dịch."
+        },
+        {
+          "text": "Chạm nút màu đỏ để kết thúc cuộc gọi.",
+          "hint": "Đừng gọi lại số vừa gọi đến."
+        },
+        {
+          "text": "Tự gọi ngân hàng bằng số in ở mặt sau thẻ để hỏi về việc nâng cấp thẻ.",
+          "hint": "Nếu không có thẻ, nhờ người thân tìm số liên hệ chính thức cùng bạn."
+        },
+        {
+          "text": "Nếu đã đưa mã, gọi ngân hàng ngay để yêu cầu khóa thẻ hoặc tài khoản và kiểm tra giao dịch.",
+          "hint": null
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Lấy lý do nâng cấp thẻ để xin OTP có thể nhằm chiếm quyền truy cập hoặc xác nhận giao dịch."
+      ],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000364,
+    "ms": 7159
+  },
+  {
+    "case": "m_police_call",
+    "raw": {
+      "kind": "guide",
+      "title": "Dừng cuộc gọi giả danh công an",
+      "steps": [
+        {
+          "text": "Đừng chuyển tiền vào tài khoản họ đưa, kể cả khi họ dọa bạn liên quan vụ án.",
+          "hint": "Cơ quan công an không yêu cầu bạn chuyển tiền vào “tài khoản tạm giữ”."
+        },
+        {
+          "text": "Kết thúc cuộc gọi ngay; đừng làm theo hướng dẫn của người gọi.",
+          "hint": null
+        },
+        {
+          "text": "Nếu bạn đã cung cấp thông tin ngân hàng hoặc bắt đầu chuyển tiền, gọi ngân hàng theo số in trên thẻ.",
+          "hint": null
+        },
+        {
+          "text": "Gọi cho người thân bằng số bạn đã lưu để nhờ hỗ trợ kiểm tra sự việc.",
+          "hint": null
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Yêu cầu chuyển tiền vào “tài khoản tạm giữ” để xử lý vụ án là dấu hiệu giả danh công an."
+      ]
+    },
+    "final": {
+      "title": "Dừng cuộc gọi giả danh công an",
+      "steps": [
+        {
+          "text": "Đừng chuyển tiền vào tài khoản họ đưa, kể cả khi họ dọa bạn liên quan vụ án.",
+          "hint": "Cơ quan công an không yêu cầu bạn chuyển tiền vào “tài khoản tạm giữ”."
+        },
+        {
+          "text": "Kết thúc cuộc gọi ngay; đừng làm theo hướng dẫn của người gọi.",
+          "hint": null
+        },
+        {
+          "text": "Nếu bạn đã cung cấp thông tin ngân hàng hoặc bắt đầu chuyển tiền, gọi ngân hàng theo số in trên thẻ.",
+          "hint": null
+        },
+        {
+          "text": "Gọi cho người thân bằng số bạn đã lưu để nhờ hỗ trợ kiểm tra sự việc.",
+          "hint": null
+        }
+      ],
+      "isMoneyRelated": true,
+      "scamWarnings": [
+        "Yêu cầu chuyển tiền vào “tài khoản tạm giữ” để xử lý vụ án là dấu hiệu giả danh công an."
+      ],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000433,
+    "ms": 7991
+  },
+  {
+    "case": "p_zalo_photo",
+    "raw": {
+      "kind": "guide",
+      "title": "Gửi ảnh qua Zalo",
+      "steps": [
+        {
+          "text": "Mở ứng dụng Zalo trên iPhone.",
+          "hint": "Tìm biểu tượng màu xanh có hình bong bóng trò chuyện."
+        },
+        {
+          "text": "Chọn cuộc trò chuyện với con trong danh sách.",
+          "hint": "Nếu chưa thấy, nhấn kính lúp để tìm tên con."
+        },
+        {
+          "text": "Nhấn dấu cộng ở cạnh khung nhập tin nhắn.",
+          "hint": "Một bảng tùy chọn sẽ hiện ra."
+        },
+        {
+          "text": "Chọn biểu tượng hình ảnh rồi chọn ảnh muốn gửi.",
+          "hint": "Nhấn vào ảnh để đánh dấu."
+        },
+        {
+          "text": "Nhấn nút gửi hình mũi tên ở góc dưới.",
+          "hint": "Ảnh sẽ xuất hiện trong cuộc trò chuyện."
+        }
+      ],
+      "isMoneyRelated": false,
+      "scamWarnings": []
+    },
+    "final": {
+      "title": "Gửi ảnh qua Zalo",
+      "steps": [
+        {
+          "text": "Mở ứng dụng Zalo trên iPhone.",
+          "hint": "Tìm biểu tượng màu xanh có hình bong bóng trò chuyện."
+        },
+        {
+          "text": "Chọn cuộc trò chuyện với con trong danh sách.",
+          "hint": "Nếu chưa thấy, nhấn kính lúp để tìm tên con."
+        },
+        {
+          "text": "Nhấn dấu cộng ở cạnh khung nhập tin nhắn.",
+          "hint": "Một bảng tùy chọn sẽ hiện ra."
+        },
+        {
+          "text": "Chọn biểu tượng hình ảnh rồi chọn ảnh muốn gửi.",
+          "hint": "Nhấn vào ảnh để đánh dấu."
+        },
+        {
+          "text": "Nhấn nút gửi hình mũi tên ở góc dưới.",
+          "hint": "Ảnh sẽ xuất hiện trong cuộc trò chuyện."
+        }
+      ],
+      "isMoneyRelated": false,
+      "scamWarnings": [],
+      "unsupported": null
+    },
+    "error": null,
+    "cost": 0.000306,
+    "ms": 4827
+  },
+  {
+    "case": "n_gold",
+    "raw": {
+      "kind": "notAGuide",
+      "title": "",
+      "steps": [],
+      "isMoneyRelated": false,
+      "scamWarnings": []
+    },
+    "final": {
+      "title": null,
+      "steps": [],
+      "isMoneyRelated": false,
+      "scamWarnings": [],
+      "unsupported": "notAGuide"
+    },
+    "error": null,
+    "cost": 0.000145,
+    "ms": 1590
+  },
+  {
+    "case": "n_spy",
+    "raw": {
+      "kind": "notAGuide",
+      "title": "",
+      "steps": [],
+      "isMoneyRelated": false,
+      "scamWarnings": []
+    },
+    "final": {
+      "title": null,
+      "steps": [],
+      "isMoneyRelated": false,
+      "scamWarnings": [],
+      "unsupported": "notAGuide"
+    },
+    "error": null,
+    "cost": 0.000147,
+    "ms": 1484
+  }
+]

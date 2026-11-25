@@ -40,6 +40,18 @@ protocol RemindersService: Sendable {
     func delete(identifier: String) async throws
 }
 
+extension RemindersService {
+    /// 4L.5 (D-331): the not-completed reminders of the lunar series `reminder` belongs to (same base tag), plus
+    /// `reminder` itself; done ones stay as they are (history).
+    func series(of reminder: ReminderSummary) async throws -> [ReminderSummary] {
+        guard let tag = reminder.stepTag else { return [reminder] }
+        let base = StepTag.base(tag)
+        var found = [reminder.id: reminder]
+        for r in try await incomplete() where r.stepTag.map(StepTag.base) == base { found[r.id] = r }
+        return ReminderSummary.ordered(Array(found.values))
+    }
+}
+
 extension ReminderSummary {
     /// S12 order: by due date, reminders without a date last, then by title.
     static func ordered(_ items: [ReminderSummary]) -> [ReminderSummary] {

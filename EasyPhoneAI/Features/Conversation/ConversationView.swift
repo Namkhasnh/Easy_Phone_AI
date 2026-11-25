@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// S03 Conversation (UI_SCREENS S03). Modes: listening, transcript ready, working, follow-up, unsupported.
+/// S03 Conversation (UI_SCREENS S03). Modes: listening, transcript ready, working, follow-up, unsupported, answer (4L.2).
 struct ConversationView: View {
     @State var viewModel: ConversationViewModel
     @Environment(Router.self) private var router
@@ -25,6 +25,7 @@ struct ConversationView: View {
                 case .working: working
                 case .unsupported: unsupported
                 case .followUp(let followUp): followUpView(followUp)
+                case .answer(let answer): answerView(answer)
                 }
             }
             .padding(Tokens.Space.screenPadding)
@@ -50,6 +51,9 @@ struct ConversationView: View {
         }
         .onChange(of: viewModel.opensReminders) { _, opens in
             if opens { router.replaceLast(with: .reminders) }           // D-313: S12
+        }
+        .onChange(of: viewModel.guideRequest) { _, request in
+            if let request { router.replaceLast(with: .guide(question: request.question, spoken: request.spoken)) }
         }
         .onChange(of: viewModel.opensMail) { _, opens in
             if opens { router.replaceLast(with: .mail(codesOnly: viewModel.mailCodesOnly)) }   // D-304: S21
@@ -245,6 +249,30 @@ struct ConversationView: View {
         }
     }
 
+    // MARK: - Mode 6: answer (4L.2)
+
+    @ViewBuilder private func answerView(_ answer: String) -> some View {
+        if !viewModel.text.isEmpty {
+            userBubble {
+                Text(verbatim: viewModel.text)                         // the question as asked
+                    .font(Tokens.Fonts.body)
+                    .foregroundStyle(Tokens.Colors.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        assistantBubble(live: true) {
+            VStack(alignment: .leading, spacing: Tokens.Space.s) {
+                Text(verbatim: answer)                              // catalog sentence with values (LunarQuestion)
+                    .font(Tokens.Fonts.fieldValue)
+                    .foregroundStyle(Tokens.Colors.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+                TextLinkButton(viewModel.isReading ? "common.stopReading" : "common.readAloud") {
+                    Task { await viewModel.readAnswer() }
+                }
+            }
+        }
+    }
+
     // MARK: - Bottom bar
 
     @ViewBuilder private var bottomBar: some View {
@@ -268,6 +296,9 @@ struct ConversationView: View {
                 SecondaryButton("conv.followup.skip") {
                     if let id = viewModel.skipFollowUp() { router.push(.review(id)) }
                 }
+            case .answer:
+                PrimaryButton("common.done") { router.popToRoot() }
+                SecondaryButton("conv.answer.askMore", systemImage: "mic") { Task { await viewModel.askMore() } }
             case .unsupported:
                 PrimaryButton("conv.unsupported.home") { router.popToRoot() }
                 switch viewModel.unsupportedAction {

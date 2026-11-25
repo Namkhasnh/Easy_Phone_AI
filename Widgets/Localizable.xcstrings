@@ -1,83 +1,94 @@
 {
-  "sourceLanguage": "vi",
-  "strings": {
-    "control.listen": {
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nói với EasyPhoneK"
+  "sourceLanguage" : "vi",
+  "strings" : {
+    "control.listen" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nói với EasyPhoneK"
           }
         }
       }
     },
-    "widget.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EasyPhoneK"
+    "widget.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EasyPhoneK"
           }
         }
       }
     },
-    "widget.cta": {
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bấm để nói"
+    "widget.cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bấm để nói"
           }
         }
       }
     },
-    "widget.lock.a11y": {
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nói với EasyPhoneK"
+    "widget.lock.a11y" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nói với EasyPhoneK"
           }
         }
       }
     },
-    "widget.desc": {
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mở EasyPhoneK và nói yêu cầu của bạn"
+    "widget.desc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở EasyPhoneK và nói yêu cầu của bạn"
           }
         }
       }
     },
-    "intent.listen.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bắt đầu nghe"
+    "intent.listen.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bắt đầu nghe"
           }
         }
       }
     },
-    "intent.listen.desc": {
-      "extractionState": "manual",
-      "localizations": {
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mở EasyPhoneK và nghe yêu cầu của bạn"
+    "intent.listen.desc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở EasyPhoneK và nghe yêu cầu của bạn"
+          }
+        }
+      }
+    },
+    "guide.activity.hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gọi Khoai, nói “tiếp” để sang bước sau"
           }
         }
       }
     }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }
