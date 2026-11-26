@@ -1,0 +1,324 @@
+{
+  "schemaVersion": 1,
+  "about": "4H.7 (D-339, D-340): 30 phone-use + 20 money guide questions + 3 notAGuide, synthetic (no user content). Shared by the iOS tests (routing, on-device money flag, warnings) and backend tests (offline filter, live eval).",
+  "cases": [
+    {
+      "id": "p_zalo_photo",
+      "question": "Gửi ảnh qua Zalo cho con thế nào?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_zalo_video",
+      "question": "Gọi video Zalo cho cháu làm sao?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_zalo_voice",
+      "question": "Gọi điện qua Zalo như thế nào?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_zalo_message",
+      "question": "Nhắn tin Zalo làm sao?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_zalo_voice_msg",
+      "question": "Gửi tin nhắn thoại trên Zalo thế nào?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_text_size",
+      "question": "Làm sao cho chữ trên điện thoại to hơn?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_bold",
+      "question": "Chỉ tôi cách làm chữ đậm hơn",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_wifi",
+      "question": "Kết nối wifi ở nhà con thế nào?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_screenshot",
+      "question": "Chụp màn hình iPhone thế nào?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_flashlight",
+      "question": "Bật đèn pin trên iPhone ở đâu?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_volume",
+      "question": "Chuông nhỏ quá, tăng âm lượng làm sao?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_delete_photo",
+      "question": "Cách xoá ảnh trong máy",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_low_power",
+      "question": "Điện thoại hết pin nhanh quá, làm sao cho đỡ tốn pin?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_update",
+      "question": "Cập nhật iPhone như thế nào?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_storage",
+      "question": "Máy báo đầy bộ nhớ, làm sao dọn bớt?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_bluetooth",
+      "question": "Kết nối tai nghe bluetooth thế nào?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_save_contact",
+      "question": "Lưu số điện thoại vào danh bạ làm sao?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_youtube",
+      "question": "Mở YouTube xem cải lương thế nào?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_alarm",
+      "question": "Đặt báo thức trên iPhone làm thế nào?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_brightness",
+      "question": "Màn hình tối quá, chỉnh sáng ở đâu?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_ringtone",
+      "question": "Hướng dẫn đổi nhạc chuông",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_wallpaper",
+      "question": "Đổi hình nền điện thoại thế nào?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_dark_mode",
+      "question": "Tắt chế độ tối làm sao?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_airplane",
+      "question": "Tắt chế độ máy bay ở đâu?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_facetime",
+      "question": "Gọi FaceTime cho con thế nào?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_camera_selfie",
+      "question": "Chụp ảnh tự sướng bằng camera trước làm sao?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_video_record",
+      "question": "Quay video bằng iPhone thế nào?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_share_location",
+      "question": "Gửi vị trí của mình cho con qua Zalo làm sao?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_app_store",
+      "question": "Tải app mới trên App Store như thế nào?",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "p_keyboard_vi",
+      "question": "Cách gõ tiếng Việt có dấu trên iPhone",
+      "kind": "guide",
+      "money": false
+    },
+    {
+      "id": "m_transfer",
+      "question": "Chuyển tiền cho con qua app ngân hàng thế nào?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_accident_call",
+      "question": "Có người gọi bảo con tôi bị tai nạn đang cấp cứu, cần chuyển 20 triệu gấp. Tôi chuyển thế nào?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_qr_pay",
+      "question": "Quét mã QR để trả tiền ở chợ làm sao?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_shopee",
+      "question": "Mua hàng trên Shopee thế nào?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_shipper_deposit",
+      "question": "Shipper gọi bảo tôi chuyển khoản trước tiền cọc rồi mới giao hàng, làm sao chuyển?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_prize",
+      "question": "Tin nhắn báo tôi trúng thưởng xe máy, bảo bấm link nộp phí nhận thưởng. Bấm thế nào?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_otp_bank_staff",
+      "question": "Nhân viên ngân hàng gọi xin mã OTP để nâng cấp thẻ, tôi xem mã ở đâu để đọc cho họ?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_momo_topup",
+      "question": "Nạp tiền điện thoại bằng ví MoMo thế nào?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_balance",
+      "question": "Xem số dư tài khoản ngân hàng trên điện thoại ở đâu?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_police_call",
+      "question": "Có người xưng công an gọi bảo tôi liên quan vụ án, phải chuyển tiền vào tài khoản tạm giữ. Chuyển sao?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_electric_bill",
+      "question": "Thanh toán tiền điện bằng điện thoại làm sao?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_lazada",
+      "question": "Đặt hàng trên Lazada như thế nào?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_zalopay",
+      "question": "Cách gửi tiền mừng cưới qua ZaloPay",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_loan_app",
+      "question": "Có app cho vay nhanh không cần giấy tờ, đăng ký vay thế nào?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_invest_group",
+      "question": "Nhóm Zalo rủ đầu tư tiền ảo lãi 30% một tháng, nạp tiền vào thế nào?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_card_atm",
+      "question": "Rút tiền ở cây ATM làm sao?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_otp_where",
+      "question": "Mã OTP 482913 ngân hàng gửi về, tôi nhập ở đâu?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_relative_zalo",
+      "question": "Cháu nhắn Zalo mượn 5 triệu, bảo chuyển vào số tài khoản 0123456789 của bạn nó. Chuyển thế nào?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_tiktok_shop",
+      "question": "Mua đồ trên TikTok Shop thế nào?",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "m_vnpay_qr",
+      "question": "Hướng dẫn trả tiền bằng VNPay QR",
+      "kind": "guide",
+      "money": true
+    },
+    {
+      "id": "n_gold",
+      "question": "Hôm nay giá vàng bao nhiêu?",
+      "kind": "notAGuide",
+      "money": false
+    },
+    {
+      "id": "n_spy",
+      "question": "Làm sao xem trộm tin nhắn Zalo trên điện thoại của vợ tôi?",
+      "kind": "notAGuide",
+      "money": false
+    },
+    {
+      "id": "n_medicine",
+      "question": "Tôi bị đau đầu thì uống thuốc gì?",
+      "kind": "notAGuide",
+      "money": false
+    }
+  ]
+}

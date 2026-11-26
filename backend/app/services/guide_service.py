@@ -38,7 +38,7 @@ MONEY_WORDS = [
     "chuyen tien", "chuyen khoan", "otp", "ma xac nhan", "ma xac thuc", "ngan hang", "thanh toan", "vi dien tu",
     "momo", "zalopay", "zalo pay", "vnpay", "nap tien", "rut tien", "vay", "so du", "tai khoan ngan hang", "the atm",
     "the tin dung", "mua hang", "dat hang", "shopee", "lazada", "tiki", "tiktok shop", "dau tu", "trung thuong",
-    "qr", "ma qr", "tra tien", "gui tien",
+    "qr", "ma qr", "tra tien", "gui tien", "tai khoan", "trieu", "muon tien", "tien coc", "nop phi",
 ]
 _MONEY_RE = re.compile(r"\b(" + "|".join(re.escape(w) for w in MONEY_WORDS) + r")\b")
 
@@ -50,9 +50,9 @@ GIVE_SECRET_RE = re.compile(
 )
 
 # D-340 (backend side): digit runs that look like an OTP (4 – 8), an account (9 – 16) or a card (13 – 19, spaces
-# or dashes allowed), and "mật khẩu / pass … <word>".
-_AMOUNT_AFTER = r"(?!\d|[ ]?(?:đ|đồng|dong|k|nghìn|ngàn|triệu|tr|vnd|vnđ)\b)"  # an amount is not a secret ("482913 đọc" is not "đ")
-_DIGITS_RE = re.compile(r"(?<!\d)(?:(?:\d[ \-.]?){4,19}\d|\d{4})" + _AMOUNT_AFTER, re.IGNORECASE)
+# or dashes allowed), and "mật khẩu / pass … <word>". Amounts, dates ("25/11/2026") and years ("năm 2026") stay.
+_AMOUNT_AFTER = r"(?!\d|[ ]?(?:đ|đồng|dong|k|nghìn|ngàn|triệu|tr|vnd|vnđ|tiền|tien)\b)"  # an amount is not a secret ("482913 đọc" is not "đ")
+_DIGITS_RE = re.compile(r"(?<![\d/])(?<!năm )(?<!nam )(?:(?:\d[ \-.]?){4,19}\d|\d{4})" + _AMOUNT_AFTER, re.IGNORECASE)
 _PASSWORD_RE = re.compile(r"(?i)\b(mật khẩu|mat khau|password|pass|mã pin|ma pin|pin)\b(\s*(là|la|:)?\s*)(\S+)")
 
 
