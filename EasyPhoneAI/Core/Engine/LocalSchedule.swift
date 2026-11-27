@@ -85,6 +85,8 @@ enum LocalSchedule {
                 return nil                                       // "chị Mai": a name, not tomorrow
             case "mai" where anchors.contains(i - 1) || anchors.contains(i + 1):
                 guard setDay(1, [i]) else { return nil }
+            case "nay" where i > 0 && anchors.contains(i - 1) && periods.contains(f[i - 1]):
+                guard setDay(0, [i]) else { return nil }          // "9 giờ tối nay" (audit 2026-11-27)
             default: break
             }
         }

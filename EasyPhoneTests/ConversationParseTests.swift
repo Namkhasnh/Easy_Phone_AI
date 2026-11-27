@@ -195,7 +195,7 @@ struct ConversationParseTests {
     /// Eval 2026-11-27 x_follow_time: a clear time answer fills the empty date on the phone, no second `/v1/parse`.
     @Test(arguments: [("4 giờ chiều", "2026-11-08T10:00:00+07:00", "2026-11-08T16:00:00+07:00"),
                       ("8 giờ sáng mai", "2026-11-08T18:10:00+07:00", "2026-11-09T08:00:00+07:00"),
-                      ("9 giờ tối", "2026-11-08T18:10:00+07:00", "2026-11-08T21:00:00+07:00")])
+                      ("9 giờ tối nay", "2026-11-08T18:10:00+07:00", "2026-11-08T21:00:00+07:00")])
     func clearTimeAnswerIsUnderstoodOnThePhone(answer: String, now: String, expected: String) async throws {
         let api = MockAPIClient(parseSequence: [.success(try Self.fixture("missingTime"))])
         let draft = typed("Nhắc tôi uống thuốc")

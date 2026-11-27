@@ -20,6 +20,8 @@ struct LocalScheduleTests {
         ("nhắc tôi chiều mai 4 giờ rưỡi đi chợ", "Đi chợ", "2026-11-20T16:30:00+07:00", 1.0),
         ("nhắc tôi lấy đồ giặt lúc 20:15", "Lấy đồ giặt", "2026-11-19T20:15:00+07:00", 1.0),
         ("nhắc tôi tưới cây ngày mai lúc 9 giờ", "Tưới cây", "2026-11-20T09:00:00+07:00", 0.6),
+        ("nhắc tôi 9 giờ tối nay uống thuốc", "Uống thuốc", "2026-11-19T21:00:00+07:00", 1.0),          // audit 11-27
+        ("nhắc tôi gọi mẹ lúc 2 giờ chiều nay", "Gọi mẹ", "2026-11-19T14:00:00+07:00", 1.0),
     ])
     func reminders(text: String, title: String, date: String, confidence: Double) throws {
         let r = try #require(Self.m(text), "\(text)")
