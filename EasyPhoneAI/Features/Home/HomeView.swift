@@ -2,8 +2,8 @@ import SwiftUI
 
 /// S02 Home (UI_SCREENS S02). Primary buttons on this screen: mic and "Gửi" only (D-183).
 struct HomeView: View {
-    /// D-302 (owner 2026-11-17): photo / OCR is paused; the S09 code stays and comes back by flipping this.
-    static let showsPhotoEntry = false
+    /// D-333 (4V.1, supersedes D-302): "Chụp ảnh giấy tờ" is back (S09).
+    static let showsPhotoEntry = true
 
     @State var viewModel: HomeViewModel
     @Environment(Router.self) private var router

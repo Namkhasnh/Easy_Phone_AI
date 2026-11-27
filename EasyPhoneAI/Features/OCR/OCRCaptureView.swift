@@ -140,6 +140,14 @@ struct OCRCaptureView: View {
             Text("ocr.oneImageNote")
                 .font(Tokens.Fonts.body)
                 .foregroundStyle(Tokens.Colors.textSecondary)
+            // D-335 (4V.1): never ID cards / bank cards (the photo is read by AI).
+            Label {
+                Text("ocr.privacyNote").fixedSize(horizontal: false, vertical: true)
+            } icon: {
+                Image(systemName: "lock.shield").accessibilityHidden(true)
+            }
+            .font(Tokens.Fonts.body)
+            .foregroundStyle(Tokens.Colors.textPrimary)
         }
         .padding(Tokens.Space.m)
         .frame(maxWidth: .infinity, alignment: .leading)

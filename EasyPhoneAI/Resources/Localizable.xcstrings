@@ -8368,6 +8368,17 @@
           }
         }
       }
+    },
+    "ocr.privacyNote" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không chụp CCCD, thẻ ngân hàng hay giấy tờ có mật khẩu."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
