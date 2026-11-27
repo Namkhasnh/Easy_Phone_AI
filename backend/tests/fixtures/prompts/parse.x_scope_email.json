@@ -1,6 +1,6 @@
 {
   "case": "x_scope_email",
-  "source": "1B.15b extra case (owner request 2026-11-10)",
+  "source": "1B.15b extra case (owner request 2026-11-10); expected updated 2026-11-27: since parse v5 / D-304 a 'gửi email' request is an emailReply draft (API_GMAIL §5), not unsupported",
   "request": {
     "schemaVersion": 1,
     "text": "Gửi email cho thầy giáo xin nghỉ học",
@@ -19,15 +19,22 @@
     }
   },
   "expected": {
-    "steps": [],
+    "steps": [
+      {
+        "kind": "emailReply",
+        "operation": "create",
+        "fields": [
+          {
+            "id": "recipientName",
+            "value": "thầy giáo",
+            "confidence": 0.9,
+            "sourceQuote": "thầy giáo"
+          }
+        ],
+        "dateCandidates": []
+      }
+    ],
     "followUpQuestion": null,
-    "unsupported": {
-      "reason": "emailSend",
-      "message": "Chưa hỗ trợ gửi email.",
-      "date": null
-    }
-  },
-  "liveMatch": {
-    "message": "startsWith Chưa hỗ trợ"
+    "unsupported": null
   }
 }

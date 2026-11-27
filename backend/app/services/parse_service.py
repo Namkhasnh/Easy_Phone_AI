@@ -218,6 +218,50 @@ def _clean_field(f: dict, spec: dict, kind: str, request_text: str) -> dict:
     return {"id": spec["id"], "value": value, "confidence": confidence, "sourceQuote": quote}
 
 
+# Eval 2026-11-27: words the user said that the model sometimes leaves out (the step itself was right).
+_MAPS_WORDS = [(re.compile(r"google ?map"), "googleMaps"), (re.compile(r"apple ?map|bản đồ (của )?apple"), "appleMaps")]
+_SNOOZE_WORDS = [(re.compile(r"\b15 ?phút|mười lăm phút"), "min15"), (re.compile(r"\b1 ?tiếng|một tiếng|1 giờ nữa"), "hour1"),
+                 (re.compile(r"sáng mai"), "tomorrowMorning")]
+_YEAR_WORDS = re.compile(r"\b(19|20)\d{2}\b|năm sau|năm tới|sang năm|năm nay")
+
+
+def _said(fields: list[dict], kind: str, op: str, text: str, specs: dict[str, dict]) -> None:
+    """Fill `mapsApp` / `snoozeOption` from the user's own words when the model left them empty (never overrides)."""
+    words = {("place", "open"): ("mapsApp", _MAPS_WORDS), ("reminder", "snooze"): ("snoozeOption", _SNOOZE_WORDS)}
+    if (kind, op) not in words:
+        return
+    fid, table = words[(kind, op)]
+    if fid not in specs or any(f["id"] == fid and f["value"] for f in fields):
+        return
+    folded = _norm(text)
+    for pattern, value in table:
+        m = pattern.search(folded)
+        if m:
+            fields[:] = [f for f in fields if f["id"] != fid]
+            fields.append({"id": fid, "value": value, "confidence": 0.9, "sourceQuote": text[m.start():m.end()]
+                           if _norm(text[m.start():m.end()]) == m.group(0) else None})
+            return
+
+
+def _past_date_moved(fields: list[dict], date_ids: set[str], text: str, tz: ZoneInfo, today: date) -> None:
+    """D-106 (eval 2026-11-27, date_numeric_past): a day / month already passed this year (≤ 180 days ago), moved by
+    the model to next year without the user saying a year → confidence ≤ 0.5, so the app asks instead of guessing."""
+    if _YEAR_WORDS.search(_norm(text)):
+        return
+    for f in fields:
+        if f["id"] not in date_ids or not f["value"] or f["confidence"] is None or f["confidence"] <= 0.5:
+            continue
+        d = _local_day(f["value"], tz)
+        if d.year != today.year + 1:
+            continue
+        try:
+            same_this_year = d.replace(year=today.year)
+        except ValueError:  # 29/02
+            continue
+        if 0 < (today - same_this_year).days <= 180:
+            f["confidence"] = 0.5
+
+
 def _clean_step(step: dict, kinds: dict[str, dict], enabled: list[str], req: ParseRequest,
                 tz: ZoneInfo, today: date) -> dict | None:
     kind_name, op = step.get("kind"), step.get("operation")
@@ -242,6 +286,8 @@ def _clean_step(step: dict, kinds: dict[str, dict], enabled: list[str], req: Par
         seen.add(spec["id"])
         fields.append(_clean_field(f, spec, kind_name, req.text))
     date_ids = {f["id"] for f in kind["fields"] if f["type"] in ("dateTime", "date") and not f["deviceOnly"]}
+    _said(fields, kind_name, op, req.text, specs)
+    _past_date_moved(fields, date_ids, req.text, tz, today)
     candidates = _clean_candidates(step, date_ids, tz, today)
     if any(f["id"] == "lunarDate" and f["value"] for f in fields):
         # D-332: with a lunar date the phone computes the solar one; a solar date / candidate from the LLM is dropped.

@@ -502,10 +502,29 @@ import OSLog
         let answer = answerText.trimmingCharacters(in: .whitespacesAndNewlines)
         lastAnswer = .text(answer)
         guard let prompt, let draft = currentDraft else { return }
+        if let date = localTimeAnswer(answer, fieldId: prompt.fieldId, stepId: prompt.stepId, in: draft) {
+            engine.edit(fieldId: prompt.fieldId, value: date, stepId: prompt.stepId, in: draft)   // no unit, ~0 s
+            advance(draft)
+            return
+        }
         let context = ParseRequest.ParseContext(draftId: draft.id, answeringFieldId: prompt.fieldId,
                                                 currentDraft: DraftBuilder.wireDraft(draft))
         await runParse(text: answer, inputMode: answerInputMode, context: context, draft: draft,
                        returnMode: .followUp(followUp))
+    }
+
+    /// Eval 2026-11-27 (x_follow_time): a bare, clear time answer ("4 giờ chiều", "8 giờ sáng mai") to an empty
+    /// date question is understood on the phone with the D-320 rules, like a chip tap. Guessed day part ("8 giờ"),
+    /// weekday, numeric date or a time already passed → nil → `/v1/parse` with context as before.
+    private func localTimeAnswer(_ answer: String, fieldId: String, stepId: UUID, in draft: TaskDraft) -> String? {
+        guard ["dueDate", "startDate"].contains(fieldId),
+              let step = draft.steps.first(where: { $0.id == stepId }), step.field(fieldId)?.value == nil,
+              answer.split(separator: " ").count <= 6 else { return nil }
+        let zone = TimeZone(identifier: draft.timeZoneId) ?? .current
+        // A neutral title around the answer, so the same on-device rules read it (the title is thrown away).
+        guard let result = LocalSchedule.match("nhắc tôi uống nước \(answer)", now: now(), timeZone: zone),
+              result.dateConfidence >= 0.9, result.title == "Uống nước" else { return nil }
+        return result.date
     }
 
     /// "Bỏ qua, tôi sẽ sửa sau": the draft opens in S04 with the field still empty. Returns the draft to open.

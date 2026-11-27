@@ -162,13 +162,13 @@ struct ConversationParseTests {
         let vm = model(api, draft: draft)
         await vm.onAppear()
         let stepId = try #require(draft.steps.first?.id)
-        vm.answerText = "8 giờ sáng mai"
+        vm.answerText = "thứ Hai tuần sau lúc 8 giờ"                       // not understood on the phone → AI
         await vm.sendAnswer()
 
         #expect(api.parseCalls.count == 2)
         let call = api.parseCalls[1]
         #expect(call.key != api.parseCalls[0].key)                           // one key per call (D-245)
-        #expect(call.request.text == "8 giờ sáng mai" && call.request.inputMode == .text)
+        #expect(call.request.text == "thứ Hai tuần sau lúc 8 giờ" && call.request.inputMode == .text)
         #expect(call.request.context.draftId == draft.id)
         #expect(call.request.context.answeringFieldId == "dueDate")
         #expect(call.request.context.currentDraft?.steps.first?.fields.map(\.id) == ["title", "dueDate", "notes", "lunarDate", "lunarRecurrence"])
@@ -185,11 +185,39 @@ struct ConversationParseTests {
                                                 .success(try Self.fixture("followUpAnswer"))])
         let vm = model(api, draft: typed("Nhắc tôi uống thuốc"))
         await vm.onAppear()
-        speech.script = [Transcript(text: "8 giờ sáng mai", isFinal: true)]
+        speech.script = [Transcript(text: "thứ Hai tuần sau lúc 8 giờ", isFinal: true)]
         await vm.listenForAnswer()
         #expect(api.parseCalls.count == 1)                                   // spoken answer waits for "Gửi"
         await vm.sendAnswer()
         #expect(api.parseCalls.last?.request.inputMode == .voice)
+    }
+
+    /// Eval 2026-11-27 x_follow_time: a clear time answer fills the empty date on the phone, no second `/v1/parse`.
+    @Test(arguments: [("4 giờ chiều", "2026-11-08T10:00:00+07:00", "2026-11-08T16:00:00+07:00"),
+                      ("8 giờ sáng mai", "2026-11-08T18:10:00+07:00", "2026-11-09T08:00:00+07:00"),
+                      ("9 giờ tối", "2026-11-08T18:10:00+07:00", "2026-11-08T21:00:00+07:00")])
+    func clearTimeAnswerIsUnderstoodOnThePhone(answer: String, now: String, expected: String) async throws {
+        let api = MockAPIClient(parseSequence: [.success(try Self.fixture("missingTime"))])
+        let draft = typed("Nhắc tôi uống thuốc")
+        let vm = model(api, draft: draft, now: try #require(Validator.parseDateTime(now)))
+        await vm.onAppear()
+        vm.answerText = answer
+        await vm.sendAnswer()
+        #expect(api.parseCalls.count == 1)                                   // no unit for the answer
+        #expect(draft.steps.first?.field("dueDate")?.value == expected)
+        #expect(vm.reviewDraftId == draft.id)
+    }
+
+    /// Passed time with no day ("4 giờ chiều" at 18:10) or a guessed day part ("8 giờ") still goes to the AI.
+    @Test(arguments: ["4 giờ chiều", "8 giờ"])
+    func unclearTimeAnswerStillGoesToTheAI(answer: String) async throws {
+        let api = MockAPIClient(parseSequence: [.success(try Self.fixture("missingTime")),
+                                                .success(try Self.fixture("followUpAnswer"))])
+        let vm = model(api, draft: typed("Nhắc tôi uống thuốc"))
+        await vm.onAppear()
+        vm.answerText = answer
+        await vm.sendAnswer()
+        #expect(api.parseCalls.count == 2)
     }
 
     @Test func contextNeverCarriesLockedFields() async throws {
@@ -225,10 +253,10 @@ struct ConversationParseTests {
         let vm = model(api, draft: typed("Nhắc tôi uống thuốc"))
         await vm.onAppear()
         let question = vm.mode
-        vm.answerText = "8 giờ sáng mai"
+        vm.answerText = "thứ Hai tuần sau lúc 8 giờ"
         await vm.sendAnswer()
         #expect(vm.mode == question && vm.noticeKey == "error.network.offline")
-        #expect(vm.answerText == "8 giờ sáng mai" && vm.canSendAnswer)
+        #expect(vm.answerText == "thứ Hai tuần sau lúc 8 giờ" && vm.canSendAnswer)
     }
 
     // MARK: - Chips (D-251)
